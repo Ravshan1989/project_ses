@@ -15,6 +15,8 @@ const UserManagementPage: React.FC = () => {
     const [form] = Form.useForm();
     const [submitLoading, setSubmitLoading] = useState(false);
 
+    const [editingUser, setEditingUser] = useState<any>(null);
+
     const fetchUsers = async () => {
         setLoading(true);
         try {
@@ -60,12 +62,20 @@ const UserManagementPage: React.FC = () => {
         fetchOrganizations();
     }, []);
 
-    const handleCreateUser = async (values: any) => {
+    const handleCreateOrUpdateUser = async (values: any) => {
         setSubmitLoading(true);
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch(`${API_BASE_URL}/users`, {
-                method: 'POST',
+            const url = editingUser ? `${API_BASE_URL}/users/${editingUser.id}` : `${API_BASE_URL}/users`;
+            const method = editingUser ? 'PATCH' : 'POST';
+
+            // If editing and password is empty, remove it from submission
+            if (editingUser && !values.password) {
+                delete values.password;
+            }
+
+            const response = await fetch(url, {
+                method,
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -74,8 +84,9 @@ const UserManagementPage: React.FC = () => {
             });
 
             if (response.ok) {
-                message.success(t('user.success_create'));
+                message.success(editingUser ? t('user.success_update') : t('user.success_create'));
                 setIsModalVisible(false);
+                setEditingUser(null);
                 form.resetFields();
                 fetchUsers();
             } else {
@@ -87,6 +98,43 @@ const UserManagementPage: React.FC = () => {
         } finally {
             setSubmitLoading(false);
         }
+    };
+
+    const handleDeleteUser = async (id: string) => {
+        Modal.confirm({
+            title: t('user.delete_button'),
+            content: t('user.delete_confirm'),
+            okText: t('user.delete_button'),
+            okType: 'danger',
+            cancelText: t('user.cancel'),
+            onOk: async () => {
+                try {
+                    const token = localStorage.getItem('access_token');
+                    const response = await fetch(`${API_BASE_URL}/users/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    if (response.ok) {
+                        message.success(t('user.success_delete'));
+                        fetchUsers();
+                    }
+                } catch (error) {
+                    console.error('Error deleting user:', error);
+                }
+            }
+        });
+    };
+
+    const showEditModal = (user: any) => {
+        setEditingUser(user);
+        form.setFieldsValue({
+            username: user.username,
+            role: user.role,
+            organizationId: user.organization?.id
+        });
+        setIsModalVisible(true);
     };
 
     const columns = [
@@ -107,10 +155,24 @@ const UserManagementPage: React.FC = () => {
                 if (role === 'DISTRICT_HEAD') color = 'green';
                 return (
                     <Tag color={color}>
-                        {role}
+                        {t(`user.roles.${role}`)}
                     </Tag>
                 );
             },
+        },
+        {
+            title: t('user.actions'),
+            key: 'actions',
+            render: (_: any, record: any) => (
+                <Space size="middle">
+                    <Button type="link" onClick={() => showEditModal(record)}>
+                        {t('user.edit_button')}
+                    </Button>
+                    <Button type="link" danger onClick={() => handleDeleteUser(record.id)}>
+                        {t('user.delete_button')}
+                    </Button>
+                </Space>
+            ),
         },
         {
             title: t('user.organization'),
@@ -141,15 +203,19 @@ const UserManagementPage: React.FC = () => {
             />
 
             <Modal
-                title={t('user.modal_title')}
+                title={editingUser ? t('user.edit_modal_title') : t('user.modal_title')}
                 open={isModalVisible}
-                onCancel={() => setIsModalVisible(false)}
+                onCancel={() => {
+                    setIsModalVisible(false);
+                    setEditingUser(null);
+                    form.resetFields();
+                }}
                 footer={null}
             >
                 <Form
                     form={form}
                     layout="vertical"
-                    onFinish={handleCreateUser}
+                    onFinish={handleCreateOrUpdateUser}
                 >
                     <Form.Item
                         name="username"
@@ -162,9 +228,9 @@ const UserManagementPage: React.FC = () => {
                     <Form.Item
                         name="password"
                         label={t('user.password')}
-                        rules={[{ required: true, message: t('user.password') }]}
+                        rules={[{ required: !editingUser, message: t('user.password') }]}
                     >
-                        <Input.Password />
+                        <Input.Password placeholder={editingUser ? "O'zgartirish uchun yangi parol kiriting (ixtiyoriy)" : ""} />
                     </Form.Item>
 
                     <Form.Item
@@ -173,12 +239,12 @@ const UserManagementPage: React.FC = () => {
                         rules={[{ required: true, message: t('user.select_role') }]}
                     >
                         <Select placeholder={t('user.select_role')}>
-                            <Option value="REGION_HEAD">Viloyat Boshqarmasi Rahbari</Option>
-                            <Option value="DISTRICT_HEAD">Tuman Bo'limi Rahbari</Option>
-                            <Option value="LAB_HEAD">Laboratoriya Mudiri</Option>
-                            <Option value="REPUBLIC_HEAD">Respublika Rahbari</Option>
-                            <Option value="STAFF">Oddiy Hodim</Option>
-                            <Option value="ADMIN">Admin</Option>
+                            <Option value="REGION_HEAD">{t('user.roles.REGION_HEAD')}</Option>
+                            <Option value="DISTRICT_HEAD">{t('user.roles.DISTRICT_HEAD')}</Option>
+                            <Option value="LAB_HEAD">{t('user.roles.LAB_HEAD')}</Option>
+                            <Option value="REPUBLIC_HEAD">{t('user.roles.REPUBLIC_HEAD')}</Option>
+                            <Option value="STAFF">{t('user.roles.STAFF')}</Option>
+                            <Option value="ADMIN">{t('user.roles.ADMIN')}</Option>
                         </Select>
                     </Form.Item>
 

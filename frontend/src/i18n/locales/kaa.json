@@ -1,4 +1,19 @@
 {
+    "auth": {
+        "success_login": "Xosh kelipsiz!",
+        "error_login": "Login yamasa parol nadurıs",
+        "error_system": "Sistemaga ulanıwda qátelik júz berdi",
+        "slogan_part1": "Xalıqtıń sawlıǵı",
+        "slogan_part2": "bizniń baslı maqsetimiz",
+        "description": "Toshkent wálayatı Sanitariya-epidemiologiyalıq tınıshlıq hám jámiyet sawlıǵı basqarması birden-bir monitoring sisteması.",
+        "footer_text": "Barlıq huqıqlar qorǵalǵan.",
+        "welcome_title": "Xosh kelipsiz",
+        "welcome_subtitle": "Esabıńızǵa kiriń",
+        "username_required": "Iltimas, loginińizdi kiritiń",
+        "password_required": "Iltimas, parolińizdi kiritiń",
+        "forgot_password": "Paroldı umıttıńız ba?",
+        "login_btn": "Kiriw"
+    },
     "common": {
         "dashboard": "Dashboard",
         "reports": "Esabatlar",
@@ -11,6 +26,51 @@
         "export": "Eksport (Excel)",
         "import": "Import (Excel)",
         "diseases": "Kesellikler"
+    },
+    "dashboard_page": {
+        "title": "Tiykarǵı panel",
+        "success_create": "Foydalanuvshi jetiskenlikli jaratıldı",
+        "success_update": "Foydalanuvshi maǵlıwmatları jańalandı",
+        "success_delete": "Foydalanuvshi óshirildi",
+        "error_create": "Jaratıwda qátelik júz berdi",
+        "error_load": "Foydalanuvshılardı júklewde qátelik",
+        "edit_modal_title": "Foydalanuvshını tahrirlew",
+        "edit_button": "Tahrirlew",
+        "delete_button": "Óshiriw",
+        "delete_confirm": "Bul foydalanuvshını óshirip taslamaqshısız ba?",
+        "actions": "Ámeller",
+        "roles": {
+            "ADMIN": "Admin",
+            "REGION_HEAD": "Wálayat Basqarması Rahbari",
+            "DISTRICT_HEAD": "Rayon Bólimi Rahbari",
+            "LAB_HEAD": "Laboratoriya Baslıǵı",
+            "REPUBLIC_HEAD": "Respublika Rahbari",
+            "STAFF": "Ápiwayı Xızmetker"
+        },
+        "total_reports": "Jıynaqlanǵan esabatlar",
+        "approved": "Tastıyıqlanǵan",
+        "pending": "Kórip şıǵılmaqta",
+        "rejected": "Biykar etilgen",
+        "incoming_reports": "Kelip túsken esabatlar",
+        "search_placeholder": "Izlew...",
+        "status_placeholder": "Jaǵday",
+        "filter_btn": "Filtr",
+        "export_btn": "Excelge júklew",
+        "upload_btn": "Júklew",
+        "region_title": "Toshkent wálayatı xalqı",
+        "table": {
+            "region": "Aymaq",
+            "report_type": "Esabat Túri",
+            "period": "Esabat Dáwiri",
+            "status": "Jaǵday",
+            "actions": "Ámeller"
+        },
+        "statuses": {
+            "DRAFT": "Joba",
+            "SUBMITTED": "Jiberilgen",
+            "APPROVED": "Tastıyıqlanǵan",
+            "REJECTED": "Biykar etilgen"
+        }
     },
     "reports": {
         "daily": "Kúnlik esabatlar",

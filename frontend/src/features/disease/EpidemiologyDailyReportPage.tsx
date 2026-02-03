@@ -3,6 +3,7 @@ import { Table, Typography, Card, DatePicker, Button, InputNumber, notification,
 import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
+import { useTranslation } from 'react-i18next';
 
 const { Title, Text } = Typography;
 
@@ -10,29 +11,21 @@ interface EpiReportData {
     key: string;
     district_name: string;
     organizationId: string;
-
-    // Inspected
     inspected_total: number;
     inspected_mtm: number;
     inspected_school: number;
     inspected_dpm: number;
     inspected_other: number;
-
-    // Defects
     defects_total: number;
     defects_mtm: number;
     defects_school: number;
     defects_dpm: number;
     defects_other: number;
-
-    // Fines
     fines_total: number;
     fines_mtm: number;
     fines_school: number;
     fines_dpm: number;
     fines_other: number;
-
-    // Suspended
     suspended_total: number;
     suspended_mtm: number;
     suspended_school: number;
@@ -46,6 +39,7 @@ interface EpiReportData {
 }
 
 const EpidemiologyDailyReportPage: React.FC = () => {
+    const { t } = useTranslation();
     const [date, setDate] = useState(dayjs());
     const [data, setData] = useState<EpiReportData[]>([]);
     const [loading, setLoading] = useState(false);
@@ -74,6 +68,7 @@ const EpidemiologyDailyReportPage: React.FC = () => {
             let currentOrgs = organizations;
             if (currentOrgs.length === 0) {
                 const orgRes = await organizationsApi.getAll();
+<<<<<<< HEAD
                 // Viloyatni (parent darajasi) hisobotdan olib tashlaymiz
                 // currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent); <- ESKI
 
@@ -81,6 +76,13 @@ const EpidemiologyDailyReportPage: React.FC = () => {
                 const allOrgs = orgRes.data || [];
                 currentOrgs = allOrgs.filter((org: any) => org.id !== '1' && !org.name.toLowerCase().includes("boshqarma"));
 
+=======
+                // UZ: User talabiga ko'ra avvalgi holatga qaytarildi (revert)
+                // currentOrgs = orgRes.data || [];
+                // UZ: Qayta urinish: barcha tumanlar ko'rinishi uchun filterni olib tashlaymiz
+                currentOrgs = orgRes.data || [];
+                // currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent);
+>>>>>>> 04d1ba4b5e8d11ee2778fbb0c1c6956d26c3a354
                 setOrganizations(currentOrgs);
             }
 
@@ -93,7 +95,11 @@ const EpidemiologyDailyReportPage: React.FC = () => {
                     key: String(idx + 1),
                     district_name: org.name,
                     organizationId: org.id,
+<<<<<<< HEAD
                     is_submitted: !!existing, // Agar baza'da yozuv bo'lsa - true
+=======
+                    is_submitted: !!existing,
+>>>>>>> 04d1ba4b5e8d11ee2778fbb0c1c6956d26c3a354
                     inspected_total: existing?.inspected_total || 0,
                     inspected_mtm: existing?.inspected_mtm || 0,
                     inspected_school: existing?.inspected_school || 0,
@@ -132,7 +138,10 @@ const EpidemiologyDailyReportPage: React.FC = () => {
             }
         } catch (error) {
             console.error(error);
-            notification.error({ message: 'Xatolik', description: 'Ma\'lumotlarni yuklashda xatolik' });
+            notification.error({
+                message: t('daily_reports.actions.error_load'),
+                description: t('daily_reports.actions.error_load')
+            });
         } finally {
             setLoading(false);
         }
@@ -142,9 +151,8 @@ const EpidemiologyDailyReportPage: React.FC = () => {
         const newData = [...data];
         const index = newData.findIndex(item => item.key === rowKey);
         if (index > -1) {
-            let updatedRow = { ...newData[index], [field]: value || 0 };
-
-            // Auto-calculate section totals
+            // UZ: O'zgaruvchi qayta qiymatlanmaydi, shuning uchun const ishlatildi - avvalgi kod: let updatedRow = { ...newData[index], [field]: value || 0 };
+            const updatedRow = { ...newData[index], [field]: value || 0 };
             if (field.startsWith('inspected_') && field !== 'inspected_total') {
                 updatedRow.inspected_total = updatedRow.inspected_mtm + updatedRow.inspected_school + updatedRow.inspected_dpm + updatedRow.inspected_other;
             }
@@ -157,7 +165,6 @@ const EpidemiologyDailyReportPage: React.FC = () => {
             if (field.startsWith('suspended_') && field !== 'suspended_total') {
                 updatedRow.suspended_total = updatedRow.suspended_mtm + updatedRow.suspended_school + updatedRow.suspended_dpm + updatedRow.suspended_other;
             }
-
             newData[index] = updatedRow;
             setData(newData);
         }
@@ -174,9 +181,12 @@ const EpidemiologyDailyReportPage: React.FC = () => {
                     organizationId: row.organizationId
                 });
             }
-            notification.success({ message: 'Saqlandi' });
+            notification.success({ message: t('user.save') });
         } catch (error) {
-            notification.error({ message: 'Xatolik', description: 'Saqlashda xatolik' });
+            notification.error({
+                message: t('auth.error_system'),
+                description: t('daily_reports.actions.error_save')
+            });
         } finally {
             setLoading(false);
         }
@@ -195,31 +205,35 @@ const EpidemiologyDailyReportPage: React.FC = () => {
         />
     );
 
+<<<<<<< HEAD
     // TUZATISH: 'is_submitted' flagi orqali aniq tekshirish
     const isSubmitted = (row: EpiReportData) => {
+=======
+    const isSubmitted = (row: any) => {
+>>>>>>> 04d1ba4b5e8d11ee2778fbb0c1c6956d26c3a354
         return !!row.is_submitted;
     };
 
     const createSectionColumns = (_title: string, prefix: string) => [
-        { title: 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, (prefix + '_total') as any, true) },
+        { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, (prefix + '_total') as any, true) },
         {
-            title: 'Jumladan',
+            title: t('daily_reports.table.including'),
             children: [
-                { title: 'MTM', width: 60, render: (_: any, r: any) => renderInput(r, (prefix + '_mtm') as any) },
-                { title: 'Maktab', width: 60, render: (_: any, r: any) => renderInput(r, (prefix + '_school') as any) },
-                { title: 'DPM', width: 60, render: (_: any, r: any) => renderInput(r, (prefix + '_dpm') as any) },
-                { title: 'Boshqa', width: 60, render: (_: any, r: any) => renderInput(r, (prefix + '_other') as any) },
+                { title: t('daily_reports.table.mtm'), width: 60, render: (_: any, r: any) => renderInput(r, (prefix + '_mtm') as any) },
+                { title: t('daily_reports.table.school'), width: 60, render: (_: any, r: any) => renderInput(r, (prefix + '_school') as any) },
+                { title: t('daily_reports.table.dpm'), width: 60, render: (_: any, r: any) => renderInput(r, (prefix + '_dpm') as any) },
+                { title: t('daily_reports.table.other'), width: 60, render: (_: any, r: any) => renderInput(r, (prefix + '_other') as any) },
             ]
         }
     ];
 
     const columns: any = [
         {
-            title: '№', dataIndex: 'key', width: 40, align: 'center', fixed: 'left',
+            title: t('daily_reports.table.no'), dataIndex: 'key', width: 40, align: 'center', fixed: 'left',
             onCell: (r: EpiReportData) => ({ style: { backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff' } })
         },
         {
-            title: 'Hududlar', dataIndex: 'district_name', width: 150, fixed: 'left',
+            title: t('daily_reports.table.district'), dataIndex: 'district_name', width: 150, fixed: 'left',
             onCell: (r: EpiReportData) => ({
                 style: {
                     backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff1f0',
@@ -229,19 +243,19 @@ const EpidemiologyDailyReportPage: React.FC = () => {
             })
         },
         {
-            title: 'Tekshirilgan ob\'ektlar',
+            title: t('daily_reports.table.inspected_objects'),
             children: createSectionColumns('Tekshirilgan ob\'ektlar', 'inspected')
         },
         {
-            title: 'Aniqlangan kamchiliklar',
+            title: t('daily_reports.table.defects_found'),
             children: createSectionColumns('Aniqlangan kamchiliklar', 'defects')
         },
         {
-            title: 'Solingan jarimalar',
+            title: t('daily_reports.table.fines_issued'),
             children: createSectionColumns('Solingan jarimalar', 'fines')
         },
         {
-            title: 'Ish faoliyati to\'xtatilganlar',
+            title: t('daily_reports.table.suspended_activities'),
             children: createSectionColumns('Ish faoliyati to\'xtatilganlar', 'suspended')
         }
     ];
@@ -253,16 +267,16 @@ const EpidemiologyDailyReportPage: React.FC = () => {
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
                 <div style={{ textAlign: 'center' }}>
                     <Title level={4} style={{ margin: 0 }}>
-                        Epidemiologiyaga qarshi tadbirlar bo'yicha kunlik ma'lumot
+                        {t('reports.epidemiology')}
                     </Title>
-                    <Text type="secondary">{date.format('DD.MM.YYYY')} kungi holatga</Text>
+                    <Text type="secondary">{t('daily_reports.date_status', { date: date.format('DD.MM.YYYY') })}</Text>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Space>
                         <DatePicker value={date} onChange={(d) => d && setDate(d)} format="DD.MM.YYYY" />
-                        <Button icon={<ReloadOutlined />} onClick={fetchReports}>Yangilash</Button>
-                        <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>Saqlash</Button>
+                        <Button icon={<ReloadOutlined />} onClick={fetchReports}>{t('daily_reports.actions.refresh')}</Button>
+                        <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>{t('daily_reports.actions.save')}</Button>
                     </Space>
                 </div>
 
@@ -278,26 +292,22 @@ const EpidemiologyDailyReportPage: React.FC = () => {
                         <Table.Summary fixed>
                             <Table.Summary.Row style={{ backgroundColor: '#fafafa', fontWeight: 'bold' }}>
                                 <Table.Summary.Cell index={0} />
-                                <Table.Summary.Cell index={1}>jami</Table.Summary.Cell>
-                                {/* Inspected */}
+                                <Table.Summary.Cell index={1}>{t('daily_reports.table.total')}</Table.Summary.Cell>
                                 <Table.Summary.Cell index={2} align="center">{calculateGrandTotal('inspected_total')}</Table.Summary.Cell>
                                 <Table.Summary.Cell index={3} align="center">{calculateGrandTotal('inspected_mtm')}</Table.Summary.Cell>
                                 <Table.Summary.Cell index={4} align="center">{calculateGrandTotal('inspected_school')}</Table.Summary.Cell>
                                 <Table.Summary.Cell index={5} align="center">{calculateGrandTotal('inspected_dpm')}</Table.Summary.Cell>
                                 <Table.Summary.Cell index={6} align="center">{calculateGrandTotal('inspected_other')}</Table.Summary.Cell>
-                                {/* Defects */}
                                 <Table.Summary.Cell index={7} align="center">{calculateGrandTotal('defects_total')}</Table.Summary.Cell>
                                 <Table.Summary.Cell index={8} align="center">{calculateGrandTotal('defects_mtm')}</Table.Summary.Cell>
                                 <Table.Summary.Cell index={9} align="center">{calculateGrandTotal('defects_school')}</Table.Summary.Cell>
                                 <Table.Summary.Cell index={10} align="center">{calculateGrandTotal('defects_dpm')}</Table.Summary.Cell>
                                 <Table.Summary.Cell index={11} align="center">{calculateGrandTotal('defects_other')}</Table.Summary.Cell>
-                                {/* Fines */}
                                 <Table.Summary.Cell index={12} align="center">{calculateGrandTotal('fines_total')}</Table.Summary.Cell>
                                 <Table.Summary.Cell index={13} align="center">{calculateGrandTotal('fines_mtm')}</Table.Summary.Cell>
                                 <Table.Summary.Cell index={14} align="center">{calculateGrandTotal('fines_school')}</Table.Summary.Cell>
                                 <Table.Summary.Cell index={15} align="center">{calculateGrandTotal('fines_dpm')}</Table.Summary.Cell>
                                 <Table.Summary.Cell index={16} align="center">{calculateGrandTotal('fines_other')}</Table.Summary.Cell>
-                                {/* Suspended */}
                                 <Table.Summary.Cell index={17} align="center">{calculateGrandTotal('suspended_total')}</Table.Summary.Cell>
                                 <Table.Summary.Cell index={18} align="center">{calculateGrandTotal('suspended_mtm')}</Table.Summary.Cell>
                                 <Table.Summary.Cell index={19} align="center">{calculateGrandTotal('suspended_school')}</Table.Summary.Cell>

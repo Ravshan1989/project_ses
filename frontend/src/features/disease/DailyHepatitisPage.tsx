@@ -3,6 +3,7 @@ import { Table, Typography, Card, DatePicker, Button, InputNumber, notification,
 import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
+import { useTranslation } from 'react-i18next';
 
 const { Title, Text } = Typography;
 
@@ -34,13 +35,11 @@ interface ReportData {
     lab_samples: number;
     lab_positive: number;
     disinfection_done: number;
-}
-// TUZATISH: ReportData interfeysini kengaytirish (declaration merging)
-interface ReportData {
-    is_submitted?: boolean; // Hisobot topshirilganligini bildiruvchi yangi maydon
+    is_submitted?: boolean;
 }
 
 const DailyHepatitisPage: React.FC = () => {
+    const { t } = useTranslation();
     const [date, setDate] = useState(dayjs());
     const [data, setData] = useState<ReportData[]>([]);
     const [loading, setLoading] = useState(false);
@@ -67,10 +66,10 @@ const DailyHepatitisPage: React.FC = () => {
         try {
             const formattedDate = date.format('YYYY-MM-DD');
 
-            // 1. Fetch Organizations if not already fetched
             let currentOrgs = organizations;
             if (currentOrgs.length === 0) {
                 const orgRes = await organizationsApi.getAll();
+<<<<<<< HEAD
                 // Viloyatni (parent darajasi) hisobotdan olib tashlaymiz
                 // TUZATISH: Agar API dan 'parent' maydoni kemasa, demak bu viloyat (yoki aksincha).
                 // Logikani tekshiramiz: Bizga TUMANLAR kerak. Tumanlarda parent bo'lishi kerak yoki 'tuman' so'zi qatnashishi kerak.
@@ -93,53 +92,26 @@ const DailyHepatitisPage: React.FC = () => {
 
                 currentOrgs = allOrgs.filter((org: any) => org.id !== '1' && !org.name.toLowerCase().includes("boshqarma"));
 
+=======
+                // UZ: User talabiga ko'ra avvalgi holatga qaytarildi (revert)
+                // currentOrgs = orgRes.data || [];
+                // UZ: Qayta urinish: barcha tumanlar ko'rinishi uchun filterni olib tashlaymiz
+                currentOrgs = orgRes.data || [];
+                // currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent);
+>>>>>>> 04d1ba4b5e8d11ee2778fbb0c1c6956d26c3a354
                 setOrganizations(currentOrgs);
             }
 
-            // 2. Fetch Reports for the date
             const res = await dailyReportsApi.getByDate(formattedDate);
             const apiData = res.data || [];
 
-            // 3. Map organizations to table rows
-            /* XATO: Eski mapping logikasi noto'g'ri (hisobot topshirilganligini aniqlamaydi)
             let tableData = currentOrgs.map((org, idx) => {
                 const existing = apiData.find((r: any) => r.organization?.id === org.id);
                 return {
                     key: String(idx + 1),
                     district_name: org.name,
                     organizationId: org.id,
-                    total_cases: existing?.total_cases || 0,
-                    age_under_1: existing?.age_under_1 || 0,
-                    age_1_3: existing?.age_1_3 || 0,
-                    age_4_6: existing?.age_4_6 || 0,
-                    age_7_14: existing?.age_7_14 || 0,
-                    age_15_19: existing?.age_15_19 || 0,
-                    age_20_plus: existing?.age_20_plus || 0,
-                    occ_unorganized: existing?.occ_unorganized || 0,
-                    occ_unorganized_1_6: existing?.occ_unorganized_1_6 || 0,
-                    occ_organized_1_6: existing?.occ_organized_1_6 || 0,
-                    occ_unorganized_school_age: existing?.occ_unorganized_school_age || 0,
-                    occ_students: existing?.occ_students || 0,
-                    occ_college_students: existing?.occ_college_students || 0,
-                    occ_workers: existing?.occ_workers || 0,
-                    factor_water: existing?.factor_water || 0,
-                    factor_food: existing?.factor_food || 0,
-                    factor_contact: existing?.factor_contact || 0,
-                    lab_samples: existing?.lab_samples || 0,
-                    lab_positive: existing?.lab_positive || 0,
-                    disinfection_done: existing?.disinfection_done || 0,
-                };
-            });
-            */
-
-            // TUZATISH: Yangi mapping logikasi 'is_submitted' maydonini to'g'ri hisoblaydi
-            let tableData = currentOrgs.map((org, idx) => {
-                const existing = apiData.find((r: any) => r.organization?.id === org.id);
-                return {
-                    key: String(idx + 1),
-                    district_name: org.name,
-                    organizationId: org.id,
-                    is_submitted: !!existing, // Agar baza'da yozuv bo'lsa - true
+                    is_submitted: !!existing,
                     total_cases: existing?.total_cases || 0,
                     age_under_1: existing?.age_under_1 || 0,
                     age_1_3: existing?.age_1_3 || 0,
@@ -181,7 +153,10 @@ const DailyHepatitisPage: React.FC = () => {
             setData(tableData);
         } catch (error) {
             console.error("Failed to fetch reports", error);
-            notification.error({ message: 'Xatolik', description: 'Ma\'lumotlarni yuklashda muammo bo\'ldi.' });
+            notification.error({
+                message: t('daily_reports.actions.error_load'),
+                description: t('daily_reports.actions.error_load')
+            });
         } finally {
             setLoading(false);
         }
@@ -192,15 +167,12 @@ const DailyHepatitisPage: React.FC = () => {
         const index = newData.findIndex(item => item.key === rowKey);
         if (index > -1) {
             const updatedRow = { ...newData[index], [field]: value || 0 };
-
-            // Calculate Total Cases automatically
             const ageFields: (keyof ReportData)[] = [
                 'age_under_1', 'age_1_3', 'age_4_6', 'age_7_14', 'age_15_19', 'age_20_plus'
             ];
             if (ageFields.includes(field)) {
                 updatedRow.total_cases = ageFields.reduce((sum, f) => sum + (updatedRow[f] as number), 0);
             }
-
             newData[index] = updatedRow;
             setData(newData);
         }
@@ -219,15 +191,6 @@ const DailyHepatitisPage: React.FC = () => {
         />
     );
 
-    /* XATO: Eski tekshirish logikasi noto'g'ri (organizationId doim bor)
-    const isSubmitted = (record: ReportData) => {
-        // Simple logic: if total cases > 0 it's submitted
-        // In real app, check if organizationId is present (meaning it exists in DB)
-        return record.total_cases > 0 || record.organizationId !== '';
-    };
-    */
-
-    // TUZATISH: 'is_submitted' flagi orqali aniq tekshirish
     const isSubmitted = (record: ReportData) => {
         return !!record.is_submitted;
     };
@@ -235,7 +198,7 @@ const DailyHepatitisPage: React.FC = () => {
     // @ts-ignore
     const columns: any = [
         {
-            title: '№',
+            title: t('daily_reports.table.no'),
             dataIndex: 'key',
             width: 40, align: 'center', fixed: 'left',
             onCell: (record: ReportData) => ({
@@ -243,7 +206,7 @@ const DailyHepatitisPage: React.FC = () => {
             })
         },
         {
-            title: 'Ma\'muriy hududlar',
+            title: t('daily_reports.table.district'),
             dataIndex: 'district_name',
             width: 150, fixed: 'left',
             onCell: (record: ReportData) => ({
@@ -254,46 +217,56 @@ const DailyHepatitisPage: React.FC = () => {
                 }
             })
         },
-        { title: 'Jami kasallanganlar', dataIndex: 'total_cases', width: 80, render: (_: any, r: any) => renderInput(r, 'total_cases', true) },
         {
-            title: 'Bemorlarni yoshlari bo\'yicha',
+            title: t('daily_reports.table.total_cases'),
+            dataIndex: 'total_cases',
+            width: 80,
+            render: (_: any, r: any) => renderInput(r, 'total_cases', true)
+        },
+        {
+            title: t('daily_reports.table.by_age'),
             children: [
-                { title: '1 yosh.', width: 60, render: (_: any, r: any) => renderInput(r, 'age_under_1') },
-                { title: '1-3 yosh', width: 60, render: (_: any, r: any) => renderInput(r, 'age_1_3') },
-                { title: '4-6 yosh', width: 60, render: (_: any, r: any) => renderInput(r, 'age_4_6') },
-                { title: '7-14 yosh', width: 60, render: (_: any, r: any) => renderInput(r, 'age_7_14') },
-                { title: '15-19 yosh', width: 60, render: (_: any, r: any) => renderInput(r, 'age_15_19') },
-                { title: '20+ yosh', width: 60, render: (_: any, r: any) => renderInput(r, 'age_20_plus') },
+                { title: t('daily_reports.table.age_1'), width: 60, render: (_: any, r: any) => renderInput(r, 'age_under_1') },
+                { title: t('daily_reports.table.age_1_3'), width: 60, render: (_: any, r: any) => renderInput(r, 'age_1_3') },
+                { title: t('daily_reports.table.age_4_6'), width: 60, render: (_: any, r: any) => renderInput(r, 'age_4_6') },
+                { title: t('daily_reports.table.age_7_14'), width: 60, render: (_: any, r: any) => renderInput(r, 'age_7_14') },
+                { title: t('daily_reports.table.age_15_19'), width: 60, render: (_: any, r: any) => renderInput(r, 'age_15_19') },
+                { title: t('daily_reports.table.age_20'), width: 60, render: (_: any, r: any) => renderInput(r, 'age_20_plus') },
             ]
         },
         {
-            title: 'Bemorlarni kasblari bo\'yicha',
+            title: t('daily_reports.table.by_occupation'),
             children: [
-                { title: 'Uyushmagan yoshli', width: 80, render: (_: any, r: any) => renderInput(r, 'occ_unorganized') },
-                { title: 'Uyushmagan bog\'cha', width: 80, render: (_: any, r: any) => renderInput(r, 'occ_unorganized_1_6') },
-                { title: 'Uyushgan bog\'cha', width: 80, render: (_: any, r: any) => renderInput(r, 'occ_organized_1_6') },
-                { title: 'Uyushmagan maktab', width: 80, render: (_: any, r: any) => renderInput(r, 'occ_unorganized_school_age') },
-                { title: 'O\'quvchilar', width: 80, render: (_: any, r: any) => renderInput(r, 'occ_students') },
-                { title: 'Talabalar', width: 80, render: (_: any, r: any) => renderInput(r, 'occ_college_students') },
-                { title: 'Kattalar', width: 80, render: (_: any, r: any) => renderInput(r, 'occ_workers') },
+                { title: t('daily_reports.table.unorganized'), width: 80, render: (_: any, r: any) => renderInput(r, 'occ_unorganized') },
+                { title: t('daily_reports.table.unorg_preschool'), width: 80, render: (_: any, r: any) => renderInput(r, 'occ_unorganized_1_6') },
+                { title: t('daily_reports.table.org_preschool'), width: 80, render: (_: any, r: any) => renderInput(r, 'occ_organized_1_6') },
+                { title: t('daily_reports.table.unorg_school'), width: 80, render: (_: any, r: any) => renderInput(r, 'occ_unorganized_school_age') },
+                { title: t('daily_reports.table.students'), width: 80, render: (_: any, r: any) => renderInput(r, 'occ_students') },
+                { title: t('daily_reports.table.college_students'), width: 80, render: (_: any, r: any) => renderInput(r, 'occ_college_students') },
+                { title: t('daily_reports.table.adults'), width: 80, render: (_: any, r: any) => renderInput(r, 'occ_workers') },
             ]
         },
         {
-            title: 'Yuqish ehtimoli bo\'lgan omil',
+            title: t('daily_reports.table.factors'),
             children: [
-                { title: 'Suv', width: 60, render: (_: any, r: any) => renderInput(r, 'factor_water') },
-                { title: 'Ovqat', width: 60, render: (_: any, r: any) => renderInput(r, 'factor_food') },
-                { title: 'Muloqot', width: 60, render: (_: any, r: any) => renderInput(r, 'factor_contact') },
+                { title: t('daily_reports.table.water'), width: 60, render: (_: any, r: any) => renderInput(r, 'factor_water') },
+                { title: t('daily_reports.table.food'), width: 60, render: (_: any, r: any) => renderInput(r, 'factor_food') },
+                { title: t('daily_reports.table.contact'), width: 60, render: (_: any, r: any) => renderInput(r, 'factor_contact') },
             ]
         },
         {
-            title: 'O\'choqlarda i.suvini VGA ant.',
+            title: t('daily_reports.table.lab'),
             children: [
-                { title: 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'lab_samples') },
-                { title: 'Musbat', width: 60, render: (_: any, r: any) => renderInput(r, 'lab_positive') },
+                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'lab_samples') },
+                { title: t('daily_reports.table.lab_positive'), width: 60, render: (_: any, r: any) => renderInput(r, 'lab_positive') },
             ]
         },
-        { title: 'Dezinfeksiya', dataIndex: 'disinfection_done', width: 80, render: (_: any, r: any) => renderInput(r, 'disinfection_done') },
+        {
+            title: t('daily_reports.table.disinfection'),
+            dataIndex: 'disinfection_done',
+            width: 80,
+            render: (_: any, r: any) => renderInput(r, 'disinfection_done')
+        },
     ];
     // YANGI TALAB (03.02.2026): Skrinshot asosida yangi ustunlar tuzilmasi
     // Bu yerda biz eski columns o'zgaruvchisini saqlab qolamiz va yangi columnsV2 ni qo'shamiz
@@ -377,23 +350,24 @@ const DailyHepatitisPage: React.FC = () => {
         setLoading(true);
         try {
             const formattedDate = date.format('YYYY-MM-DD');
-            // In real app, we follow auth rules. Here we save CURRENT visible data
-            // For district user, it's 1 row. For admin, it's bulk (if desired)
             for (const row of data) {
                 await dailyReportsApi.upsert({
                     ...row,
                     reportDate: formattedDate,
-                    organizationId: row.organizationId // Note: needs to be valid UUID
+                    organizationId: row.organizationId
                 });
             }
             notification.success({
-                message: 'Saqlandi',
-                description: 'Kunlik ma\'lumotlar muvaffaqiyatli saqlandi.'
+                message: t('user.save'),
+                description: t('daily_reports.actions.success_save')
             });
             fetchReports();
         } catch (error) {
             console.error("Failed to save", error);
-            notification.error({ message: 'Xatolik', description: 'Saqlashda muammo bo\'ldi.' });
+            notification.error({
+                message: t('auth.error_system'),
+                description: t('daily_reports.actions.error_save')
+            });
         } finally {
             setLoading(false);
         }
@@ -401,18 +375,18 @@ const DailyHepatitisPage: React.FC = () => {
 
     // @ts-ignore
     const provinceTotals = data.reduce((acc, curr) => {
-        const fields = Object.keys(curr).filter(k => k !== 'key' && k !== 'district_name' && k !== 'organizationId') as (keyof ReportData)[];
+        const fields = Object.keys(curr).filter(k => k !== 'key' && k !== 'district_name' && k !== 'organizationId' && k !== 'is_submitted') as (keyof ReportData)[];
         fields.forEach(f => { acc[f] = (acc[f] || 0) + (curr[f] as number); });
         return acc;
-    }, { district_name: 'Viloyat bo\'yicha' } as any);
+    }, { district_name: t('daily_reports.table.total_province') } as any);
 
     return (
         <Card>
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                        <Title level={4}>Virusli gepatit A kasalligi bo'yicha kunlik ma'lumoti</Title>
-                        <Text type="secondary">{date.format('DD.MM.YYYY')} kungi holatga</Text>
+                        <Title level={4}>{t('daily_reports.hepatitis_title')}</Title>
+                        <Text type="secondary">{t('daily_reports.date_status', { date: date.format('DD.MM.YYYY') })}</Text>
                     </div>
                     <Space>
                         <DatePicker
@@ -420,8 +394,8 @@ const DailyHepatitisPage: React.FC = () => {
                             onChange={(d) => d && setDate(d)}
                             format="DD.MM.YYYY"
                         />
-                        <Button icon={<ReloadOutlined />} onClick={fetchReports}>Yangilash</Button>
-                        <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>Saqlash</Button>
+                        <Button icon={<ReloadOutlined />} onClick={fetchReports}>{t('daily_reports.actions.refresh')}</Button>
+                        <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>{t('daily_reports.actions.save')}</Button>
                     </Space>
                 </div>
 
@@ -442,6 +416,7 @@ const DailyHepatitisPage: React.FC = () => {
                     bordered
                     size="small"
                     pagination={false}
+<<<<<<< HEAD
                     scroll={{ x: 2000, y: 600 }}
                 /* SUMMARY VAQTINCHA O'CHIRILDI (DEBUG)
                 summary={() => (
@@ -473,6 +448,37 @@ const DailyHepatitisPage: React.FC = () => {
                     </Table.Summary>
                 )}
                 */
+=======
+                    scroll={{ x: 1800, y: 600 }}
+                    summary={() => (
+                        <Table.Summary fixed>
+                            <Table.Summary.Row style={{ background: '#fafafa', fontWeight: 'bold' }}>
+                                <Table.Summary.Cell index={0} align="center">-</Table.Summary.Cell>
+                                <Table.Summary.Cell index={1}>{t('daily_reports.table.total_province')}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={2}>{provinceTotals.total_cases}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={3}>{provinceTotals.age_under_1}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={4}>{provinceTotals.age_1_3}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={5}>{provinceTotals.age_4_6}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={6}>{provinceTotals.age_7_14}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={7}>{provinceTotals.age_15_19}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={8}>{provinceTotals.age_20_plus}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={9}>{provinceTotals.occ_unorganized}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={10}>{provinceTotals.occ_unorganized_1_6}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={11}>{provinceTotals.occ_organized_1_6}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={12}>{provinceTotals.occ_unorganized_school_age}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={13}>{provinceTotals.occ_students}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={14}>{provinceTotals.occ_college_students}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={15}>{provinceTotals.occ_workers}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={16}>{provinceTotals.factor_water}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={17}>{provinceTotals.factor_food}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={18}>{provinceTotals.factor_contact}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={19}>{provinceTotals.lab_samples}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={20}>{provinceTotals.lab_positive}</Table.Summary.Cell>
+                                <Table.Summary.Cell index={21}>{provinceTotals.disinfection_done}</Table.Summary.Cell>
+                            </Table.Summary.Row>
+                        </Table.Summary>
+                    )}
+>>>>>>> 04d1ba4b5e8d11ee2778fbb0c1c6956d26c3a354
                 />
             </Space>
         </Card>

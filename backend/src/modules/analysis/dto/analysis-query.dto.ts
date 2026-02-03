@@ -1,16 +1,16 @@
-import { IsString, IsOptional, IsDateString } from 'class-validator';
+import { IsString, IsOptional, IsDateString } from "class-validator";
 
 export class AnalysisQueryDto {
-    @IsString()
-    diseaseType: 'hepatitis' | 'flu' | 'ari' | 'covid';
+  @IsString()
+  diseaseType: "hepatitis" | "flu" | "ari" | "covid";
 
-    @IsDateString()
-    startDate: string;
+  @IsDateString()
+  startDate: string;
 
-    @IsDateString()
-    endDate: string;
+  @IsDateString()
+  endDate: string;
 
-    @IsOptional()
-    @IsString()
-    organizationId?: string;
+  @IsOptional()
+  @IsString()
+  organizationId?: string;
 }

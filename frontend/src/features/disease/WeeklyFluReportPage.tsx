@@ -3,6 +3,7 @@ import { Table, Typography, Card, DatePicker, Button, notification, Space } from
 import { ReloadOutlined, DownloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { dailyReportsApi } from '../../services/api';
+import { useTranslation } from 'react-i18next';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -43,7 +44,7 @@ interface WeeklySummaryData {
 }
 
 const WeeklyFluReportPage: React.FC = () => {
-    // Default to last 7 days
+    const { t } = useTranslation();
     const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs().subtract(6, 'day'), dayjs()]);
     const [data, setData] = useState<WeeklySummaryData[]>([]);
     const [loading, setLoading] = useState(false);
@@ -71,68 +72,71 @@ const WeeklyFluReportPage: React.FC = () => {
             setData(tableData);
         } catch (error) {
             console.error(error);
-            notification.error({ message: 'Xatolik', description: 'Ma\'lumotlarni yig\'ishda xatolik' });
+            notification.error({
+                message: t('daily_reports.actions.error_load'),
+                description: t('daily_reports.actions.error_load')
+            });
         } finally {
             setLoading(false);
         }
     };
 
     const columns: any = [
-        { title: '№', dataIndex: 'key', width: 40, align: 'center', fixed: 'left' },
-        { title: 'Hududlar', dataIndex: 'district_name', width: 140, fixed: 'left', className: 'font-weight-bold' },
+        { title: t('daily_reports.table.no'), dataIndex: 'key', width: 40, align: 'center', fixed: 'left' },
+        { title: t('daily_reports.table.district'), dataIndex: 'district_name', width: 140, fixed: 'left', className: 'font-weight-bold' },
         {
-            title: 'O\'tkir respirator infeksiyalar',
+            title: t('reports.ari'),
             children: [
-                { title: 'Jami', width: 60, dataIndex: 'ari_total', align: 'center' },
-                { title: '0-1 y', width: 50, dataIndex: 'ari_0_1', align: 'center' },
-                { title: '1-2 y', width: 50, dataIndex: 'ari_1_2', align: 'center' },
-                { title: '3-6 y', width: 50, dataIndex: 'ari_3_6', align: 'center' },
-                { title: '7-14 y', width: 55, dataIndex: 'ari_7_14', align: 'center' },
-                { title: 'kattalar', width: 65, dataIndex: 'ari_adult', align: 'center' },
-                { title: 'O\'quv', width: 55, dataIndex: 'ari_students', align: 'center' },
-                { title: 'Tarb', width: 55, dataIndex: 'ari_nursery', align: 'center' },
+                { title: t('daily_reports.table.lab_total'), width: 60, dataIndex: 'ari_total', align: 'center' },
+                { title: t('daily_reports.table.age_0_1'), width: 50, dataIndex: 'ari_0_1', align: 'center' },
+                { title: t('daily_reports.table.age_1_2'), width: 50, dataIndex: 'ari_1_2', align: 'center' },
+                { title: t('daily_reports.table.age_3_6'), width: 50, dataIndex: 'ari_3_6', align: 'center' },
+                { title: t('daily_reports.table.age_7_14'), width: 55, dataIndex: 'ari_7_14', align: 'center' },
+                { title: t('daily_reports.table.adults_short'), width: 65, dataIndex: 'ari_adult', align: 'center' },
+                { title: t('daily_reports.table.students_short'), width: 55, dataIndex: 'ari_students', align: 'center' },
+                { title: t('daily_reports.table.nursery_short'), width: 55, dataIndex: 'ari_nursery', align: 'center' },
             ]
         },
         {
-            title: 'O\'tkir zotiljam',
+            title: t('reports.pneumonia'),
             children: [
-                { title: 'Jami', width: 60, dataIndex: 'pneu_total', align: 'center' },
-                { title: '0-2 y', width: 50, dataIndex: 'pneu_0_2', align: 'center' },
-                { title: '3-6 y', width: 50, dataIndex: 'pneu_3_6', align: 'center' },
-                { title: '7-14 y', width: 55, dataIndex: 'pneu_7_14', align: 'center' },
-                { title: 'kattalar', width: 65, dataIndex: 'pneu_adult', align: 'center' },
-                { title: 'O\'quv', width: 55, dataIndex: 'pneu_students', align: 'center' },
-                { title: 'Tarb', width: 55, dataIndex: 'pneu_nursery', align: 'center' },
+                { title: t('daily_reports.table.lab_total'), width: 60, dataIndex: 'pneu_total', align: 'center' },
+                { title: t('daily_reports.table.age_0_2'), width: 50, dataIndex: 'pneu_0_2', align: 'center' },
+                { title: t('daily_reports.table.age_3_6'), width: 50, dataIndex: 'pneu_3_6', align: 'center' },
+                { title: t('daily_reports.table.age_7_14'), width: 55, dataIndex: 'pneu_7_14', align: 'center' },
+                { title: t('daily_reports.table.adults_short'), width: 65, dataIndex: 'pneu_adult', align: 'center' },
+                { title: t('daily_reports.table.students_short'), width: 55, dataIndex: 'pneu_students', align: 'center' },
+                { title: t('daily_reports.table.nursery_short'), width: 55, dataIndex: 'pneu_nursery', align: 'center' },
             ]
         },
         {
-            title: 'Grippga o\'xshash',
+            title: t('reports.flu'),
             children: [
-                { title: 'Jami', width: 60, dataIndex: 'flu_total', align: 'center' },
-                { title: '0-1 y', width: 50, dataIndex: 'flu_0_1', align: 'center' },
-                { title: '1-2 y', width: 50, dataIndex: 'flu_1_2', align: 'center' },
-                { title: '3-6 y', width: 50, dataIndex: 'flu_3_6', align: 'center' },
-                { title: '7-14 y', width: 55, dataIndex: 'flu_7_14', align: 'center' },
-                { title: 'kattalar', width: 65, dataIndex: 'flu_adult', align: 'center' },
-                { title: 'O\'quv', width: 55, dataIndex: 'flu_students', align: 'center' },
-                { title: 'Tarb', width: 55, dataIndex: 'flu_nursery', align: 'center' },
+                { title: t('daily_reports.table.lab_total'), width: 60, dataIndex: 'flu_total', align: 'center' },
+                { title: t('daily_reports.table.age_0_1'), width: 50, dataIndex: 'flu_0_1', align: 'center' },
+                { title: t('daily_reports.table.age_1_2'), width: 50, dataIndex: 'flu_1_2', align: 'center' },
+                { title: t('daily_reports.table.age_3_6'), width: 50, dataIndex: 'flu_3_6', align: 'center' },
+                { title: t('daily_reports.table.age_7_14'), width: 55, dataIndex: 'flu_7_14', align: 'center' },
+                { title: t('daily_reports.table.adults_short'), width: 65, dataIndex: 'flu_adult', align: 'center' },
+                { title: t('daily_reports.table.students_short'), width: 55, dataIndex: 'flu_students', align: 'center' },
+                { title: t('daily_reports.table.nursery_short'), width: 55, dataIndex: 'flu_nursery', align: 'center' },
             ]
         },
         {
-            title: 'Og\'ir o\'tkir (SARI)',
+            title: t('daily_reports.table.sari'),
             children: [
-                { title: 'Jami', width: 60, dataIndex: 'sari_total', align: 'center' },
-                { title: '0-2 y', width: 50, dataIndex: 'sari_0_2', align: 'center' },
-                { title: '3-6 y', width: 50, dataIndex: 'sari_3_6', align: 'center' },
-                { title: '7-14 y', width: 55, dataIndex: 'sari_7_14', align: 'center' },
-                { title: 'Kattalar', width: 65, dataIndex: 'sari_adult', align: 'center' },
+                { title: t('daily_reports.table.lab_total'), width: 60, dataIndex: 'sari_total', align: 'center' },
+                { title: t('daily_reports.table.age_0_2'), width: 50, dataIndex: 'sari_0_2', align: 'center' },
+                { title: t('daily_reports.table.age_3_6'), width: 50, dataIndex: 'sari_3_6', align: 'center' },
+                { title: t('daily_reports.table.age_7_14'), width: 55, dataIndex: 'sari_7_14', align: 'center' },
+                { title: t('daily_reports.table.adults_short'), width: 65, dataIndex: 'sari_adult', align: 'center' },
             ]
         },
         {
-            title: 'Vafot etganlar',
+            title: t('daily_reports.table.deaths'),
             children: [
-                { title: 'Jami', width: 60, dataIndex: 'death_total', align: 'center' },
-                { title: 'Homilador', width: 80, dataIndex: 'death_pregnant', align: 'center' },
+                { title: t('daily_reports.table.lab_total'), width: 60, dataIndex: 'death_total', align: 'center' },
+                { title: t('daily_reports.table.pregnant'), width: 80, dataIndex: 'death_pregnant', align: 'center' },
             ]
         }
     ];
@@ -144,10 +148,10 @@ const WeeklyFluReportPage: React.FC = () => {
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
                 <div style={{ textAlign: 'center' }}>
                     <Title level={4} style={{ margin: 0 }}>
-                        Gripp va O'RVI kasalliklari bo'yicha HAFTALIK MA'LUMOT (Avtomatik)
+                        {t('daily_reports.weekly_title')}
                     </Title>
                     <Text type="secondary">
-                        {dates[0].format('DD.MM.YYYY')} - {dates[1].format('DD.MM.YYYY')} davri uchun
+                        {t('daily_reports.period', { start: dates[0].format('DD.MM.YYYY'), end: dates[1].format('DD.MM.YYYY') })}
                     </Text>
                 </div>
 
@@ -159,8 +163,8 @@ const WeeklyFluReportPage: React.FC = () => {
                             format="DD.MM.YYYY"
                             allowClear={false}
                         />
-                        <Button icon={<ReloadOutlined />} onClick={fetchSummary}>Yangilash</Button>
-                        <Button type="primary" icon={<DownloadOutlined />} disabled>Excel (Yaqinda)</Button>
+                        <Button icon={<ReloadOutlined />} onClick={fetchSummary}>{t('daily_reports.actions.refresh')}</Button>
+                        <Button type="primary" icon={<DownloadOutlined />} disabled>{t('common.export')} (Excel)</Button>
                     </Space>
                 </div>
 
@@ -176,7 +180,7 @@ const WeeklyFluReportPage: React.FC = () => {
                         <Table.Summary fixed>
                             <Table.Summary.Row style={{ backgroundColor: '#fafafa', fontWeight: 'bold' }}>
                                 <Table.Summary.Cell index={0} />
-                                <Table.Summary.Cell index={1}>jami</Table.Summary.Cell>
+                                <Table.Summary.Cell index={1}>{t('daily_reports.table.total')}</Table.Summary.Cell>
                                 {columns.slice(2).flatMap((c: any) => c.children ? c.children : [c]).map((col: any, idx: number) => (
                                     <Table.Summary.Cell key={idx} index={idx + 2} align="center">
                                         {calculateGrandTotal(col.dataIndex as any)}

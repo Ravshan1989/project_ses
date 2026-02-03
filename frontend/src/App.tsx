@@ -175,15 +175,28 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     label: t('common.diseases'),
                     onClick: () => navigate('/disease-manager')
                 }] : []),
-                ...(hasRole([]) ? [{
+                ...(hasRole(['ADMIN']) ? [{
                     key: '/users',
                     icon: <UserAddOutlined />,
-                    label: t('user.title'), // Using title for now
+                    label: t('user.title'),
                     onClick: () => navigate('/users')
                 }] : [])
             ]
         }
     ];
+
+    const getPageTitle = () => {
+        switch (location.pathname) {
+            case '/dashboard': return t('dashboard_page.title');
+            case '/disease-entry': return t('common.vaccination_entry');
+            case '/form-1': return t('reports.form1');
+            case '/disease-manager': return t('common.diseases');
+            case '/users': return t('user.title');
+            case '/export': return t('common.export');
+            case '/import': return t('common.import');
+            default: return 'RegionStat';
+        }
+    };
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
@@ -234,10 +247,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     boxShadow: '0 1px 4px rgba(0,21,41,0.08)'
                 }}>
                     <Text style={{ fontSize: '18px', fontWeight: 600, color: '#001529' }}>
-                        {location.pathname === '/dashboard' ? 'Asosiy panel' :
-                            location.pathname === '/disease-entry' ? 'Emlashni Ro\'yxatga Olish' :
-                                location.pathname === '/form-1' ? 'Yuqumli kasalliklar hisoboti (Shakl 1)' :
-                                    location.pathname === '/disease-manager' ? 'Kasalliklar Ro\'yxatini Boshqarish' : 'Bosh sahifa'}
+                        {getPageTitle()}
                     </Text>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -245,7 +255,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
                         <div style={{ textAlign: 'right', lineHeight: '1.2' }}>
                             <Text strong style={{ display: 'block', color: '#333' }}>Admin User</Text>
-                            <Text type="secondary" style={{ fontSize: '12px' }}>Viloyat Boshqarmasi</Text>
+                            <Text type="secondary" style={{ fontSize: '12px' }}>{t('user.roles.REGION_HEAD')}</Text>
                         </div>
 
                         <Button
@@ -254,7 +264,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             onClick={handleLogout}
                             danger
                         >
-                            Chiqish
+                            {t('common.logout')}
                         </Button>
                     </div>
                 </Header>
