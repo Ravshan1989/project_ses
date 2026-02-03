@@ -3,6 +3,7 @@ import { Table, Typography, Card, DatePicker, Button, InputNumber, notification,
 import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
+import { useTranslation } from 'react-i18next';
 
 const { Title, Text } = Typography;
 
@@ -10,12 +11,13 @@ interface AriReportData {
     key: string;
     district_name: string;
     organizationId: string;
-    gk: number; // Grippsimon kasalliklar
-    ari: number; // O'RI
-    pneumonia: number; // O'P (Zotiljam)
+    gk: number;
+    ari: number;
+    pneumonia: number;
 }
 
 const AriDailyReportPage: React.FC = () => {
+    const { t } = useTranslation();
     const [date, setDate] = useState(dayjs());
     const [data, setData] = useState<AriReportData[]>([]);
     const [loading, setLoading] = useState(false);
@@ -37,7 +39,6 @@ const AriDailyReportPage: React.FC = () => {
             let currentOrgs = organizations;
             if (currentOrgs.length === 0) {
                 const orgRes = await organizationsApi.getAll();
-                // Viloyatni (parent darajasi) hisobotdan olib tashlaymiz
                 currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent);
                 setOrganizations(currentOrgs);
             }
@@ -51,6 +52,7 @@ const AriDailyReportPage: React.FC = () => {
                     key: String(idx + 1),
                     district_name: org.name,
                     organizationId: org.id,
+                    is_submitted: !!existing,
                     gk: existing?.gk || 0,
                     ari: existing?.ari || 0,
                     pneumonia: existing?.pneumonia || 0,
@@ -65,7 +67,10 @@ const AriDailyReportPage: React.FC = () => {
             }
         } catch (error) {
             console.error(error);
-            notification.error({ message: 'Xatolik', description: 'Ma\'lumotlarni yuklashda xatolik' });
+            notification.error({
+                message: t('daily_reports.actions.error_load'),
+                description: t('daily_reports.actions.error_load')
+            });
         } finally {
             setLoading(false);
         }
@@ -91,9 +96,12 @@ const AriDailyReportPage: React.FC = () => {
                     organizationId: row.organizationId
                 });
             }
-            notification.success({ message: 'Saqlandi' });
+            notification.success({ message: t('user.save') });
         } catch (error) {
-            notification.error({ message: 'Xatolik', description: 'Saqlashda xatolik' });
+            notification.error({
+                message: t('auth.error_system'),
+                description: t('daily_reports.actions.error_save')
+            });
         } finally {
             setLoading(false);
         }
@@ -111,17 +119,17 @@ const AriDailyReportPage: React.FC = () => {
         />
     );
 
-    const isSubmitted = (row: AriReportData) => {
-        return (row.gk + row.ari + row.pneumonia) > 0;
+    const isSubmitted = (row: any) => {
+        return !!row.is_submitted;
     };
 
     const columns: any = [
         {
-            title: '№', dataIndex: 'key', width: 50, align: 'center',
+            title: t('daily_reports.table.no'), dataIndex: 'key', width: 50, align: 'center',
             onCell: (r: AriReportData) => ({ style: { backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff' } })
         },
         {
-            title: 'Xududlar', dataIndex: 'district_name',
+            title: t('daily_reports.table.district'), dataIndex: 'district_name',
             onCell: (r: AriReportData) => ({
                 style: {
                     backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff1f0',
@@ -130,12 +138,11 @@ const AriDailyReportPage: React.FC = () => {
                 }
             })
         },
-        { title: 'GK', width: 100, align: 'center', render: (_: any, r: any) => renderInput(r, 'gk') },
-        { title: 'O\'RI', width: 100, align: 'center', render: (_: any, r: any) => renderInput(r, 'ari') },
-        { title: 'O\'P', width: 100, align: 'center', render: (_: any, r: any) => renderInput(r, 'pneumonia') },
+        { title: t('daily_reports.table.gk'), width: 100, align: 'center', render: (_: any, r: any) => renderInput(r, 'gk') },
+        { title: t('daily_reports.table.ari'), width: 100, align: 'center', render: (_: any, r: any) => renderInput(r, 'ari') },
+        { title: t('daily_reports.table.pneumonia'), width: 100, align: 'center', render: (_: any, r: any) => renderInput(r, 'pneumonia') },
     ];
 
-    // Calculate Grand Total for Header/Footer if needed, or just let user see
     const totalGk = data.reduce((sum, item) => sum + item.gk, 0);
     const totalAri = data.reduce((sum, item) => sum + item.ari, 0);
     const totalPneumonia = data.reduce((sum, item) => sum + item.pneumonia, 0);
@@ -145,16 +152,16 @@ const AriDailyReportPage: React.FC = () => {
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
                 <div style={{ textAlign: 'center' }}>
                     <Title level={4} style={{ margin: 0 }}>
-                        Toshkent viloyati Grippsimon kasalliklar (GK), O'tkir respirator infeksiyalar (O'RI), O'tkir Zotiljam (O'P) bo'yicha kunlik tezkor ma'lumot
+                        {t('daily_reports.ari_title')}
                     </Title>
-                    <Text type="secondary">{date.format('DD.MM.YYYY')} kungi holatga</Text>
+                    <Text type="secondary">{t('daily_reports.date_status', { date: date.format('DD.MM.YYYY') })}</Text>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Space>
                         <DatePicker value={date} onChange={(d) => d && setDate(d)} format="DD.MM.YYYY" />
-                        <Button icon={<ReloadOutlined />} onClick={fetchReports}>Yangilash</Button>
-                        <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>Saqlash</Button>
+                        <Button icon={<ReloadOutlined />} onClick={fetchReports}>{t('daily_reports.actions.refresh')}</Button>
+                        <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>{t('daily_reports.actions.save')}</Button>
                     </Space>
                 </div>
 
@@ -169,7 +176,7 @@ const AriDailyReportPage: React.FC = () => {
                         <Table.Summary fixed>
                             <Table.Summary.Row style={{ backgroundColor: '#fafafa', fontWeight: 'bold' }}>
                                 <Table.Summary.Cell index={0} />
-                                <Table.Summary.Cell index={1}>ЖАМИ</Table.Summary.Cell>
+                                <Table.Summary.Cell index={1}>{t('daily_reports.table.total')}</Table.Summary.Cell>
                                 <Table.Summary.Cell index={2} align="center">{totalGk}</Table.Summary.Cell>
                                 <Table.Summary.Cell index={3} align="center">{totalAri}</Table.Summary.Cell>
                                 <Table.Summary.Cell index={4} align="center">{totalPneumonia}</Table.Summary.Cell>

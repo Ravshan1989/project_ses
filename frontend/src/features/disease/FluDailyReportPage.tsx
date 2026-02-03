@@ -3,6 +3,7 @@ import { Table, Typography, Card, DatePicker, Button, InputNumber, notification,
 import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
+import { useTranslation } from 'react-i18next';
 
 const { Title, Text } = Typography;
 
@@ -11,8 +12,6 @@ interface FluReportData {
     district_name: string;
     organizationId: string;
     institution_count: number;
-
-    // O'tkir respirator infeksiyalar (O'RI / ARI)
     ari_total: number;
     ari_0_1: number;
     ari_1_2: number;
@@ -21,8 +20,6 @@ interface FluReportData {
     ari_adult: number;
     ari_students: number;
     ari_nursery: number;
-
-    // O'tkir zotiljam (O'P / Pneumonia)
     pneu_total: number;
     pneu_0_2: number;
     pneu_3_6: number;
@@ -30,8 +27,6 @@ interface FluReportData {
     pneu_adult: number;
     pneu_students: number;
     pneu_nursery: number;
-
-    // Grippga o'xshash kasalliklar (GK / Flu)
     flu_total: number;
     flu_0_1: number;
     flu_1_2: number;
@@ -40,20 +35,18 @@ interface FluReportData {
     flu_adult: number;
     flu_students: number;
     flu_nursery: number;
-
-    // Og'ir o'tkir respirator infeksiyalar (SARI)
     sari_total: number;
     sari_0_2: number;
     sari_3_6: number;
     sari_7_14: number;
     sari_adult: number;
-
-    // Vafot etganlar (Deaths)
     death_total: number;
     death_pregnant: number;
+    is_submitted?: boolean;
 }
 
 const FluDailyReportPage: React.FC = () => {
+    const { t } = useTranslation();
     const [date, setDate] = useState(dayjs());
     const [data, setData] = useState<FluReportData[]>([]);
     const [loading, setLoading] = useState(false);
@@ -74,7 +67,6 @@ const FluDailyReportPage: React.FC = () => {
             let currentOrgs = organizations;
             if (currentOrgs.length === 0) {
                 const orgRes = await organizationsApi.getAll();
-                // Viloyatni (parent darajasi) hisobotdan olib tashlaymiz
                 currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent);
                 setOrganizations(currentOrgs);
             }
@@ -88,6 +80,7 @@ const FluDailyReportPage: React.FC = () => {
                     key: String(idx + 1),
                     district_name: org.name,
                     organizationId: org.id,
+                    is_submitted: !!existing,
                     institution_count: existing?.institution_count || 0,
                     ari_total: existing?.ari_total || 0,
                     ari_0_1: existing?.ari_0_1 || 0,
@@ -130,7 +123,10 @@ const FluDailyReportPage: React.FC = () => {
             }
         } catch (error) {
             console.error(error);
-            notification.error({ message: 'Xatolik', description: 'Ma\'lumotlarni yuklashda xatolik' });
+            notification.error({
+                message: t('daily_reports.actions.error_load'),
+                description: t('daily_reports.actions.error_load')
+            });
         } finally {
             setLoading(false);
         }
@@ -140,9 +136,8 @@ const FluDailyReportPage: React.FC = () => {
         const newData = [...data];
         const index = newData.findIndex(item => item.key === rowKey);
         if (index > -1) {
-            let updatedRow = { ...newData[index], [field]: value || 0 };
-
-            // Auto-calculate section totals
+            // UZ: O'zgaruvchi qayta qiymatlanmaydi, shuning uchun const ishlatildi - avvalgi kod: let updatedRow = { ...newData[index], [field]: value || 0 };
+            const updatedRow = { ...newData[index], [field]: value || 0 };
             if (field.startsWith('ari_') && field !== 'ari_total') {
                 updatedRow.ari_total = updatedRow.ari_0_1 + updatedRow.ari_1_2 + updatedRow.ari_3_6 + updatedRow.ari_7_14 + updatedRow.ari_adult;
             }
@@ -155,7 +150,6 @@ const FluDailyReportPage: React.FC = () => {
             if (field.startsWith('sari_') && field !== 'sari_total') {
                 updatedRow.sari_total = updatedRow.sari_0_2 + updatedRow.sari_3_6 + updatedRow.sari_7_14 + updatedRow.sari_adult;
             }
-
             newData[index] = updatedRow;
             setData(newData);
         }
@@ -172,9 +166,13 @@ const FluDailyReportPage: React.FC = () => {
                     organizationId: row.organizationId
                 });
             }
-            notification.success({ message: 'Saqlandi' });
+            notification.success({ message: t('user.save') });
+            fetchReports();
         } catch (error) {
-            notification.error({ message: 'Xatolik', description: 'Saqlashda xatolik' });
+            notification.error({
+                message: t('auth.error_system'),
+                description: t('daily_reports.actions.error_save')
+            });
         } finally {
             setLoading(false);
         }
@@ -193,17 +191,17 @@ const FluDailyReportPage: React.FC = () => {
         />
     );
 
-    const isSubmitted = (row: FluReportData) => {
-        return (row.ari_total + row.flu_total + row.pneu_total + row.sari_total + row.death_total) > 0;
+    const isSubmitted = (row: any) => {
+        return !!row.is_submitted;
     };
 
     const columns: any = [
         {
-            title: '№', dataIndex: 'key', width: 40, align: 'center', fixed: 'left',
+            title: t('daily_reports.table.no'), dataIndex: 'key', width: 40, align: 'center', fixed: 'left',
             onCell: (r: FluReportData) => ({ style: { backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff' } })
         },
         {
-            title: 'Hududlar', dataIndex: 'district_name', width: 140, fixed: 'left',
+            title: t('daily_reports.table.district'), dataIndex: 'district_name', width: 140, fixed: 'left',
             onCell: (r: FluReportData) => ({
                 style: {
                     backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff1f0',
@@ -213,58 +211,58 @@ const FluDailyReportPage: React.FC = () => {
             })
         },
         {
-            title: 'O\'tkir respirator infeksiyalar',
+            title: t('reports.ari'),
             children: [
-                { title: 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'ari_total', true) },
-                { title: '0-1 y', width: 50, render: (_: any, r: any) => renderInput(r, 'ari_0_1') },
-                { title: '1-2 y', width: 50, render: (_: any, r: any) => renderInput(r, 'ari_1_2') },
-                { title: '3-6 y', width: 50, render: (_: any, r: any) => renderInput(r, 'ari_3_6') },
-                { title: '7-14 y', width: 55, render: (_: any, r: any) => renderInput(r, 'ari_7_14') },
-                { title: 'kattalar', width: 65, render: (_: any, r: any) => renderInput(r, 'ari_adult') },
-                { title: 'O\'quv', width: 55, render: (_: any, r: any) => renderInput(r, 'ari_students') },
-                { title: 'Tarb', width: 55, render: (_: any, r: any) => renderInput(r, 'ari_nursery') },
+                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'ari_total', true) },
+                { title: t('daily_reports.table.age_0_1'), width: 50, render: (_: any, r: any) => renderInput(r, 'ari_0_1') },
+                { title: t('daily_reports.table.age_1_2'), width: 50, render: (_: any, r: any) => renderInput(r, 'ari_1_2') },
+                { title: t('daily_reports.table.age_3_6'), width: 50, render: (_: any, r: any) => renderInput(r, 'ari_3_6') },
+                { title: t('daily_reports.table.age_7_14'), width: 55, render: (_: any, r: any) => renderInput(r, 'ari_7_14') },
+                { title: t('daily_reports.table.adults_short'), width: 65, render: (_: any, r: any) => renderInput(r, 'ari_adult') },
+                { title: t('daily_reports.table.students_short'), width: 55, render: (_: any, r: any) => renderInput(r, 'ari_students') },
+                { title: t('daily_reports.table.nursery_short'), width: 55, render: (_: any, r: any) => renderInput(r, 'ari_nursery') },
             ]
         },
         {
-            title: 'O\'tkir zotiljam',
+            title: t('reports.pneumonia'),
             children: [
-                { title: 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'pneu_total', true) },
-                { title: '0-2 y', width: 50, render: (_: any, r: any) => renderInput(r, 'pneu_0_2') },
-                { title: '3-6 y', width: 50, render: (_: any, r: any) => renderInput(r, 'pneu_3_6') },
-                { title: '7-14 y', width: 55, render: (_: any, r: any) => renderInput(r, 'pneu_7_14') },
-                { title: 'kattalar', width: 65, render: (_: any, r: any) => renderInput(r, 'pneu_adult') },
-                { title: 'O\'quv', width: 55, render: (_: any, r: any) => renderInput(r, 'pneu_students') },
-                { title: 'Tarb', width: 55, render: (_: any, r: any) => renderInput(r, 'pneu_nursery') },
+                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'pneu_total', true) },
+                { title: t('daily_reports.table.age_0_2'), width: 50, render: (_: any, r: any) => renderInput(r, 'pneu_0_2') },
+                { title: t('daily_reports.table.age_3_6'), width: 50, render: (_: any, r: any) => renderInput(r, 'pneu_3_6') },
+                { title: t('daily_reports.table.age_7_14'), width: 55, render: (_: any, r: any) => renderInput(r, 'pneu_7_14') },
+                { title: t('daily_reports.table.adults_short'), width: 65, render: (_: any, r: any) => renderInput(r, 'pneu_adult') },
+                { title: t('daily_reports.table.students_short'), width: 55, render: (_: any, r: any) => renderInput(r, 'pneu_students') },
+                { title: t('daily_reports.table.nursery_short'), width: 55, render: (_: any, r: any) => renderInput(r, 'pneu_nursery') },
             ]
         },
         {
-            title: 'Grippga o\'xshash',
+            title: t('reports.flu'),
             children: [
-                { title: 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'flu_total', true) },
-                { title: '0-1 y', width: 50, render: (_: any, r: any) => renderInput(r, 'flu_0_1') },
-                { title: '1-2 y', width: 50, render: (_: any, r: any) => renderInput(r, 'flu_1_2') },
-                { title: '3-6 y', width: 50, render: (_: any, r: any) => renderInput(r, 'flu_3_6') },
-                { title: '7-14 y', width: 55, render: (_: any, r: any) => renderInput(r, 'flu_7_14') },
-                { title: 'kattalar', width: 65, render: (_: any, r: any) => renderInput(r, 'flu_adult') },
-                { title: 'O\'quv', width: 55, render: (_: any, r: any) => renderInput(r, 'flu_students') },
-                { title: 'Tarb', width: 55, render: (_: any, r: any) => renderInput(r, 'flu_nursery') },
+                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'flu_total', true) },
+                { title: t('daily_reports.table.age_0_1'), width: 50, render: (_: any, r: any) => renderInput(r, 'flu_0_1') },
+                { title: t('daily_reports.table.age_1_2'), width: 50, render: (_: any, r: any) => renderInput(r, 'flu_1_2') },
+                { title: t('daily_reports.table.age_3_6'), width: 50, render: (_: any, r: any) => renderInput(r, 'flu_3_6') },
+                { title: t('daily_reports.table.age_7_14'), width: 55, render: (_: any, r: any) => renderInput(r, 'flu_7_14') },
+                { title: t('daily_reports.table.adults_short'), width: 65, render: (_: any, r: any) => renderInput(r, 'flu_adult') },
+                { title: t('daily_reports.table.students_short'), width: 55, render: (_: any, r: any) => renderInput(r, 'flu_students') },
+                { title: t('daily_reports.table.nursery_short'), width: 55, render: (_: any, r: any) => renderInput(r, 'flu_nursery') },
             ]
         },
         {
-            title: 'Og\'ir o\'tkir (SARI)',
+            title: t('daily_reports.table.sari'),
             children: [
-                { title: 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'sari_total', true) },
-                { title: '0-2 y', width: 50, render: (_: any, r: any) => renderInput(r, 'sari_0_2') },
-                { title: '3-6 y', width: 50, render: (_: any, r: any) => renderInput(r, 'sari_3_6') },
-                { title: '7-14 y', width: 55, render: (_: any, r: any) => renderInput(r, 'sari_7_14') },
-                { title: 'Kattalar', width: 65, render: (_: any, r: any) => renderInput(r, 'sari_adult') },
+                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'sari_total', true) },
+                { title: t('daily_reports.table.age_0_2'), width: 50, render: (_: any, r: any) => renderInput(r, 'sari_0_2') },
+                { title: t('daily_reports.table.age_3_6'), width: 50, render: (_: any, r: any) => renderInput(r, 'sari_3_6') },
+                { title: t('daily_reports.table.age_7_14'), width: 55, render: (_: any, r: any) => renderInput(r, 'sari_7_14') },
+                { title: t('daily_reports.table.adults_short'), width: 65, render: (_: any, r: any) => renderInput(r, 'sari_adult') },
             ]
         },
         {
-            title: 'Vafot etganlar',
+            title: t('daily_reports.table.deaths'),
             children: [
-                { title: 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'death_total') },
-                { title: 'Homilador', width: 80, render: (_: any, r: any) => renderInput(r, 'death_pregnant') },
+                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'death_total') },
+                { title: t('daily_reports.table.pregnant'), width: 80, render: (_: any, r: any) => renderInput(r, 'death_pregnant') },
             ]
         }
     ];
@@ -274,18 +272,18 @@ const FluDailyReportPage: React.FC = () => {
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
                 <div style={{ textAlign: 'center' }}>
                     <Title level={4} style={{ margin: 0, fontWeight: 600, lineHeight: 1.5 }}>
-                        0-14 yoshgacha bo'lgan bolalar, kattalar, o'quvchilar, tarbiyalanuvchilar, homiladorlar orasida o'tkir respirator infeksiyalar, o'tkir zotiljam, grippga o'xshash kasalliklar, og'ir o'tkir respirator infeksiyalar to'g'risida MA'LUMOT
+                        {t('daily_reports.flu_title')}
                     </Title>
                     <Text strong style={{ fontSize: '16px', display: 'block', marginTop: '10px' }}>
-                        {date.format('DD.MM.YYYY')} kungi holatga
+                        {t('daily_reports.date_status', { date: date.format('DD.MM.YYYY') })}
                     </Text>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Space>
                         <DatePicker value={date} onChange={(d) => d && setDate(d)} format="DD.MM.YYYY" />
-                        <Button icon={<ReloadOutlined />} onClick={fetchReports}>Yangilash</Button>
-                        <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>Saqlash</Button>
+                        <Button icon={<ReloadOutlined />} onClick={fetchReports}>{t('daily_reports.actions.refresh')}</Button>
+                        <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>{t('daily_reports.actions.save')}</Button>
                     </Space>
                 </div>
 

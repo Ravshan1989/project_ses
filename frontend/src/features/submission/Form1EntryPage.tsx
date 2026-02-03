@@ -126,7 +126,8 @@ const Form1EntryPage: React.FC = () => {
                 const worksheet = workbook.Sheets[workbook.SheetNames[0]];
                 const jsonData = utils.sheet_to_json<any[]>(worksheet, { header: 1 });
 
-                let codeColIdx = 1; // Standard for our exports
+                // UZ: O'zgaruvchi qayta qiymatlanmaydi, shuning uchun const ishlatildi - avvalgi kod: let codeColIdx = 1;
+                const codeColIdx = 1; // Standard for our exports
                 const newData = [...data];
 
                 for (let i = 1; i < jsonData.length; i++) {
