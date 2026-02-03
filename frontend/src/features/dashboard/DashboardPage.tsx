@@ -315,9 +315,9 @@ const DashboardPage: React.FC = () => {
                 {/* Left Column: Submissions Table */}
                 <Col span={16}>
                     <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                            <Title level={4} style={{ margin: 0 }}>Kelib tushgan hisobotlar</Title>
-                            <Space>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+                            <Title level={4} style={{ margin: 0, whiteSpace: 'nowrap' }}>Kelib tushgan hisobotlar</Title>
+                            <Space wrap>
                                 <Input
                                     placeholder="Qidirish..."
                                     prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
