@@ -21,6 +21,24 @@
         "incoming_reports": "Incoming Reports",
         "search_placeholder": "Search...",
         "status_placeholder": "Status",
+        "success_create": "User successfully created",
+        "success_update": "User data updated",
+        "success_delete": "User deleted",
+        "error_create": "Error during creation",
+        "error_load": "Error loading users",
+        "edit_modal_title": "Edit User",
+        "edit_button": "Edit",
+        "delete_button": "Delete",
+        "delete_confirm": "Are you sure you want to delete this user?",
+        "actions": "Actions",
+        "roles": {
+            "ADMIN": "Admin",
+            "REGION_HEAD": "Region Head",
+            "DISTRICT_HEAD": "District Head",
+            "LAB_HEAD": "Lab Head",
+            "REPUBLIC_HEAD": "Republic Head",
+            "STAFF": "Staff member"
+        },
         "filter_btn": "Filter",
         "export_btn": "Export Excel",
         "upload_btn": "Upload",
@@ -31,6 +49,12 @@
             "period": "Reporting Period",
             "status": "Status",
             "actions": "Actions"
+        },
+        "statuses": {
+            "DRAFT": "Draft",
+            "SUBMITTED": "Submitted",
+            "APPROVED": "Approved",
+            "REJECTED": "Rejected"
         }
     },
     "reports": {

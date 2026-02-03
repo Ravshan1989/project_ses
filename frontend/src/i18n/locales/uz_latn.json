@@ -31,6 +31,12 @@
             "period": "Hisobot Davri",
             "status": "Holat",
             "actions": "Amallar"
+        },
+        "statuses": {
+            "DRAFT": "Qoralama",
+            "SUBMITTED": "Yuborilgan",
+            "APPROVED": "Tasdiqlangan",
+            "REJECTED": "Rad etilgan"
         }
     },
     "reports": {
@@ -65,7 +71,22 @@
         "cancel": "Bekor qilish",
         "save": "Saqlash",
         "success_create": "Foydalanuvchi muvaffaqiyatli yaratildi",
+        "success_update": "Foydalanuvchi ma'lumotlari yangilandi",
+        "success_delete": "Foydalanuvchi o'chirildi",
         "error_create": "Yaratishda xatolik yuz berdi",
-        "error_load": "Foydalanuvchilarni yuklashda xatolik"
+        "error_load": "Foydalanuvchilarni yuklashda xatolik",
+        "edit_modal_title": "Foydalanuvchini tahrirlash",
+        "edit_button": "Tahrirlash",
+        "delete_button": "O'chirish",
+        "delete_confirm": "Ushbu foydalanuvchini o'chirib tashlamoqchimisiz?",
+        "actions": "Amallar",
+        "roles": {
+            "ADMIN": "Admin",
+            "REGION_HEAD": "Viloyat Boshqarmasi Rahbari",
+            "DISTRICT_HEAD": "Tuman Bo'limi Rahbari",
+            "LAB_HEAD": "Laboratoriya Mudiri",
+            "REPUBLIC_HEAD": "Respublika Rahbari",
+            "STAFF": "Oddiy Hodim"
+        }
     }
 }

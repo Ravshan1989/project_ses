@@ -21,6 +21,24 @@
         "incoming_reports": "Поступившие отчеты",
         "search_placeholder": "Поиск...",
         "status_placeholder": "Статус",
+        "success_create": "Пользователь успешно создан",
+        "success_update": "Данные пользователя обновлены",
+        "success_delete": "Пользователь удален",
+        "error_create": "Ошибка при создании",
+        "error_load": "Ошибка загрузки пользователей",
+        "edit_modal_title": "Редактирование пользователя",
+        "edit_button": "Изменить",
+        "delete_button": "Удалить",
+        "delete_confirm": "Вы действительно хотите удалить этого пользователя?",
+        "actions": "Действия",
+        "roles": {
+            "ADMIN": "Админ",
+            "REGION_HEAD": "Руководитель ОблУправления",
+            "DISTRICT_HEAD": "Руководитель РайОтдела",
+            "LAB_HEAD": "Заведующий лабораторией",
+            "REPUBLIC_HEAD": "Руководитель Республики",
+            "STAFF": "Рядовой сотрудник"
+        },
         "filter_btn": "Фильтр",
         "export_btn": "Скачать Excel",
         "upload_btn": "Загрузить",
@@ -31,6 +49,12 @@
             "period": "Отчетный период",
             "status": "Статус",
             "actions": "Действия"
+        },
+        "statuses": {
+            "DRAFT": "Черновик",
+            "SUBMITTED": "Отправлен",
+            "APPROVED": "Одобрен",
+            "REJECTED": "Отклонен"
         }
     },
     "reports": {

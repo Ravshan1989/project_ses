@@ -14,6 +14,24 @@
     },
     "dashboard_page": {
         "title": "Tiykarǵı panel",
+        "success_create": "Foydalanuvshi jetiskenlikli jaratıldı",
+        "success_update": "Foydalanuvshi maǵlıwmatları jańalandı",
+        "success_delete": "Foydalanuvshi óshirildi",
+        "error_create": "Jaratıwda qátelik júz berdi",
+        "error_load": "Foydalanuvshılardı júklewde qátelik",
+        "edit_modal_title": "Foydalanuvshını tahrirlew",
+        "edit_button": "Tahrirlew",
+        "delete_button": "Óshiriw",
+        "delete_confirm": "Bul foydalanuvshını óshirip taslamaqshısız ba?",
+        "actions": "Ámeller",
+        "roles": {
+            "ADMIN": "Admin",
+            "REGION_HEAD": "Wálayat Basqarması Rahbari",
+            "DISTRICT_HEAD": "Rayon Bólimi Rahbari",
+            "LAB_HEAD": "Laboratoriya Baslıǵı",
+            "REPUBLIC_HEAD": "Respublika Rahbari",
+            "STAFF": "Ápiwayı Xızmetker"
+        },
         "total_reports": "Jıynaqlanǵan esabatlar",
         "approved": "Tastıyıqlanǵan",
         "pending": "Kórip şıǵılmaqta",
@@ -31,6 +49,12 @@
             "period": "Esabat Dáwiri",
             "status": "Jaǵday",
             "actions": "Ámeller"
+        },
+        "statuses": {
+            "DRAFT": "Joba",
+            "SUBMITTED": "Jiberilgen",
+            "APPROVED": "Tastıyıqlanǵan",
+            "REJECTED": "Biykar etilgen"
         }
     },
     "reports": {

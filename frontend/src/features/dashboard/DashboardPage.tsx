@@ -240,7 +240,7 @@ const DashboardPage: React.FC = () => {
                         break;
                 }
 
-                return <Tag icon={icon} color={color} style={{ fontSize: '13px', padding: '4px 8px' }}>{status}</Tag>;
+                return <Tag icon={icon} color={color} style={{ fontSize: '13px', padding: '4px 8px' }}>{t(`dashboard_page.statuses.${status}`)}</Tag>;
             }
         },
         {

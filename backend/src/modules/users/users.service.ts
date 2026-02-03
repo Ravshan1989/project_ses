@@ -32,4 +32,13 @@ export class UsersService {
             relations: ['organization'], // Load organization details if needed
         });
     }
+
+    async update(id: string, userData: Partial<User>): Promise<User> {
+        await this.usersRepository.update(id, userData);
+        return this.findOne(id);
+    }
+
+    async remove(id: string): Promise<void> {
+        await this.usersRepository.delete(id);
+    }
 }
