@@ -1,4 +1,19 @@
 {
+    "auth": {
+        "success_login": "Welcome!",
+        "error_login": "Invalid username or password",
+        "error_system": "A system error occurred",
+        "slogan_part1": "Public health is",
+        "slogan_part2": "our top priority",
+        "description": "Unified monitoring system of the Tashkent Regional Department of Sanitary-Epidemiological Well-being and Public Health.",
+        "footer_text": "All rights reserved.",
+        "welcome_title": "Welcome Back",
+        "welcome_subtitle": "Login to your account",
+        "username_required": "Please enter your username",
+        "password_required": "Please enter your password",
+        "forgot_password": "Forgot password?",
+        "login_btn": "Sign In"
+    },
     "common": {
         "dashboard": "Dashboard",
         "reports": "Reports",

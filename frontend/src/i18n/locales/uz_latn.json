@@ -1,4 +1,19 @@
 {
+    "auth": {
+        "success_login": "Xush kelibsiz!",
+        "error_login": "Login yoki parol noto'g'ri",
+        "error_system": "Tizimga ulanishda xatolik yuz berdi",
+        "slogan_part1": "Aholining salomatligi",
+        "slogan_part2": "bizning ustuvor vazifamiz",
+        "description": "Toshkent viloyati Sanitariya-epidemiologik osoyishtalik va jamoat salomatligi boshqarmasi yagona monitoring tizimi.",
+        "footer_text": "Barcha huquqlar himoyalangan.",
+        "welcome_title": "Xush kelibsiz",
+        "welcome_subtitle": "Hisobingizga kiring",
+        "username_required": "Iltimos, loginingizni kiriting",
+        "password_required": "Iltimos, parolingizni kiriting",
+        "forgot_password": "Parolni unutdingizmi?",
+        "login_btn": "Kirish"
+    },
     "common": {
         "dashboard": "Dashboard",
         "reports": "Hisobotlar",

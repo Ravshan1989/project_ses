@@ -1,4 +1,19 @@
 {
+    "auth": {
+        "success_login": "Xosh kelipsiz!",
+        "error_login": "Login yamasa parol nadurıs",
+        "error_system": "Sistemaga ulanıwda qátelik júz berdi",
+        "slogan_part1": "Xalıqtıń sawlıǵı",
+        "slogan_part2": "bizniń baslı maqsetimiz",
+        "description": "Toshkent wálayatı Sanitariya-epidemiologiyalıq tınıshlıq hám jámiyet sawlıǵı basqarması birden-bir monitoring sisteması.",
+        "footer_text": "Barlıq huqıqlar qorǵalǵan.",
+        "welcome_title": "Xosh kelipsiz",
+        "welcome_subtitle": "Esabıńızǵa kiriń",
+        "username_required": "Iltimas, loginińizdi kiritiń",
+        "password_required": "Iltimas, parolińizdi kiritiń",
+        "forgot_password": "Paroldı umıttıńız ba?",
+        "login_btn": "Kiriw"
+    },
     "common": {
         "dashboard": "Dashboard",
         "reports": "Esabatlar",

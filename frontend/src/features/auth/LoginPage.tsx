@@ -10,8 +10,10 @@ const LoginPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const { token } = theme.useToken();
+    const { t } = useTranslation();
 
     const onFinish = async (values: any) => {
+        // ... (same as before)
         setLoading(true);
         try {
             const response = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -26,18 +28,17 @@ const LoginPage: React.FC = () => {
 
             if (response.ok) {
                 localStorage.setItem('access_token', data.access_token);
-                // Store minimal user info if needed, or rely on token decoding
                 localStorage.setItem('user_role', data.user.role);
                 localStorage.setItem('username', data.user.username);
 
-                message.success('Xush kelibsiz!');
+                message.success(t('auth.success_login', 'Xush kelibsiz!'));
                 navigate('/dashboard');
             } else {
-                message.error(data.message || 'Login yoki parol noto\'g\'ri');
+                message.error(data.message || t('auth.error_login', 'Login yoki parol noto\'g\'ri'));
             }
         } catch (error) {
             console.error('Login error:', error);
-            message.error('Tizimga ulanishda xatolik yuz berdi');
+            message.error(t('auth.error_system', 'Tizimga ulanishda xatolik yuz berdi'));
         } finally {
             setLoading(false);
         }
@@ -49,7 +50,6 @@ const LoginPage: React.FC = () => {
                 components: {
                     Input: {
                         controlHeight: 50,
-                        // itemActiveBg property removed
                         borderRadius: 8,
                         colorBorder: '#d9d9d9',
                         hoverBorderColor: token.colorPrimary,
@@ -64,12 +64,32 @@ const LoginPage: React.FC = () => {
                 }
             }}
         >
-            <div style={{ display: 'flex', minHeight: '100vh', background: '#fff', fontFamily: 'Inter, sans-serif' }}>
+            <style>
+                {`
+                    @media (max-width: 768px) {
+                        .login-container {
+                            flex-direction: column !important;
+                        }
+                        .login-left-panel {
+                            flex: none !important;
+                            width: 100% !important;
+                            padding: 40px 20px !important;
+                        }
+                        .login-left-panel h1 {
+                            font-size: 28px !important;
+                        }
+                        .login-right-panel {
+                            padding: 20px !important;
+                        }
+                    }
+                `}
+            </style>
+            <div className="login-container" style={{ display: 'flex', minHeight: '100vh', background: '#fff', fontFamily: 'Inter, sans-serif' }}>
 
                 {/* Left Side - Professional Blue Panel */}
-                <div style={{
+                <div className="login-left-panel" style={{
                     flex: '0 0 40%',
-                    background: '#001529', // Very dark, official blue/black like AntD header
+                    background: '#001529',
                     position: 'relative',
                     overflow: 'hidden',
                     display: 'flex',
@@ -77,7 +97,6 @@ const LoginPage: React.FC = () => {
                     justifyContent: 'space-between',
                     padding: '60px'
                 }}>
-                    {/* Background Pattern - Subtle Topography/Map feel */}
                     <div style={{
                         position: 'absolute',
                         top: 0, left: 0, right: 0, bottom: 0,
@@ -86,14 +105,13 @@ const LoginPage: React.FC = () => {
                         zIndex: 0
                     }} />
 
-                    {/* Logo Area */}
                     <div style={{ zIndex: 1, display: 'flex', alignItems: 'center', gap: '15px' }}>
                         <div style={{
-                            width: '48px', height: '48px',
+                            width: '44px', height: '44px',
                             background: '#fff',
-                            borderRadius: '12px',
+                            borderRadius: '10px',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: '#001529', fontSize: '24px'
+                            color: '#001529', fontSize: '22px'
                         }}>
                             <MedicineBoxOutlined />
                         </div>
@@ -102,27 +120,25 @@ const LoginPage: React.FC = () => {
                         </Text>
                     </div>
 
-                    {/* Main Text Content */}
-                    <div style={{ zIndex: 1, maxWidth: '480px' }}>
-                        <Title level={1} style={{ color: '#fff', fontSize: '42px', lineHeight: '1.2', fontWeight: 700, marginBottom: '24px' }}>
-                            Aholining salomatligi — <br />
-                            <span style={{ color: '#69b1ff' }}>bizning ustuvor vazifamiz</span>
+                    <div style={{ zIndex: 1, maxWidth: '480px', margin: '40px 0' }}>
+                        <Title level={1} style={{ color: '#fff', fontSize: '38px', lineHeight: '1.2', fontWeight: 700, marginBottom: '24px', margin: 0 }}>
+                            {t('auth.slogan_part1', 'Aholining salomatligi')} — <br />
+                            <span style={{ color: '#69b1ff' }}>{t('auth.slogan_part2', 'bizning ustuvor vazifamiz')}</span>
                         </Title>
-                        <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: '16px', lineHeight: '1.6', display: 'block', maxWidth: '400px' }}>
-                            Toshkent viloyati Sanitariya-epidemiologik osoyishtalik va jamoat salomatligi boshqarmasi yagona monitoring tizimi.
+                        <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: '16px', lineHeight: '1.6', display: 'block', maxWidth: '400px', marginTop: '20px' }}>
+                            {t('auth.description', 'Toshkent viloyati Sanitariya-epidemiologik osoyishtalik va jamoat salomatligi boshqarmasi yagona monitoring tizimi.')}
                         </Text>
                     </div>
 
-                    {/* Footer / Copyright */}
                     <div style={{ zIndex: 1 }}>
                         <Text style={{ color: 'rgba(255,255,255,0.45)', fontSize: '13px' }}>
-                            © 2026 RegionStat. Barcha huquqlar himoyalangan.
+                            © 2026 RegionStat. {t('auth.footer_text', 'Barcha huquqlar himoyalangan.')}
                         </Text>
                     </div>
                 </div>
 
                 {/* Right Side - Clean Login Form */}
-                <div style={{
+                <div className="login-right-panel" style={{
                     flex: 1,
                     display: 'flex',
                     alignItems: 'center',
@@ -131,8 +147,13 @@ const LoginPage: React.FC = () => {
                 }}>
                     <div style={{ width: '100%', maxWidth: '420px', padding: '40px' }}>
                         <div style={{ marginBottom: '40px' }}>
-                            <Title level={2} style={{ color: '#1f1f1f', marginBottom: '8px', fontWeight: 700 }}>Xush kelibsiz</Title>
-                            <Text type="secondary" style={{ fontSize: '16px' }}>Hisobingizga kiring</Text>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+                                <LanguageSwitcher />
+                            </div>
+                            <Title level={2} style={{ color: '#1f1f1f', marginBottom: '8px', fontWeight: 700 }}>
+                                {t('auth.welcome_title', 'Xush kelibsiz')}
+                            </Title>
+                            <Text type="secondary" style={{ fontSize: '16px' }}>{t('auth.welcome_subtitle', 'Hisobingizga kiring')}</Text>
                         </div>
 
                         <Form
@@ -143,9 +164,9 @@ const LoginPage: React.FC = () => {
                             requiredMark={false}
                         >
                             <Form.Item
-                                label={<span style={{ fontWeight: 500, color: '#333' }}>Login</span>}
+                                label={<span style={{ fontWeight: 500, color: '#333' }}>{t('user.username')}</span>}
                                 name="username"
-                                rules={[{ required: true, message: 'Iltimos, loginingizni kiriting' }]}
+                                rules={[{ required: true, message: t('auth.username_required', 'Iltimos, loginingizni kiriting') }]}
                             >
                                 <Input
                                     placeholder="admin"
@@ -155,9 +176,9 @@ const LoginPage: React.FC = () => {
                             </Form.Item>
 
                             <Form.Item
-                                label={<span style={{ fontWeight: 500, color: '#333' }}>Parol</span>}
+                                label={<span style={{ fontWeight: 500, color: '#333' }}>{t('user.password')}</span>}
                                 name="password"
-                                rules={[{ required: true, message: 'Iltimos, parolingizni kiriting' }]}
+                                rules={[{ required: true, message: t('auth.password_required', 'Iltimos, parolingizni kiriting') }]}
                             >
                                 <Input.Password
                                     placeholder="••••••••"
@@ -168,13 +189,13 @@ const LoginPage: React.FC = () => {
 
                             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px', marginTop: '-12px' }}>
                                 <Link href="#" style={{ color: token.colorPrimary, fontWeight: 500 }}>
-                                    Parolni unutdingizmi?
+                                    {t('auth.forgot_password', 'Parolni unutdingizmi?')}
                                 </Link>
                             </div>
 
                             <Form.Item>
                                 <Button type="primary" htmlType="submit" loading={loading} block icon={<RightOutlined />} iconPosition="end">
-                                    Kirish
+                                    {t('auth.login_btn', 'Kirish')}
                                 </Button>
                             </Form.Item>
 
