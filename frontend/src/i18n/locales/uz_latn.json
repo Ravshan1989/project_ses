@@ -1,0 +1,50 @@
+{
+    "common": {
+        "dashboard": "Dashboard",
+        "reports": "Hisobotlar",
+        "analysis": "Tahlil",
+        "settings": "Sozlamalar",
+        "logout": "Chiqish",
+        "welcome": "Xush kelibsiz",
+        "language": "Til",
+        "vaccination_entry": "Emlashni Ro'yxatga Olish",
+        "export": "Eksport (Excel)",
+        "import": "Import (Excel)",
+        "diseases": "Kasalliklar"
+    },
+    "reports": {
+        "daily": "Kunlik Hisobotlar",
+        "monthly": "Oylik Hisobotlar",
+        "form1": "Shakl 1 (Oylik)",
+        "hepatitis": "Gepatit",
+        "daily_hepatitis": "Kunlik Hisobotlar (VGA)",
+        "flu": "Gripp va O'RVI",
+        "ari": "GK, O'RI va O'P",
+        "epidemiology": "Epidemiologiya Tadbirlari",
+        "weekly_flu": "Haftalik Gripp/O'RVI",
+        "covid": "Koronavirus (Kunlik)",
+        "unified": "Yagona Oyna (Test)",
+        "form1_monitoring": "Shakl 1 Monitoring"
+    },
+    "analysis": {
+        "regional": "Hududiy Tahlil",
+        "global": "Global Monitoring"
+    },
+    "user": {
+        "title": "Foydalanuvchilar Boshqaruvi",
+        "add_button": "Yangi Hodim Qo'shish",
+        "modal_title": "Yangi Foydalanuvchi Qo'shish",
+        "username": "Login (Username)",
+        "password": "Parol",
+        "role": "Rol (Lavozim)",
+        "organization": "Tashkilot",
+        "created_at": "Yaratilgan vaqt",
+        "select_role": "Rolni tanlang",
+        "select_org": "Tashkilotni tanlang",
+        "cancel": "Bekor qilish",
+        "save": "Saqlash",
+        "success_create": "Foydalanuvchi muvaffaqiyatli yaratildi",
+        "error_create": "Yaratishda xatolik yuz berdi",
+        "error_load": "Foydalanuvchilarni yuklashda xatolik"
+    }
+}

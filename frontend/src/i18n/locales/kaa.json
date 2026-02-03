@@ -1,0 +1,33 @@
+{
+    "common": {
+        "dashboard": "Dashboard",
+        "reports": "Esabatlar",
+        "analysis": "Analiz",
+        "settings": "Sazlamalar",
+        "logout": "Shıǵıw",
+        "welcome": "Xosh keldińiz",
+        "language": "Til",
+        "vaccination_entry": "Vakcinaciyanı dizimge alıw",
+        "export": "Eksport (Excel)",
+        "import": "Import (Excel)",
+        "diseases": "Kesellikler"
+    },
+    "reports": {
+        "daily": "Kúnlik esabatlar",
+        "monthly": "Aylıq esabatlar",
+        "form1": "Forma 1 (Aylıq)",
+        "hepatitis": "Gepatit",
+        "daily_hepatitis": "Kúnlik esabatlar (VGA)",
+        "flu": "Gripp hám O'RVI",
+        "ari": "GK, O'RI hám O'P",
+        "epidemiology": "Epidemiologiya ilajları",
+        "weekly_flu": "Háptelik Gripp/O'RVI",
+        "covid": "Koronavirus (Kúnlik)",
+        "unified": "Birden-bir ayna (Test)",
+        "form1_monitoring": "Forma 1 Monitoring"
+    },
+    "analysis": {
+        "regional": "Aymaqlıq analiz",
+        "global": "Global monitoring"
+    }
+}

@@ -1,0 +1,33 @@
+{
+    "common": {
+        "dashboard": "Dashboard",
+        "reports": "Reports",
+        "analysis": "Analysis",
+        "settings": "Settings",
+        "logout": "Logout",
+        "welcome": "Welcome",
+        "language": "Language",
+        "vaccination_entry": "Vaccination Entry",
+        "export": "Export (Excel)",
+        "import": "Import (Excel)",
+        "diseases": "Diseases"
+    },
+    "reports": {
+        "daily": "Daily Reports",
+        "monthly": "Monthly Reports",
+        "form1": "Form 1 (Monthly)",
+        "hepatitis": "Hepatitis",
+        "daily_hepatitis": "Daily Reports (VHA)",
+        "flu": "Flu and ARI",
+        "ari": "ARI and Pneumonia",
+        "epidemiology": "Epidemiology Measures",
+        "weekly_flu": "Weekly Flu/ARI",
+        "covid": "Coronavirus (Daily)",
+        "unified": "Unified Window (Test)",
+        "form1_monitoring": "Form 1 Monitoring"
+    },
+    "analysis": {
+        "regional": "Regional Analysis",
+        "global": "Global Monitoring"
+    }
+}

@@ -1,0 +1,337 @@
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { Layout, Menu, Button, ConfigProvider, theme, Typography } from 'antd';
+import {
+    MedicineBoxOutlined,
+    DashboardOutlined,
+    BarChartOutlined,
+    SettingOutlined,
+    LogoutOutlined,
+    FileTextOutlined,
+    UserAddOutlined // Imported
+} from '@ant-design/icons';
+// ... imports ...
+import UserManagementPage from './features/admin/UserManagementPage'; // Imported
+// TUZATISH: Yangi ikonka import qilindi
+import { EyeOutlined, DownloadOutlined, UploadOutlined, SaveOutlined } from '@ant-design/icons';
+import DashboardPage from './features/dashboard/DashboardPage';
+
+import DiseaseEntryPage from './features/disease/DiseaseEntryPage';
+import Form1EntryPage from './features/submission/Form1EntryPage';
+import DiseaseManagerPage from './features/admin/DiseaseManagerPage';
+import DailyHepatitisPage from './features/disease/DailyHepatitisPage';
+import Form1StatusPage from './features/submission/Form1StatusPage';
+import FluDailyReportPage from './features/disease/FluDailyReportPage';
+import AriDailyReportPage from './features/disease/AriDailyReportPage';
+import EpidemiologyDailyReportPage from './features/disease/EpidemiologyDailyReportPage';
+import WeeklyFluReportPage from './features/disease/WeeklyFluReportPage';
+import CovidDailyReportPage from './features/disease/CovidDailyReportPage';
+import DailyReportUnifiedPage from './features/disease/unified/DailyReportUnifiedPage';
+import AnalysisDashboard from './features/analysis/AnalysisDashboard';
+import GlobalMonitoringPage from './features/analysis/GlobalMonitoringPage';
+// Eski import (duplicate) o'chirildi
+import LoginPage from './features/auth/LoginPage';
+// TUZATISH: ExportPage import qilindi
+import ExportPage from './features/export/ExportPage';
+// TUZATISH: ImportPage import qilindi
+import ImportPage from './features/import/ImportPage';
+
+const { Header, Content, Footer } = Layout;
+const { Text } = Typography;
+
+// TUZATISH: LanguageSwitcher import qilindi
+import LanguageSwitcher from './components/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
+
+// Layout with Logout button
+// Layout with Sidebar and Header
+// Layout with Sidebar and Header
+const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const [collapsed, setCollapsed] = React.useState(false);
+    const { token } = theme.useToken();
+    const { t } = useTranslation();
+
+    const userRole = localStorage.getItem('user_role');
+
+    const handleLogout = () => {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user_role');
+        navigate('/login');
+    };
+
+    // Role Checking Helper
+    const hasRole = (allowedRoles: string[]) => {
+        if (!userRole) return false;
+        if (userRole === 'ADMIN') return true; // Admin sees everything
+        return allowedRoles.includes(userRole);
+    };
+
+    const menuItems = [
+        {
+            key: '/dashboard',
+            icon: <DashboardOutlined />,
+            label: t('common.dashboard'),
+            onClick: () => navigate('/dashboard')
+        },
+        ...(hasRole(['DISTRICT_HEAD', 'STAFF']) ? [{
+            key: '/disease-entry',
+            icon: <MedicineBoxOutlined />,
+            label: t('common.vaccination_entry'),
+            onClick: () => navigate('/disease-entry')
+        }] : []),
+        {
+            key: 'grp_reports',
+            icon: <FileTextOutlined />,
+            label: t('common.reports'),
+            children: [
+                {
+                    key: '/form-1',
+                    label: t('reports.form1'),
+                    onClick: () => navigate('/form-1')
+                },
+                {
+                    key: '/daily-reports',
+                    label: t('reports.daily_hepatitis'),
+                    onClick: () => navigate('/daily-reports')
+                },
+                {
+                    key: '/daily-flu',
+                    label: t('reports.flu'),
+                    onClick: () => navigate('/daily-flu')
+                },
+                {
+                    key: '/daily-ari',
+                    label: t('reports.ari'),
+                    onClick: () => navigate('/daily-ari')
+                },
+                {
+                    key: '/daily-epidemiology',
+                    label: t('reports.epidemiology'),
+                    onClick: () => navigate('/daily-epidemiology')
+                },
+                {
+                    key: '/weekly-flu',
+                    label: t('reports.weekly_flu'),
+                    onClick: () => navigate('/weekly-flu')
+                },
+                {
+                    key: '/daily-covid',
+                    label: t('reports.covid'),
+                    onClick: () => navigate('/daily-covid')
+                },
+                {
+                    key: '/daily-unified',
+                    label: t('reports.unified'),
+                    onClick: () => navigate('/daily-unified'),
+                    icon: <SaveOutlined style={{ color: '#1890ff' }} />
+                },
+            ]
+        },
+        ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD']) ? [{
+            key: '/form1-monitoring',
+            icon: <EyeOutlined />,
+            label: t('reports.form1_monitoring'),
+            onClick: () => navigate('/form1-monitoring')
+        }] : []),
+        ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD']) ? [{
+            key: '/export',
+            icon: <DownloadOutlined />,
+            label: t('common.export'),
+            onClick: () => navigate('/export')
+        }] : []),
+        ...(hasRole(['REGION_HEAD', 'DISTRICT_HEAD']) ? [{
+            key: '/import',
+            icon: <UploadOutlined />,
+            label: t('common.import'),
+            onClick: () => navigate('/import')
+        }] : []),
+        ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD', 'LAB_HEAD']) ? [{
+            key: 'grp_analytics',
+            icon: <BarChartOutlined />,
+            label: t('common.analysis'),
+            children: [
+                {
+                    key: '/analysis',
+                    label: t('analysis.regional'),
+                    onClick: () => navigate('/analysis')
+                },
+                {
+                    key: '/analysis/global',
+                    label: t('analysis.global'),
+                    onClick: () => navigate('/analysis/global')
+                }
+            ]
+        }] : []),
+        {
+            key: 'grp_settings',
+            label: t('common.settings'),
+            type: 'group' as const,
+            children: [
+                ...(hasRole(['REPUBLIC_HEAD']) ? [{
+                    key: '/disease-manager',
+                    icon: <SettingOutlined />,
+                    label: t('common.diseases'),
+                    onClick: () => navigate('/disease-manager')
+                }] : []),
+                ...(hasRole([]) ? [{
+                    key: '/users',
+                    icon: <UserAddOutlined />,
+                    label: t('user.title'), // Using title for now
+                    onClick: () => navigate('/users')
+                }] : [])
+            ]
+        }
+    ];
+
+    return (
+        <Layout style={{ minHeight: '100vh' }}>
+            <Layout.Sider
+                collapsible
+                collapsed={collapsed}
+                onCollapse={(value) => setCollapsed(value)}
+                width={250}
+                style={{
+                    background: '#001529',
+                    boxShadow: '2px 0 8px rgba(0,0,0,0.15)',
+                    zIndex: 10
+                }}
+            >
+                <div style={{
+                    height: 64,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'rgba(255,255,255,0.05)',
+                    margin: '16px',
+                    borderRadius: 6
+                }}>
+                    <MedicineBoxOutlined style={{ color: '#fff', fontSize: '24px', marginRight: collapsed ? 0 : 10 }} />
+                    {!collapsed && (
+                        <span style={{ color: '#fff', fontWeight: 700, fontSize: '16px', letterSpacing: '0.5px' }}>
+                            REGION<span style={{ color: token.colorPrimary }}>STAT</span>
+                        </span>
+                    )}
+                </div>
+
+                <Menu
+                    theme="dark"
+                    mode="inline"
+                    selectedKeys={[location.pathname]}
+                    style={{ borderRight: 0, fontSize: '15px' }}
+                    items={menuItems}
+                />
+            </Layout.Sider>
+
+            <Layout>
+                <Header style={{
+                    padding: '0 24px',
+                    background: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    boxShadow: '0 1px 4px rgba(0,21,41,0.08)'
+                }}>
+                    <Text style={{ fontSize: '18px', fontWeight: 600, color: '#001529' }}>
+                        {location.pathname === '/dashboard' ? 'Asosiy panel' :
+                            location.pathname === '/disease-entry' ? 'Emlashni Ro\'yxatga Olish' :
+                                location.pathname === '/form-1' ? 'Yuqumli kasalliklar hisoboti (Shakl 1)' :
+                                    location.pathname === '/disease-manager' ? 'Kasalliklar Ro\'yxatini Boshqarish' : 'Bosh sahifa'}
+                    </Text>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <LanguageSwitcher />
+
+                        <div style={{ textAlign: 'right', lineHeight: '1.2' }}>
+                            <Text strong style={{ display: 'block', color: '#333' }}>Admin User</Text>
+                            <Text type="secondary" style={{ fontSize: '12px' }}>Viloyat Boshqarmasi</Text>
+                        </div>
+
+                        <Button
+                            type="text"
+                            icon={<LogoutOutlined />}
+                            onClick={handleLogout}
+                            danger
+                        >
+                            Chiqish
+                        </Button>
+                    </div>
+                </Header>
+
+                <Content style={{ margin: '24px 24px 0', overflow: 'initial' }}>
+                    <div style={{ padding: 0, minHeight: 360 }}>
+                        {children}
+                    </div>
+                </Content>
+
+                <Footer style={{ textAlign: 'center', color: '#999', background: 'transparent' }}>
+                    RegionStat ©2026 Toshkent viloyati SES
+                </Footer>
+            </Layout>
+        </Layout>
+    );
+};
+
+// Protected Route Wrapper
+const ProtectedRoute = ({ children }: { children: any }) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return <Navigate to="/login" replace />;
+    return <MainLayout>{children}</MainLayout>;
+};
+
+function App() {
+    return (
+        <ConfigProvider
+            theme={{
+                token: {
+                    colorPrimary: '#0050b3', // Deep Royal Blue
+                    borderRadius: 6,
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+                },
+                components: {
+                    Layout: {
+                        headerBg: '#001529',
+                        bodyBg: '#f0f2f5',
+                    },
+                    Button: {
+                        algorithm: true, // Enable derivative algorithms
+                    }
+                }
+            }}
+        >
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/" element={<Navigate to="/dashboard" />} />
+                    <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+                    <Route path="/disease-entry" element={<ProtectedRoute><DiseaseEntryPage /></ProtectedRoute>} />
+                    <Route path="/form-1" element={<ProtectedRoute><Form1EntryPage /></ProtectedRoute>} />
+                    <Route path="/disease-manager" element={<ProtectedRoute><DiseaseManagerPage /></ProtectedRoute>} />
+
+                    <Route path="/daily-reports" element={<ProtectedRoute><DailyHepatitisPage /></ProtectedRoute>} />
+                    <Route path="/daily-flu" element={<ProtectedRoute><FluDailyReportPage /></ProtectedRoute>} />
+                    <Route path="/daily-ari" element={<ProtectedRoute><AriDailyReportPage /></ProtectedRoute>} />
+                    <Route path="/daily-epidemiology" element={<ProtectedRoute><EpidemiologyDailyReportPage /></ProtectedRoute>} />
+                    <Route path="/weekly-flu" element={<ProtectedRoute><WeeklyFluReportPage /></ProtectedRoute>} />
+                    <Route path="/daily-covid" element={<ProtectedRoute><CovidDailyReportPage /></ProtectedRoute>} />
+                    <Route path="/daily-unified" element={<ProtectedRoute><DailyReportUnifiedPage /></ProtectedRoute>} />
+                    {/* Duplicate route removed */}
+                    <Route path="/form1-monitoring" element={<ProtectedRoute><Form1StatusPage /></ProtectedRoute>} />
+
+                    {/* TUZATISH: Eksport sahifasi marshrutga qo'shildi */}
+                    <Route path="/export" element={<ProtectedRoute><ExportPage /></ProtectedRoute>} />
+
+                    {/* TUZATISH: Import sahifasi marshrutga qo'shildi */}
+                    <Route path="/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
+
+                    <Route path="/analysis" element={<ProtectedRoute><AnalysisDashboard /></ProtectedRoute>} />
+                    <Route path="/analysis/global" element={<ProtectedRoute><GlobalMonitoringPage /></ProtectedRoute>} />
+                    <Route path="/users" element={<ProtectedRoute><UserManagementPage /></ProtectedRoute>} />
+                </Routes>
+            </BrowserRouter>
+        </ConfigProvider>
+    );
+}
+
+export default App;

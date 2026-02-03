@@ -1,0 +1,23 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Table Colors for Form 1 */
+.col-green {
+  background-color: #e6f7e6 !important;
+}
+
+.col-yellow {
+  background-color: #fffbe6 !important;
+}
+
+/* Ensure inputs inside transparently use background */
+.col-green .ant-input-number,
+.col-yellow .ant-input-number {
+  background-color: transparent !important;
+}
