@@ -9,14 +9,17 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
             inject: [ConfigService],
             useFactory: (configService: ConfigService) => ({
                 type: 'postgres',
-                host: configService.get<string>('DB_HOST', 'localhost'),
-                port: configService.get<number>('DB_PORT', 5432),
-                username: configService.get<string>('DB_USERNAME', 'postgres'),
-                password: configService.get<string>('DB_PASSWORD', 'postgres'),
-                database: configService.get<string>('DB_NAME', 'regionstat'),
+                url: configService.get<string>('DATABASE_URL'), // Standard Railway DB URL
+                host: !configService.get<string>('DATABASE_URL') ? configService.get<string>('DB_HOST', 'localhost') : undefined,
+                port: !configService.get<string>('DATABASE_URL') ? configService.get<number>('DB_PORT', 5432) : undefined,
+                username: !configService.get<string>('DATABASE_URL') ? configService.get<string>('DB_USERNAME', 'postgres') : undefined,
+                password: !configService.get<string>('DATABASE_URL') ? configService.get<string>('DB_PASSWORD', 'postgres') : undefined,
+                database: !configService.get<string>('DATABASE_URL') ? configService.get<string>('DB_NAME', 'regionstat') : undefined,
                 autoLoadEntities: true,
-                synchronize: true, // WARNING: Disable in production!
-                ssl: configService.get<string>('DB_HOST') === 'localhost' ? false : { rejectUnauthorized: false },
+                synchronize: true,
+                ssl: configService.get<string>('NODE_ENV') === 'production' || configService.get<string>('DATABASE_URL')
+                    ? { rejectUnauthorized: false }
+                    : false,
             }),
         }),
     ],

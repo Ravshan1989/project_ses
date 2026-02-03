@@ -18,7 +18,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1');
 
   const port = process.env.PORT || 3007;
-  await app.listen(port);
-  console.log(`RegionStat Backend running on port ${port}`);
+  await app.listen(port, '0.0.0.0');
+  console.log(`RegionStat Backend running on port ${port} (0.0.0.0)`);
 }
 bootstrap();
