@@ -12,6 +12,27 @@
         "import": "Импорт (Excel)",
         "diseases": "Касалликлар"
     },
+    "dashboard_page": {
+        "title": "Асосий панель",
+        "total_reports": "Жами ҳисоботлар",
+        "approved": "Тасдиқланган",
+        "pending": "Кўриб чиқилмоқда",
+        "rejected": "Рад этилган",
+        "incoming_reports": "Келиб тушган ҳисоботлар",
+        "search_placeholder": "Қидириш...",
+        "status_placeholder": "Ҳолат",
+        "filter_btn": "Фильтр",
+        "export_btn": "Excelга юклаш",
+        "upload_btn": "Юклаш",
+        "region_title": "Тошкент вилояти аҳолиси",
+        "table": {
+            "region": "Ҳудуд",
+            "report_type": "Ҳисобот Тури",
+            "period": "Ҳисобот Даври",
+            "status": "Ҳолат",
+            "actions": "Амаллар"
+        }
+    },
     "reports": {
         "daily": "Кунлик Ҳисоботлар",
         "monthly": "Ойлик Ҳисоботлар",

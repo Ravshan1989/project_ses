@@ -20,8 +20,10 @@ import { Upload, UploadProps } from 'antd';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+import { useTranslation } from 'react-i18next';
 
 const DashboardPage: React.FC = () => {
+    const { t } = useTranslation();
     const [submissions, setSubmissions] = useState<Submission[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchText, setSearchText] = useState('');
@@ -195,24 +197,24 @@ const DashboardPage: React.FC = () => {
 
     const columns = [
         {
-            title: 'Hudud',
+            title: t('dashboard_page.table.region'),
             dataIndex: ['organization', 'name'],
             key: 'org',
             render: (text: string) => <Text strong>{text}</Text>
         },
         {
-            title: 'Hisobot Turi',
+            title: t('dashboard_page.table.report_type'),
             dataIndex: ['template', 'name'],
             key: 'template',
             render: (text: string) => <Text type="secondary">{text}</Text>
         },
         {
-            title: 'Hisobot Davri',
+            title: t('dashboard_page.table.period'),
             dataIndex: 'reportingPeriod',
             key: 'period',
         },
         {
-            title: 'Holat',
+            title: t('dashboard_page.table.status'),
             dataIndex: 'status',
             key: 'status',
             render: (status: SubmissionStatus) => {
@@ -242,7 +244,7 @@ const DashboardPage: React.FC = () => {
             }
         },
         {
-            title: 'Amallar',
+            title: t('dashboard_page.table.actions'),
             key: 'action',
             render: (_: any, record: Submission) => (
                 <Space size="small">
@@ -271,7 +273,7 @@ const DashboardPage: React.FC = () => {
                 <Col span={6}>
                     <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
                         <Statistic
-                            title="Jami hisobotlar"
+                            title={t('dashboard_page.total_reports')}
                             value={totalSubmissions}
                             prefix={<FileTextOutlined style={{ color: '#1677ff' }} />}
                             valueStyle={{ fontWeight: 600 }}
@@ -281,7 +283,7 @@ const DashboardPage: React.FC = () => {
                 <Col span={6}>
                     <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
                         <Statistic
-                            title="Tasdiqlangan"
+                            title={t('dashboard_page.approved')}
                             value={approvedSubmissions}
                             prefix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
                             valueStyle={{ color: '#52c41a', fontWeight: 600 }}
@@ -291,7 +293,7 @@ const DashboardPage: React.FC = () => {
                 <Col span={6}>
                     <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
                         <Statistic
-                            title="Ko'rib chiqilmoqda"
+                            title={t('dashboard_page.pending')}
                             value={pendingSubmissions}
                             prefix={<ClockCircleOutlined style={{ color: '#faad14' }} />}
                             valueStyle={{ color: '#faad14', fontWeight: 600 }}
@@ -301,7 +303,7 @@ const DashboardPage: React.FC = () => {
                 <Col span={6}>
                     <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
                         <Statistic
-                            title="Rad etilgan"
+                            title={t('dashboard_page.rejected')}
                             value={rejectedSubmissions}
                             prefix={<CloseCircleOutlined style={{ color: '#ff4d4f' }} />}
                             valueStyle={{ color: '#ff4d4f', fontWeight: 600 }}
@@ -316,17 +318,17 @@ const DashboardPage: React.FC = () => {
                 <Col span={16}>
                     <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
-                            <Title level={4} style={{ margin: 0, whiteSpace: 'nowrap' }}>Kelib tushgan hisobotlar</Title>
+                            <Title level={4} style={{ margin: 0, whiteSpace: 'nowrap' }}>{t('dashboard_page.incoming_reports')}</Title>
                             <Space wrap>
                                 <Input
-                                    placeholder="Qidirish..."
+                                    placeholder={t('dashboard_page.search_placeholder')}
                                     prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
                                     style={{ width: 200 }}
                                     allowClear
                                     onChange={(e) => setSearchText(e.target.value)}
                                 />
                                 <Select
-                                    placeholder="Holat"
+                                    placeholder={t('dashboard_page.status_placeholder')}
                                     style={{ width: 120 }}
                                     allowClear
                                     onChange={setStatusFilter}
@@ -335,10 +337,10 @@ const DashboardPage: React.FC = () => {
                                         <Option key={status} value={status}>{status}</Option>
                                     ))}
                                 </Select>
-                                <Button icon={<FilterOutlined />}>Filtr</Button>
-                                <Button icon={<DownloadOutlined />} onClick={handleExport}>Excelga yuklash</Button>
+                                <Button icon={<FilterOutlined />}>{t('dashboard_page.filter_btn')}</Button>
+                                <Button icon={<DownloadOutlined />} onClick={handleExport}>{t('dashboard_page.export_btn')}</Button>
                                 <Upload {...uploadProps}>
-                                    <Button icon={<UploadOutlined />}>Yuklash</Button>
+                                    <Button icon={<UploadOutlined />}>{t('dashboard_page.upload_btn')}</Button>
                                 </Upload>
                             </Space>
                         </div>
@@ -356,7 +358,7 @@ const DashboardPage: React.FC = () => {
                 {/* Right Column: Population Stats */}
                 <Col span={8}>
                     <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', height: '100%' }}>
-                        <Title level={4} style={{ marginBottom: '16px' }}>Toshkent viloyati aholisi</Title>
+                        <Title level={4} style={{ marginBottom: '16px' }}>{t('dashboard_page.region_title')}</Title>
                         <div style={{ maxHeight: '500px', overflowY: 'auto', paddingRight: '4px' }}>
                             {REGION_DATA.sort((a, b) => b.population - a.population).map((item, index) => (
                                 <div key={item.id} style={{

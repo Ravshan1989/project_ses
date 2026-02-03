@@ -12,6 +12,27 @@
         "import": "Import (Excel)",
         "diseases": "Kesellikler"
     },
+    "dashboard_page": {
+        "title": "Tiykarǵı panel",
+        "total_reports": "Jıynaqlanǵan esabatlar",
+        "approved": "Tastıyıqlanǵan",
+        "pending": "Kórip şıǵılmaqta",
+        "rejected": "Biykar etilgen",
+        "incoming_reports": "Kelip túsken esabatlar",
+        "search_placeholder": "Izlew...",
+        "status_placeholder": "Jaǵday",
+        "filter_btn": "Filtr",
+        "export_btn": "Excelge júklew",
+        "upload_btn": "Júklew",
+        "region_title": "Toshkent wálayatı xalqı",
+        "table": {
+            "region": "Aymaq",
+            "report_type": "Esabat Túri",
+            "period": "Esabat Dáwiri",
+            "status": "Jaǵday",
+            "actions": "Ámeller"
+        }
+    },
     "reports": {
         "daily": "Kúnlik esabatlar",
         "monthly": "Aylıq esabatlar",

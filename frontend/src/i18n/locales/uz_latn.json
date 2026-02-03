@@ -12,6 +12,27 @@
         "import": "Import (Excel)",
         "diseases": "Kasalliklar"
     },
+    "dashboard_page": {
+        "title": "Asosiy panel",
+        "total_reports": "Jami hisobotlar",
+        "approved": "Tasdiqlangan",
+        "pending": "Ko'rib chiqilmoqda",
+        "rejected": "Rad etilgan",
+        "incoming_reports": "Kelib tushgan hisobotlar",
+        "search_placeholder": "Qidirish...",
+        "status_placeholder": "Holat",
+        "filter_btn": "Filtr",
+        "export_btn": "Excelga yuklash",
+        "upload_btn": "Yuklash",
+        "region_title": "Toshkent viloyati aholisi",
+        "table": {
+            "region": "Hudud",
+            "report_type": "Hisobot Turi",
+            "period": "Hisobot Davri",
+            "status": "Holat",
+            "actions": "Amallar"
+        }
+    },
     "reports": {
         "daily": "Kunlik Hisobotlar",
         "monthly": "Oylik Hisobotlar",

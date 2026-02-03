@@ -12,6 +12,27 @@
         "import": "Импорт (Excel)",
         "diseases": "Болезни"
     },
+    "dashboard_page": {
+        "title": "Главная панель",
+        "total_reports": "Всего отчетов",
+        "approved": "Одобрено",
+        "pending": "На рассмотрении",
+        "rejected": "Отклонено",
+        "incoming_reports": "Поступившие отчеты",
+        "search_placeholder": "Поиск...",
+        "status_placeholder": "Статус",
+        "filter_btn": "Фильтр",
+        "export_btn": "Скачать Excel",
+        "upload_btn": "Загрузить",
+        "region_title": "Население Ташкентской области",
+        "table": {
+            "region": "Регион",
+            "report_type": "Тип отчета",
+            "period": "Отчетный период",
+            "status": "Статус",
+            "actions": "Действия"
+        }
+    },
     "reports": {
         "daily": "Ежедневные отчеты",
         "monthly": "Ежемесячные отчеты",

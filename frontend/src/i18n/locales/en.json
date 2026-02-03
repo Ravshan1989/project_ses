@@ -12,6 +12,27 @@
         "import": "Import (Excel)",
         "diseases": "Diseases"
     },
+    "dashboard_page": {
+        "title": "Main Board",
+        "total_reports": "Total Reports",
+        "approved": "Approved",
+        "pending": "Pending",
+        "rejected": "Rejected",
+        "incoming_reports": "Incoming Reports",
+        "search_placeholder": "Search...",
+        "status_placeholder": "Status",
+        "filter_btn": "Filter",
+        "export_btn": "Export Excel",
+        "upload_btn": "Upload",
+        "region_title": "Tashkent Region Population",
+        "table": {
+            "region": "Region",
+            "report_type": "Report Type",
+            "period": "Reporting Period",
+            "status": "Status",
+            "actions": "Actions"
+        }
+    },
     "reports": {
         "daily": "Daily Reports",
         "monthly": "Monthly Reports",
