@@ -21,9 +21,9 @@ export class OrganizationsService {
   async findAll(): Promise<Organization[]> {
     const allOrgs = await this.orgRepo.find({ relations: ["parent"] });
     // Faqat ota-onasi bor tashkilotlarni (tumanlarni) qaytaramiz
-    // UZ: Hozircha barcha tashkilotlarni qaytaramiz, chunki seed qilinganlarda parent yo'q
-    // return allOrgs.filter((org) => !!org.parent);
-    return allOrgs;
+    // UZ: User talabiga ko'ra avvalgi holatga qaytarildi (revert)
+    // return allOrgs;
+    return allOrgs.filter((org) => !!org.parent);
   }
 
   async findByName(name: string): Promise<Organization | null> {

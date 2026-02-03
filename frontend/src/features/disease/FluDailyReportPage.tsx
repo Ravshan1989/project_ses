@@ -67,9 +67,9 @@ const FluDailyReportPage: React.FC = () => {
             let currentOrgs = organizations;
             if (currentOrgs.length === 0) {
                 const orgRes = await organizationsApi.getAll();
-                // UZ: Backenddan barcha tashkilotlar kelmoqda, filterni olib tashlaymiz
-                // currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent);
-                currentOrgs = orgRes.data || [];
+                // UZ: User talabiga ko'ra avvalgi holatga qaytarildi (revert)
+                // currentOrgs = orgRes.data || [];
+                currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent);
                 setOrganizations(currentOrgs);
             }
 
