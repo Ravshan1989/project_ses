@@ -19,7 +19,7 @@ const UserManagementPage: React.FC = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch('http://localhost:3000/users', {
+            const response = await fetch(`${API_BASE_URL}/users`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

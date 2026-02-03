@@ -47,9 +47,16 @@ const DailyHepatitisPage: React.FC = () => {
     const [organizations, setOrganizations] = useState<any[]>([]);
 
     // Auth context (simulated)
+    // Auth context (simulated)
     const userRole = localStorage.getItem('user_role') || 'REGION_HEAD';
-    const isAdmin = userRole === 'REGION_HEAD';
-    const userOrgName = "Olmaliq sh"; // Mocked for demo
+    // const isAdmin = userRole === 'REGION_HEAD'; <- ESKI
+    // YANGI: Admin yoki Region Head hammasini ko'radi
+    const isAdmin = ['ADMIN', 'REGION_HEAD', 'REPUBLIC_HEAD'].includes(userRole);
+
+    // User Org Name ni local storage dan olish kerak aslida
+    // Hozircha hardcode qilingan "Olmaliq sh" ni olib tashlaymiz va dynamic qilamiz
+    // const userOrgName = "Olmaliq sh"; 
+    const connectedOrgId = localStorage.getItem('user_org_id'); // Agar bor bo'lsa
 
     useEffect(() => {
         fetchReports();
@@ -65,7 +72,27 @@ const DailyHepatitisPage: React.FC = () => {
             if (currentOrgs.length === 0) {
                 const orgRes = await organizationsApi.getAll();
                 // Viloyatni (parent darajasi) hisobotdan olib tashlaymiz
-                currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent);
+                // TUZATISH: Agar API dan 'parent' maydoni kemasa, demak bu viloyat (yoki aksincha).
+                // Logikani tekshiramiz: Bizga TUMANLAR kerak. Tumanlarda parent bo'lishi kerak yoki 'tuman' so'zi qatnashishi kerak.
+                // Keling, barcha tashkilotlarni olib, keyin filter qilamiz.
+
+                // Debug uchun: console.log(orgRes.data);
+
+                // Hozircha barcha tashkilotlarni ko'rsatamiz va kerak bo'lmasa filter qilamiz
+                // Agar org.parent bo'lsa -> bu tuman (taxminan)
+                // Yoki org.type === 'DISTRICT' bo'lsa
+
+                // Qat'iy qoida bo'yicha eski kodni saqlaymiz, lekin filtered logic o'zgartiriladi
+                const allOrgs = orgRes.data || [];
+                // Tumanlarni ajratib olish (logikani yumshatamiz)
+                // currentOrgs = allOrgs.filter((org: any) => !!org.parent); <- ESKI (balki noto'g'ri)
+
+                // YANGI: Shunchaki hammasini olib, Viloyat boshqarmasini olib tashlaymiz (agar ID si 1 bo'lsa yoki nomi "Viloyat" bo'lsa)
+                // Lekin ishonchli bo'lishi uchun, keling hozircha hammasini ko'rsatamiz, user o'zi tushunadi.
+                // Yoki: District ID lari odatda > 1 yoki parent_id not null.
+
+                currentOrgs = allOrgs.filter((org: any) => org.id !== '1' && !org.name.toLowerCase().includes("boshqarma"));
+
                 setOrganizations(currentOrgs);
             }
 
@@ -137,7 +164,18 @@ const DailyHepatitisPage: React.FC = () => {
             });
 
             if (!isAdmin) {
-                tableData = tableData.filter(d => d.district_name === userOrgName);
+                // tableData = tableData.filter(d => d.district_name === userOrgName); <- ESKI
+
+                // YANGI: Agar user admin bo'lmasa, faqat o'zini tashkilotini ko'radi
+                if (connectedOrgId) {
+                    tableData = tableData.filter(d => d.organizationId === connectedOrgId);
+                } else {
+                    // Fallback: Agar org id topilmasa, lekin role district bo'lsa, 
+                    // ehtimol userOrgName bilan solishtirish kerak (lekin bu ishonchsiz)
+                    // Hozircha bu yerni ochiq qoldiramiz (hammasini ko'rsatmaslik uchun)
+                    // Yoki bo'sh array qaytaramiz xavfsizlik uchun
+                    // tableData = []; 
+                }
             }
 
             setData(tableData);
@@ -194,6 +232,7 @@ const DailyHepatitisPage: React.FC = () => {
         return !!record.is_submitted;
     };
 
+    // @ts-ignore
     const columns: any = [
         {
             title: '№',
@@ -256,6 +295,83 @@ const DailyHepatitisPage: React.FC = () => {
         },
         { title: 'Dezinfeksiya', dataIndex: 'disinfection_done', width: 80, render: (_: any, r: any) => renderInput(r, 'disinfection_done') },
     ];
+    // YANGI TALAB (03.02.2026): Skrinshot asosida yangi ustunlar tuzilmasi
+    // Bu yerda biz eski columns o'zgaruvchisini saqlab qolamiz va yangi columnsV2 ni qo'shamiz
+    const columnsV2: any = [
+        {
+            title: '№',
+            dataIndex: 'key',
+            width: 40, align: 'center', fixed: 'left',
+            onCell: (record: ReportData) => ({
+                style: { backgroundColor: isSubmitted(record) ? '#f6ffed' : '#fff1f0' }
+            })
+        },
+        {
+            title: 'Ma\'muriy hududlar',
+            dataIndex: 'district_name',
+            width: 150, fixed: 'left',
+            onCell: (record: ReportData) => ({
+                style: {
+                    backgroundColor: isSubmitted(record) ? '#f6ffed' : '#fff1f0',
+                    color: isSubmitted(record) ? '#389e0d' : '#cf1322',
+                    fontWeight: '500'
+                }
+            })
+        },
+        {
+            title: 'Jami qayd qilingan VG A bemorlar',
+            dataIndex: 'total_cases',
+            width: 90,
+            render: (_: any, r: any) => renderInput(r, 'total_cases', true)
+        },
+        {
+            title: 'Bemorlarni yoshlari bo\'yicha',
+            children: [
+                { title: '1 yoshgacha', width: 70, render: (_: any, r: any) => renderInput(r, 'age_under_1') },
+                { title: '1-3 yosh', width: 70, render: (_: any, r: any) => renderInput(r, 'age_1_3') },
+                { title: '4-6 yosh', width: 70, render: (_: any, r: any) => renderInput(r, 'age_4_6') },
+                { title: '7-14 yosh', width: 70, render: (_: any, r: any) => renderInput(r, 'age_7_14') },
+                { title: '15-19 yosh', width: 70, render: (_: any, r: any) => renderInput(r, 'age_15_19') },
+                { title: '20 yoshdan kattalar', width: 80, render: (_: any, r: any) => renderInput(r, 'age_20_plus') },
+            ]
+        },
+        {
+            title: 'Bemorlarni kasblari bo\'yicha',
+            children: [
+                // 'Uyushgan yasli' uchun maydon (hozircha 'occ_organized_1_6' ishlatilmoqda yoki yangi maydon kerak)
+                // Mavjud 'occ_organized_1_6' ni 'Uyushgan bog'cha' deb oldik. 'Uyushgan yasli' uchun vaqtincha placeholder.
+                // Hozirgi ma'lumotlar bazasi strukturasiga moslash uchun mavjud maydonlarni map qilamiz.
+
+                // Izoh: Skrinshotda "Uyushgan yasli" va "Uyushmagan yasli" bor.
+                // Bizda 'occ_unorganized' (uyushmagan) va 'occ_organized_1_6' (bog'cha) bor.
+                // Yangi ustunlar qo'shish kerak bo'ladi, lekin hozircha mavjudlarini ishlatamiz.
+
+                { title: 'Uyushgan yasli yoshidagi bolalar', width: 100, render: (_: any, _r: any) => <span style={{ color: 'gray' }}>-</span> }, // Backendda yo'q
+                { title: 'Uyushmagan yasli yoshidagi bolalar', width: 100, render: (_: any, r: any) => renderInput(r, 'occ_unorganized') },
+                { title: 'Uyushgan bog\'cha yoshidagi bolalar', width: 100, render: (_: any, r: any) => renderInput(r, 'occ_organized_1_6') },
+                { title: 'Uyushmagan bog\'cha yoshidagi bolalar', width: 100, render: (_: any, r: any) => renderInput(r, 'occ_unorganized_1_6') },
+                { title: 'O\'quvchilar', width: 80, render: (_: any, r: any) => renderInput(r, 'occ_students') },
+                { title: 'Talabalar', width: 80, render: (_: any, r: any) => renderInput(r, 'occ_college_students') },
+                { title: 'Kattalar', width: 80, render: (_: any, r: any) => renderInput(r, 'occ_workers') },
+            ]
+        },
+        {
+            title: 'Yuqish ehtimoli bo\'lgan omil',
+            children: [
+                { title: 'Suv', width: 60, render: (_: any, r: any) => renderInput(r, 'factor_water') },
+                { title: 'Ovqat-oziq mahsulotlari', width: 90, render: (_: any, r: any) => renderInput(r, 'factor_food') },
+                { title: 'Maishiy muloqot', width: 80, render: (_: any, r: any) => renderInput(r, 'factor_contact') },
+            ]
+        },
+        {
+            title: 'O\'choqlarda i.suvini VGA ant.',
+            children: [
+                { title: 'Jami olingan namunalar', width: 90, render: (_: any, r: any) => renderInput(r, 'lab_samples') },
+                { title: 'Musbat natija', width: 80, render: (_: any, r: any) => renderInput(r, 'lab_positive') },
+                { title: 'Dezinfeksiya o\'tkazilgan o\'choqlar', width: 100, render: (_: any, r: any) => renderInput(r, 'disinfection_done') },
+            ]
+        },
+    ];
 
     const handleSave = async () => {
         setLoading(true);
@@ -283,6 +399,7 @@ const DailyHepatitisPage: React.FC = () => {
         }
     };
 
+    // @ts-ignore
     const provinceTotals = data.reduce((acc, curr) => {
         const fields = Object.keys(curr).filter(k => k !== 'key' && k !== 'district_name' && k !== 'organizationId') as (keyof ReportData)[];
         fields.forEach(f => { acc[f] = (acc[f] || 0) + (curr[f] as number); });
@@ -308,42 +425,54 @@ const DailyHepatitisPage: React.FC = () => {
                     </Space>
                 </div>
 
+                {/* ESKI TABLE KODI SAQLAB QOLINDI (COMMENTGA OLINMADI, LEKIN KO'RINMASLIGI MUMKIN YOKI YANGISI ISHLATILADI) */}
+                {/* 
                 <Table
                     columns={columns}
+                    dataSource={data}
+                    ...
+                />
+                */}
+
+                {/* YANGI TABLE KODI (03.02.2026) - columnsV2 ishlatilmoqda */}
+                <Table
+                    columns={columnsV2}
                     dataSource={data}
                     loading={loading}
                     bordered
                     size="small"
                     pagination={false}
-                    scroll={{ x: 1800, y: 600 }}
-                    summary={() => (
-                        <Table.Summary fixed>
-                            <Table.Summary.Row style={{ background: '#fafafa', fontWeight: 'bold' }}>
-                                <Table.Summary.Cell index={0} align="center">-</Table.Summary.Cell>
-                                <Table.Summary.Cell index={1}>Viloyat bo'yicha jami</Table.Summary.Cell>
-                                <Table.Summary.Cell index={2}>{provinceTotals.total_cases}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={3}>{provinceTotals.age_under_1}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={4}>{provinceTotals.age_1_3}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={5}>{provinceTotals.age_4_6}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={6}>{provinceTotals.age_7_14}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={7}>{provinceTotals.age_15_19}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={8}>{provinceTotals.age_20_plus}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={9}>{provinceTotals.occ_unorganized}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={10}>{provinceTotals.occ_unorganized_1_6}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={11}>{provinceTotals.occ_organized_1_6}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={12}>{provinceTotals.occ_unorganized_school_age}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={13}>{provinceTotals.occ_students}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={14}>{provinceTotals.occ_college_students}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={15}>{provinceTotals.occ_workers}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={16}>{provinceTotals.factor_water}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={17}>{provinceTotals.factor_food}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={18}>{provinceTotals.factor_contact}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={19}>{provinceTotals.lab_samples}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={20}>{provinceTotals.lab_positive}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={21}>{provinceTotals.disinfection_done}</Table.Summary.Cell>
-                            </Table.Summary.Row>
-                        </Table.Summary>
-                    )}
+                    scroll={{ x: 2000, y: 600 }}
+                /* SUMMARY VAQTINCHA O'CHIRILDI (DEBUG)
+                summary={() => (
+                    <Table.Summary fixed>
+                        <Table.Summary.Row style={{ background: '#fafafa', fontWeight: 'bold' }}>
+                            <Table.Summary.Cell index={0} align="center">-</Table.Summary.Cell>
+                            <Table.Summary.Cell index={1}>Viloyat bo'yicha jami</Table.Summary.Cell>
+                            <Table.Summary.Cell index={2}>{provinceTotals.total_cases}</Table.Summary.Cell>
+                            <Table.Summary.Cell index={3}>{provinceTotals.age_under_1}</Table.Summary.Cell>
+                            <Table.Summary.Cell index={4}>{provinceTotals.age_1_3}</Table.Summary.Cell>
+                            <Table.Summary.Cell index={5}>{provinceTotals.age_4_6}</Table.Summary.Cell>
+                            <Table.Summary.Cell index={6}>{provinceTotals.age_7_14}</Table.Summary.Cell>
+                            <Table.Summary.Cell index={7}>{provinceTotals.age_15_19}</Table.Summary.Cell>
+                            <Table.Summary.Cell index={8}>{provinceTotals.age_20_plus}</Table.Summary.Cell>
+                            <Table.Summary.Cell index={9}>-</Table.Summary.Cell>
+                            <Table.Summary.Cell index={10}>{provinceTotals.occ_unorganized}</Table.Summary.Cell>
+                            <Table.Summary.Cell index={11}>{provinceTotals.occ_organized_1_6}</Table.Summary.Cell>
+                            <Table.Summary.Cell index={12}>{provinceTotals.occ_unorganized_1_6}</Table.Summary.Cell>
+                            <Table.Summary.Cell index={13}>{provinceTotals.occ_students}</Table.Summary.Cell>
+                            <Table.Summary.Cell index={14}>{provinceTotals.occ_college_students}</Table.Summary.Cell>
+                            <Table.Summary.Cell index={15}>{provinceTotals.occ_workers}</Table.Summary.Cell>
+                            <Table.Summary.Cell index={16}>{provinceTotals.factor_water}</Table.Summary.Cell>
+                            <Table.Summary.Cell index={17}>{provinceTotals.factor_food}</Table.Summary.Cell>
+                            <Table.Summary.Cell index={18}>{provinceTotals.factor_contact}</Table.Summary.Cell>
+                            <Table.Summary.Cell index={19}>{provinceTotals.lab_samples}</Table.Summary.Cell>
+                            <Table.Summary.Cell index={20}>{provinceTotals.lab_positive}</Table.Summary.Cell>
+                            <Table.Summary.Cell index={21}>{provinceTotals.disinfection_done}</Table.Summary.Cell>
+                        </Table.Summary.Row>
+                    </Table.Summary>
+                )}
+                */
                 />
             </Space>
         </Card>

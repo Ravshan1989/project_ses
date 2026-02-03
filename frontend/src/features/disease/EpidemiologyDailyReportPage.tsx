@@ -40,15 +40,27 @@ interface EpiReportData {
     suspended_other: number;
 }
 
+// TUZATISH: EpiReportData ni kengaytirish (declaration merging)
+interface EpiReportData {
+    is_submitted?: boolean; // Hisobot topshirilganligini bildiruvchi yangi maydon
+}
+
 const EpidemiologyDailyReportPage: React.FC = () => {
     const [date, setDate] = useState(dayjs());
     const [data, setData] = useState<EpiReportData[]>([]);
     const [loading, setLoading] = useState(false);
     const [organizations, setOrganizations] = useState<any[]>([]);
 
+    // Auth context (simulated)
     const userRole = localStorage.getItem('user_role') || 'REGION_HEAD';
-    const isAdmin = userRole === 'REGION_HEAD';
-    const userOrgName = localStorage.getItem('user_org_name') || "";
+    // const isAdmin = userRole === 'REGION_HEAD'; <- ESKI
+    // YANGI: Admin yoki Region Head hammasini ko'radi
+    const isAdmin = ['ADMIN', 'REGION_HEAD', 'REPUBLIC_HEAD'].includes(userRole);
+
+    // User Org Name ni local storage dan olish kerak aslida
+    // Hozircha hardcode qilingan "Olmaliq sh" ni olib tashlaymiz va dynamic qilamiz
+    // const userOrgName = localStorage.getItem('user_org_name') || "";
+    const connectedOrgId = localStorage.getItem('user_org_id'); // Agar bor bo'lsa
 
     useEffect(() => {
         fetchReports();
@@ -63,7 +75,12 @@ const EpidemiologyDailyReportPage: React.FC = () => {
             if (currentOrgs.length === 0) {
                 const orgRes = await organizationsApi.getAll();
                 // Viloyatni (parent darajasi) hisobotdan olib tashlaymiz
-                currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent);
+                // currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent); <- ESKI
+
+                // YANGI: Shunchaki hammasini olib, Viloyat boshqarmasini olib tashlaymiz
+                const allOrgs = orgRes.data || [];
+                currentOrgs = allOrgs.filter((org: any) => org.id !== '1' && !org.name.toLowerCase().includes("boshqarma"));
+
                 setOrganizations(currentOrgs);
             }
 
@@ -76,6 +93,7 @@ const EpidemiologyDailyReportPage: React.FC = () => {
                     key: String(idx + 1),
                     district_name: org.name,
                     organizationId: org.id,
+                    is_submitted: !!existing, // Agar baza'da yozuv bo'lsa - true
                     inspected_total: existing?.inspected_total || 0,
                     inspected_mtm: existing?.inspected_mtm || 0,
                     inspected_school: existing?.inspected_school || 0,
@@ -100,8 +118,15 @@ const EpidemiologyDailyReportPage: React.FC = () => {
             });
 
             if (!isAdmin) {
-                const filteredData = tableData.filter(d => d.district_name === userOrgName);
-                setData(filteredData);
+                // const filteredData = tableData.filter(d => d.district_name === userOrgName); <- ESKI
+
+                // YANGI: Agar user admin bo'lmasa, faqat o'zini tashkilotini ko'radi
+                if (connectedOrgId) {
+                    const filteredData = tableData.filter(d => d.organizationId === connectedOrgId);
+                    setData(filteredData);
+                } else {
+                    // Fallback
+                }
             } else {
                 setData(tableData);
             }
@@ -170,8 +195,9 @@ const EpidemiologyDailyReportPage: React.FC = () => {
         />
     );
 
+    // TUZATISH: 'is_submitted' flagi orqali aniq tekshirish
     const isSubmitted = (row: EpiReportData) => {
-        return (row.inspected_total + row.defects_total + row.fines_total + row.suspended_total) > 0;
+        return !!row.is_submitted;
     };
 
     const createSectionColumns = (_title: string, prefix: string) => [
