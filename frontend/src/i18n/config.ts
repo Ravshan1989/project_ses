@@ -9,7 +9,7 @@ import kaa from './locales/kaa.json';
 import en from './locales/en.json';
 
 i18n
-    .use(LanguageDetector)
+    // .use(LanguageDetector) // O'chirib turamiz, Netlify da xato bermasligi uchun
     .use(initReactI18next)
     .init({
         resources: {
