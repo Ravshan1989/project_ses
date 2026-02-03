@@ -3,6 +3,8 @@ import { API_BASE_URL } from '../../config';
 import { Form, Input, Button, message, Typography, theme, ConfigProvider } from 'antd';
 import { UserOutlined, LockOutlined, MedicineBoxOutlined, RightOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '../../components/LanguageSwitcher';
 
 const { Title, Text, Link } = Typography;
 
