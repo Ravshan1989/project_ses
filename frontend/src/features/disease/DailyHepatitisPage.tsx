@@ -64,7 +64,9 @@ const DailyHepatitisPage: React.FC = () => {
                 const orgRes = await organizationsApi.getAll();
                 // UZ: User talabiga ko'ra avvalgi holatga qaytarildi (revert)
                 // currentOrgs = orgRes.data || [];
-                currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent);
+                // UZ: Qayta urinish: barcha tumanlar ko'rinishi uchun filterni olib tashlaymiz
+                currentOrgs = orgRes.data || [];
+                // currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent);
                 setOrganizations(currentOrgs);
             }
 

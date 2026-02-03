@@ -23,7 +23,9 @@ export class OrganizationsService {
     // Faqat ota-onasi bor tashkilotlarni (tumanlarni) qaytaramiz
     // UZ: User talabiga ko'ra avvalgi holatga qaytarildi (revert)
     // return allOrgs;
-    return allOrgs.filter((org) => !!org.parent);
+    // UZ: Qayta urinish: barcha tumanlar ko'rinishi uchun filterni olib tashlaymiz
+    return allOrgs;
+    // return allOrgs.filter((org) => !!org.parent);
   }
 
   async findByName(name: string): Promise<Organization | null> {
