@@ -69,7 +69,6 @@ const DailyHepatitisPage: React.FC = () => {
             let currentOrgs = organizations;
             if (currentOrgs.length === 0) {
                 const orgRes = await organizationsApi.getAll();
-<<<<<<< HEAD
                 // Viloyatni (parent darajasi) hisobotdan olib tashlaymiz
                 // TUZATISH: Agar API dan 'parent' maydoni kemasa, demak bu viloyat (yoki aksincha).
                 // Logikani tekshiramiz: Bizga TUMANLAR kerak. Tumanlarda parent bo'lishi kerak yoki 'tuman' so'zi qatnashishi kerak.
@@ -91,14 +90,6 @@ const DailyHepatitisPage: React.FC = () => {
                 // Yoki: District ID lari odatda > 1 yoki parent_id not null.
 
                 currentOrgs = allOrgs.filter((org: any) => org.id !== '1' && !org.name.toLowerCase().includes("boshqarma"));
-
-=======
-                // UZ: User talabiga ko'ra avvalgi holatga qaytarildi (revert)
-                // currentOrgs = orgRes.data || [];
-                // UZ: Qayta urinish: barcha tumanlar ko'rinishi uchun filterni olib tashlaymiz
-                currentOrgs = orgRes.data || [];
-                // currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent);
->>>>>>> 04d1ba4b5e8d11ee2778fbb0c1c6956d26c3a354
                 setOrganizations(currentOrgs);
             }
 
@@ -416,7 +407,6 @@ const DailyHepatitisPage: React.FC = () => {
                     bordered
                     size="small"
                     pagination={false}
-<<<<<<< HEAD
                     scroll={{ x: 2000, y: 600 }}
                 /* SUMMARY VAQTINCHA O'CHIRILDI (DEBUG)
                 summary={() => (
@@ -448,37 +438,6 @@ const DailyHepatitisPage: React.FC = () => {
                     </Table.Summary>
                 )}
                 */
-=======
-                    scroll={{ x: 1800, y: 600 }}
-                    summary={() => (
-                        <Table.Summary fixed>
-                            <Table.Summary.Row style={{ background: '#fafafa', fontWeight: 'bold' }}>
-                                <Table.Summary.Cell index={0} align="center">-</Table.Summary.Cell>
-                                <Table.Summary.Cell index={1}>{t('daily_reports.table.total_province')}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={2}>{provinceTotals.total_cases}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={3}>{provinceTotals.age_under_1}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={4}>{provinceTotals.age_1_3}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={5}>{provinceTotals.age_4_6}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={6}>{provinceTotals.age_7_14}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={7}>{provinceTotals.age_15_19}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={8}>{provinceTotals.age_20_plus}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={9}>{provinceTotals.occ_unorganized}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={10}>{provinceTotals.occ_unorganized_1_6}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={11}>{provinceTotals.occ_organized_1_6}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={12}>{provinceTotals.occ_unorganized_school_age}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={13}>{provinceTotals.occ_students}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={14}>{provinceTotals.occ_college_students}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={15}>{provinceTotals.occ_workers}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={16}>{provinceTotals.factor_water}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={17}>{provinceTotals.factor_food}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={18}>{provinceTotals.factor_contact}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={19}>{provinceTotals.lab_samples}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={20}>{provinceTotals.lab_positive}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={21}>{provinceTotals.disinfection_done}</Table.Summary.Cell>
-                            </Table.Summary.Row>
-                        </Table.Summary>
-                    )}
->>>>>>> 04d1ba4b5e8d11ee2778fbb0c1c6956d26c3a354
                 />
             </Space>
         </Card>

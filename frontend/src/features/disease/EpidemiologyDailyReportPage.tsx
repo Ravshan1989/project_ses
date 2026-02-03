@@ -68,21 +68,12 @@ const EpidemiologyDailyReportPage: React.FC = () => {
             let currentOrgs = organizations;
             if (currentOrgs.length === 0) {
                 const orgRes = await organizationsApi.getAll();
-<<<<<<< HEAD
                 // Viloyatni (parent darajasi) hisobotdan olib tashlaymiz
                 // currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent); <- ESKI
 
                 // YANGI: Shunchaki hammasini olib, Viloyat boshqarmasini olib tashlaymiz
                 const allOrgs = orgRes.data || [];
                 currentOrgs = allOrgs.filter((org: any) => org.id !== '1' && !org.name.toLowerCase().includes("boshqarma"));
-
-=======
-                // UZ: User talabiga ko'ra avvalgi holatga qaytarildi (revert)
-                // currentOrgs = orgRes.data || [];
-                // UZ: Qayta urinish: barcha tumanlar ko'rinishi uchun filterni olib tashlaymiz
-                currentOrgs = orgRes.data || [];
-                // currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent);
->>>>>>> 04d1ba4b5e8d11ee2778fbb0c1c6956d26c3a354
                 setOrganizations(currentOrgs);
             }
 
@@ -95,11 +86,7 @@ const EpidemiologyDailyReportPage: React.FC = () => {
                     key: String(idx + 1),
                     district_name: org.name,
                     organizationId: org.id,
-<<<<<<< HEAD
                     is_submitted: !!existing, // Agar baza'da yozuv bo'lsa - true
-=======
-                    is_submitted: !!existing,
->>>>>>> 04d1ba4b5e8d11ee2778fbb0c1c6956d26c3a354
                     inspected_total: existing?.inspected_total || 0,
                     inspected_mtm: existing?.inspected_mtm || 0,
                     inspected_school: existing?.inspected_school || 0,
@@ -205,12 +192,8 @@ const EpidemiologyDailyReportPage: React.FC = () => {
         />
     );
 
-<<<<<<< HEAD
     // TUZATISH: 'is_submitted' flagi orqali aniq tekshirish
     const isSubmitted = (row: EpiReportData) => {
-=======
-    const isSubmitted = (row: any) => {
->>>>>>> 04d1ba4b5e8d11ee2778fbb0c1c6956d26c3a354
         return !!row.is_submitted;
     };
 
