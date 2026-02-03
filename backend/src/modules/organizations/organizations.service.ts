@@ -8,7 +8,7 @@ export class OrganizationsService {
   constructor(
     @InjectRepository(Organization)
     private orgRepo: Repository<Organization>,
-  ) {}
+  ) { }
 
   /* 
     ESKI KOD (Barcha tashkilotlarni, jumladan viloyat darajasini ham qaytaradi):
@@ -21,7 +21,9 @@ export class OrganizationsService {
   async findAll(): Promise<Organization[]> {
     const allOrgs = await this.orgRepo.find({ relations: ["parent"] });
     // Faqat ota-onasi bor tashkilotlarni (tumanlarni) qaytaramiz
-    return allOrgs.filter((org) => !!org.parent);
+    // UZ: Hozircha barcha tashkilotlarni qaytaramiz, chunki seed qilinganlarda parent yo'q
+    // return allOrgs.filter((org) => !!org.parent);
+    return allOrgs;
   }
 
   async findByName(name: string): Promise<Organization | null> {

@@ -62,7 +62,9 @@ const DailyHepatitisPage: React.FC = () => {
             let currentOrgs = organizations;
             if (currentOrgs.length === 0) {
                 const orgRes = await organizationsApi.getAll();
-                currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent);
+                // UZ: Backenddan barcha tashkilotlar kelmoqda, filterni olib tashlaymiz
+                // currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent);
+                currentOrgs = orgRes.data || [];
                 setOrganizations(currentOrgs);
             }
 
