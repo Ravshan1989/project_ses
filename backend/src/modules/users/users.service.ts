@@ -18,8 +18,6 @@ export class UsersService {
       select: [
         "id",
         "username",
-        "firstName", // UZ: Ism
-        "lastName",  // UZ: Familiya
         "passwordHash",
         "role",
         "createdAt",
