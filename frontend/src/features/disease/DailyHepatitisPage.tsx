@@ -138,6 +138,10 @@ const DailyHepatitisPage: React.FC = () => {
                     // Hozircha bu yerni ochiq qoldiramiz (hammasini ko'rsatmaslik uchun)
                     // Yoki bo'sh array qaytaramiz xavfsizlik uchun
                     // tableData = []; 
+
+                    // UZ: Xavfsizlik uchun, agar ID topilmasa, bo'sh jadval qaytarish ma'qul, 
+                    // lekin hozircha eski mantiq (display all) ni o'chirib, qat'iy tekshiruv qo'yamiz
+                    tableData = [];
                 }
             }
 

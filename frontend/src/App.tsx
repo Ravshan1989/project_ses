@@ -254,7 +254,10 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         <LanguageSwitcher />
 
                         <div style={{ textAlign: 'right', lineHeight: '1.2' }}>
-                            <Text strong style={{ display: 'block', color: '#333' }}>Admin User</Text>
+                            {/* UZ: Foydalanuvchi ismini localStorage dan olish */}
+                            <Text strong style={{ display: 'block', color: '#333' }}>
+                                {localStorage.getItem('user_full_name') || localStorage.getItem('username') || 'Foydalanuvchi'}
+                            </Text>
                             <Text type="secondary" style={{ fontSize: '12px' }}>{t('user.roles.REGION_HEAD')}</Text>
                         </div>
 

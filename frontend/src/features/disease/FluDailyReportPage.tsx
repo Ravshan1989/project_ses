@@ -142,6 +142,8 @@ const FluDailyReportPage: React.FC = () => {
                     setData(filteredData);
                 } else {
                     // Fallback
+                    // UZ: Xavfsizlik uchun
+                    setData([]);
                 }
             } else {
                 setData(tableData);

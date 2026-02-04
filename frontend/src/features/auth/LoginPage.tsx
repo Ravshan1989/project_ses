@@ -32,6 +32,12 @@ const LoginPage: React.FC = () => {
                 localStorage.setItem('access_token', data.access_token);
                 localStorage.setItem('user_role', data.user.role);
                 localStorage.setItem('username', data.user.username);
+                // UZ: Foydalanuvchi ism-familiyasi va tashkilot ma'lumotlarini saqlash
+                localStorage.setItem('user_full_name', data.user.fullName || data.user.firstName + ' ' + data.user.lastName || data.user.username);
+                if (data.user.organization) {
+                    localStorage.setItem('user_org_id', data.user.organization.id);
+                    localStorage.setItem('user_org_name', data.user.organization.name);
+                }
 
                 message.success(t('auth.success_login', 'Xush kelibsiz!'));
                 navigate('/dashboard');

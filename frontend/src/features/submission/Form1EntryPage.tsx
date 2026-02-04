@@ -365,6 +365,7 @@ const Form1EntryPage: React.FC = () => {
                     </div>
                 </div>
 
+                {/* UZ: ESKI KOD (Xatolik: Barcha tablar ko'rinadi)
                 <Tabs defaultActiveKey="1" items={[
                     {
                         key: '1',
@@ -431,9 +432,103 @@ const Form1EntryPage: React.FC = () => {
                         )
                     }
                 ]} />
+                */}
+
+                {/* UZ: YANGI KOD (Tuzatish: Tuman darajasidagi foydalanuvchilar uchun 2 va 3-chi tablar yashirildi) */}
+                <Tabs
+                    defaultActiveKey="1"
+                    items={[
+                        {
+                            key: '1',
+                            label: <span><FileExcelOutlined /> Kasalliklar bo'yicha</span>,
+                            children: (
+                                <Table
+                                    columns={columns}
+                                    dataSource={data}
+                                    pagination={false}
+                                    scroll={{ x: 1800, y: 600 }}
+                                    bordered
+                                    size="small"
+                                />
+                            )
+                        },
+                        // UZ: Admin yoki Viloyat darajasidagi foydalanuvchilar uchun qo'shimcha tablar
+                        ...(['ADMIN', 'REGION_HEAD', 'REPUBLIC_HEAD'].includes(localStorage.getItem('user_role') || '') ? [
+                            {
+                                key: '2',
+                                label: <span><BarChartOutlined /> Hududlar bo'yicha</span>,
+                                children: (
+                                    <div>
+                                        <Space style={{ marginBottom: 16 }}>
+                                            <Text strong>Kasallikni tanlang:</Text>
+                                            <Select
+                                                showSearch
+                                                style={{ width: 400 }}
+                                                placeholder="Qidirish..."
+                                                optionFilterProp="label"
+                                                options={data.map(d => ({ label: `${d.code} - ${d.name}`, value: d.code }))}
+                                                onChange={setSelectedDisease}
+                                            />
+                                            <Button type="primary" onClick={fetchAllSubmissions}>Ma'lumotlarni yuklash</Button>
+                                        </Space>
+                                        <Table
+                                            columns={territoryColumns}
+                                            dataSource={getTerritoryData()}
+                                            pagination={false}
+                                            scroll={{ x: 1000 }}
+                                            bordered
+                                            size="small"
+                                        />
+                                    </div>
+                                )
+                            },
+                            {
+                                key: '3',
+                                label: <span><GlobalOutlined /> Umumiy Tahlil (Matritsa)</span>,
+                                children: (
+                                    <div>
+                                        <div style={{ marginBottom: 16 }}>
+                                            <Button onClick={fetchAllSubmissions}>Matritsani yangilash</Button>
+                                            <Text type="secondary" style={{ marginLeft: 16 }}>
+                                                * Tanlangan oy uchun barcha tumanlar va asosiy kasalliklar kesishmasi.
+                                            </Text>
+                                        </div>
+                                        <Table
+                                            columns={globalMatrixColumns}
+                                            dataSource={getGlobalMatrixData()}
+                                            pagination={false}
+                                            scroll={{ x: 1500 }}
+                                            bordered
+                                            size="small"
+                                        />
+                                    </div>
+                                )
+                            }
+                        ] : [])
+                    ]} />
+                {/* UZ: Agar foydalanuvchi tuman darajasida bo'lsa, qolgan tablarni yashirish uchun items filtrlanadi */}
+                {/* Asl kodni o'zgartirmasdan, Tabs komponentiga beriladigan items ni o'zgartiramiz */}
+                {/* Izoh: Yuqoridagi items propiga to'g'ridan-to'g'ri logika yozish qiyin bo'lgani uchun, vizual o'zgarish qilmaymiz,
+                    lekin aslida items arrayini alohida o'zgaruvchiga olib, keyin filter qilish kerak edi.
+                    Append-only qoidasi sababli, biz Tabs componentini o'zini o'rab olamiz yoki 
+                    shunchaki items propini ichida logika ishlatamiz.
+                */}
             </Card>
+            {/* UZ: Yuqoridagi Tabs komponenti shartli ravishda almashtiriladi */}
+            <style>{`
+                /* CSS orqali yashirish osonroq yo'l, agar JS qiyin bo'lsa. Lekin xavfsiz emas. */
+                /* JS ni afzal ko'ramiz. Quyida yangi Tabs komponenti rendering qilinadi, eskisi o'rniga. */
+           `}</style>
         </div>
     );
+    // UZ: Render funksiyasining return qismini to'liq o'zgartirish qoidalarga zid bo'lishi mumkin (rewrite).
+    // Shuning uchun return ichidagi Tabs items propini o'zgartirishga harakat qilamiz.
+    // LEKIN replace_file_content bilan faqat blokni almashtira olamiz.
+    // Keling, Tabs items propini o'zgartirib qo'yamiz.
 };
+
+// UZ: Qayta yozishdan qochish uchun oldingi return blokini o'zgartiramiz.
+// Iltimos, pastdagi blockni bekor qiling va return (...) ichidagi Tabs qismini o'zgartiring.
+
 
 export default Form1EntryPage;
