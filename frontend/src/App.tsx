@@ -258,7 +258,9 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             <Text strong style={{ display: 'block', color: '#333' }}>
                                 {localStorage.getItem('user_full_name') || localStorage.getItem('username') || 'Foydalanuvchi'}
                             </Text>
-                            <Text type="secondary" style={{ fontSize: '12px' }}>{t('user.roles.REGION_HEAD')}</Text>
+                            <Text type="secondary" style={{ fontSize: '12px' }}>
+                                {t(`user.roles.${localStorage.getItem('user_role') || 'STAFF'}`)}
+                            </Text>
                         </div>
 
                         <Button
