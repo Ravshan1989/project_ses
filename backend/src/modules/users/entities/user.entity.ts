@@ -18,6 +18,12 @@ export class User {
   @Column({ unique: true })
   username: string;
 
+  @Column({ nullable: true })
+  firstName: string;
+
+  @Column({ nullable: true })
+  lastName: string;
+
   @Column({ select: false }) // Password hash should not be returned by default
   passwordHash: string;
 
