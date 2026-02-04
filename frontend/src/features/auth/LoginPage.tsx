@@ -33,7 +33,11 @@ const LoginPage: React.FC = () => {
                 localStorage.setItem('user_role', data.user.role);
                 localStorage.setItem('username', data.user.username);
                 // UZ: Foydalanuvchi ism-familiyasi va tashkilot ma'lumotlarini saqlash
-                localStorage.setItem('user_full_name', data.user.fullName || data.user.firstName + ' ' + data.user.lastName || data.user.username);
+                const firstName = data.user.firstName;
+                const lastName = data.user.lastName;
+                const fullName = (firstName && lastName) ? `${firstName} ${lastName}` : (data.user.fullName || data.user.username);
+
+                localStorage.setItem('user_full_name', fullName);
                 if (data.user.organization) {
                     localStorage.setItem('user_org_id', data.user.organization.id);
                     localStorage.setItem('user_org_name', data.user.organization.name);
