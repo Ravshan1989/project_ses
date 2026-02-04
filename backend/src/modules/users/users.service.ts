@@ -8,15 +8,18 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-  ) {}
+  ) { }
 
   async findOneByUsername(username: string): Promise<User | undefined> {
     return this.usersRepository.findOne({
       where: { username },
+      relations: ["organization"], // UZ: Tashkilot ma'lumotlarini olish
       // Explicitly select passwordHash because it's marked as { select: false } in entity
       select: [
         "id",
         "username",
+        "firstName", // UZ: Ism
+        "lastName",  // UZ: Familiya
         "passwordHash",
         "role",
         "createdAt",
