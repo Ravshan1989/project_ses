@@ -34,4 +34,7 @@ export class CreateCovidReportDto {
   @IsNumber() @IsOptional() others?: number;
 
   @IsNumber() @IsOptional() hospitalized_count?: number;
+
+  @IsOptional()
+  isTest?: boolean;
 }

@@ -13,52 +13,60 @@ import { SubmissionsService } from "./submissions.service";
 import { CreateSubmissionDto } from "./dto/create-submission.dto";
 import { UpdateStatusDto } from "./dto/update-status.dto";
 
-// Mock Auth Guard - In real app, import from AuthModule
-// @UseGuards(JwtAuthGuard)
+import { RequirePermission } from "../../common/decorators/permissions.decorator";
+import { PermissionsGuard } from "../auth/guards/permissions.guard";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+
 @Controller("submissions")
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class SubmissionsController {
-  constructor(private readonly submissionsService: SubmissionsService) {}
+  constructor(private readonly submissionsService: SubmissionsService) { }
 
   @Post()
+  @RequirePermission("EDIT_FORM1")
   create(@Body() createSubmissionDto: CreateSubmissionDto, @Request() req) {
-    // In real app, user is attached to req by Guard
-    const mockUser = req.user || {
-      id: "mock-user-id",
-      role: "STAFF",
-      organization: { id: "mock-org" },
-    };
-    return this.submissionsService.create(createSubmissionDto, mockUser);
+    return this.submissionsService.create(createSubmissionDto, req.user);
   }
 
   @Get()
-  findAll(@Query() query) {
-    return this.submissionsService.findAll(query);
+  @RequirePermission("VIEW_FORM1_TABLE1")
+  findAll(@Query() query, @Request() req) {
+    return this.submissionsService.findAll(query, req.user);
   }
 
   @Get("status-summary")
+  @RequirePermission("VIEW_FORM1_TABLE1")
   getStatusSummary(
     @Query("templateCode") templateCode: string,
     @Query("period") period: string,
+    @Query("isTest") isTest: string,
+    @Request() req,
   ) {
-    return this.submissionsService.getStatusSummary(templateCode, period);
+    return this.submissionsService.getStatusSummary(templateCode, period, isTest === 'true', req.user);
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.submissionsService.findOne(id);
+  @RequirePermission("VIEW_FORM1_TABLE1")
+  findOne(@Param("id") id: string, @Request() req) {
+    return this.submissionsService.findOne(id, req.user);
   }
 
   @Patch(":id/status")
+  @RequirePermission("APPROVE_FORM1")
   updateStatus(
     @Param("id") id: string,
     @Body() updateStatusDto: UpdateStatusDto,
     @Request() req,
   ) {
-    const mockUser = req.user || { id: "mock-admin-id", role: "REGION_HEAD" };
-    return this.submissionsService.updateStatus(id, updateStatusDto, mockUser);
+    return this.submissionsService.updateStatus(id, updateStatusDto, req.user);
   }
   // @Get('status-summary')
   // getStatusSummary(@Query('templateCode') templateCode: string, @Query('period') period: string) {
   //     return this.submissionsService.getStatusSummary(templateCode, period);
   // }
+  @Post("cleanup-test")
+  @RequirePermission("MANAGE_DEPARTMENTS")
+  cleanupTest() {
+    return this.submissionsService.cleanupTest();
+  }
 }

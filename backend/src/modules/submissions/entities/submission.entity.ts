@@ -47,6 +47,9 @@ export class Submission {
   @Column({ type: "text", nullable: true })
   rejectionReason: string;
 
+  @Column({ default: false })
+  isTest: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

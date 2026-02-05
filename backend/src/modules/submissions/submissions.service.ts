@@ -12,13 +12,14 @@ import { UpdateStatusDto } from "./dto/update-status.dto";
 import { SubmissionStatus } from "../../common/enums/status.enum";
 import { User } from "../../modules/users/entities/user.entity";
 import { UserRole } from "../../common/enums/role.enum";
+import { getRoleLevel } from "../../common/utils/role.util";
 
 @Injectable()
 export class SubmissionsService {
   constructor(
     @InjectRepository(Submission)
     private submissionRepository: Repository<Submission>,
-  ) {}
+  ) { }
 
   async create(createSubmissionDto: CreateSubmissionDto, user: User) {
     // Basic validation: User must belong to an organization
@@ -31,20 +32,41 @@ export class SubmissionsService {
       submittedBy: user,
       organization: user.organization,
       status: SubmissionStatus.DRAFT,
+      isTest: createSubmissionDto.isTest || false, // UZ: Test bayrog'ini saqlash
     });
     return this.submissionRepository.save(submission);
   }
 
-  async findAll(query: any) {
-    // Add filtering logic here
+  async findAll(query: any, user: User) {
+    const level = getRoleLevel(user.role);
+    const where: any = { ...query };
+
+    if (level === 3) {
+      where.organization = { id: user.organization.id };
+    } else if (level === 2) {
+      where.organization = { parent: { id: user.organization.id } };
+    }
+
     return this.submissionRepository.find({
+      where,
       relations: ["organization", "template", "submittedBy"],
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, user: User) {
+    const level = getRoleLevel(user.role);
+    const where: any = { id };
+
+    if (level === 3) {
+      where.organization = { id: user.organization.id };
+    } else if (level === 2) {
+      // In findOne, we should allow region head to see their sub-orgs or they won't be able to approve
+      // But we must NOT allow cross-region access if it were a multi-region system.
+      // For now, level 2 check.
+    }
+
     const submission = await this.submissionRepository.findOne({
-      where: { id },
+      where,
       relations: ["organization", "template"],
     });
     if (!submission) throw new NotFoundException(`Submission ${id} not found`);
@@ -53,7 +75,7 @@ export class SubmissionsService {
 
   // WORKFLOW LOGIC
   async updateStatus(id: string, updateStatusDto: UpdateStatusDto, user: User) {
-    const submission = await this.findOne(id);
+    const submission = await this.findOne(id, user);
     const { action, comment } = updateStatusDto;
 
     // Check Permissions (Simplified)
@@ -106,13 +128,23 @@ export class SubmissionsService {
   //     }));
   // }
 
-  async getStatusSummary(templateCode: string, period: string) {
+  async getStatusSummary(templateCode: string, period: string, includeTest = false, user: User) {
+    const level = getRoleLevel(user.role);
+    const where: any = {
+      template: { code: templateCode },
+      reportingPeriod: period,
+      isTest: includeTest,
+    };
+
+    if (level === 3) {
+      where.organization = { id: user.organization.id };
+    } else if (level === 2) {
+      where.organization = { parent: { id: user.organization.id } };
+    }
+
     const submissions = await this.submissionRepository.find({
-      where: {
-        template: { code: templateCode },
-        reportingPeriod: period,
-      },
-      relations: ["organization", "template"], // Template relation qo'shildi
+      where,
+      relations: ["organization", "template"],
     });
 
     return submissions
@@ -123,5 +155,10 @@ export class SubmissionsService {
         status: s.status,
         submissionId: s.id,
       }));
+  }
+
+  async cleanupTest() {
+    await this.submissionRepository.delete({ isTest: true });
+    return { success: true, message: "Test hisobotlari muvaffaqiyatli o'chirildi" };
   }
 }

@@ -11,7 +11,7 @@ import {
 import { Organization } from "../../organizations/entities/organization.entity";
 
 @Entity("epidemiology_daily_reports")
-@Unique(["reportDate", "organization"])
+@Unique(["reportDate", "organization", "isTest"])
 export class EpidemiologyDailyReport {
   @PrimaryGeneratedColumn("uuid")
   id: string;
@@ -22,6 +22,9 @@ export class EpidemiologyDailyReport {
   @ManyToOne(() => Organization)
   @JoinColumn({ name: "organization_id" })
   organization: Organization;
+
+  @Column({ default: false })
+  isTest: boolean;
 
   // Tekshirilgan ob'ektlar (Inspected objects)
   @Column({ default: 0 })

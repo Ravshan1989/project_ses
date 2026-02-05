@@ -9,6 +9,8 @@ import {
 } from "typeorm";
 import { Organization } from "../../organizations/entities/organization.entity";
 import { UserRole } from "../../../common/enums/role.enum";
+import { Department } from "../../departments/entities/department.entity";
+import { Role } from "../../roles/entities/role.entity";
 
 @Entity("users")
 export class User {
@@ -37,6 +39,14 @@ export class User {
   @ManyToOne(() => Organization, (org) => org.users)
   @JoinColumn({ name: "organization_id" })
   organization: Organization;
+
+  @ManyToOne(() => Department, (dept) => dept.users, { nullable: true })
+  @JoinColumn({ name: "department_id" })
+  department: Department;
+
+  @ManyToOne(() => Role, (role) => role.users, { nullable: true })
+  @JoinColumn({ name: "role_id" })
+  dynamicRole: Role; // UZ: Dinamik rol biriktirish (Yangi tizim)
 
   @CreateDateColumn()
   createdAt: Date;

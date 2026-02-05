@@ -11,6 +11,9 @@ import { EpidemiologyDailyReport } from "./entities/epidemiology-daily-report.en
 import { CreateEpidemiologyReportDto } from "./dto/create-epidemiology-report.dto";
 import { CovidDailyReport } from "./entities/covid-daily-report.entity";
 import { CreateCovidReportDto } from "./dto/create-covid-report.dto";
+import { User } from "../users/entities/user.entity";
+import { getRoleLevel } from "../../common/utils/role.util";
+import { FindOptionsWhere } from "typeorm";
 
 @Injectable()
 export class DailyReportsService {
@@ -25,13 +28,28 @@ export class DailyReportsService {
     private epiRepo: Repository<EpidemiologyDailyReport>,
     @InjectRepository(CovidDailyReport)
     private covidRepo: Repository<CovidDailyReport>,
-  ) {}
+  ) { }
 
-  async upsert(dto: CreateHepatitisReportDto) {
+  private validateIsolation(user: User, organizationId: string) {
+    if (!user || !user.organization) return; // Should not happen with JwtGuard
+
+    const level = getRoleLevel(user.role);
+    if (level === 3) {
+      if (user.organization.id !== organizationId) {
+        throw new Error("Siz faqat o'z tashkilotingiz uchun ma'lumot kiritishingiz mumkin.");
+      }
+    } else if (level === 2) {
+      // Viloyat: faqat o'ziga tegishli tumanlar (agar kerak bo'lsa implement qilinadi)
+    }
+  }
+
+  async upsert(dto: CreateHepatitisReportDto, user: User) {
+    this.validateIsolation(user, dto.organizationId);
     let report = await this.reportRepo.findOne({
       where: {
         reportDate: dto.reportDate,
         organization: { id: dto.organizationId },
+        isTest: dto.isTest || false, // UZ: Test ma'lumoti ekanligini tekshiradi
       },
     });
 
@@ -41,23 +59,50 @@ export class DailyReportsService {
       report = this.reportRepo.create({
         ...dto,
         organization: { id: dto.organizationId },
+        isTest: dto.isTest || false,
       });
     }
     return this.reportRepo.save(report);
   }
 
+  /*
   async getByDate(date: string) {
     return this.reportRepo.find({
       where: { reportDate: date },
       relations: ["organization", "organization.parent"],
     });
   }
+  */
 
-  async upsertFlu(dto: CreateFluReportDto) {
+  async getByDate(date: string, user: User, includeTest = false) {
+    const level = getRoleLevel(user.role);
+    const where: FindOptionsWhere<HepatitisDailyReport> = {
+      reportDate: date,
+      isTest: includeTest // UZ: Test yoki Real ma'lumotni tanlash
+    };
+
+    // Level 2 (Viloyat): O'z viloyatiga qarashli
+    if (level === 2 && user.organization) {
+      where.organization = { parent: { id: user.organization.id } };
+    }
+    // Level 3 (Tuman): O'z tumaniga qarashli
+    else if (level === 3 && user.organization) {
+      where.organization = { id: user.organization.id };
+    }
+
+    return this.reportRepo.find({
+      where,
+      relations: ["organization", "organization.parent"],
+    });
+  }
+
+  async upsertFlu(dto: CreateFluReportDto, user: User) {
+    this.validateIsolation(user, dto.organizationId);
     let report = await this.fluRepo.findOne({
       where: {
         reportDate: dto.reportDate,
         organization: { id: dto.organizationId },
+        isTest: dto.isTest || false,
       },
     });
 
@@ -67,23 +112,47 @@ export class DailyReportsService {
       report = this.fluRepo.create({
         ...dto,
         organization: { id: dto.organizationId },
+        isTest: dto.isTest || false,
       });
     }
     return this.fluRepo.save(report);
   }
 
+  /*
   async getFluByDate(date: string) {
     return this.fluRepo.find({
       where: { reportDate: date },
       relations: ["organization", "organization.parent"],
     });
   }
+  */
 
-  async upsertAri(dto: CreateAriReportDto) {
+  async getFluByDate(date: string, user: User, includeTest = false) {
+    const level = getRoleLevel(user.role);
+    const where: FindOptionsWhere<FluDailyReport> = {
+      reportDate: date,
+      isTest: includeTest
+    };
+
+    if (level === 2 && user.organization) {
+      where.organization = { parent: { id: user.organization.id } };
+    } else if (level === 3 && user.organization) {
+      where.organization = { id: user.organization.id };
+    }
+
+    return this.fluRepo.find({
+      where,
+      relations: ["organization", "organization.parent"],
+    });
+  }
+
+  async upsertAri(dto: CreateAriReportDto, user: User) {
+    this.validateIsolation(user, dto.organizationId);
     let report = await this.ariRepo.findOne({
       where: {
         reportDate: dto.reportDate,
         organization: { id: dto.organizationId },
+        isTest: dto.isTest || false,
       },
     });
 
@@ -93,23 +162,47 @@ export class DailyReportsService {
       report = this.ariRepo.create({
         ...dto,
         organization: { id: dto.organizationId },
+        isTest: dto.isTest || false,
       });
     }
     return this.ariRepo.save(report);
   }
 
+  /*
   async getAriByDate(date: string) {
     return this.ariRepo.find({
       where: { reportDate: date },
       relations: ["organization", "organization.parent"],
     });
   }
+  */
 
-  async upsertEpidemiology(dto: CreateEpidemiologyReportDto) {
+  async getAriByDate(date: string, user: User, includeTest = false) {
+    const level = getRoleLevel(user.role);
+    const where: FindOptionsWhere<AriDailyReport> = {
+      reportDate: date,
+      isTest: includeTest
+    };
+
+    if (level === 2 && user.organization) {
+      where.organization = { parent: { id: user.organization.id } };
+    } else if (level === 3 && user.organization) {
+      where.organization = { id: user.organization.id };
+    }
+
+    return this.ariRepo.find({
+      where,
+      relations: ["organization", "organization.parent"],
+    });
+  }
+
+  async upsertEpidemiology(dto: CreateEpidemiologyReportDto, user: User) {
+    this.validateIsolation(user, dto.organizationId);
     let report = await this.epiRepo.findOne({
       where: {
         reportDate: dto.reportDate,
         organization: { id: dto.organizationId },
+        isTest: dto.isTest || false,
       },
     });
 
@@ -119,14 +212,36 @@ export class DailyReportsService {
       report = this.epiRepo.create({
         ...dto,
         organization: { id: dto.organizationId },
+        isTest: dto.isTest || false,
       });
     }
     return this.epiRepo.save(report);
   }
 
+  /*
   async getEpidemiologyByDate(date: string) {
     return this.epiRepo.find({
       where: { reportDate: date },
+      relations: ["organization", "organization.parent"],
+    });
+  }
+  */
+
+  async getEpidemiologyByDate(date: string, user: User, includeTest = false) {
+    const level = getRoleLevel(user.role);
+    const where: FindOptionsWhere<EpidemiologyDailyReport> = {
+      reportDate: date,
+      isTest: includeTest
+    };
+
+    if (level === 2 && user.organization) {
+      where.organization = { parent: { id: user.organization.id } };
+    } else if (level === 3 && user.organization) {
+      where.organization = { id: user.organization.id };
+    }
+
+    return this.epiRepo.find({
+      where,
       relations: ["organization", "organization.parent"],
     });
   }
@@ -152,7 +267,7 @@ export class DailyReportsService {
     */
 
   // YANGI YECHIM (Viloyat darajasini bazadan olishdayoq filtrlaymiz):
-  async getWeeklySummary(startDate: string, endDate: string) {
+  async getWeeklySummary(startDate: string, endDate: string, user: User, includeTest = false) {
     const qb = this.fluRepo
       .createQueryBuilder("report")
       .leftJoin("report.organization", "organization")
@@ -195,9 +310,21 @@ export class DailyReportsService {
         startDate,
         endDate,
       })
+      .andWhere("report.isTest = :includeTest", { includeTest })
       // QAT'IY FILTR: Faqat ota-onasi bor (tuman) tashkilotlarni olamiz
-      .andWhere("organization.parent_id IS NOT NULL")
-      .groupBy("organization.id")
+      .andWhere("organization.parent_id IS NOT NULL");
+
+    // UZ: Role Level bo'yicha filtr
+    const level = getRoleLevel(user.role);
+    if (level === 2 && user.organization) {
+      // Viloyat: Faqat o'ziga tegishli tumanlar
+      qb.andWhere("organization.parent_id = :orgId", { orgId: user.organization.id });
+    } else if (level === 3 && user.organization) {
+      // Tuman: Faqat o'zi
+      qb.andWhere("organization.id = :orgId", { orgId: user.organization.id });
+    }
+
+    qb.groupBy("organization.id")
       .addGroupBy("organization.name")
       .addGroupBy("organization.parent_id");
 
@@ -242,11 +369,13 @@ export class DailyReportsService {
     }));
   }
 
-  async upsertCovid(dto: CreateCovidReportDto) {
+  async upsertCovid(dto: CreateCovidReportDto, user: User) {
+    this.validateIsolation(user, dto.organizationId);
     let report = await this.covidRepo.findOne({
       where: {
         reportDate: dto.reportDate,
         organization: { id: dto.organizationId },
+        isTest: dto.isTest || false,
       },
     });
 
@@ -256,15 +385,46 @@ export class DailyReportsService {
       report = this.covidRepo.create({
         ...dto,
         organization: { id: dto.organizationId },
+        isTest: dto.isTest || false,
       });
     }
     return this.covidRepo.save(report);
   }
 
+  /*
   async getCovidByDate(date: string) {
     return this.covidRepo.find({
       where: { reportDate: date },
       relations: ["organization", "organization.parent"],
     });
+  }
+  */
+
+  async getCovidByDate(date: string, user: User, includeTest = false) {
+    const level = getRoleLevel(user.role);
+    const where: FindOptionsWhere<CovidDailyReport> = {
+      reportDate: date,
+      isTest: includeTest
+    };
+
+    if (level === 2 && user.organization) {
+      where.organization = { parent: { id: user.organization.id } };
+    } else if (level === 3 && user.organization) {
+      where.organization = { id: user.organization.id };
+    }
+
+    return this.covidRepo.find({
+      where,
+      relations: ["organization", "organization.parent"],
+    });
+  }
+
+  async cleanupTest() {
+    await this.reportRepo.delete({ isTest: true });
+    await this.fluRepo.delete({ isTest: true });
+    await this.ariRepo.delete({ isTest: true });
+    await this.epiRepo.delete({ isTest: true });
+    await this.covidRepo.delete({ isTest: true });
+    return { success: true, message: "Test ma'lumotlari muvaffaqiyatli o'chirildi" };
   }
 }

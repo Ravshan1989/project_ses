@@ -11,7 +11,7 @@ import {
 import { Organization } from "../../organizations/entities/organization.entity";
 
 @Entity("ari_daily_reports")
-@Unique(["reportDate", "organization"])
+@Unique(["reportDate", "organization", "isTest"])
 export class AriDailyReport {
   @PrimaryGeneratedColumn("uuid")
   id: string;
@@ -22,6 +22,9 @@ export class AriDailyReport {
   @ManyToOne(() => Organization)
   @JoinColumn({ name: "organization_id" })
   organization: Organization;
+
+  @Column({ default: false })
+  isTest: boolean;
 
   @Column({ default: 0 })
   gk: number; // Grippsimon kasalliklar

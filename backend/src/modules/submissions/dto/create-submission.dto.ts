@@ -4,6 +4,8 @@ import {
   IsObject,
   IsDateString,
   IsUUID,
+  IsBoolean,
+  IsOptional,
 } from "class-validator";
 
 export class CreateSubmissionDto {
@@ -18,4 +20,8 @@ export class CreateSubmissionDto {
   @IsObject()
   @IsNotEmpty()
   data: any;
+
+  @IsBoolean()
+  @IsOptional()
+  isTest?: boolean;
 }

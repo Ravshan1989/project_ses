@@ -12,6 +12,9 @@ import { DailyReportsModule } from "./modules/daily-reports/daily-reports.module
 import { AnalysisModule } from "./modules/analysis/analysis.module";
 
 import { AuthModule } from "./modules/auth/auth.module";
+import { DepartmentsModule } from "./modules/departments/departments.module";
+import { PermissionsModule } from "./modules/permissions/permissions.module";
+import { RolesModule } from "./modules/roles/roles.module";
 
 @Module({
   imports: [
@@ -27,8 +30,11 @@ import { AuthModule } from "./modules/auth/auth.module";
     ImportsModule,
     DailyReportsModule,
     AnalysisModule,
+    DepartmentsModule,
+    PermissionsModule,
+    RolesModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

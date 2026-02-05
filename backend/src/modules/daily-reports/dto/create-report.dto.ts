@@ -27,4 +27,7 @@ export class CreateHepatitisReportDto {
   @IsNumber() @IsOptional() lab_samples?: number;
   @IsNumber() @IsOptional() lab_positive?: number;
   @IsNumber() @IsOptional() disinfection_done?: number;
+
+  @IsOptional()
+  isTest?: boolean;
 }

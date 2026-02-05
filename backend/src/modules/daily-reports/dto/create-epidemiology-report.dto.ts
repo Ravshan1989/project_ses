@@ -34,4 +34,7 @@ export class CreateEpidemiologyReportDto {
   @IsNumber() @IsOptional() suspended_school?: number;
   @IsNumber() @IsOptional() suspended_dpm?: number;
   @IsNumber() @IsOptional() suspended_other?: number;
+
+  @IsOptional()
+  isTest?: boolean;
 }

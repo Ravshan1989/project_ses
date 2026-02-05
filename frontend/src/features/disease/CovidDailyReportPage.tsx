@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Typography, Card, DatePicker, Button, InputNumber, notification, Space } from 'antd';
-import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
+import { SaveOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Typography, Card, DatePicker, Button, InputNumber, notification, Space, Switch, Alert, Popconfirm } from 'antd';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 
@@ -50,6 +50,7 @@ const CovidDailyReportPage: React.FC = () => {
     const [data, setData] = useState<CovidReportData[]>([]);
     const [loading, setLoading] = useState(false);
     const [organizations, setOrganizations] = useState<any[]>([]);
+    const [isTestMode, setIsTestMode] = useState(false); // UZ: Test rejimi holati
 
     // Auth context (simulated)
     const userRole = localStorage.getItem('user_role') || 'REGION_HEAD';
@@ -64,7 +65,7 @@ const CovidDailyReportPage: React.FC = () => {
 
     useEffect(() => {
         fetchReports();
-    }, [date]);
+    }, [date, isTestMode]); // UZ: Test rejimi o'zgarganda ham qayta yuklanadi
 
     const fetchReports = async () => {
         setLoading(true);
@@ -76,14 +77,14 @@ const CovidDailyReportPage: React.FC = () => {
                 // Viloyatni (parent darajasi) hisobotdan olib tashlaymiz
                 // currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent); <- ESKI
 
-                // YANGI: Shunchaki hammasini olib, Viloyat boshqarmasini olib tashlaymiz
+                // YANGI: Faqat tumanlarni (ota-onasi bor tashkilotlarni) olamiz
                 const allOrgs = orgRes.data || [];
-                currentOrgs = allOrgs.filter((org: any) => org.id !== '1' && !org.name.toLowerCase().includes("boshqarma"));
+                currentOrgs = allOrgs.filter((org: any) => !!org.parent);
 
                 setOrganizations(currentOrgs);
             }
 
-            const res = await dailyReportsApi.getCovidByDate(formattedDate);
+            const res = await dailyReportsApi.getCovidByDate(formattedDate, isTestMode);
             const apiData = res.data || [];
 
             const tableData = currentOrgs.map((org, idx) => {
@@ -155,12 +156,27 @@ const CovidDailyReportPage: React.FC = () => {
                 await dailyReportsApi.upsertCovid({
                     ...row,
                     reportDate: formattedDate,
-                    organizationId: row.organizationId
+                    organizationId: row.organizationId,
+                    isTest: isTestMode // UZ: Test bayrog'i yuboriladi
                 });
             }
-            notification.success({ message: 'Saqlandi' });
+            notification.success({ message: isTestMode ? "Test ma'lumoti saqlandi" : 'Saqlandi' });
+            fetchReports();
         } catch (error) {
-            notification.error({ message: 'Xatolik', description: 'Saqlashda xatolik' });
+            notification.error({ message: 'Xatolik', description: isTestMode ? "Test ma'lumoti saqlashda xatolik" : 'Saqlashda xatolik' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCleanup = async () => {
+        setLoading(true);
+        try {
+            await dailyReportsApi.cleanupTest();
+            notification.success({ message: "Test ma'lumotlari tozalandi" });
+            fetchReports();
+        } catch (error) {
+            notification.error({ message: "Tozalashda xatolik" });
         } finally {
             setLoading(false);
         }
@@ -241,11 +257,31 @@ const CovidDailyReportPage: React.FC = () => {
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Space>
+                        {isTestMode && (
+                            <Popconfirm title="Barcha test ma'lumotlarini o'chirishni xohlaysizmi?" onConfirm={handleCleanup}>
+                                <Button danger icon={<DeleteOutlined />}>Tozalash</Button>
+                            </Popconfirm>
+                        )}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #d9d9d9', padding: '4px 12px', borderRadius: '6px' }}>
+                            <ExperimentOutlined style={{ color: isTestMode ? '#f5222d' : '#8c8c8c' }} />
+                            <Text strong={isTestMode} type={isTestMode ? "danger" : "secondary"}>Test Rejimi</Text>
+                            <Switch size="small" checked={isTestMode} onChange={setIsTestMode} />
+                        </div>
                         <DatePicker value={date} onChange={(d) => d && setDate(d)} format="DD.MM.YYYY" />
                         <Button icon={<ReloadOutlined />} onClick={fetchReports}>Yangilash</Button>
                         <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>Saqlash</Button>
                     </Space>
                 </div>
+
+                {isTestMode && (
+                    <Alert
+                        message="DIQQAT: TEST REJIMI FAOL"
+                        description="Hozirgi kiritilayotgan barcha ma'lumotlar 'Test' deb belgilanadi va real hisobotga ta'sir qilmaydi."
+                        type="error"
+                        showIcon
+                        icon={<ExperimentOutlined />}
+                    />
+                )}
 
                 <Table
                     columns={columns}

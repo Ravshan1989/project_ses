@@ -48,4 +48,7 @@ export class CreateFluReportDto {
   // Vafot etganlar (Deaths)
   @IsNumber() @IsOptional() death_total?: number;
   @IsNumber() @IsOptional() death_pregnant?: number;
+
+  @IsOptional()
+  isTest?: boolean;
 }

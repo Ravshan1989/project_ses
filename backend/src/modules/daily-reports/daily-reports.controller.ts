@@ -14,65 +14,103 @@ import { CreateAriReportDto } from "./dto/create-ari-report.dto";
 import { CreateEpidemiologyReportDto } from "./dto/create-epidemiology-report.dto";
 import { CreateCovidReportDto } from "./dto/create-covid-report.dto";
 
+import { RequirePermission } from "../../common/decorators/permissions.decorator";
+import { PermissionsGuard } from "../auth/guards/permissions.guard";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+
 @Controller("daily-reports")
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class DailyReportsController {
-  constructor(private readonly reportsService: DailyReportsService) {}
+  constructor(private readonly reportsService: DailyReportsService) { }
 
   @Post()
-  async createOrUpdate(@Body() dto: CreateHepatitisReportDto) {
-    return this.reportsService.upsert(dto);
+  async createOrUpdate(@Body() dto: CreateHepatitisReportDto, @Request() req) {
+    return this.reportsService.upsert(dto, req.user);
   }
 
   @Get()
-  async getByDate(@Query("date") date: string) {
-    return this.reportsService.getByDate(date);
+  @RequirePermission("VIEW_HEPATITIS")
+  async getByDate(
+    @Query("date") date: string,
+    @Query("isTest") isTest: string,
+    @Request() req
+  ) {
+    return this.reportsService.getByDate(date, req.user, isTest === 'true');
   }
 
   @Post("flu")
-  async createOrUpdateFlu(@Body() dto: CreateFluReportDto) {
-    return this.reportsService.upsertFlu(dto);
+  async createOrUpdateFlu(@Body() dto: CreateFluReportDto, @Request() req) {
+    return this.reportsService.upsertFlu(dto, req.user);
   }
 
   @Get("flu")
-  async getFluByDate(@Query("date") date: string) {
-    return this.reportsService.getFluByDate(date);
+  @RequirePermission("VIEW_FLU")
+  async getFluByDate(
+    @Query("date") date: string,
+    @Query("isTest") isTest: string,
+    @Request() req
+  ) {
+    return this.reportsService.getFluByDate(date, req.user, isTest === 'true');
   }
 
   @Post("ari")
-  async createOrUpdateAri(@Body() dto: CreateAriReportDto) {
-    return this.reportsService.upsertAri(dto);
+  async createOrUpdateAri(@Body() dto: CreateAriReportDto, @Request() req) {
+    return this.reportsService.upsertAri(dto, req.user);
   }
 
   @Get("ari")
-  async getAriByDate(@Query("date") date: string) {
-    return this.reportsService.getAriByDate(date);
+  @RequirePermission("VIEW_FLU")
+  async getAriByDate(
+    @Query("date") date: string,
+    @Query("isTest") isTest: string,
+    @Request() req
+  ) {
+    return this.reportsService.getAriByDate(date, req.user, isTest === 'true');
   }
 
   @Get("weekly-summary")
+  @RequirePermission("VIEW_WEEKLY_SUMMARY")
   async getWeeklySummary(
     @Query("startDate") startDate: string,
     @Query("endDate") endDate: string,
+    @Query("isTest") isTest: string,
+    @Request() req,
   ) {
-    return this.reportsService.getWeeklySummary(startDate, endDate);
+    return this.reportsService.getWeeklySummary(startDate, endDate, req.user, isTest === 'true');
   }
 
   @Post("epidemiology")
-  async createOrUpdateEpidemiology(@Body() dto: CreateEpidemiologyReportDto) {
-    return this.reportsService.upsertEpidemiology(dto);
+  async createOrUpdateEpidemiology(@Body() dto: CreateEpidemiologyReportDto, @Request() req) {
+    return this.reportsService.upsertEpidemiology(dto, req.user);
   }
 
   @Get("epidemiology")
-  async getEpidemiologyByDate(@Query("date") date: string) {
-    return this.reportsService.getEpidemiologyByDate(date);
+  @RequirePermission("VIEW_EPIDEMIOLOGY")
+  async getEpidemiologyByDate(
+    @Query("date") date: string,
+    @Query("isTest") isTest: string,
+    @Request() req
+  ) {
+    return this.reportsService.getEpidemiologyByDate(date, req.user, isTest === 'true');
   }
 
   @Post("covid")
-  async createOrUpdateCovid(@Body() dto: CreateCovidReportDto) {
-    return this.reportsService.upsertCovid(dto);
+  async createOrUpdateCovid(@Body() dto: CreateCovidReportDto, @Request() req) {
+    return this.reportsService.upsertCovid(dto, req.user);
   }
 
   @Get("covid")
-  async getCovidByDate(@Query("date") date: string) {
-    return this.reportsService.getCovidByDate(date);
+  @RequirePermission("VIEW_COVID")
+  async getCovidByDate(
+    @Query("date") date: string,
+    @Query("isTest") isTest: string,
+    @Request() req
+  ) {
+    return this.reportsService.getCovidByDate(date, req.user, isTest === 'true');
+  }
+  @Post("cleanup-test")
+  @RequirePermission("MANAGE_DEPARTMENTS") // Republic or higher
+  async cleanupTest() {
+    return this.reportsService.cleanupTest();
   }
 }

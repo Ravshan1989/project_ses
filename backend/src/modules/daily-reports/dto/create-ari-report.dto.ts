@@ -18,4 +18,7 @@ export class CreateAriReportDto {
   @IsNumber()
   @IsOptional()
   pneumonia?: number;
+
+  @IsOptional()
+  isTest?: boolean;
 }

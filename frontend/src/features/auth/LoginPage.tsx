@@ -41,6 +41,28 @@ const LoginPage: React.FC = () => {
                 if (data.user.organization) {
                     localStorage.setItem('user_org_id', data.user.organization.id);
                     localStorage.setItem('user_org_name', data.user.organization.name);
+
+                    // UZ: Darajani aniqlash (Level 3 - Tuman, Level 2 - Viloyat)
+                    // Agar parent bo'lsa - Tuman (3), bo'lmasa - Viloyat/Respublika (2/1)
+                    const level = data.user.organization.parent ? '3' : '2';
+                    localStorage.setItem('user_level', level);
+                }
+
+                // UZ: Ruxsatlarni saqlash (Bo'lim va Dinamik Rol)
+                const deptPerms = data.user.department?.permissions?.map((dp: any) => dp.permission.code) || [];
+                localStorage.setItem('user_dept_permissions', JSON.stringify(deptPerms));
+
+                if (data.user.dynamicRole && data.user.dynamicRole.rolePermissions) {
+                    localStorage.setItem('user_role_permissions', JSON.stringify(data.user.dynamicRole.rolePermissions));
+                } else {
+                    localStorage.removeItem('user_role_permissions');
+                }
+
+                // UZ: Eski kod bilan tahliliy muvofiqlik uchun (ixtiyoriy)
+                localStorage.setItem('user_permissions', JSON.stringify(deptPerms));
+
+                if (data.user.department) {
+                    localStorage.setItem('user_department_name', data.user.department.name);
                 }
 
                 message.success(t('auth.success_login', 'Xush kelibsiz!'));

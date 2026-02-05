@@ -8,8 +8,11 @@ import {
     SettingOutlined,
     LogoutOutlined,
     FileTextOutlined,
-    UserAddOutlined // Imported
+    ClusterOutlined,
+    TeamOutlined,
+    UserOutlined
 } from '@ant-design/icons';
+import RoleManagementPage from './features/admin/RoleManagementPage';
 // ... imports ...
 import UserManagementPage from './features/admin/UserManagementPage'; // Imported
 // TUZATISH: Yangi ikonka import qilindi
@@ -35,6 +38,7 @@ import LoginPage from './features/auth/LoginPage';
 import ExportPage from './features/export/ExportPage';
 // TUZATISH: ImportPage import qilindi
 import ImportPage from './features/import/ImportPage';
+import DepartmentManagementPage from './features/admin/DepartmentManagementPage';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
@@ -68,6 +72,9 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         return allowedRoles.includes(userRole);
     };
 
+    const isAdmin = userRole === 'ADMIN';
+    const isRepublic = userRole === 'REPUBLIC_HEAD';
+
     const menuItems = [
         {
             key: '/dashboard',
@@ -81,7 +88,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             label: t('common.vaccination_entry'),
             onClick: () => navigate('/disease-entry')
         }] : []),
-        {
+        ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD', 'DISTRICT_HEAD', 'LAB_HEAD', 'EPIDEMIOLOGIST', 'EPIDEMIOLOGIST_ASSISTANT', 'STAFF']) ? [{
             key: 'grp_reports',
             icon: <FileTextOutlined />,
             label: t('common.reports'),
@@ -128,7 +135,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     icon: <SaveOutlined style={{ color: '#1890ff' }} />
                 },
             ]
-        },
+        }] : []),
         ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD']) ? [{
             key: '/form1-monitoring',
             icon: <EyeOutlined />,
@@ -175,12 +182,26 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     label: t('common.diseases'),
                     onClick: () => navigate('/disease-manager')
                 }] : []),
-                ...(hasRole(['ADMIN']) ? [{
-                    key: '/users',
-                    icon: <UserAddOutlined />,
-                    label: t('user.title'),
-                    onClick: () => navigate('/users')
-                }] : [])
+                ...(isAdmin || isRepublic ? [
+                    {
+                        key: '/departments',
+                        icon: <ClusterOutlined />,
+                        label: "Bo'limlar",
+                        onClick: () => navigate('/departments')
+                    },
+                    {
+                        key: '/roles',
+                        icon: <TeamOutlined />,
+                        label: "Rollar (Huquqlar)",
+                        onClick: () => navigate('/roles')
+                    },
+                    {
+                        key: '/users',
+                        icon: <UserOutlined />,
+                        label: "Foydalanuvchilar Boshqaruvi",
+                        onClick: () => navigate('/users')
+                    }
+                ] : [])
             ]
         }
     ];
@@ -343,6 +364,8 @@ function App() {
                     <Route path="/analysis" element={<ProtectedRoute><AnalysisDashboard /></ProtectedRoute>} />
                     <Route path="/analysis/global" element={<ProtectedRoute><GlobalMonitoringPage /></ProtectedRoute>} />
                     <Route path="/users" element={<ProtectedRoute><UserManagementPage /></ProtectedRoute>} />
+                    <Route path="/departments" element={<ProtectedRoute><DepartmentManagementPage /></ProtectedRoute>} />
+                    <Route path="/roles" element={<ProtectedRoute><RoleManagementPage /></ProtectedRoute>} />
                 </Routes>
             </BrowserRouter>
         </ConfigProvider>

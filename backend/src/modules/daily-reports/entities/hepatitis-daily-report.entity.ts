@@ -11,7 +11,7 @@ import {
 import { Organization } from "../../organizations/entities/organization.entity";
 
 @Entity("hepatitis_daily_reports")
-@Unique(["reportDate", "organization"])
+@Unique(["reportDate", "organization", "isTest"])
 export class HepatitisDailyReport {
   @PrimaryGeneratedColumn("uuid")
   id: string;
@@ -22,6 +22,9 @@ export class HepatitisDailyReport {
   @ManyToOne(() => Organization)
   @JoinColumn({ name: "organization_id" })
   organization: Organization;
+
+  @Column({ default: false })
+  isTest: boolean;
 
   // Jami
   @Column({ default: 0 })

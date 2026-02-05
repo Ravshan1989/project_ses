@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../../config';
 import { Table, Button, Modal, Form, Input, Select, message, Tag, Space, Card } from 'antd';
-import { UserAddOutlined } from '@ant-design/icons';
+import { UserAddOutlined, SolutionOutlined } from '@ant-design/icons';
+import { rolesApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
 
 const { Option } = Select;
@@ -10,6 +11,8 @@ const UserManagementPage: React.FC = () => {
     const { t } = useTranslation();
     const [users, setUsers] = useState([]);
     const [organizations, setOrganizations] = useState([]); // Org state
+    const [departments, setDepartments] = useState([]); // Dept state
+    const [roles, setRoles] = useState<any[]>([]); // UZ: Dinamik rollar state'i
     const [loading, setLoading] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [form] = Form.useForm();
@@ -57,9 +60,39 @@ const UserManagementPage: React.FC = () => {
         }
     };
 
+    // Fetch Departments
+    const fetchDepartments = async () => {
+        try {
+            const token = localStorage.getItem('access_token');
+            const response = await fetch(`${API_BASE_URL}/departments`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setDepartments(data);
+            }
+        } catch (error) {
+            console.error('Error fetching depts:', error);
+        }
+    };
+
+    // UZ: Dinamik rollarni yuklash
+    const fetchDynamicRoles = async () => {
+        try {
+            const res = await rolesApi.getAll();
+            setRoles(res.data);
+        } catch (e) {
+            console.error("Roles load error:", e);
+        }
+    };
+
     useEffect(() => {
         fetchUsers();
         fetchOrganizations();
+        fetchDepartments();
+        fetchDynamicRoles();
     }, []);
 
     const handleCreateOrUpdateUser = async (values: any) => {
@@ -74,13 +107,16 @@ const UserManagementPage: React.FC = () => {
                 delete values.password;
             }
 
+            // UZ: DynamicRoleId ni jo'natish
+            const payload = { ...values };
+
             const response = await fetch(url, {
                 method,
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(values),
+                body: JSON.stringify(payload),
             });
 
             if (response.ok) {
@@ -132,7 +168,9 @@ const UserManagementPage: React.FC = () => {
         form.setFieldsValue({
             username: user.username,
             role: user.role,
-            organizationId: user.organization?.id
+            organizationId: user.organization?.id,
+            departmentId: user.department?.id,
+            dynamicRoleId: user.dynamicRole?.id
         });
         setIsModalVisible(true);
     };
@@ -148,15 +186,22 @@ const UserManagementPage: React.FC = () => {
             title: t('user.role'),
             dataIndex: 'role',
             key: 'role',
-            render: (role: string) => {
+            render: (role: string, record: any) => {
                 let color = 'geekblue';
                 if (role === 'ADMIN') color = 'red';
                 if (role === 'REGION_HEAD') color = 'gold';
                 if (role === 'DISTRICT_HEAD') color = 'green';
                 return (
-                    <Tag color={color}>
-                        {t(`user.roles.${role}`)}
-                    </Tag>
+                    <Space direction="vertical" size={0}>
+                        <Tag color={color}>
+                            {t(`user.roles.${role}`)}
+                        </Tag>
+                        {record.dynamicRole && (
+                            <Tag color="purple" icon={<SolutionOutlined />} style={{ marginTop: 4 }}>
+                                {record.dynamicRole.name}
+                            </Tag>
+                        )}
+                    </Space>
                 );
             },
         },
@@ -245,6 +290,12 @@ const UserManagementPage: React.FC = () => {
                             <Option value="REPUBLIC_HEAD">{t('user.roles.REPUBLIC_HEAD')}</Option>
                             <Option value="STAFF">{t('user.roles.STAFF')}</Option>
                             <Option value="ADMIN">{t('user.roles.ADMIN')}</Option>
+
+                            <Option value="DEPARTMENT_HEAD">Bo'lim Boshlig'i</Option>
+                            <Option value="EPIDEMIOLOGIST">Epidemiolog Vrach</Option>
+                            <Option value="EPIDEMIOLOGIST_ASSISTANT">Epidemiolog Yordamchisi</Option>
+                            <Option value="SANITARY_DOCTOR">Sanitar Vrach</Option>
+                            <Option value="SANITARY_ASSISTANT">Sanitar Yordamchisi</Option>
                         </Select>
                     </Form.Item>
 
@@ -261,6 +312,34 @@ const UserManagementPage: React.FC = () => {
                             {organizations.map((org: any) => (
                                 <Option key={org.id} value={org.id}>
                                     {org.name}
+                                </Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item
+                        name="dynamicRoleId"
+                        label="Dinamik Rol (Huquqlar)"
+                    >
+                        <Select placeholder="Rolni tanlang (Ixtiyoriy)" allowClear>
+                            {roles.map((r: any) => (
+                                <Select.Option key={r.id} value={r.id}>
+                                    {r.name} ({r.level}-daraja)
+                                </Select.Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item
+                        name="departmentId"
+                        label="Bo'lim (Department)"
+                        rules={[{ required: false, message: "Bo'limni tanlang" }]}
+                    >
+                        <Select placeholder="Bo'limni tanlang (Ixtiyoriy)">
+                            <Option value="">- Bo'limsiz -</Option>
+                            {departments.map((dept: any) => (
+                                <Option key={dept.id} value={dept.id}>
+                                    {dept.name}
                                 </Option>
                             ))}
                         </Select>

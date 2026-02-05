@@ -23,8 +23,9 @@ export const submissionApi = {
     getAll: () => api.get('/submissions'),
     updateStatus: (id: string, action: 'APPROVE' | 'REJECT', comment?: string) =>
         api.patch(`/submissions/${id}/status`, { action, comment }),
-    getStatusSummary: (templateCode: string, period: string) =>
-        api.get(`/submissions/status-summary?templateCode=${templateCode}&period=${period}`),
+    getStatusSummary: (templateCode: string, period: string, isTest = false) =>
+        api.get(`/submissions/status-summary?templateCode=${templateCode}&period=${period}&isTest=${isTest}`),
+    cleanupTest: () => api.post('/submissions/cleanup-test'),
 };
 
 export const diseasesApi = {
@@ -35,18 +36,19 @@ export const diseasesApi = {
 };
 
 export const dailyReportsApi = {
-    getByDate: (date: string) => api.get(`/daily-reports?date=${date}`),
+    getByDate: (date: string, isTest = false) => api.get(`/daily-reports?date=${date}&isTest=${isTest}`),
     upsert: (data: any) => api.post('/daily-reports', data),
-    getFluByDate: (date: string) => api.get(`/daily-reports/flu?date=${date}`),
+    getFluByDate: (date: string, isTest = false) => api.get(`/daily-reports/flu?date=${date}&isTest=${isTest}`),
     upsertFlu: (data: any) => api.post('/daily-reports/flu', data),
-    getAriByDate: (date: string) => api.get(`/daily-reports/ari?date=${date}`),
+    getAriByDate: (date: string, isTest = false) => api.get(`/daily-reports/ari?date=${date}&isTest=${isTest}`),
     upsertAri: (data: any) => api.post('/daily-reports/ari', data),
-    getEpidemiologyByDate: (date: string) => api.get(`/daily-reports/epidemiology?date=${date}`),
+    getEpidemiologyByDate: (date: string, isTest = false) => api.get(`/daily-reports/epidemiology?date=${date}&isTest=${isTest}`),
     upsertEpidemiology: (data: any) => api.post('/daily-reports/epidemiology', data),
-    getWeeklySummary: (startDate: string, endDate: string) =>
-        api.get(`/daily-reports/weekly-summary?startDate=${startDate}&endDate=${endDate}`),
-    getCovidByDate: (date: string) => api.get(`/daily-reports/covid?date=${date}`),
+    getWeeklySummary: (startDate: string, endDate: string, isTest = false) =>
+        api.get(`/daily-reports/weekly-summary?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}`),
+    getCovidByDate: (date: string, isTest = false) => api.get(`/daily-reports/covid?date=${date}&isTest=${isTest}`),
     upsertCovid: (data: any) => api.post('/daily-reports/covid', data),
+    cleanupTest: () => api.post('/daily-reports/cleanup-test'),
 };
 
 export const organizationsApi = {
@@ -54,9 +56,9 @@ export const organizationsApi = {
 };
 
 export const exportsApi = {
-    getFlu: (startDate: string, endDate: string) => api.get(`/exports/flu?startDate=${startDate}&endDate=${endDate}`),
-    getHepatitis: (startDate: string, endDate: string) => api.get(`/exports/hepatitis?startDate=${startDate}&endDate=${endDate}`),
-    getForm1: (startDate: string, endDate: string) => api.get(`/exports/form1?startDate=${startDate}&endDate=${endDate}`),
+    getFlu: (startDate: string, endDate: string, isTest = false) => api.get(`/exports/flu?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}`),
+    getHepatitis: (startDate: string, endDate: string, isTest = false) => api.get(`/exports/hepatitis?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}`),
+    getForm1: (startDate: string, endDate: string, isTest = false) => api.get(`/exports/form1?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}`),
 };
 
 export const importsApi = {
@@ -76,3 +78,27 @@ export const analysisApi = {
     getGlobalSummary: (params: { startDate: string; endDate: string }) =>
         api.get('/analysis/global-summary', { params }),
 };
+
+export const departmentsApi = {
+    getAll: () => api.get('/departments'),
+    create: (data: any) => api.post('/departments', data),
+    update: (id: string, data: any) => api.patch(`/departments/${id}`, data),
+    delete: (id: string) => api.delete(`/departments/${id}`),
+    syncPermissions: (id: string, permissions: string[]) =>
+        api.post(`/departments/${id}/permissions`, { permissions }),
+};
+
+export const permissionsApi = {
+    getAll: () => api.get('/permissions'),
+};
+
+export const rolesApi = {
+    getAll: () => api.get('/roles'),
+    getOne: (id: string) => api.get(`/roles/${id}`),
+    create: (data: any) => api.post('/roles', data),
+    update: (id: string, data: any) => api.patch(`/roles/${id}`, data),
+    syncPermissions: (id: string, permissions: any[]) =>
+        api.post(`/roles/${id}/permissions`, { permissions }),
+};
+
+

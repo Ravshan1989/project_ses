@@ -11,7 +11,7 @@ import {
 import { Organization } from "../../organizations/entities/organization.entity";
 
 @Entity("covid_daily_reports")
-@Unique(["reportDate", "organization"])
+@Unique(["reportDate", "organization", "isTest"])
 export class CovidDailyReport {
   @PrimaryGeneratedColumn("uuid")
   id: string;
@@ -22,6 +22,9 @@ export class CovidDailyReport {
   @ManyToOne(() => Organization)
   @JoinColumn({ name: "organization_id" })
   organization: Organization;
+
+  @Column({ default: false })
+  isTest: boolean;
 
   @Column({ default: 0 }) total_cases: number; // Жami kasallanganlar
   @Column({ default: 0 }) reinfected: number; // Shundan qayta kasallanganlar

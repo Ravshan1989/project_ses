@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Table, Card, Typography, DatePicker, message, InputNumber, Upload, Tabs, Select, Space } from 'antd';
-import { FileExcelOutlined, SaveOutlined, UploadOutlined, BarChartOutlined, GlobalOutlined } from '@ant-design/icons';
+import { FileExcelOutlined, SaveOutlined, UploadOutlined, BarChartOutlined, GlobalOutlined, ExperimentOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Button, Table, Card, Typography, DatePicker, message, InputNumber, Upload, Tabs, Select, Space, Switch, Alert, Popconfirm } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { read, utils } from 'xlsx';
 import { diseasesApi, submissionApi, api } from '../../services/api';
 import dayjs from 'dayjs';
+import PermissionGate from '../../components/PermissionGate';
 
 const { Title, Text } = Typography;
 
@@ -28,6 +29,7 @@ const Form1EntryPage: React.FC = () => {
     const [period, setPeriod] = useState(dayjs().subtract(1, 'month'));
     const [templateId, setTemplateId] = useState<string>('');
     const [population, setPopulation] = useState<number>(100000); // Default or fetch
+    const [isTestMode, setIsTestMode] = useState(false); // UZ: Test rejimi holati
 
     useEffect(() => {
         fetchDiseases();
@@ -216,7 +218,8 @@ const Form1EntryPage: React.FC = () => {
     const fetchAllSubmissions = async () => {
         try {
             const periodStr = period.startOf('month').format('YYYY-MM-DD');
-            const res = await api.get(`/submissions?period=${periodStr}`);
+            // UZ: Test rejimi bo'yicha filterlash
+            const res = await api.get(`/submissions?period=${periodStr}&isTest=${isTestMode}`);
             setAllSubmissions(res.data);
         } catch (e) {
             console.error("Failed to fetch all submissions", e);
@@ -322,12 +325,26 @@ const Form1EntryPage: React.FC = () => {
                 templateId: templateId,
                 reportingPeriod: periodStr,
                 data: data,
-                status: 'SUBMITTED'
+                status: 'SUBMITTED',
+                isTest: isTestMode // UZ: Test bayrog'i yuboriladi
             });
-            message.success('Shakl 1 hisoboti muvaffaqiyatli saqlandi!');
+            message.success(isTestMode ? 'Test hisoboti saqlandi!' : 'Shakl 1 hisoboti muvaffaqiyatli saqlandi!');
             fetchAllSubmissions();
         } catch (error) {
             message.error('Saqlashda xatolik yuz berdi');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCleanup = async () => {
+        setLoading(true);
+        try {
+            await submissionApi.cleanupTest();
+            message.success("Test hisobotlari tozalandi");
+            fetchAllSubmissions();
+        } catch (error) {
+            message.error("Tozalashda xatolik");
         } finally {
             setLoading(false);
         }
@@ -354,16 +371,41 @@ const Form1EntryPage: React.FC = () => {
                             </div>
                         </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '16px' }}>
-                        <Upload beforeUpload={handleExcelUpload} showUploadList={false}>
-                            <Button icon={<UploadOutlined />}>Excel Yuklash</Button>
-                        </Upload>
+                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                        {isTestMode && (
+                            <Popconfirm title="Barcha test hisobotlarini o'chirishni xohlaysizmi?" onConfirm={handleCleanup}>
+                                <Button danger icon={<DeleteOutlined />}>Tozalash</Button>
+                            </Popconfirm>
+                        )}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #d9d9d9', padding: '4px 12px', borderRadius: '6px' }}>
+                            <ExperimentOutlined style={{ color: isTestMode ? '#f5222d' : '#8c8c8c' }} />
+                            <Text strong={isTestMode} type={isTestMode ? "danger" : "secondary"}>Test Rejimi</Text>
+                            <Switch size="small" checked={isTestMode} onChange={setIsTestMode} />
+                        </div>
+                        <PermissionGate permission="VIEW_FORM1_TABLE1" action="edit">
+                            <Upload beforeUpload={handleExcelUpload} showUploadList={false}>
+                                <Button icon={<UploadOutlined />}>Excel Yuklash</Button>
+                            </Upload>
+                        </PermissionGate>
                         <DatePicker picker="month" value={period} onChange={(v) => v && setPeriod(v)} format="MMMM YYYY" />
-                        <Button type="primary" size="large" icon={<SaveOutlined />} onClick={onFinish} loading={loading}>
-                            Saqlash
-                        </Button>
+                        <PermissionGate permission="VIEW_FORM1_TABLE1" action="edit">
+                            <Button type="primary" size="large" icon={<SaveOutlined />} onClick={onFinish} loading={loading}>
+                                Saqlash
+                            </Button>
+                        </PermissionGate>
                     </div>
                 </div>
+
+                {isTestMode && (
+                    <Alert
+                        message="DIQQAT: TEST REJIMI FAOL"
+                        description="Hozirgi kiritilayotgan barcha ma'lumotlar 'Test' deb belgilanadi va real hisobotga ta'sir qilmaydi."
+                        type="error"
+                        showIcon
+                        icon={<ExperimentOutlined />}
+                        style={{ marginBottom: 16 }}
+                    />
+                )}
 
                 {/* UZ: ESKI KOD (Xatolik: Barcha tablar ko'rinadi)
                 <Tabs defaultActiveKey="1" items={[
@@ -440,24 +482,33 @@ const Form1EntryPage: React.FC = () => {
                     items={[
                         {
                             key: '1',
-                            label: <span><FileExcelOutlined /> Kasalliklar bo'yicha</span>,
+                            label: (
+                                <PermissionGate permission="VIEW_FORM1_TABLE1">
+                                    <span><FileExcelOutlined /> Kasalliklar bo'yicha</span>
+                                </PermissionGate>
+                            ),
                             children: (
-                                <Table
-                                    columns={columns}
-                                    dataSource={data}
-                                    pagination={false}
-                                    scroll={{ x: 1800, y: 600 }}
-                                    bordered
-                                    size="small"
-                                />
+                                <PermissionGate permission="VIEW_FORM1_TABLE1">
+                                    <Table
+                                        columns={columns}
+                                        dataSource={data}
+                                        pagination={false}
+                                        scroll={{ x: 1800, y: 600 }}
+                                        bordered
+                                        size="small"
+                                    />
+                                </PermissionGate>
                             )
                         },
-                        // UZ: Admin yoki Viloyat darajasidagi foydalanuvchilar uchun qo'shimcha tablar
-                        ...(['ADMIN', 'REGION_HEAD', 'REPUBLIC_HEAD'].includes(localStorage.getItem('user_role') || '') ? [
-                            {
-                                key: '2',
-                                label: <span><BarChartOutlined /> Hududlar bo'yicha</span>,
-                                children: (
+                        {
+                            key: '2',
+                            label: (
+                                <PermissionGate permission="VIEW_FORM1_TABLE2">
+                                    <span><BarChartOutlined /> Hududlar bo'yicha</span>
+                                </PermissionGate>
+                            ),
+                            children: (
+                                <PermissionGate permission="VIEW_FORM1_TABLE2">
                                     <div>
                                         <Space style={{ marginBottom: 16 }}>
                                             <Text strong>Kasallikni tanlang:</Text>
@@ -480,12 +531,18 @@ const Form1EntryPage: React.FC = () => {
                                             size="small"
                                         />
                                     </div>
-                                )
-                            },
-                            {
-                                key: '3',
-                                label: <span><GlobalOutlined /> Umumiy Tahlil (Matritsa)</span>,
-                                children: (
+                                </PermissionGate>
+                            )
+                        },
+                        {
+                            key: '3',
+                            label: (
+                                <PermissionGate permission="VIEW_FORM1_TABLE3">
+                                    <span><GlobalOutlined /> Umumiy Tahlil (Matritsa)</span>
+                                </PermissionGate>
+                            ),
+                            children: (
+                                <PermissionGate permission="VIEW_FORM1_TABLE3">
                                     <div>
                                         <div style={{ marginBottom: 16 }}>
                                             <Button onClick={fetchAllSubmissions}>Matritsani yangilash</Button>
@@ -502,10 +559,30 @@ const Form1EntryPage: React.FC = () => {
                                             size="small"
                                         />
                                     </div>
-                                )
-                            }
-                        ] : [])
-                    ]} />
+                                </PermissionGate>
+                            )
+                        }
+                    ].filter(item => {
+                        // UZ: Tuman darajasidagi foydalanuvchilar (Level 3) va Dinamik rol ruxsatlari bo'yicha filterlash
+                        const userLevel = localStorage.getItem('user_level');
+                        const rolePermsStr = localStorage.getItem('user_role_permissions');
+                        const rolePerms = rolePermsStr ? JSON.parse(rolePermsStr) : [];
+
+                        // 1. Qat'iy Level 3 block
+                        if (userLevel === '3' && (item.key === '2' || item.key === '3')) return false;
+
+                        // 2. Dinamik rol ruxsati (Agar rol biriktirilgan bo'lsa)
+                        const isAdmin = ['ADMIN', 'REPUBLIC_HEAD'].includes(localStorage.getItem('user_role') || '');
+                        if (isAdmin) return true;
+
+                        const permCode = item.key === '1' ? 'VIEW_FORM1_TABLE1' : (item.key === '2' ? 'VIEW_FORM1_TABLE2' : 'VIEW_FORM1_TABLE3');
+                        if (rolePermsStr) {
+                            const rp = rolePerms.find((p: any) => p.permissionCode === permCode);
+                            if (!rp || (!rp.canView && !rp.canEdit)) return false;
+                        }
+
+                        return true;
+                    })} />
                 {/* UZ: Agar foydalanuvchi tuman darajasida bo'lsa, qolgan tablarni yashirish uchun items filtrlanadi */}
                 {/* Asl kodni o'zgartirmasdan, Tabs komponentiga beriladigan items ni o'zgartiramiz */}
                 {/* Izoh: Yuqoridagi items propiga to'g'ridan-to'g'ri logika yozish qiyin bo'lgani uchun, vizual o'zgarish qilmaymiz,

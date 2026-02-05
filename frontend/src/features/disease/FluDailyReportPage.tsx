@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Typography, Card, DatePicker, Button, InputNumber, notification, Space } from 'antd';
-import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
+import { SaveOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Typography, Card, DatePicker, Button, InputNumber, notification, Space, Switch, Alert, Popconfirm } from 'antd';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
+import PermissionGate from '../../components/PermissionGate';
 
 const { Title, Text } = Typography;
 
@@ -56,6 +57,7 @@ const FluDailyReportPage: React.FC = () => {
     const [data, setData] = useState<FluReportData[]>([]);
     const [loading, setLoading] = useState(false);
     const [organizations, setOrganizations] = useState<any[]>([]);
+    const [isTestMode, setIsTestMode] = useState(false); // UZ: Test rejimi holati
 
     // Auth context (simulated)
     const userRole = localStorage.getItem('user_role') || 'REGION_HEAD';
@@ -70,7 +72,7 @@ const FluDailyReportPage: React.FC = () => {
 
     useEffect(() => {
         fetchReports();
-    }, [date]);
+    }, [date, isTestMode]); // UZ: Test rejimi o'zgarganda ham qayta yuklanadi
 
     const fetchReports = async () => {
         setLoading(true);
@@ -82,14 +84,14 @@ const FluDailyReportPage: React.FC = () => {
                 // Viloyatni (parent darajasi) hisobotdan olib tashlaymiz
                 // currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent); <- ESKI
 
-                // YANGI: Shunchaki hammasini olib, Viloyat boshqarmasini olib tashlaymiz
+                // YANGI: Faqat tumanlarni (ota-onasi bor tashkilotlarni) olamiz
                 const allOrgs = orgRes.data || [];
-                currentOrgs = allOrgs.filter((org: any) => org.id !== '1' && !org.name.toLowerCase().includes("boshqarma"));
+                currentOrgs = allOrgs.filter((org: any) => !!org.parent);
 
                 setOrganizations(currentOrgs);
             }
 
-            const res = await dailyReportsApi.getFluByDate(formattedDate);
+            const res = await dailyReportsApi.getFluByDate(formattedDate, isTestMode);
             const apiData = res.data || [];
 
             const tableData = currentOrgs.map((org, idx) => {
@@ -190,16 +192,30 @@ const FluDailyReportPage: React.FC = () => {
                 await dailyReportsApi.upsertFlu({
                     ...row,
                     reportDate: formattedDate,
-                    organizationId: row.organizationId
+                    organizationId: row.organizationId,
+                    isTest: isTestMode // UZ: Test bayrog'i yuboriladi
                 });
             }
-            notification.success({ message: t('user.save') });
+            notification.success({ message: isTestMode ? "Test ma'lumoti saqlandi" : t('user.save') });
             fetchReports();
         } catch (error) {
             notification.error({
-                message: t('auth.error_system'),
+                message: isTestMode ? "Test ma'lumoti saqlashda xatolik" : t('auth.error_system'),
                 description: t('daily_reports.actions.error_save')
             });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCleanup = async () => {
+        setLoading(true);
+        try {
+            await dailyReportsApi.cleanupTest();
+            notification.success({ message: "Test ma'lumotlari tozalandi" });
+            fetchReports();
+        } catch (error) {
+            notification.error({ message: "Tozalashda xatolik" });
         } finally {
             setLoading(false);
         }
@@ -296,36 +312,58 @@ const FluDailyReportPage: React.FC = () => {
     ];
 
     return (
-        <Card>
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                <div style={{ textAlign: 'center' }}>
-                    <Title level={4} style={{ margin: 0, fontWeight: 600, lineHeight: 1.5 }}>
-                        {t('daily_reports.flu_title')}
-                    </Title>
-                    <Text strong style={{ fontSize: '16px', display: 'block', marginTop: '10px' }}>
-                        {t('daily_reports.date_status', { date: date.format('DD.MM.YYYY') })}
-                    </Text>
-                </div>
+        <PermissionGate permission="VIEW_FLU">
+            <Card>
+                <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                    <div style={{ textAlign: 'center' }}>
+                        <Title level={4} style={{ margin: 0, fontWeight: 600, lineHeight: 1.5 }}>
+                            {t('daily_reports.flu_title')}
+                        </Title>
+                        <Text strong style={{ fontSize: '16px', display: 'block', marginTop: '10px' }}>
+                            {t('daily_reports.date_status', { date: date.format('DD.MM.YYYY') })}
+                        </Text>
+                    </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Space>
-                        <DatePicker value={date} onChange={(d) => d && setDate(d)} format="DD.MM.YYYY" />
-                        <Button icon={<ReloadOutlined />} onClick={fetchReports}>{t('daily_reports.actions.refresh')}</Button>
-                        <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>{t('daily_reports.actions.save')}</Button>
-                    </Space>
-                </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <Space>
+                            {isTestMode && (
+                                <Popconfirm title="Barcha test ma'lumotlarini o'chirishni xohlaysizmi?" onConfirm={handleCleanup}>
+                                    <Button danger icon={<DeleteOutlined />}>Tozalash</Button>
+                                </Popconfirm>
+                            )}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #d9d9d9', padding: '4px 12px', borderRadius: '6px' }}>
+                                <ExperimentOutlined style={{ color: isTestMode ? '#f5222d' : '#8c8c8c' }} />
+                                <Text strong={isTestMode} type={isTestMode ? "danger" : "secondary"}>Test Rejimi</Text>
+                                <Switch size="small" checked={isTestMode} onChange={setIsTestMode} />
+                            </div>
+                            <DatePicker value={date} onChange={(d) => d && setDate(d)} format="DD.MM.YYYY" />
+                            <Button icon={<ReloadOutlined />} onClick={fetchReports}>{t('daily_reports.actions.refresh')}</Button>
+                            <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>{t('daily_reports.actions.save')}</Button>
+                        </Space>
+                    </div>
 
-                <Table
-                    columns={columns}
-                    dataSource={data}
-                    loading={loading}
-                    bordered
-                    size="small"
-                    pagination={false}
-                    scroll={{ x: 1800, y: 600 }}
-                />
-            </Space>
-        </Card>
+                    {isTestMode && (
+                        <Alert
+                            message="DIQQAT: TEST REJIMI FAOL"
+                            description="Hozirgi kiritilayotgan barcha ma'lumotlar 'Test' deb belgilanadi va real hisobotga ta'sir qilmaydi."
+                            type="error"
+                            showIcon
+                            icon={<ExperimentOutlined />}
+                        />
+                    )}
+
+                    <Table
+                        columns={columns}
+                        dataSource={data}
+                        loading={loading}
+                        bordered
+                        size="small"
+                        pagination={false}
+                        scroll={{ x: 1800, y: 600 }}
+                    />
+                </Space>
+            </Card>
+        </PermissionGate>
     );
 };
 
