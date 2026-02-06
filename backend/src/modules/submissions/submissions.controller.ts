@@ -8,7 +8,10 @@ import {
   UseGuards,
   Request,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { SubmissionsService } from "./submissions.service";
 import { CreateSubmissionDto } from "./dto/create-submission.dto";
 import { UpdateStatusDto } from "./dto/update-status.dto";
@@ -70,7 +73,7 @@ export class SubmissionsController {
     return this.submissionsService.cleanupTest();
   }
 
-  @Get("aggregate-daily")
+  @Post("aggregate-daily")
   @RequirePermission("EDIT_FORM1_TABLE1")
   async aggregateDaily(
     @Query("month") month: string, // YYYY-MM-01
@@ -78,5 +81,17 @@ export class SubmissionsController {
     @Request() req,
   ) {
     return this.submissionsService.aggregateDaily(month, isTest === "true", req.user);
+  }
+
+  @Post("bulk-upload")
+  @RequirePermission("EDIT_FORM1")
+  @UseInterceptors(FileInterceptor("file"))
+  async bulkUpload(
+    @UploadedFile() file: Express.Multer.File,
+    @Query("period") period: string, // YYYY-MM-01
+    @Query("isTest") isTest: string,
+    @Request() req,
+  ) {
+    return this.submissionsService.bulkUpload(file, period, isTest === "true", req.user);
   }
 }

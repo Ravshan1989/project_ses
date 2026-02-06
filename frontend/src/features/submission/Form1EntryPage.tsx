@@ -141,6 +141,28 @@ const Form1EntryPage: React.FC = () => {
         }
     };
 
+    const handleBulkUpload = (file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const periodStr = period.startOf('month').format('YYYY-MM-DD');
+        setLoading(true);
+
+        api.post(`/submissions/bulk-upload?period=${periodStr}&isTest=${isTestMode}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        })
+            .then(res => {
+                message.success(res.data.message);
+                fetchAllSubmissions();
+            })
+            .catch(err => {
+                message.error(err.response?.data?.message || 'Yuklashda xatolik');
+            })
+            .finally(() => setLoading(false));
+
+        return false;
+    };
+
     const handleExcelUpload = (file: File) => {
         const reader = new FileReader();
         reader.onload = async (e) => {
@@ -472,6 +494,15 @@ const Form1EntryPage: React.FC = () => {
                             <Switch size="small" checked={isTestMode} onChange={setIsTestMode} />
                         </div>
                         <PermissionGate permission="VIEW_FORM1_TABLE1" action="edit">
+                            <Upload beforeUpload={handleBulkUpload} showUploadList={false}>
+                                <Button
+                                    icon={<UploadOutlined />}
+                                    style={{ backgroundColor: '#e6f4ff', borderColor: '#91caff', color: '#0958d9' }}
+                                    loading={loading}
+                                >
+                                    {t('form1.actions.bulk_upload') || 'Ommaviy yuklash (25 list)'}
+                                </Button>
+                            </Upload>
                             <Button
                                 icon={<ExperimentOutlined />}
                                 onClick={handleAggregateDaily}

@@ -15,6 +15,9 @@ import { UserRole } from "../../common/enums/role.enum";
 import { getRoleLevel } from "../../common/utils/role.util";
 import { DailyReportsService } from "../daily-reports/daily-reports.service";
 import { DiseasesService } from "../diseases/diseases.service";
+import { OrganizationsService } from "../organizations/organizations.service";
+import * as XLSX from 'xlsx';
+import { Template } from "../forms/entities/template.entity";
 
 @Injectable()
 export class SubmissionsService {
@@ -23,6 +26,9 @@ export class SubmissionsService {
     private submissionRepository: Repository<Submission>,
     private dailyReportsService: DailyReportsService,
     private diseasesService: DiseasesService,
+    private organizationsService: OrganizationsService,
+    @InjectRepository(Template)
+    private templateRepository: Repository<Template>,
   ) { }
 
   async create(createSubmissionDto: CreateSubmissionDto, user: User) {
@@ -225,5 +231,104 @@ export class SubmissionsService {
     });
 
     return dataArray;
+  }
+
+  async bulkUpload(file: Express.Multer.File, period: string, isTest: boolean, user: User) {
+    if (!file) throw new BadRequestException("File is required");
+
+    const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+    const sheetNames = workbook.SheetNames;
+
+    // We start from sheet 4 (index 3) as per user requirement
+    // Sheets 1, 2, 3 (index 0, 1, 2) are summaries
+    const districtSheets = sheetNames.slice(3);
+    const results = [];
+
+    // 1. Get Template
+    const template = await this.templateRepository.findOneBy({ code: 'FORM1' });
+    if (!template) throw new NotFoundException("Form 1 template not found");
+
+    // 2. Get All Organizations for mapping
+    const organizations = await this.organizationsService.findAll();
+    const diseases = await this.diseasesService.findAll();
+
+    for (const sheetName of districtSheets) {
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json<any[]>(worksheet, { header: 1 });
+
+      // Find matching organization
+      // User said list names might be short (e.g., "Bo'ka t" for "Bo'ka tumani")
+      const org = organizations.find(o =>
+        sheetName.toLowerCase().includes(o.name.toLowerCase().split(' ')[0]) ||
+        o.name.toLowerCase().includes(sheetName.toLowerCase().split(' ')[0])
+      );
+
+      if (!org) {
+        console.warn(`Could not find organization for sheet: ${sheetName}`);
+        continue;
+      }
+
+      // Map Excel rows to Form1Data
+      // Assuming columns: [Code, Name, m_t_p_a, m_t_p_i, m_t_c_a, m_t_c_i, m_t_g_a, m_t_g_p, ...]
+      const mappedData = diseases.map(disease => {
+        const row = jsonData.find(r => r && String(r[1]).trim() === disease.code);
+        const dataRow: any = {
+          key: disease.id,
+          code: disease.code,
+          name: disease.name,
+          m_t_p_a: 0, m_t_p_i: 0, m_t_c_a: 0, m_t_c_i: 0, m_t_g_a: 0, m_t_g_p: 0,
+          m_u_p_a: 0, m_u_p_i: 0, m_u_c_a: 0, m_u_c_i: 0, m_u_g_a: 0, m_u_g_p: 0,
+          y_t_p_a: 0, y_t_p_i: 0, y_t_c_a: 0, y_t_c_i: 0, y_t_g_a: 0, y_t_g_p: 0,
+          y_u_p_a: 0, y_u_p_i: 0, y_u_c_a: 0, y_u_c_i: 0, y_u_g_a: 0, y_u_g_p: 0,
+        };
+
+        if (row) {
+          const fields = [
+            'm_t_p_a', 'm_t_p_i', 'm_t_c_a', 'm_t_c_i', 'm_t_g_a', 'm_t_g_p',
+            'm_u_p_a', 'm_u_p_i', 'm_u_c_a', 'm_u_c_i', 'm_u_g_a', 'm_u_g_p',
+            'y_t_p_a', 'y_t_p_i', 'y_t_c_a', 'y_t_c_i', 'y_t_g_a', 'y_t_g_p',
+            'y_u_p_a', 'y_u_p_i', 'y_u_c_a', 'y_u_c_i', 'y_u_g_a', 'y_u_g_p'
+          ];
+          // Assuming data starts from column index 2 in our standard format
+          fields.forEach((f, idx) => {
+            dataRow[f] = Number(row[2 + idx]) || 0;
+          });
+        }
+        return dataRow;
+      });
+
+      // Check if already exists for this period and org
+      let submission = await this.submissionRepository.findOne({
+        where: {
+          template: { id: template.id },
+          organization: { id: org.id },
+          reportingPeriod: period,
+          isTest: isTest
+        }
+      });
+
+      if (submission) {
+        submission.data = mappedData;
+        submission.submittedBy = user;
+      } else {
+        submission = this.submissionRepository.create({
+          template,
+          organization: org,
+          reportingPeriod: period,
+          data: mappedData,
+          status: SubmissionStatus.SUBMITTED,
+          submittedBy: user,
+          isTest: isTest
+        });
+      }
+
+      await this.submissionRepository.save(submission);
+      results.push({ sheet: sheetName, org: org.name, status: 'SUCCESS' });
+    }
+
+    return {
+      message: `${results.length} ta tuman uchun hisobotlar muvaffaqiyatli yuklandi`,
+      results
+    };
   }
 }
