@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, Between } from "typeorm";
 import { HepatitisDailyReport } from "../daily-reports/entities/hepatitis-daily-report.entity";
 import { FluDailyReport } from "../daily-reports/entities/flu-daily-report.entity";
+import { AriDailyReport } from "../daily-reports/entities/ari-daily-report.entity";
 import { Submission } from "../submissions/entities/submission.entity";
 import { User } from "../users/entities/user.entity";
 import { getRoleLevel } from "../../common/utils/role.util";
@@ -20,6 +21,9 @@ export class ExportsService {
 
     @InjectRepository(FluDailyReport)
     private readonly fluRepo: Repository<FluDailyReport>,
+
+    @InjectRepository(AriDailyReport)
+    private readonly ariRepo: Repository<AriDailyReport>,
 
     @InjectRepository(Submission)
     private readonly submissionRepo: Repository<Submission>,
@@ -94,6 +98,95 @@ export class ExportsService {
       relations: ["organization", "template"],
       order: { reportingPeriod: "ASC" },
     });
+  }
+
+  async getAriReports(startDate: string, endDate: string, includeTest = false, user: User) {
+    const level = getRoleLevel(user.role);
+    const where: any = {
+      reportDate: Between(startDate, endDate),
+      isTest: includeTest,
+    };
+
+    if (level === 3) {
+      where.organization = { id: user.organization.id };
+    } else if (level === 2) {
+      where.organization = { parent: { id: user.organization.id } };
+      where.status = ReportStatus.APPROVED;
+    } else if (level === 1 && user.role !== UserRole.ADMIN) {
+      where.status = ReportStatus.APPROVED;
+    }
+
+    return this.ariRepo.find({
+      where,
+      relations: ["organization", "verifiedBy", "approvedBy"],
+      order: { reportDate: "ASC" },
+    });
+  }
+
+  async exportAriToExcel(res: Response, startDate: string, endDate: string, includeTest = false, user: User) {
+    const reports = await this.getAriReports(startDate, endDate, includeTest, user);
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('ARI Reports');
+
+    worksheet.mergeCells('A1:L1');
+    const titleCell = worksheet.getCell('A1');
+    titleCell.value = `ARI bo'yicha kunlik hisobot (${startDate} - ${endDate})`;
+    titleCell.font = { bold: true, size: 14 };
+    titleCell.alignment = { horizontal: 'center' };
+
+    const headerRow = worksheet.addRow(['№', 'Hudud', 'Sana', 'Holat', 'Gospitalizatsiya', 'ARI jami', 'Pnevmoniya', 'Tekshiruvchi', 'Tasdiqlovchi', 'QR Kod']);
+    headerRow.eachCell((cell) => {
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE9E9E9' } };
+      cell.font = { bold: true };
+      cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+    });
+
+    for (let i = 0; i < reports.length; i++) {
+      const r = reports[i];
+      const row = worksheet.addRow([
+        i + 1,
+        r.organization?.name,
+        r.reportDate,
+        r.status,
+        r.gk,
+        r.ari,
+        r.pneumonia,
+        r.verifiedBy?.username || '-',
+        r.approvedBy?.username || '-',
+        ''
+      ]);
+
+      row.eachCell((cell) => {
+        cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+      });
+
+      if (r.verificationToken) {
+        try {
+          const qrBuffer = await this.verificationService.generateQRCodeBuffer(r.verificationToken);
+          const imageId = workbook.addImage({
+            buffer: qrBuffer as any,
+            extension: 'png',
+          });
+          worksheet.addImage(imageId, {
+            tl: { col: 9, row: row.number - 1 },
+            ext: { width: 50, height: 50 }
+          });
+          row.height = 40;
+        } catch (e) {
+          console.error('Failed to add QR to excel', e);
+        }
+      }
+    }
+
+    const lastRow = worksheet.lastRow.number + 2;
+    worksheet.getCell(`A${lastRow}`).value = "Mas'ul xodim:";
+    worksheet.getCell(`C${lastRow}`).value = "____________________";
+    worksheet.getCell(`A${lastRow + 1}`).value = "Bo'lim mudiri:";
+    worksheet.getCell(`C${lastRow + 1}`).value = "____________________";
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=ARI_Report_${startDate}.xlsx`);
+    await workbook.xlsx.write(res);
   }
 
   async exportFluToExcel(res: Response, startDate: string, endDate: string, includeTest = false, user: User) {

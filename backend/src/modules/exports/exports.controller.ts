@@ -55,6 +55,18 @@ export class ExportsController {
     return this.exportsService.exportFluToExcel(res, startDate, endDate, isTest === 'true', req.user);
   }
 
+  @Get("ari/excel")
+  @RequirePermission("VIEW_ARI")
+  async exportAriExcel(
+    @Query("startDate") startDate: string,
+    @Query("endDate") endDate: string,
+    @Query("isTest") isTest: string,
+    @Request() req,
+    @Res() res: Response
+  ) {
+    return this.exportsService.exportAriToExcel(res, startDate, endDate, isTest === 'true', req.user);
+  }
+
   @Get("hepatitis/excel")
   @RequirePermission("VIEW_HEPATITIS")
   async exportHepatitisExcel(

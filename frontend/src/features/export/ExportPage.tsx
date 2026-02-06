@@ -149,6 +149,21 @@ const ExportPage: React.FC = () => {
                 document.body.appendChild(link);
                 link.click();
                 link.parentNode?.removeChild(link);
+            } else if (reportType === 'ari') {
+                const url = `${API_BASE_URL}/exports/ari/excel?startDate=${startDate}&endDate=${endDate}&isTest=${isTestMode}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    }
+                });
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.setAttribute('download', `ARI_Report_${startDate}_${endDate}${isTestMode ? '_TEST' : ''}.xlsx`);
+                document.body.appendChild(link);
+                link.click();
+                link.parentNode?.removeChild(link);
             } else if (reportType === 'form1') {
                 const res = await exportsApi.getForm1(startDate, endDate, isTestMode);
                 data = res.data;
