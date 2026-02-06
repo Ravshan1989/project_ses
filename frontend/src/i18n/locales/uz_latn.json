@@ -186,6 +186,7 @@
         "table": {
             "no": "№",
             "district": "Ma'muriy hududlar",
+            "status": "Holati",
             "total_cases": "Jami kasallanganlar",
             "reinfected": "Shundan qayta",
             "vaccinated_infected": "Emlangandan so'ng",
@@ -253,7 +254,13 @@
             "save": "Saqlash",
             "success_save": "Kunlik ma'lumotlar muvaffaqiyatli saqlandi",
             "error_save": "Saqlashda muammo bo'ldi",
-            "error_load": "Ma'lumotlarni yuklashda muammo bo'ldi"
+            "error_load": "Ma'lumotlarni yuklashda muammo bo'ldi",
+            "verify": "Mudir tasdig'i",
+            "verify_success": "Mudir muvaffaqiyatli tasdiqladi",
+            "verify_error": "Mudir tasdiqlashida xatolik yuz berdi",
+            "approve": "Rahbar tasdig'i",
+            "approve_success": "Rahbar muvaffaqiyatli tasdiqladi",
+            "approve_error": "Rahbar tasdiqlashida xatolik yuz berdi"
         },
         "analysis_labels": {
             "equal": "teng",

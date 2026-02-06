@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { SaveOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined } from '@ant-design/icons';
-import { Table, Typography, Card, DatePicker, Button, InputNumber, notification, Space, Switch, Alert, Popconfirm } from 'antd';
+import { SaveOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined } from '@ant-design/icons';
+import { Table, Typography, Card, DatePicker, Button, InputNumber, notification, Space, Switch, Alert, Popconfirm, Badge, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
@@ -44,6 +44,9 @@ interface FluReportData {
     death_total: number;
     death_pregnant: number;
     is_submitted?: boolean;
+    id?: string;
+    status?: string;
+    verificationToken?: string;
 }
 
 // TUZATISH: FluReportData ni kengaytirish (declaration merging)
@@ -132,6 +135,9 @@ const FluDailyReportPage: React.FC = () => {
                     sari_adult: existing?.sari_adult || 0,
                     death_total: existing?.death_total || 0,
                     death_pregnant: existing?.death_pregnant || 0,
+                    id: existing?.id,
+                    status: existing?.status || 'DRAFT',
+                    verificationToken: existing?.verificationToken,
                 };
             });
 
@@ -218,6 +224,26 @@ const FluDailyReportPage: React.FC = () => {
             notification.error({ message: t('daily_reports.test_mode.cleanup_error') });
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleVerify = async (id: string) => {
+        try {
+            await dailyReportsApi.verify('flu', id);
+            notification.success({ message: t('daily_reports.actions.verify_success') });
+            fetchReports();
+        } catch (error) {
+            notification.error({ message: t('daily_reports.actions.verify_error') });
+        }
+    };
+
+    const handleApprove = async (id: string) => {
+        try {
+            await dailyReportsApi.approve('flu', id);
+            notification.success({ message: t('daily_reports.actions.approve_success') });
+            fetchReports();
+        } catch (error) {
+            notification.error({ message: t('daily_reports.actions.approve_error') });
         }
     };
 
@@ -308,6 +334,63 @@ const FluDailyReportPage: React.FC = () => {
                 { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'death_total') },
                 { title: t('daily_reports.table.pregnant'), width: 80, render: (_: any, r: any) => renderInput(r, 'death_pregnant') },
             ]
+        },
+        {
+            title: t('daily_reports.table.status') || 'Holat',
+            key: 'status',
+            width: 120, fixed: 'right',
+            render: (_: any, r: FluReportData) => (
+                <Space>
+                    <Badge
+                        status={r.status === 'APPROVED' ? 'success' : r.status === 'VERIFIED' ? 'processing' : 'default'}
+                        text={r.status}
+                    />
+                    {r.verificationToken && (
+                        <Tooltip title="QR orqali tekshirish">
+                            <Button
+                                size="small"
+                                icon={<QrcodeOutlined />}
+                                onClick={() => window.open(`/verify/${r.verificationToken}`, '_blank')}
+                            />
+                        </Tooltip>
+                    )}
+                </Space>
+            )
+        },
+        {
+            title: t('common.actions') || 'Amallar',
+            key: 'actions',
+            width: 160, fixed: 'right',
+            render: (_: any, r: FluReportData) => {
+                const canVerify = (userRole === 'DEPARTMENT_HEAD' || userRole === 'ADMIN') && r.is_submitted && r.status === 'DRAFT';
+                const canApprove = (userRole === 'DISTRICT_HEAD' || userRole === 'ADMIN') && r.status === 'VERIFIED';
+
+                return (
+                    <Space>
+                        {canVerify && (
+                            <Button
+                                size="small"
+                                type="primary"
+                                icon={<AuditOutlined />}
+                                onClick={() => r.id && handleVerify(r.id)}
+                            >
+                                {t('daily_reports.actions.verify')}
+                            </Button>
+                        )}
+                        {canApprove && (
+                            <Button
+                                size="small"
+                                type="primary"
+                                style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                                icon={<CheckCircleOutlined />}
+                                onClick={() => r.id && handleApprove(r.id)}
+                            >
+                                {t('daily_reports.actions.approve')}
+                            </Button>
+                        )}
+                    </Space>
+                );
+            }
         }
     ];
 

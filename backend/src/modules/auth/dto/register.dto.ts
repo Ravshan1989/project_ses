@@ -14,4 +14,8 @@ export class RegisterDto extends LoginDto {
   @IsString()
   @IsOptional()
   dynamicRoleId?: string; // UZ: Yangi dinamik rol ID si
+
+  @IsString()
+  @IsOptional()
+  departmentId?: string; // UZ: Bo'lim ID si
 }

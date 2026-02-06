@@ -9,6 +9,8 @@ import {
   Unique,
 } from "typeorm";
 import { Organization } from "../../organizations/entities/organization.entity";
+import { User } from "../../users/entities/user.entity";
+import { ReportStatus } from "../../../common/enums/report-status.enum";
 
 @Entity("flu_daily_reports")
 @Unique(["reportDate", "organization", "isTest"])
@@ -74,4 +76,23 @@ export class FluDailyReport {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  // UZ: Tasdiqlash tizimi (Append-Only)
+  @Column({
+    type: "enum",
+    enum: ReportStatus,
+    default: ReportStatus.DRAFT,
+  })
+  status: ReportStatus;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: "verified_by_id" })
+  verifiedBy: User; // Bo'lim mudiri
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: "approved_by_id" })
+  approvedBy: User; // Bo'lim boshlig'i (Rahbar)
+
+  @Column({ nullable: true, unique: true })
+  verificationToken: string; // QR kod uchun unikal tokèn
 }

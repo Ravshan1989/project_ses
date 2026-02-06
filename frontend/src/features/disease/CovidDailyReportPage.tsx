@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { SaveOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined } from '@ant-design/icons';
-import { Table, Typography, Card, DatePicker, Button, InputNumber, notification, Space, Switch, Alert, Popconfirm } from 'antd';
+import { SaveOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined } from '@ant-design/icons';
+import { Table, Typography, Card, DatePicker, Button, InputNumber, notification, Space, Switch, Alert, Popconfirm, Badge, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
@@ -39,6 +39,10 @@ interface CovidReportData {
     others: number;
 
     hospitalized_count: number;
+    is_submitted?: boolean;
+    id?: string;
+    status?: string;
+    verificationToken?: string;
 }
 
 // TUZATISH: CovidReportData ni kengaytirish (declaration merging)
@@ -116,6 +120,9 @@ const CovidDailyReportPage: React.FC = () => {
                     teachers: existing?.teachers || 0,
                     others: existing?.others || 0,
                     hospitalized_count: existing?.hospitalized_count || 0,
+                    id: existing?.id,
+                    status: existing?.status || 'DRAFT',
+                    verificationToken: existing?.verificationToken,
                 };
             });
 
@@ -184,6 +191,26 @@ const CovidDailyReportPage: React.FC = () => {
         }
     };
 
+    const handleVerify = async (id: string) => {
+        try {
+            await dailyReportsApi.verify('covid', id);
+            notification.success({ message: t('daily_reports.actions.verify_success') });
+            fetchReports();
+        } catch (error) {
+            notification.error({ message: t('daily_reports.actions.verify_error') });
+        }
+    };
+
+    const handleApprove = async (id: string) => {
+        try {
+            await dailyReportsApi.approve('covid', id);
+            notification.success({ message: t('daily_reports.actions.approve_success') });
+            fetchReports();
+        } catch (error) {
+            notification.error({ message: t('daily_reports.actions.approve_error') });
+        }
+    };
+
     const renderInput = (record: CovidReportData, field: keyof CovidReportData) => (
         <InputNumber
             size="small"
@@ -241,6 +268,63 @@ const CovidDailyReportPage: React.FC = () => {
             ]
         },
         { title: t('daily_reports.table.hospitalized'), width: 95, render: (_: any, r: any) => renderInput(r, 'hospitalized_count') },
+        {
+            title: t('daily_reports.table.status') || 'Holat',
+            key: 'status',
+            width: 120, fixed: 'right',
+            render: (_: any, r: CovidReportData) => (
+                <Space>
+                    <Badge
+                        status={r.status === 'APPROVED' ? 'success' : r.status === 'VERIFIED' ? 'processing' : 'default'}
+                        text={r.status}
+                    />
+                    {r.verificationToken && (
+                        <Tooltip title="QR orqali tekshirish">
+                            <Button
+                                size="small"
+                                icon={<QrcodeOutlined />}
+                                onClick={() => window.open(`/verify/${r.verificationToken}`, '_blank')}
+                            />
+                        </Tooltip>
+                    )}
+                </Space>
+            )
+        },
+        {
+            title: t('common.actions') || 'Amallar',
+            key: 'actions',
+            width: 160, fixed: 'right',
+            render: (_: any, r: CovidReportData) => {
+                const canVerify = (userRole === 'DEPARTMENT_HEAD' || userRole === 'ADMIN') && r.is_submitted && r.status === 'DRAFT';
+                const canApprove = (userRole === 'DISTRICT_HEAD' || userRole === 'ADMIN') && r.status === 'VERIFIED';
+
+                return (
+                    <Space>
+                        {canVerify && (
+                            <Button
+                                size="small"
+                                type="primary"
+                                icon={<AuditOutlined />}
+                                onClick={() => r.id && handleVerify(r.id)}
+                            >
+                                {t('daily_reports.actions.verify')}
+                            </Button>
+                        )}
+                        {canApprove && (
+                            <Button
+                                size="small"
+                                type="primary"
+                                style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                                icon={<CheckCircleOutlined />}
+                                onClick={() => r.id && handleApprove(r.id)}
+                            >
+                                {t('daily_reports.actions.approve')}
+                            </Button>
+                        )}
+                    </Space>
+                );
+            }
+        }
     ];
 
     const calculateTotal = (field: keyof CovidReportData) => data.reduce((sum, item) => sum + (Number(item[field]) || 0), 0);

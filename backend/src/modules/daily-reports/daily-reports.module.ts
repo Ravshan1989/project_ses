@@ -8,6 +8,9 @@ import { FluDailyReport } from "./entities/flu-daily-report.entity";
 import { AriDailyReport } from "./entities/ari-daily-report.entity";
 import { EpidemiologyDailyReport } from "./entities/epidemiology-daily-report.entity";
 import { CovidDailyReport } from "./entities/covid-daily-report.entity";
+import { VerificationService } from "./verification.service";
+
+import { ApprovalController } from "./approval.controller";
 
 @Module({
   imports: [
@@ -19,8 +22,8 @@ import { CovidDailyReport } from "./entities/covid-daily-report.entity";
       CovidDailyReport,
     ]),
   ],
-  providers: [DailyReportsService],
-  controllers: [DailyReportsController],
-  exports: [DailyReportsService],
+  providers: [DailyReportsService, VerificationService],
+  controllers: [DailyReportsController, ApprovalController],
+  exports: [DailyReportsService, VerificationService],
 })
-export class DailyReportsModule {}
+export class DailyReportsModule { }

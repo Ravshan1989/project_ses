@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { API_BASE_URL } from '../config';
+export { API_BASE_URL };
 
 export const api = axios.create({
     baseURL: API_BASE_URL,
@@ -51,6 +52,9 @@ export const dailyReportsApi = {
     getCovidByDate: (date: string, isTest = false) => api.get(`/daily-reports/covid?date=${date}&isTest=${isTest}`),
     upsertCovid: (data: any) => api.post('/daily-reports/covid', data),
     cleanupTest: () => api.post('/daily-reports/cleanup-test'),
+    // UZ: Tasdiqlash va Tekshirish (Verification/Approval)
+    verify: (type: string, id: string) => api.patch(`/daily-reports/${type}/${id}/verify`),
+    approve: (type: string, id: string) => api.patch(`/daily-reports/${type}/${id}/approve`),
 };
 
 export const organizationsApi = {

@@ -1,2 +1,6 @@
 // Use environment variable if available, otherwise use the production Railway URL as fallback
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://projectses-production.up.railway.app/api/v1';
+// UZ: Localhost'da bo'lsa mahalliy backend'ga, aks holda Railway'ga murojaat qiladi
+const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||
+    (isLocalhost ? 'http://localhost:3007/api/v1' : 'https://projectses-production.up.railway.app/api/v1');

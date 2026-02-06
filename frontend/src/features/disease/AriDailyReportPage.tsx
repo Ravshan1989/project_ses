@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { SaveOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined } from '@ant-design/icons';
-import { Table, Typography, Card, DatePicker, Button, InputNumber, notification, Space, Switch, Alert, Popconfirm } from 'antd';
+import { SaveOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined } from '@ant-design/icons';
+import { Table, Typography, Card, DatePicker, Button, InputNumber, notification, Space, Switch, Alert, Popconfirm, Badge, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +14,9 @@ interface AriReportData {
     gk: number;
     ari: number;
     pneumonia: number;
+    id?: string;
+    status?: string;
+    verificationToken?: string;
 }
 
 // TUZATISH: AriReportData ni kengaytirish (declaration merging)
@@ -71,10 +74,13 @@ const AriDailyReportPage: React.FC = () => {
                     key: String(idx + 1),
                     district_name: org.name,
                     organizationId: org.id,
-                    is_submitted: !!existing, // Agar baza'da yozuv bo'lsa - true
+                    is_submitted: !!existing,
                     gk: existing?.gk || 0,
                     ari: existing?.ari || 0,
                     pneumonia: existing?.pneumonia || 0,
+                    id: existing?.id,
+                    status: existing?.status || 'DRAFT',
+                    verificationToken: existing?.verificationToken,
                 };
             });
 
@@ -150,6 +156,26 @@ const AriDailyReportPage: React.FC = () => {
         }
     };
 
+    const handleVerify = async (id: string) => {
+        try {
+            await dailyReportsApi.verify('ari', id);
+            notification.success({ message: t('daily_reports.actions.verify_success') || 'Mudir tasdiqladi' });
+            fetchReports();
+        } catch (error) {
+            notification.error({ message: t('daily_reports.actions.verify_error') || 'Tasdiqlashda xatolik' });
+        }
+    };
+
+    const handleApprove = async (id: string) => {
+        try {
+            await dailyReportsApi.approve('ari', id);
+            notification.success({ message: t('daily_reports.actions.approve_success') || 'Rahbar tasdiqladi' });
+            fetchReports();
+        } catch (error) {
+            notification.error({ message: t('daily_reports.actions.approve_error') || 'Tasdiqlashda xatolik' });
+        }
+    };
+
     const renderInput = (record: AriReportData, field: keyof AriReportData) => (
         <InputNumber
             size="small"
@@ -185,6 +211,63 @@ const AriDailyReportPage: React.FC = () => {
         { title: t('daily_reports.table.gk'), width: 100, align: 'center', render: (_: any, r: any) => renderInput(r, 'gk') },
         { title: t('daily_reports.table.ari'), width: 100, align: 'center', render: (_: any, r: any) => renderInput(r, 'ari') },
         { title: t('daily_reports.table.pneumonia'), width: 100, align: 'center', render: (_: any, r: any) => renderInput(r, 'pneumonia') },
+        {
+            title: t('daily_reports.table.status') || 'Holat',
+            key: 'status',
+            width: 150,
+            render: (_: any, r: AriReportData) => (
+                <Space>
+                    <Badge
+                        status={r.status === 'APPROVED' ? 'success' : r.status === 'VERIFIED' ? 'processing' : 'default'}
+                        text={r.status}
+                    />
+                    {r.verificationToken && (
+                        <Tooltip title="QR orqali tekshirish">
+                            <Button
+                                size="small"
+                                icon={<QrcodeOutlined />}
+                                onClick={() => window.open(`/verify/${r.verificationToken}`, '_blank')}
+                            />
+                        </Tooltip>
+                    )}
+                </Space>
+            )
+        },
+        {
+            title: t('common.actions') || 'Amallar',
+            key: 'actions',
+            width: 200,
+            render: (_: any, r: AriReportData) => {
+                const canVerify = (userRole === 'DEPARTMENT_HEAD' || userRole === 'ADMIN') && r.is_submitted && r.status === 'DRAFT';
+                const canApprove = (userRole === 'DISTRICT_HEAD' || userRole === 'ADMIN') && r.status === 'VERIFIED';
+
+                return (
+                    <Space>
+                        {canVerify && (
+                            <Button
+                                size="small"
+                                type="primary"
+                                icon={<AuditOutlined />}
+                                onClick={() => r.id && handleVerify(r.id)}
+                            >
+                                {t('daily_reports.actions.verify') || 'Mudir tasdiq'}
+                            </Button>
+                        )}
+                        {canApprove && (
+                            <Button
+                                size="small"
+                                type="primary"
+                                style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                                icon={<CheckCircleOutlined />}
+                                onClick={() => r.id && handleApprove(r.id)}
+                            >
+                                {t('daily_reports.actions.approve') || 'Rahbar tasdiq'}
+                            </Button>
+                        )}
+                    </Space>
+                );
+            }
+        }
     ];
 
     const totalGk = data.reduce((sum, item) => sum + item.gk, 0);

@@ -25,9 +25,12 @@ import { NotificationsModule } from "./modules/notifications/notifications.modul
 import { NotificationInterceptor } from "./modules/notifications/notifications.interceptor"; // UZ: Bildirishnomalar interceptori
 import { EventEmitterModule } from "@nestjs/event-emitter"; // UZ: Ichki eventlar uchun
 
+import { ScheduleModule } from "@nestjs/schedule";
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(), // UZ: Taymerlar uchun modul
     DatabaseModule,
     AuthModule, // Added AuthModule
     SubmissionsModule,

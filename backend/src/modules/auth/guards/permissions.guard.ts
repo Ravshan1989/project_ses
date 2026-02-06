@@ -15,24 +15,27 @@ export class PermissionsGuard implements CanActivate {
         ]);
 
         if (!requiredPermission) {
-            return true; // No permission required
+            return true;
         }
 
         const { user } = context.switchToHttp().getRequest();
 
+        if (!user) {
+            return false;
+        }
+
         // UZ: 1. QAT'IY QOIDA - Tuman darajasi (Level 3) uchun Forma 1 Table 2 & 3 ni har qanday holatda bloklash
-        // Organization.parent bo'lsa - bu tuman darajasi (3)
-        const isLevel3 = user?.organization?.parent != null;
+        const isLevel3 = user?.organization?.parent != null || user?.department?.level === 3;
         if (isLevel3 && (requiredPermission === "VIEW_FORM1_TABLE2" || requiredPermission === "VIEW_FORM1_TABLE3")) {
             throw new ForbiddenException("Tuman darajasida ushbu jadvallarga ruxsat berilmagan.");
         }
 
-        // Admin access bypass (except for the strict level override above)
+        // Admin access bypass
         if (user?.role === UserRole.ADMIN || user?.role === UserRole.REPUBLIC_HEAD) {
             return true;
         }
 
-        if (!user || !user.department) {
+        if (!user.department) {
             throw new ForbiddenException("Siz hech qanday bo'limga biriktirilmagansiz.");
         }
 
@@ -48,7 +51,6 @@ export class PermissionsGuard implements CanActivate {
                 (rp: any) => rp.permissionCode === requiredPermission && (rp.canView || rp.canEdit)
             );
         } else {
-            // Agar dinamik rol biriktirilmagan bo'lsa, eski tizim (faqat bo'lim) bo'yicha ketadi
             hasRolePermission = true;
         }
 

@@ -3,7 +3,9 @@ import { Card, Typography, DatePicker, Select, Button, message, Row, Col, Switch
 import { DownloadOutlined, ExperimentOutlined } from '@ant-design/icons';
 import XLSX from 'xlsx-js-style';
 
-import { exportsApi, diseasesApi } from '../../services/api';
+import { exportsApi, diseasesApi, API_BASE_URL } from '../../services/api';
+// Fallback if not re-exported from services/api
+// import { API_BASE_URL } from '../../config';
 
 const { Title, Text } = Typography;
 
@@ -118,26 +120,47 @@ const ExportPage: React.FC = () => {
             let fileName = 'report';
 
             if (reportType === 'hepatitis') {
-                const res = await exportsApi.getHepatitis(startDate, endDate, isTestMode);
-                data = res.data;
-                fileName = `VGA_Report_${startDate}_${endDate}${isTestMode ? '_TEST' : ''}`;
+                const url = `${API_BASE_URL}/exports/hepatitis/excel?startDate=${startDate}&endDate=${endDate}&isTest=${isTestMode}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    }
+                });
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.setAttribute('download', `VGA_Report_${startDate}_${endDate}${isTestMode ? '_TEST' : ''}.xlsx`);
+                document.body.appendChild(link);
+                link.click();
+                link.parentNode?.removeChild(link);
             } else if (reportType === 'flu') {
-                const res = await exportsApi.getFlu(startDate, endDate, isTestMode);
-                data = res.data;
-                fileName = `Flu_Report_${startDate}_${endDate}${isTestMode ? '_TEST' : ''}`;
+                const url = `${API_BASE_URL}/exports/flu/excel?startDate=${startDate}&endDate=${endDate}&isTest=${isTestMode}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    }
+                });
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.setAttribute('download', `Flu_Report_${startDate}_${endDate}${isTestMode ? '_TEST' : ''}.xlsx`);
+                document.body.appendChild(link);
+                link.click();
+                link.parentNode?.removeChild(link);
             } else if (reportType === 'form1') {
                 const res = await exportsApi.getForm1(startDate, endDate, isTestMode);
                 data = res.data;
                 fileName = `Form1_Report_${startDate}_${endDate}${isTestMode ? '_TEST' : ''}`;
+                if (!data || data.length === 0) {
+                    message.info("Tanlangan oraliqda ma'lumot topilmadi.");
+                    setLoading(false);
+                    return;
+                }
+                exportToExcel(data, fileName, reportType);
             }
 
-            if ((!data || data.length === 0) && reportType !== 'form1') {
-                message.info("Tanlangan oraliqda ma'lumot topilmadi.");
-                setLoading(false);
-                return;
-            }
-
-            exportToExcel(data, fileName, reportType);
             message.success("Muvaffaqiyatli yuklab olindi!");
         } catch (error) {
             console.error("Export failed", error);
