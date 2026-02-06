@@ -266,73 +266,75 @@
             "equal": "teng",
             "increased": "marta o'sdi",
             "decreased": "marta kamaydi"
-        },
-        "form1": {
-            "title": "Hisobot Shakl №1",
-            "subtitle": "Yuqumli kasalliklar to'g'risida oylik hisobot",
-            "tabs": {
-                "by_disease": "Kasalliklar bo'yicha",
-                "by_territory": "Hududlar bo'yicha",
-                "matrix": "Umumiy Tahlil (Matritsa)"
-            },
-            "table": {
-                "indicator": "Ko'rsatkichlar nomi",
-                "code": "Kod",
-                "current_month": "joriy oy",
-                "ytd": "yil bo'shidan buyon",
-                "total": "jami",
-                "u14": "14 yoshgacha",
-                "abs": "abs",
-                "int": "int.k",
-                "growth_abs": "rost/kamayish abs.",
-                "growth_per": "rost/kamayish %",
-                "district_city": "Tuman/Shahar",
-                "total_province": "JAMI (Viloyat)",
-                "search": "Qidirish...",
-                "select_disease": "Kasallikni tanlang:",
-                "load_data": "Ma'lumotlarni yuklash",
-                "matrix_hint": "* Tanlangan oy uchun barcha tumanlar va asosiy kasalliklar kesishmasi."
-            },
-            "actions": {
-                "error_load_diseases": "Yo'nalishlarni yuklashda xatolik",
-                "error_no_template": "Hisobot shakli topilmadi",
-                "success_save": "Shakl 1 hisoboti muvaffaqiyatli saqlandi!",
-                "success_save_test": "Test hisoboti saqlandi!",
-                "error_save": "Saqlashda xatolik yuz berdi",
-                "success_cleanup": "Test hisobotlari tozalandi",
-                "error_cleanup": "Tozalashda xatolik",
-                "success_aggregate": "Kunlik hisobotlardan ma'lumotlar muvaffaqiyatli yig'ildi!",
-                "error_aggregate": "Kunlik hisobotlarni yig'ishda xatolik yuz berdi",
-                "success_excel_upload": "Excel ma'lumotlari yuklandi!",
-                "error_excel_read": "Excel o'qishda xatolik",
-                "fill_daily": "Kunlikdan to'ldirish",
-                "excel_upload": "Excel Yuklash",
-                "matrix_refresh": "Matritsani yangilash"
-            }
-        },
-        "test_mode": {
-            "label": "Test Rejimi",
-            "active_alert": "DIQQAT: TEST REJIMI FAOL",
-            "active_desc": "Hozirgi kiritilayotgan barcha ma'lumotlar 'Test' deb belgilanadi va real hisobotga ta'sir qilmaydi.",
-            "cleanup_confirm": "Barcha test ma'lumotlarini o'chirishni xohlaysizmi?",
-            "cleanup_btn": "Tozalash",
-            "save_success": "Test ma'lumoti saqlandi",
-            "cleanup_success": "Test ma'lumotlari tozalandi",
-            "cleanup_error": "Tozalashda xatolik"
-        },
-        "table_v2": {
-            "total_hepatitis": "Jami qayd qilingan VG A bemorlar",
-            "age_under_1_yr": "1 yoshgacha",
-            "age_20_plus_yrs": "20 yoshdan kattalar",
-            "occ_organized_nursery": "Uyushgan yasli yoshidagi bolalar",
-            "occ_unorganized_nursery": "Uyushmagan yasli yoshidagi bolalar",
-            "occ_organized_preschool": "Uyushgan bog'cha yoshidagi bolalar",
-            "occ_unorganized_preschool": "Uyushmagan bog'cha yoshidagi bolalar",
-            "factor_food_detailed": "Ovqat-oziq mahsulotlari",
-            "factor_contact_detailed": "Maishiy muloqot",
-            "lab_samples_detailed": "Jami olingan namunalar",
-            "lab_positive_detailed": "Musbat natija",
-            "disinfection_detailed": "Dezinfeksiya o'tkazilgan o'choqlar"
         }
+    },
+    "form1": {
+        "title": "Hisobot Shakl №1",
+        "subtitle": "Yuqumli kasalliklar to'g'risida oylik hisobot",
+        "tabs": {
+            "by_disease": "Kasalliklar bo'yicha",
+            "by_territory": "Hududlar bo'yicha",
+            "matrix": "Umumiy Tahlil (Matritsa)"
+        },
+        "table": {
+            "indicator": "Ko'rsatkichlar nomi",
+            "code": "Kod",
+            "current_month": "joriy oy",
+            "ytd": "yil boshidan buyon",
+            "total": "jami",
+            "u14": "14 yoshgacha",
+            "abs": "abs",
+            "int": "int.k",
+            "growth_abs": "o'sish/kamayish abs.",
+            "growth_per": "o'sish/kamayish %",
+            "district_city": "Tuman/Shahar",
+            "total_province": "JAMI (Viloyat)",
+            "search": "Qidirish...",
+            "select_disease": "Kasallikni tanlang:",
+            "load_data": "Ma'lumotlarni yuklash",
+            "matrix_hint": "* Tanlangan oy uchun barcha tumanlar va asosiy kasalliklar kesishmasi."
+        },
+        "actions": {
+            "error_load_diseases": "Yo'nalishlarni yuklashda xatolik",
+            "error_no_template": "Hisobot shakli topilmadi",
+            "success_save": "Shakl 1 hisoboti muvaffaqiyatli saqlandi!",
+            "success_save_test": "Test hisoboti saqlandi!",
+            "error_save": "Saqlashda xatolik yuz berdi",
+            "success_cleanup": "Test hisobotlari tozalandi",
+            "error_cleanup": "Tozalashda xatolik",
+            "success_aggregate": "Kunlik hisobotlardan ma'lumotlar muvaffaqiyatli yig'ildi!",
+            "error_aggregate": "Kunlik hisobotlarni yig'ishda xatolik yuz berdi",
+            "success_excel_upload": "Excel ma'lumotlari yuklandi!",
+            "error_excel_read": "Excel o'qishda xatolik",
+            "fill_daily": "Kunlikdan to'ldirish",
+            "excel_upload": "Excel Yuklash",
+            "bulk_upload": "Ommaviy yuklash (25 list)",
+            "matrix_refresh": "Matritsani yangilash"
+        }
+    },
+    "test_mode": {
+        "label": "Test Rejimi",
+        "active_alert": "DIQQAT: TEST REJIMI FAOL",
+        "active_desc": "Hozirgi kiritilayotgan barcha ma'lumotlar 'Test' deb belgilanadi va real hisobotga ta'sir qilmaydi.",
+        "cleanup_confirm": "Barcha test ma'lumotlarini o'chirishni xohlaysizmi?",
+        "cleanup_btn": "Tozalash",
+        "save_success": "Test ma'lumoti saqlandi",
+        "cleanup_success": "Test ma'lumotlari tozalandi",
+        "cleanup_error": "Tozalashda xatolik"
+    },
+    "table_v2": {
+        "total_hepatitis": "Jami qayd qilingan VG A bemorlar",
+        "age_under_1_yr": "1 yoshgacha",
+        "age_20_plus_yrs": "20 yoshdan kattalar",
+        "occ_organized_nursery": "Uyushgan yasli yoshidagi bolalar",
+        "occ_unorganized_nursery": "Uyushmagan yasli yoshidagi bolalar",
+        "occ_organized_preschool": "Uyushgan bog'cha yoshidagi bolalar",
+        "occ_unorganized_preschool": "Uyushmagan bog'cha yoshidagi bolalar",
+        "factor_food_detailed": "Ovqat-oziq mahsulotlari",
+        "factor_contact_detailed": "Maishiy muloqot",
+        "lab_samples_detailed": "Jami olingan namunalar",
+        "lab_positive_detailed": "Musbat natija",
+        "decimal_positive_detailed": "Musbat natija (%)",
+        "disinfection_detailed": "Dezinfeksiya o'tkazilgan o'choqlar"
     }
 }
