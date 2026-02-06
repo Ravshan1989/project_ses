@@ -64,6 +64,26 @@ const ExportPage: React.FC = () => {
         }
     };
 
+    // UZ: "Smart" (aqlli) o'sish/kamayish formulasi (Excel uchun ham bir xil)
+    const calculateSmartGrowth = (curr: number, prev: number) => {
+        if (curr === prev) return "teng";
+        if (!prev || prev === 0) return `+${curr}`;
+        if (!curr || curr === 0) return `-${prev}`;
+
+        const diffPercent = Math.abs((curr / prev - 1) * 100);
+
+        if (diffPercent < 50) {
+            const val = ((curr / prev - 1) * 100).toFixed(1);
+            return `${val}%`;
+        } else {
+            if (curr > prev) {
+                return `${(curr / prev).toFixed(1)} marta o'sdi`;
+            } else {
+                return `-${(prev / curr).toFixed(1)} marta kamaydi`;
+            }
+        }
+    };
+
     const applyStyles = (ws: any, rowCount: number, colCount: number, headerRows: number) => {
         for (let r = 0; r < rowCount; r++) {
             for (let c = 0; c < colCount; c++) {
@@ -136,13 +156,15 @@ const ExportPage: React.FC = () => {
 
             const year = dates?.[0]?.year() || new Date().getFullYear();
             const month = (dates?.[0]?.month() || 0) + 1;
+            const currentYear = year;
+            const prevYear = currentYear - 1;
+
             const titleRow = [`Toshkent viloyati bo'yicha yuqumli va parazitar kasalliklar JAMLANMA hisoboti, ${year} yil ${month}-oy`, ...Array(25).fill('')];
             const spacerRow = Array(26).fill('');
 
             const head1 = ['Ko\'rsatkichlar nomi', 'Kod stroki', 'joriy oy', ...Array(11).fill(''), 'yil boshidan jami', ...Array(11).fill('')];
             const head2 = ['', '', 'Jami', ...Array(5).fill(''), '14 yoshgacha bo\'lganlar', ...Array(5).fill(''), 'Jami', ...Array(5).fill(''), '14 yoshgacha bo\'lganlar', ...Array(5).fill('')];
-            // Fixed single quote escaping
-            const head3 = ['', '', '2025 yil', '', '2026 yil', '', 'ko\'tar/pasayish', '', '2025 yil', '', '2026 yil', '', 'ko\'tar/pasayish', '', '2025 yil', '', '2026 yil', '', 'ko\'tar/pasayish', '', '2025 yil', '', '2026 yil', '', 'ko\'tar/pasayish', ''];
+            const head3 = ['', '', `${prevYear} yil`, '', `${currentYear} yil`, '', 'ko\'tar/pasayish', '', `${prevYear} yil`, '', `${currentYear} yil`, '', 'ko\'tar/pasayish', '', `${prevYear} yil`, '', `${currentYear} yil`, '', 'ko\'tar/pasayish', '', `${prevYear} yil`, '', `${currentYear} yil`, '', 'ko\'tar/pasayish', ''];
             const head4 = ['', '', ...Array(12).fill(['abs.ko\'r', 'int.ko\'r']).flat()];
 
             // 1. DATA AGGREGATION
@@ -175,10 +197,10 @@ const ExportPage: React.FC = () => {
             sorted.forEach((d: any) => {
                 mainSheetData.push([
                     d.name, d.code,
-                    d.m_t_p_a || 0, d.m_t_p_i || 0, d.m_t_c_a || 0, d.m_t_c_i || 0, d.m_t_g_a || 0, d.m_t_g_p || 0,
-                    d.m_u_p_a || 0, d.m_u_p_i || 0, d.m_u_c_a || 0, d.m_u_c_i || 0, d.m_u_g_a || 0, d.m_u_g_p || 0,
-                    d.y_t_p_a || 0, d.y_t_p_i || 0, d.y_t_c_a || 0, d.y_t_c_i || 0, d.y_t_g_a || 0, d.y_t_g_p || 0,
-                    d.y_u_p_a || 0, d.y_u_p_i || 0, d.y_u_c_a || 0, d.y_u_c_i || 0, d.y_u_g_a || 0, d.y_u_g_p || 0
+                    d.m_t_p_a || 0, d.m_t_p_i || 0, d.m_t_c_a || 0, d.m_t_c_i || 0, d.m_t_g_a || 0, calculateSmartGrowth(d.m_t_c_a || 0, d.m_t_p_a || 0),
+                    d.m_u_p_a || 0, d.m_u_p_i || 0, d.m_u_c_a || 0, d.m_u_c_i || 0, d.m_u_g_a || 0, calculateSmartGrowth(d.m_u_c_a || 0, d.m_u_p_a || 0),
+                    d.y_t_p_a || 0, d.y_t_p_i || 0, d.y_t_c_a || 0, d.y_t_c_i || 0, d.y_t_g_a || 0, calculateSmartGrowth(d.y_t_c_a || 0, d.y_t_p_a || 0),
+                    d.y_u_p_a || 0, d.y_u_p_i || 0, d.y_u_c_a || 0, d.y_u_c_i || 0, d.y_u_g_a || 0, calculateSmartGrowth(d.y_u_c_a || 0, d.y_u_p_a || 0)
                 ]);
             });
 
@@ -263,10 +285,10 @@ const ExportPage: React.FC = () => {
                         const d = (Array.isArray(sub.data) ? sub.data : [sub.data]).find((x: any) => x && x.code === code) || {};
                         territorySheetData.push([
                             sub.organization?.name, code,
-                            d.m_t_p_a || 0, d.m_t_p_i || 0, d.m_t_c_a || 0, d.m_t_c_i || 0, d.m_t_g_a || 0, d.m_t_g_p || 0,
-                            d.m_u_p_a || 0, d.m_u_p_i || 0, d.m_u_c_a || 0, d.m_u_c_i || 0, d.m_u_g_a || 0, d.m_u_g_p || 0,
-                            d.y_t_p_a || 0, d.y_t_p_i || 0, d.y_t_c_a || 0, d.y_t_c_i || 0, d.y_t_g_a || 0, d.y_t_g_p || 0,
-                            d.y_u_p_a || 0, d.y_u_p_i || 0, d.y_u_c_a || 0, d.y_u_c_i || 0, d.y_u_g_a || 0, d.y_u_g_p || 0
+                            d.m_t_p_a || 0, d.m_t_p_i || 0, d.m_t_c_a || 0, d.m_t_c_i || 0, d.m_t_g_a || 0, calculateSmartGrowth(d.m_t_c_a || 0, d.m_t_p_a || 0),
+                            d.m_u_p_a || 0, d.m_u_p_i || 0, d.m_u_c_a || 0, d.m_u_c_i || 0, d.m_u_g_a || 0, calculateSmartGrowth(d.m_u_c_a || 0, d.m_u_p_a || 0),
+                            d.y_t_p_a || 0, d.y_t_p_i || 0, d.y_t_c_a || 0, d.y_t_c_i || 0, d.y_t_g_a || 0, calculateSmartGrowth(d.y_t_c_a || 0, d.y_t_p_a || 0),
+                            d.y_u_p_a || 0, d.y_u_p_i || 0, d.y_u_c_a || 0, d.y_u_c_i || 0, d.y_u_g_a || 0, calculateSmartGrowth(d.y_u_c_a || 0, d.y_u_p_a || 0)
                         ]);
                         currentRow++;
                     });

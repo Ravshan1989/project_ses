@@ -149,8 +149,8 @@ const LoginPage: React.FC = () => {
                         }}>
                             <MedicineBoxOutlined />
                         </div>
-                        <Text style={{ color: '#fff', fontSize: '18px', fontWeight: 500, letterSpacing: '0.5px' }}>
-                            REGION<span style={{ fontWeight: 700 }}>STAT</span>
+                        <Text style={{ color: '#fff', fontSize: '18px', fontWeight: 500, letterSpacing: '1px' }}>
+                            SMART <span style={{ fontWeight: 700, color: '#1677ff' }}>SES</span>
                         </Text>
                     </div>
 
@@ -166,7 +166,7 @@ const LoginPage: React.FC = () => {
 
                     <div style={{ zIndex: 1 }}>
                         <Text style={{ color: 'rgba(255,255,255,0.45)', fontSize: '13px' }}>
-                            © 2026 RegionStat. {t('auth.footer_text', 'Barcha huquqlar himoyalangan.')}
+                            © {new Date().getFullYear()} {t('common.app_name')}. {t('auth.footer_text', 'Barcha huquqlar himoyalangan.')}
                         </Text>
                     </div>
                 </div>

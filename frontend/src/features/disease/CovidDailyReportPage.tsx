@@ -3,6 +3,7 @@ import { SaveOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined } from
 import { Table, Typography, Card, DatePicker, Button, InputNumber, notification, Space, Switch, Alert, Popconfirm } from 'antd';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
+import { useTranslation } from 'react-i18next';
 
 const { Title, Text } = Typography;
 
@@ -46,6 +47,7 @@ interface CovidReportData {
 }
 
 const CovidDailyReportPage: React.FC = () => {
+    const { t } = useTranslation();
     const [date, setDate] = useState(dayjs());
     const [data, setData] = useState<CovidReportData[]>([]);
     const [loading, setLoading] = useState(false);
@@ -133,7 +135,7 @@ const CovidDailyReportPage: React.FC = () => {
                 setData(tableData);
             }
         } catch (error) {
-            notification.error({ message: 'Xatolik', description: 'Ma\'lumotlarni yuklashda xatolik' });
+            notification.error({ message: t('auth.error_system'), description: t('daily_reports.actions.error_load') });
         } finally {
             setLoading(false);
         }
@@ -160,10 +162,10 @@ const CovidDailyReportPage: React.FC = () => {
                     isTest: isTestMode // UZ: Test bayrog'i yuboriladi
                 });
             }
-            notification.success({ message: isTestMode ? "Test ma'lumoti saqlandi" : 'Saqlandi' });
+            notification.success({ message: isTestMode ? t('daily_reports.test_mode.save_success') : t('daily_reports.actions.success_save') });
             fetchReports();
         } catch (error) {
-            notification.error({ message: 'Xatolik', description: isTestMode ? "Test ma'lumoti saqlashda xatolik" : 'Saqlashda xatolik' });
+            notification.error({ message: t('auth.error_system'), description: isTestMode ? t('daily_reports.test_mode.save_error') : t('daily_reports.actions.error_save') });
         } finally {
             setLoading(false);
         }
@@ -173,10 +175,10 @@ const CovidDailyReportPage: React.FC = () => {
         setLoading(true);
         try {
             await dailyReportsApi.cleanupTest();
-            notification.success({ message: "Test ma'lumotlari tozalandi" });
+            notification.success({ message: t('daily_reports.test_mode.cleanup_success') });
             fetchReports();
         } catch (error) {
-            notification.error({ message: "Tozalashda xatolik" });
+            notification.error({ message: t('daily_reports.test_mode.cleanup_error') });
         } finally {
             setLoading(false);
         }
@@ -201,11 +203,11 @@ const CovidDailyReportPage: React.FC = () => {
 
     const columns: any = [
         {
-            title: '№', dataIndex: 'key', width: 40, align: 'center', fixed: 'left',
+            title: t('daily_reports.table.no'), dataIndex: 'key', width: 40, align: 'center', fixed: 'left',
             onCell: (r: CovidReportData) => ({ style: { backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff' } })
         },
         {
-            title: 'Шахар, туман кесимида', dataIndex: 'district_name', width: 140, fixed: 'left',
+            title: t('daily_reports.table.district'), dataIndex: 'district_name', width: 140, fixed: 'left',
             onCell: (r: CovidReportData) => ({
                 style: {
                     backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff1f0',
@@ -214,31 +216,31 @@ const CovidDailyReportPage: React.FC = () => {
                 }
             })
         },
-        { title: 'Жами касалланганлар', width: 80, render: (_: any, r: any) => renderInput(r, 'total_cases') },
-        { title: 'шундан қайта', width: 80, render: (_: any, r: any) => renderInput(r, 'reinfected') },
-        { title: 'эмлангандан сўнг', width: 80, render: (_: any, r: any) => renderInput(r, 'vaccinated_infected') },
+        { title: t('daily_reports.table.total_cases'), width: 80, render: (_: any, r: any) => renderInput(r, 'total_cases') },
+        { title: t('daily_reports.table.reinfected'), width: 80, render: (_: any, r: any) => renderInput(r, 'reinfected') },
+        { title: t('daily_reports.table.vaccinated_infected'), width: 80, render: (_: any, r: any) => renderInput(r, 'vaccinated_infected') },
         {
-            title: 'шулардан',
+            title: t('daily_reports.table.including'),
             children: [
-                { title: '1 ёшгача', width: 50, render: (_: any, r: any) => renderInput(r, 'age_0_1') },
-                { title: '1-3 ёш', width: 50, render: (_: any, r: any) => renderInput(r, 'age_1_3') },
-                { title: '4-6 ёш', width: 50, render: (_: any, r: any) => renderInput(r, 'age_4_6') },
-                { title: '7-14 ёш', width: 55, render: (_: any, r: any) => renderInput(r, 'age_7_14') },
-                { title: '15-19 ёш', width: 55, render: (_: any, r: any) => renderInput(r, 'age_15_19') },
-                { title: '20-29 ёш', width: 55, render: (_: any, r: any) => renderInput(r, 'age_20_29') },
-                { title: '30-39 ёш', width: 55, render: (_: any, r: any) => renderInput(r, 'age_30_39') },
-                { title: '40-49 ёш', width: 55, render: (_: any, r: any) => renderInput(r, 'age_40_49') },
-                { title: '50-59 ёш', width: 55, render: (_: any, r: any) => renderInput(r, 'age_50_59') },
-                { title: '60+ ёш', width: 65, render: (_: any, r: any) => renderInput(r, 'age_60_plus') },
-                { title: 'уюшмаган боғча ёш', width: 80, render: (_: any, r: any) => renderInput(r, 'pre_school_organized') },
-                { title: 'уюшган боғcha ёш', width: 80, render: (_: any, r: any) => renderInput(r, 'pre_school_unorganized') },
-                { title: 'ўқувчи', width: 65, render: (_: any, r: any) => renderInput(r, 'students') },
-                { title: 'тиббиёт', width: 65, render: (_: any, r: any) => renderInput(r, 'medical_workers') },
-                { title: 'ўқитувчи', width: 65, render: (_: any, r: any) => renderInput(r, 'teachers') },
-                { title: 'бошқа', width: 65, render: (_: any, r: any) => renderInput(r, 'others') },
+                { title: t('daily_reports.table.age_0_1'), width: 50, render: (_: any, r: any) => renderInput(r, 'age_0_1') },
+                { title: t('daily_reports.table.age_1_3'), width: 50, render: (_: any, r: any) => renderInput(r, 'age_1_3') },
+                { title: t('daily_reports.table.age_4_6'), width: 50, render: (_: any, r: any) => renderInput(r, 'age_4_6') },
+                { title: t('daily_reports.table.age_7_14'), width: 55, render: (_: any, r: any) => renderInput(r, 'age_7_14') },
+                { title: t('daily_reports.table.age_15_19'), width: 55, render: (_: any, r: any) => renderInput(r, 'age_15_19') },
+                { title: t('daily_reports.table.age_20_29'), width: 55, render: (_: any, r: any) => renderInput(r, 'age_20_29') },
+                { title: t('daily_reports.table.age_30_39'), width: 55, render: (_: any, r: any) => renderInput(r, 'age_30_39') },
+                { title: t('daily_reports.table.age_40_49'), width: 55, render: (_: any, r: any) => renderInput(r, 'age_40_49') },
+                { title: t('daily_reports.table.age_50_59'), width: 55, render: (_: any, r: any) => renderInput(r, 'age_50_59') },
+                { title: t('daily_reports.table.age_60_plus'), width: 65, render: (_: any, r: any) => renderInput(r, 'age_60_plus') },
+                { title: t('daily_reports.table.pre_school_unorganized'), width: 80, render: (_: any, r: any) => renderInput(r, 'pre_school_organized') },
+                { title: t('daily_reports.table.pre_school_organized'), width: 80, render: (_: any, r: any) => renderInput(r, 'pre_school_unorganized') },
+                { title: t('daily_reports.table.students'), width: 65, render: (_: any, r: any) => renderInput(r, 'students') },
+                { title: t('daily_reports.table.medical_workers'), width: 65, render: (_: any, r: any) => renderInput(r, 'medical_workers') },
+                { title: t('daily_reports.table.teachers'), width: 65, render: (_: any, r: any) => renderInput(r, 'teachers') },
+                { title: t('daily_reports.table.others'), width: 65, render: (_: any, r: any) => renderInput(r, 'others') },
             ]
         },
-        { title: 'Шифохонага ёткизилган', width: 95, render: (_: any, r: any) => renderInput(r, 'hospitalized_count') },
+        { title: t('daily_reports.table.hospitalized'), width: 95, render: (_: any, r: any) => renderInput(r, 'hospitalized_count') },
     ];
 
     const calculateTotal = (field: keyof CovidReportData) => data.reduce((sum, item) => sum + (Number(item[field]) || 0), 0);
@@ -248,35 +250,35 @@ const CovidDailyReportPage: React.FC = () => {
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
                 <div style={{ textAlign: 'center' }}>
                     <Title level={4} style={{ margin: 0, fontWeight: 600, lineHeight: 1.5 }}>
-                        Коронавирус инфекциясининг касалланиш кўрсаткичлари бўйича кундалик маълумот
+                        {t('daily_reports.covid_title')}
                     </Title>
                     <Text strong style={{ fontSize: '16px', display: 'block', marginTop: '10px' }}>
-                        {date.format('DD.MM.YYYY')} kungi holatga
+                        {t('daily_reports.date_status', { date: date.format('DD.MM.YYYY') })}
                     </Text>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Space>
                         {isTestMode && (
-                            <Popconfirm title="Barcha test ma'lumotlarini o'chirishni xohlaysizmi?" onConfirm={handleCleanup}>
-                                <Button danger icon={<DeleteOutlined />}>Tozalash</Button>
+                            <Popconfirm title={t('daily_reports.test_mode.cleanup_confirm')} onConfirm={handleCleanup}>
+                                <Button danger icon={<DeleteOutlined />}>{t('daily_reports.test_mode.cleanup_btn')}</Button>
                             </Popconfirm>
                         )}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #d9d9d9', padding: '4px 12px', borderRadius: '6px' }}>
                             <ExperimentOutlined style={{ color: isTestMode ? '#f5222d' : '#8c8c8c' }} />
-                            <Text strong={isTestMode} type={isTestMode ? "danger" : "secondary"}>Test Rejimi</Text>
+                            <Text strong={isTestMode} type={isTestMode ? "danger" : "secondary"}>{t('daily_reports.test_mode.label')}</Text>
                             <Switch size="small" checked={isTestMode} onChange={setIsTestMode} />
                         </div>
                         <DatePicker value={date} onChange={(d) => d && setDate(d)} format="DD.MM.YYYY" />
-                        <Button icon={<ReloadOutlined />} onClick={fetchReports}>Yangilash</Button>
-                        <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>Saqlash</Button>
+                        <Button icon={<ReloadOutlined />} onClick={fetchReports}>{t('daily_reports.actions.refresh')}</Button>
+                        <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>{t('daily_reports.actions.save')}</Button>
                     </Space>
                 </div>
 
                 {isTestMode && (
                     <Alert
-                        message="DIQQAT: TEST REJIMI FAOL"
-                        description="Hozirgi kiritilayotgan barcha ma'lumotlar 'Test' deb belgilanadi va real hisobotga ta'sir qilmaydi."
+                        message={t('daily_reports.test_mode.active_alert')}
+                        description={t('daily_reports.test_mode.active_desc')}
                         type="error"
                         showIcon
                         icon={<ExperimentOutlined />}
@@ -295,7 +297,7 @@ const CovidDailyReportPage: React.FC = () => {
                         <Table.Summary fixed>
                             <Table.Summary.Row style={{ backgroundColor: '#fafafa', fontWeight: 'bold' }}>
                                 <Table.Summary.Cell index={0} />
-                                <Table.Summary.Cell index={1}>жами</Table.Summary.Cell>
+                                <Table.Summary.Cell index={1}>{t('daily_reports.table.total')}</Table.Summary.Cell>
                                 {columns.slice(2).flatMap((c: any) => c.children ? c.children : [c]).map((col: any, idx: number) => (
                                     <Table.Summary.Cell key={idx} index={idx + 2} align="center">
                                         {calculateTotal(col.dataIndex || (col.render ? 'total_cases' : 'total_cases') as any)}

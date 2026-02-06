@@ -14,6 +14,8 @@ import { CreateCovidReportDto } from "./dto/create-covid-report.dto";
 import { User } from "../users/entities/user.entity";
 import { getRoleLevel } from "../../common/utils/role.util";
 import { FindOptionsWhere } from "typeorm";
+import { TelegramService } from "../telegram/telegram.service";
+import { Inject, forwardRef } from "@nestjs/common";
 
 @Injectable()
 export class DailyReportsService {
@@ -28,6 +30,8 @@ export class DailyReportsService {
     private epiRepo: Repository<EpidemiologyDailyReport>,
     @InjectRepository(CovidDailyReport)
     private covidRepo: Repository<CovidDailyReport>,
+    @Inject(forwardRef(() => TelegramService))
+    private telegramService: TelegramService,
   ) { }
 
   private validateIsolation(user: User, organizationId: string) {
@@ -62,7 +66,12 @@ export class DailyReportsService {
         isTest: dto.isTest || false,
       });
     }
-    return this.reportRepo.save(report);
+    const saved = await this.reportRepo.save(report);
+    if (!dto.isTest) {
+      const details = `Jami: ${saved.total_cases}\nMusbat: ${saved.lab_positive}`;
+      this.telegramService.sendReportNotification("Gepatit", user.organization?.name || "Tuman", saved.reportDate, details);
+    }
+    return saved;
   }
 
   /*
@@ -115,7 +124,12 @@ export class DailyReportsService {
         isTest: dto.isTest || false,
       });
     }
-    return this.fluRepo.save(report);
+    const saved = await this.fluRepo.save(report);
+    if (!dto.isTest) {
+      const details = `O'RI: ${saved.ari_total}\nZotiljam: ${saved.pneu_total}\nGripp: ${saved.flu_total}\nSARI: ${saved.sari_total}\nVafot: ${saved.death_total}`;
+      this.telegramService.sendReportNotification("Gripp va O'RVI (Batafsil)", user.organization?.name || "Tuman", saved.reportDate, details);
+    }
+    return saved;
   }
 
   /*
@@ -165,7 +179,12 @@ export class DailyReportsService {
         isTest: dto.isTest || false,
       });
     }
-    return this.ariRepo.save(report);
+    const saved = await this.ariRepo.save(report);
+    if (!dto.isTest) {
+      const details = `O'RI: ${saved.ari}\nZotiljam: ${saved.pneumonia}\nGrippsimon: ${saved.gk}`;
+      this.telegramService.sendReportNotification("O'RVI (Qisqa)", user.organization?.name || "Tuman", saved.reportDate, details);
+    }
+    return saved;
   }
 
   /*
@@ -215,7 +234,12 @@ export class DailyReportsService {
         isTest: dto.isTest || false,
       });
     }
-    return this.epiRepo.save(report);
+    const saved = await this.epiRepo.save(report);
+    if (!dto.isTest) {
+      const details = `Tekshirildi: ${saved.inspected_total}\nKamchiliklar: ${saved.defects_total}\nJarima: ${saved.fines_total}\nTo'xtatildi: ${saved.suspended_total}`;
+      this.telegramService.sendReportNotification("Epidemiologiya", user.organization?.name || "Tuman", saved.reportDate, details);
+    }
+    return saved;
   }
 
   /*
@@ -388,7 +412,12 @@ export class DailyReportsService {
         isTest: dto.isTest || false,
       });
     }
-    return this.covidRepo.save(report);
+    const saved = await this.covidRepo.save(report);
+    if (!dto.isTest) {
+      const details = `Jami: ${saved.total_cases}\nHospital: ${saved.hospitalized_count}\nQayta: ${saved.reinfected}`;
+      this.telegramService.sendReportNotification("Covid", user.organization?.name || "Tuman", saved.reportDate, details);
+    }
+    return saved;
   }
 
   /*
@@ -426,5 +455,63 @@ export class DailyReportsService {
     await this.epiRepo.delete({ isTest: true });
     await this.covidRepo.delete({ isTest: true });
     return { success: true, message: "Test ma'lumotlari muvaffaqiyatli o'chirildi" };
+  }
+
+  /**
+   * UZ: Bir oylik kunlik hisobotlarni jamlash (Forma-1 uchun)
+   */
+  async getMonthlyAggregation(month: string, organizationId: string, isTest: boolean) {
+    const start = new Date(month);
+    const end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+
+    const startDate = start.toISOString().split('T')[0];
+    const endDate = end.toISOString().split('T')[0];
+
+    // 1. Gepatit
+    const hepatitis = await this.reportRepo.createQueryBuilder("r")
+      .select("SUM(r.total_cases)", "total")
+      .addSelect("SUM(r.age_under_1 + r.age_1_3 + r.age_4_6 + r.age_7_14)", "under14")
+      .where("r.organizationId = :organizationId", { organizationId })
+      .andWhere("r.reportDate BETWEEN :startDate AND :endDate", { startDate, endDate })
+      .andWhere("r.isTest = :isTest", { isTest })
+      .getRawOne();
+
+    // 2. Gripp va O'RVI
+    const flu = await this.fluRepo.createQueryBuilder("r")
+      .select("SUM(r.flu_total)", "flu")
+      .addSelect("SUM(r.ari_total)", "ari")
+      .addSelect("SUM(r.flu_0_1 + r.flu_1_2 + r.flu_3_6 + r.flu_7_14)", "fluUnder14")
+      .addSelect("SUM(r.ari_0_1 + r.ari_1_2 + r.ari_3_6 + r.ari_7_14)", "ariUnder14")
+      .where("r.organizationId = :organizationId", { organizationId })
+      .andWhere("r.reportDate BETWEEN :startDate AND :endDate", { startDate, endDate })
+      .andWhere("r.isTest = :isTest", { isTest })
+      .getRawOne();
+
+    // 3. Koronavirus
+    const covid = await this.covidRepo.createQueryBuilder("r")
+      .select("SUM(r.total_cases)", "total")
+      .where("r.organizationId = :organizationId", { organizationId })
+      .andWhere("r.reportDate BETWEEN :startDate AND :endDate", { startDate, endDate })
+      .andWhere("r.isTest = :isTest", { isTest })
+      .getRawOne();
+
+    return {
+      hepatitis: {
+        total: Number(hepatitis?.total || 0),
+        under14: Number(hepatitis?.under14 || 0)
+      },
+      flu: {
+        total: Number(flu?.flu || 0),
+        under14: Number(flu?.fluUnder14 || 0)
+      },
+      ari: {
+        total: Number(flu?.ari || 0),
+        under14: Number(flu?.ariUnder14 || 0)
+      },
+      covid: {
+        total: Number(covid?.total || 0),
+        under14: 0 // Covid report doesn't have age breakdown in current entity
+      }
+    };
   }
 }

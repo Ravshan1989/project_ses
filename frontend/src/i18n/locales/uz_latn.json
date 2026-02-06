@@ -14,18 +14,68 @@
         "forgot_password": "Parolni unutdingizmi?",
         "login_btn": "Kirish"
     },
+    "regions": {
+        "nurafshon_city": "Nurafshon shahri",
+        "angren_city": "Angren shahri",
+        "bekobod_city": "Bekobod shahri",
+        "chirchiq_city": "Chirchiq shahri",
+        "olmaliq_city": "Olmaliq shahri",
+        "ohangaron_city": "Ohangaron shahri",
+        "yangiyol_city": "Yangiyo‘l shahri",
+        "oqqorgon_dist": "Oqqo‘rg‘on tumani",
+        "ohangaron_dist": "Ohangaron tumani",
+        "bekobod_dist": "Bekobod tumani",
+        "bostonliq_dist": "Bo‘stonliq tumani",
+        "boka_dist": "Bo‘ka tumani",
+        "quyi_chirchiq_dist": "Quyi Chirchiq tumani",
+        "zangiota_dist": "Zangiota tumani",
+        "yuqori_chirchiq_dist": "Yuqori Chirchiq tumani",
+        "qibray_dist": "Qibray tumani",
+        "parkent_dist": "Parkent tumani",
+        "piskent_dist": "Piskent tumani",
+        "orta_chirchiq_dist": "O‘rta Chirchiq tumani",
+        "chinoz_dist": "Chinoz tumani",
+        "yangiyol_dist": "Yangiyo‘l tumani",
+        "toshkent_dist": "Toshkent tumani",
+        "city_suffix": "shahri",
+        "district_suffix": "tumani",
+        "ses_suffix": "SES",
+        "type_city": "Shahar",
+        "type_district": "Tuman"
+    },
+    "report_templates": {
+        "form1": "Yuqumli kasalliklar hisoboti (Shakl 1)",
+        "vaccination": "Emlash ishlari bo'yicha oylik hisobot",
+        "water": "Suv sifati monitoringi",
+        "school": "Maktablardagi sanitariya holati"
+    },
     "common": {
         "dashboard": "Dashboard",
         "reports": "Hisobotlar",
         "analysis": "Tahlil",
-        "settings": "Sozlamalar",
+        "settings": "Sozalamalar",
         "logout": "Chiqish",
         "welcome": "Xush kelibsiz",
         "language": "Til",
         "vaccination_entry": "Emlashni Ro'yxatga Olish",
         "export": "Eksport (Excel)",
         "import": "Import (Excel)",
-        "diseases": "Kasalliklar"
+        "diseases": "Kasalliklar",
+        "departments": "Bo'limlar",
+        "roles_menu": "Rollar (Huquqlar)",
+        "users_menu": "Foydalanuvchilar Boshqaruvi",
+        "sos_monitoring": "SOS Monitoringi",
+        "app_name": "Smart SES",
+        "footer_org": "Toshkent viloyati SES",
+        "user_fallback": "Foydalanuvchi",
+        "success_approve": "Hisobot tasdiqlandi",
+        "success_reject": "Hisobot rad etildi",
+        "error_load_data": "Ma'lumotlarni yuklashda xatolik",
+        "success_export": "Excel fayl yuklab olindi",
+        "import_success": "{{count}} ta yozuv muvaffaqiyatli o'qildi",
+        "import_empty": "Fayl bo'sh",
+        "import_error": "Faylni o'qishda xatolik bo'ldi",
+        "sos_btn": "SOS"
     },
     "dashboard_page": {
         "title": "Asosiy panel",
@@ -39,24 +89,44 @@
         "filter_btn": "Filtr",
         "export_btn": "Excelga yuklash",
         "upload_btn": "Yuklash",
+        "reject_prompt": "Rad etish sababi:",
         "region_title": "Toshkent viloyati aholisi",
         "table": {
             "region": "Hudud",
             "report_type": "Hisobot Turi",
             "period": "Hisobot Davri",
             "status": "Holat",
-            "actions": "Amallar"
+            "actions": "Amallar",
+            "approve_tooltip": "Tasdiqlash",
+            "reject_tooltip": "Rad etish",
+            "view_details_tooltip": "Batafsil ko'rish"
         },
         "statuses": {
             "DRAFT": "Qoralama",
             "SUBMITTED": "Yuborilgan",
             "APPROVED": "Tasdiqlangan",
             "REJECTED": "Rad etilgan"
+        },
+        "analysis": {
+            "chart_submissions_title": "Statistikasi",
+            "chart_regions_title": "Hududlar bo'yicha tahlil (Top 10)",
+            "forecast_card_title": "Smart Analytics: Kelgusi oy uchun prognoz (Gepatit)",
+            "expected_cases": "Kutilayotgan holatlar soni",
+            "confidence_level": "Ishonch darajasi",
+            "forecast_footer_hint": "* Ushbu prognoz oxirgi 6 oylik statistik ma'lumotlar asosida algoritmik hisoblangan.",
+            "historical_label": "Tarixiy",
+            "forecast_label": "Bashorat",
+            "month_offset_label": "{{offset}} oydagi holat",
+            "next_month_label": "Kelgusi oy (Bashorat)",
+            "region_alias": "Hudud",
+            "population_alias": "Aholi soni"
         }
     },
     "reports": {
         "daily": "Kunlik Hisobotlar",
         "monthly": "Oylik Hisobotlar",
+        "daily_menu": "Kunlik Hisobotlar",
+        "monthly_menu": "Oylik Hisobotlar (Forma-1)",
         "form1": "Shakl 1 (Oylik)",
         "hepatitis": "Gepatit",
         "daily_hepatitis": "Kunlik Hisobotlar (VGA)",
@@ -184,6 +254,78 @@
             "success_save": "Kunlik ma'lumotlar muvaffaqiyatli saqlandi",
             "error_save": "Saqlashda muammo bo'ldi",
             "error_load": "Ma'lumotlarni yuklashda muammo bo'ldi"
+        },
+        "analysis_labels": {
+            "equal": "teng",
+            "increased": "marta o'sdi",
+            "decreased": "marta kamaydi"
+        },
+        "form1": {
+            "title": "Hisobot Shakl №1",
+            "subtitle": "Yuqumli kasalliklar to'g'risida oylik hisobot",
+            "tabs": {
+                "by_disease": "Kasalliklar bo'yicha",
+                "by_territory": "Hududlar bo'yicha",
+                "matrix": "Umumiy Tahlil (Matritsa)"
+            },
+            "table": {
+                "indicator": "Ko'rsatkichlar nomi",
+                "code": "Kod",
+                "current_month": "joriy oy",
+                "ytd": "yil bo'shidan buyon",
+                "total": "jami",
+                "u14": "14 yoshgacha",
+                "abs": "abs",
+                "int": "int.k",
+                "growth_abs": "rost/kamayish abs.",
+                "growth_per": "rost/kamayish %",
+                "district_city": "Tuman/Shahar",
+                "total_province": "JAMI (Viloyat)",
+                "search": "Qidirish...",
+                "select_disease": "Kasallikni tanlang:",
+                "load_data": "Ma'lumotlarni yuklash",
+                "matrix_hint": "* Tanlangan oy uchun barcha tumanlar va asosiy kasalliklar kesishmasi."
+            },
+            "actions": {
+                "error_load_diseases": "Yo'nalishlarni yuklashda xatolik",
+                "error_no_template": "Hisobot shakli topilmadi",
+                "success_save": "Shakl 1 hisoboti muvaffaqiyatli saqlandi!",
+                "success_save_test": "Test hisoboti saqlandi!",
+                "error_save": "Saqlashda xatolik yuz berdi",
+                "success_cleanup": "Test hisobotlari tozalandi",
+                "error_cleanup": "Tozalashda xatolik",
+                "success_aggregate": "Kunlik hisobotlardan ma'lumotlar muvaffaqiyatli yig'ildi!",
+                "error_aggregate": "Kunlik hisobotlarni yig'ishda xatolik yuz berdi",
+                "success_excel_upload": "Excel ma'lumotlari yuklandi!",
+                "error_excel_read": "Excel o'qishda xatolik",
+                "fill_daily": "Kunlikdan to'ldirish",
+                "excel_upload": "Excel Yuklash",
+                "matrix_refresh": "Matritsani yangilash"
+            }
+        },
+        "test_mode": {
+            "label": "Test Rejimi",
+            "active_alert": "DIQQAT: TEST REJIMI FAOL",
+            "active_desc": "Hozirgi kiritilayotgan barcha ma'lumotlar 'Test' deb belgilanadi va real hisobotga ta'sir qilmaydi.",
+            "cleanup_confirm": "Barcha test ma'lumotlarini o'chirishni xohlaysizmi?",
+            "cleanup_btn": "Tozalash",
+            "save_success": "Test ma'lumoti saqlandi",
+            "cleanup_success": "Test ma'lumotlari tozalandi",
+            "cleanup_error": "Tozalashda xatolik"
+        },
+        "table_v2": {
+            "total_hepatitis": "Jami qayd qilingan VG A bemorlar",
+            "age_under_1_yr": "1 yoshgacha",
+            "age_20_plus_yrs": "20 yoshdan kattalar",
+            "occ_organized_nursery": "Uyushgan yasli yoshidagi bolalar",
+            "occ_unorganized_nursery": "Uyushmagan yasli yoshidagi bolalar",
+            "occ_organized_preschool": "Uyushgan bog'cha yoshidagi bolalar",
+            "occ_unorganized_preschool": "Uyushmagan bog'cha yoshidagi bolalar",
+            "factor_food_detailed": "Ovqat-oziq mahsulotlari",
+            "factor_contact_detailed": "Maishiy muloqot",
+            "lab_samples_detailed": "Jami olingan namunalar",
+            "lab_positive_detailed": "Musbat natija",
+            "disinfection_detailed": "Dezinfeksiya o'tkazilgan o'choqlar"
         }
     }
 }

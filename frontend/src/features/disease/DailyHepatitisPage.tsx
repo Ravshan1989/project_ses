@@ -271,7 +271,7 @@ const DailyHepatitisPage: React.FC = () => {
             })
         },
         {
-            title: 'Ma\'muriy hududlar',
+            title: t('daily_reports.table.district'),
             dataIndex: 'district_name',
             width: 150, fixed: 'left',
             onCell: (record: ReportData) => ({
@@ -283,56 +283,48 @@ const DailyHepatitisPage: React.FC = () => {
             })
         },
         {
-            title: 'Jami qayd qilingan VG A bemorlar',
+            title: t('daily_reports.table_v2.total_hepatitis'),
             dataIndex: 'total_cases',
             width: 90,
             render: (_: any, r: any) => renderInput(r, 'total_cases', true)
         },
         {
-            title: 'Bemorlarni yoshlari bo\'yicha',
+            title: t('daily_reports.table.by_age'),
             children: [
-                { title: '1 yoshgacha', width: 70, render: (_: any, r: any) => renderInput(r, 'age_under_1') },
-                { title: '1-3 yosh', width: 70, render: (_: any, r: any) => renderInput(r, 'age_1_3') },
-                { title: '4-6 yosh', width: 70, render: (_: any, r: any) => renderInput(r, 'age_4_6') },
-                { title: '7-14 yosh', width: 70, render: (_: any, r: any) => renderInput(r, 'age_7_14') },
-                { title: '15-19 yosh', width: 70, render: (_: any, r: any) => renderInput(r, 'age_15_19') },
-                { title: '20 yoshdan kattalar', width: 80, render: (_: any, r: any) => renderInput(r, 'age_20_plus') },
+                { title: t('daily_reports.table_v2.age_under_1_yr'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_under_1') },
+                { title: t('daily_reports.table.age_1_3'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_1_3') },
+                { title: t('daily_reports.table.age_4_6'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_4_6') },
+                { title: t('daily_reports.table.age_7_14'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_7_14') },
+                { title: t('daily_reports.table.age_15_19'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_15_19') },
+                { title: t('daily_reports.table_v2.age_20_plus_yrs'), width: 80, render: (_: any, r: any) => renderInput(r, 'age_20_plus') },
             ]
         },
         {
-            title: 'Bemorlarni kasblari bo\'yicha',
+            title: t('daily_reports.table.by_occupation'),
             children: [
-                // 'Uyushgan yasli' uchun maydon (hozircha 'occ_organized_1_6' ishlatilmoqda yoki yangi maydon kerak)
-                // Mavjud 'occ_organized_1_6' ni 'Uyushgan bog'cha' deb oldik. 'Uyushgan yasli' uchun vaqtincha placeholder.
-                // Hozirgi ma'lumotlar bazasi strukturasiga moslash uchun mavjud maydonlarni map qilamiz.
-
-                // Izoh: Skrinshotda "Uyushgan yasli" va "Uyushmagan yasli" bor.
-                // Bizda 'occ_unorganized' (uyushmagan) va 'occ_organized_1_6' (bog'cha) bor.
-                // Yangi ustunlar qo'shish kerak bo'ladi, lekin hozircha mavjudlarini ishlatamiz.
-
-                { title: 'Uyushgan yasli yoshidagi bolalar', width: 100, render: (_: any, _r: any) => <span style={{ color: 'gray' }}>-</span> }, // Backendda yo'q
-                { title: 'Uyushmagan yasli yoshidagi bolalar', width: 100, render: (_: any, r: any) => renderInput(r, 'occ_unorganized') },
-                { title: 'Uyushgan bog\'cha yoshidagi bolalar', width: 100, render: (_: any, r: any) => renderInput(r, 'occ_organized_1_6') },
-                { title: 'Uyushmagan bog\'cha yoshidagi bolalar', width: 100, render: (_: any, r: any) => renderInput(r, 'occ_unorganized_1_6') },
-                { title: 'O\'quvchilar', width: 80, render: (_: any, r: any) => renderInput(r, 'occ_students') },
-                { title: 'Talabalar', width: 80, render: (_: any, r: any) => renderInput(r, 'occ_college_students') },
-                { title: 'Kattalar', width: 80, render: (_: any, r: any) => renderInput(r, 'occ_workers') },
+                { title: t('daily_reports.table_v2.occ_organized_nursery'), width: 100, render: (_: any, _r: any) => <span style={{ color: 'gray' }}>-</span> },
+                { title: t('daily_reports.table_v2.occ_unorganized_nursery'), width: 100, render: (_: any, r: any) => renderInput(r, 'occ_unorganized') },
+                { title: t('daily_reports.table_v2.occ_organized_preschool'), width: 100, render: (_: any, r: any) => renderInput(r, 'occ_organized_1_6') },
+                { title: t('daily_reports.table_v2.occ_unorganized_preschool'), width: 100, render: (_: any, r: any) => renderInput(r, 'occ_unorganized_1_6') },
+                { title: t('daily_reports.table.students'), width: 80, render: (_: any, r: any) => renderInput(r, 'occ_students') },
+                { title: t('daily_reports.table.college_students'), width: 80, render: (_: any, r: any) => renderInput(r, 'occ_college_students') },
+                { title: t('daily_reports.table.adults'), width: 80, render: (_: any, r: any) => renderInput(r, 'occ_workers') },
             ]
         },
         {
-            title: 'Yuqish ehtimoli bo\'lgan omil',
+            title: t('daily_reports.table.factors'),
             children: [
-                { title: 'Suv', width: 60, render: (_: any, r: any) => renderInput(r, 'factor_water') },
-                { title: 'Ovqat-oziq mahsulotlari', width: 90, render: (_: any, r: any) => renderInput(r, 'factor_food') },
-                { title: 'Maishiy muloqot', width: 80, render: (_: any, r: any) => renderInput(r, 'factor_contact') },
+                { title: t('daily_reports.table.water'), width: 60, render: (_: any, r: any) => renderInput(r, 'factor_water') },
+                { title: t('daily_reports.table_v2.factor_food_detailed'), width: 90, render: (_: any, r: any) => renderInput(r, 'factor_food') },
+                { title: t('daily_reports.table_v2.factor_contact_detailed'), width: 80, render: (_: any, r: any) => renderInput(r, 'factor_contact') },
             ]
         },
         {
-            title: 'O\'choqlarda i.suvini VGA ant.',
+            title: t('daily_reports.table_v2.disinfection_detailed'),
             children: [
-                { title: 'Jami olingan namunalar', width: 90, render: (_: any, r: any) => renderInput(r, 'lab_samples') },
-                { title: 'Musbat natija', width: 80, render: (_: any, r: any) => renderInput(r, 'lab_positive') },
-                { title: 'Dezinfeksiya o\'tkazilgan o\'choqlar', width: 100, render: (_: any, r: any) => renderInput(r, 'disinfection_done') },
+                { title: t('daily_reports.table_v2.lab_samples_detailed'), width: 90, render: (_: any, r: any) => renderInput(r, 'lab_samples') },
+                { title: t('daily_reports.table_v2.lab_positive_detailed'), width: 80, render: (_: any, r: any) => renderInput(r, 'lab_positive') },
+                { title: t('daily_reports.table_v2.disinfection_detailed'), width: 100, render: (_: any, r: any) => renderInput(r, 'disinfection_done') },
             ]
         },
     ];
@@ -350,7 +342,7 @@ const DailyHepatitisPage: React.FC = () => {
                 });
             }
             notification.success({
-                message: isTestMode ? "Test ma'lumoti saqlandi" : t('user.save'),
+                message: isTestMode ? t('daily_reports.test_mode.save_success') : t('daily_reports.actions.save'),
                 description: t('daily_reports.actions.success_save')
             });
             fetchReports();
@@ -369,10 +361,10 @@ const DailyHepatitisPage: React.FC = () => {
         setLoading(true);
         try {
             await dailyReportsApi.cleanupTest();
-            notification.success({ message: "Test ma'lumotlari tozalandi" });
+            notification.success({ message: t('daily_reports.test_mode.cleanup_success') });
             fetchReports();
         } catch (error) {
-            notification.error({ message: "Tozalashda xatolik" });
+            notification.error({ message: t('daily_reports.test_mode.cleanup_error') });
         } finally {
             setLoading(false);
         }
@@ -396,13 +388,13 @@ const DailyHepatitisPage: React.FC = () => {
                         </div>
                         <Space>
                             {isTestMode && (
-                                <Popconfirm title="Barcha test ma'lumotlarini o'chirishni xohlaysizmi?" onConfirm={handleCleanup}>
-                                    <Button danger icon={<DeleteOutlined />}>Tozalash</Button>
+                                <Popconfirm title={t('daily_reports.test_mode.cleanup_confirm')} onConfirm={handleCleanup}>
+                                    <Button danger icon={<DeleteOutlined />}>{t('daily_reports.test_mode.cleanup_btn')}</Button>
                                 </Popconfirm>
                             )}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #d9d9d9', padding: '4px 12px', borderRadius: '6px' }}>
                                 <ExperimentOutlined style={{ color: isTestMode ? '#f5222d' : '#8c8c8c' }} />
-                                <Text strong={isTestMode} type={isTestMode ? "danger" : "secondary"}>Test Rejimi</Text>
+                                <Text strong={isTestMode} type={isTestMode ? "danger" : "secondary"}>{t('daily_reports.test_mode.label')}</Text>
                                 <Switch size="small" checked={isTestMode} onChange={setIsTestMode} />
                             </div>
                             <DatePicker
@@ -417,22 +409,13 @@ const DailyHepatitisPage: React.FC = () => {
 
                     {isTestMode && (
                         <Alert
-                            message="DIQQAT: TEST REJIMI FAOL"
-                            description="Hozirgi kiritilayotgan barcha ma'lumotlar 'Test' deb belgilanadi va real hisobotga ta'sir qilmaydi."
+                            message={t('daily_reports.test_mode.active_alert')}
+                            description={t('daily_reports.test_mode.active_desc')}
                             type="error"
                             showIcon
                             icon={<ExperimentOutlined />}
                         />
                     )}
-
-                    {/* ESKI TABLE KODI SAQLAB QOLINDI (COMMENTGA OLINMADI, LEKIN KO'RINMASLIGI MUMKIN YOKI YANGISI ISHLATILADI) */}
-                    {/* 
-                <Table
-                    columns={columns}
-                    dataSource={data}
-                    ...
-                />
-                */}
 
                     {/* YANGI TABLE KODI (03.02.2026) - columnsV2 ishlatilmoqda */}
                     <Table
@@ -443,36 +426,34 @@ const DailyHepatitisPage: React.FC = () => {
                         size="small"
                         pagination={false}
                         scroll={{ x: 2000, y: 600 }}
-                    /* SUMMARY VAQTINCHA O'CHIRILDI (DEBUG)
-                    summary={() => (
-                        <Table.Summary fixed>
-                            <Table.Summary.Row style={{ background: '#fafafa', fontWeight: 'bold' }}>
-                                <Table.Summary.Cell index={0} align="center">-</Table.Summary.Cell>
-                                <Table.Summary.Cell index={1}>Viloyat bo'yicha jami</Table.Summary.Cell>
-                                <Table.Summary.Cell index={2}>{provinceTotals.total_cases}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={3}>{provinceTotals.age_under_1}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={4}>{provinceTotals.age_1_3}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={5}>{provinceTotals.age_4_6}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={6}>{provinceTotals.age_7_14}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={7}>{provinceTotals.age_15_19}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={8}>{provinceTotals.age_20_plus}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={9}>-</Table.Summary.Cell>
-                                <Table.Summary.Cell index={10}>{provinceTotals.occ_unorganized}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={11}>{provinceTotals.occ_organized_1_6}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={12}>{provinceTotals.occ_unorganized_1_6}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={13}>{provinceTotals.occ_students}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={14}>{provinceTotals.occ_college_students}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={15}>{provinceTotals.occ_workers}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={16}>{provinceTotals.factor_water}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={17}>{provinceTotals.factor_food}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={18}>{provinceTotals.factor_contact}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={19}>{provinceTotals.lab_samples}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={20}>{provinceTotals.lab_positive}</Table.Summary.Cell>
-                                <Table.Summary.Cell index={21}>{provinceTotals.disinfection_done}</Table.Summary.Cell>
-                            </Table.Summary.Row>
-                        </Table.Summary>
-                    )}
-                    */
+                        summary={() => (
+                            <Table.Summary fixed>
+                                <Table.Summary.Row style={{ background: '#fafafa', fontWeight: 'bold' }}>
+                                    <Table.Summary.Cell index={0} align="center">-</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={1}>{t('daily_reports.table.total_province')}</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={2}>{provinceTotals.total_cases}</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={3}>{provinceTotals.age_under_1}</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={4}>{provinceTotals.age_1_3}</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={5}>{provinceTotals.age_4_6}</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={6}>{provinceTotals.age_7_14}</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={7}>{provinceTotals.age_15_19}</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={8}>{provinceTotals.age_20_plus}</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={9}>-</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={10}>{provinceTotals.occ_unorganized}</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={11}>{provinceTotals.occ_organized_1_6}</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={12}>{provinceTotals.occ_unorganized_1_6}</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={13}>{provinceTotals.occ_students}</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={14}>{provinceTotals.occ_college_students}</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={15}>{provinceTotals.occ_workers}</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={16}>{provinceTotals.factor_water}</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={17}>{provinceTotals.factor_food}</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={18}>{provinceTotals.factor_contact}</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={19}>{provinceTotals.lab_samples}</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={20}>{provinceTotals.lab_positive}</Table.Summary.Cell>
+                                    <Table.Summary.Cell index={21}>{provinceTotals.disinfection_done}</Table.Summary.Cell>
+                                </Table.Summary.Row>
+                            </Table.Summary>
+                        )}
                     />
                 </Space>
             </Card>

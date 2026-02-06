@@ -69,4 +69,14 @@ export class SubmissionsController {
   cleanupTest() {
     return this.submissionsService.cleanupTest();
   }
+
+  @Get("aggregate-daily")
+  @RequirePermission("EDIT_FORM1_TABLE1")
+  async aggregateDaily(
+    @Query("month") month: string, // YYYY-MM-01
+    @Query("isTest") isTest: string,
+    @Request() req,
+  ) {
+    return this.submissionsService.aggregateDaily(month, isTest === "true", req.user);
+  }
 }

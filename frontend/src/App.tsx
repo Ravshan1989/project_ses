@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Button, ConfigProvider, theme, Typography } from 'antd';
+import { Layout, Menu, Button, ConfigProvider, Typography } from 'antd';
 import {
     MedicineBoxOutlined,
     DashboardOutlined,
@@ -10,7 +10,9 @@ import {
     FileTextOutlined,
     ClusterOutlined,
     TeamOutlined,
-    UserOutlined
+    UserOutlined,
+    AlertOutlined,
+    BellOutlined
 } from '@ant-design/icons';
 import RoleManagementPage from './features/admin/RoleManagementPage';
 // ... imports ...
@@ -39,6 +41,8 @@ import ExportPage from './features/export/ExportPage';
 // TUZATISH: ImportPage import qilindi
 import ImportPage from './features/import/ImportPage';
 import DepartmentManagementPage from './features/admin/DepartmentManagementPage';
+import SosAlertPage from './features/sos/SosAlertPage';
+import SosModal from './features/sos/SosModal';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
@@ -54,7 +58,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [collapsed, setCollapsed] = React.useState(false);
-    const { token } = theme.useToken();
+    const [sosVisible, setSosVisible] = React.useState(false);
     const { t } = useTranslation();
 
     const userRole = localStorage.getItem('user_role');
@@ -94,46 +98,58 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             label: t('common.reports'),
             children: [
                 {
-                    key: '/form-1',
-                    label: t('reports.form1'),
-                    onClick: () => navigate('/form-1')
+                    key: 'sub_daily',
+                    label: t('reports.daily_menu'),
+                    children: [
+                        {
+                            key: '/daily-reports',
+                            label: t('reports.daily_hepatitis'),
+                            onClick: () => navigate('/daily-reports')
+                        },
+                        {
+                            key: '/daily-flu',
+                            label: t('reports.flu'),
+                            onClick: () => navigate('/daily-flu')
+                        },
+                        {
+                            key: '/daily-ari',
+                            label: t('reports.ari'),
+                            onClick: () => navigate('/daily-ari')
+                        },
+                        {
+                            key: '/daily-covid',
+                            label: t('reports.covid'),
+                            onClick: () => navigate('/daily-covid')
+                        },
+                        {
+                            key: '/daily-epidemiology',
+                            label: t('reports.epidemiology'),
+                            onClick: () => navigate('/daily-epidemiology')
+                        },
+                        {
+                            key: '/daily-unified',
+                            label: t('reports.unified'),
+                            onClick: () => navigate('/daily-unified'),
+                            icon: <SaveOutlined style={{ color: '#1890ff' }} />
+                        },
+                        {
+                            key: '/weekly-flu',
+                            label: t('reports.weekly_flu'),
+                            onClick: () => navigate('/weekly-flu')
+                        },
+                    ]
                 },
                 {
-                    key: '/daily-reports',
-                    label: t('reports.daily_hepatitis'),
-                    onClick: () => navigate('/daily-reports')
-                },
-                {
-                    key: '/daily-flu',
-                    label: t('reports.flu'),
-                    onClick: () => navigate('/daily-flu')
-                },
-                {
-                    key: '/daily-ari',
-                    label: t('reports.ari'),
-                    onClick: () => navigate('/daily-ari')
-                },
-                {
-                    key: '/daily-epidemiology',
-                    label: t('reports.epidemiology'),
-                    onClick: () => navigate('/daily-epidemiology')
-                },
-                {
-                    key: '/weekly-flu',
-                    label: t('reports.weekly_flu'),
-                    onClick: () => navigate('/weekly-flu')
-                },
-                {
-                    key: '/daily-covid',
-                    label: t('reports.covid'),
-                    onClick: () => navigate('/daily-covid')
-                },
-                {
-                    key: '/daily-unified',
-                    label: t('reports.unified'),
-                    onClick: () => navigate('/daily-unified'),
-                    icon: <SaveOutlined style={{ color: '#1890ff' }} />
-                },
+                    key: 'sub_monthly',
+                    label: t('reports.monthly_menu'),
+                    children: [
+                        {
+                            key: '/form-1',
+                            label: t('reports.form1'),
+                            onClick: () => navigate('/form-1')
+                        },
+                    ]
+                }
             ]
         }] : []),
         ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD']) ? [{
@@ -141,6 +157,12 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             icon: <EyeOutlined />,
             label: t('reports.form1_monitoring'),
             onClick: () => navigate('/form1-monitoring')
+        }] : []),
+        ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD']) ? [{
+            key: '/sos-monitoring',
+            icon: <BellOutlined />,
+            label: t('common.sos_monitoring'),
+            onClick: () => navigate('/sos-monitoring')
         }] : []),
         ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD']) ? [{
             key: '/export',
@@ -186,19 +208,25 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     {
                         key: '/departments',
                         icon: <ClusterOutlined />,
-                        label: "Bo'limlar",
+                        // TUZATISH: Tarjima qo'shildi
+                        // label: "Bo'limlar",
+                        label: t('common.departments'),
                         onClick: () => navigate('/departments')
                     },
                     {
                         key: '/roles',
                         icon: <TeamOutlined />,
-                        label: "Rollar (Huquqlar)",
+                        // TUZATISH: Tarjima qo'shildi
+                        // label: "Rollar (Huquqlar)",
+                        label: t('common.roles_menu'),
                         onClick: () => navigate('/roles')
                     },
                     {
                         key: '/users',
                         icon: <UserOutlined />,
-                        label: "Foydalanuvchilar Boshqaruvi",
+                        // TUZATISH: Tarjima qo'shildi
+                        // label: "Foydalanuvchilar Boshqaruvi",
+                        label: t('common.users_menu'),
                         onClick: () => navigate('/users')
                     }
                 ] : [])
@@ -215,7 +243,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             case '/users': return t('user.title');
             case '/export': return t('common.export');
             case '/import': return t('common.import');
-            default: return 'RegionStat';
+            default: return t('common.app_name');
         }
     };
 
@@ -243,8 +271,8 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 }}>
                     <MedicineBoxOutlined style={{ color: '#fff', fontSize: '24px', marginRight: collapsed ? 0 : 10 }} />
                     {!collapsed && (
-                        <span style={{ color: '#fff', fontWeight: 700, fontSize: '16px', letterSpacing: '0.5px' }}>
-                            REGION<span style={{ color: token.colorPrimary }}>STAT</span>
+                        <span style={{ color: '#fff', fontWeight: 700, fontSize: '18px', letterSpacing: '1px' }}>
+                            {t('common.app_name').split(' ')[0]} <span style={{ color: '#1890ff' }}>{t('common.app_name').split(' ')[1]}</span>
                         </span>
                     )}
                 </div>
@@ -277,12 +305,24 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         <div style={{ textAlign: 'right', lineHeight: '1.2' }}>
                             {/* UZ: Foydalanuvchi ismini localStorage dan olish */}
                             <Text strong style={{ display: 'block', color: '#333' }}>
-                                {localStorage.getItem('user_full_name') || localStorage.getItem('username') || 'Foydalanuvchi'}
+                                {localStorage.getItem('user_full_name') || localStorage.getItem('username') || t('common.user_fallback')}
                             </Text>
                             <Text type="secondary" style={{ fontSize: '12px' }}>
                                 {t(`user.roles.${localStorage.getItem('user_role') || 'STAFF'}`)}
                             </Text>
                         </div>
+
+                        {hasRole(['DISTRICT_HEAD', 'STAFF']) && (
+                            <Button
+                                type="primary"
+                                danger
+                                icon={<AlertOutlined />}
+                                onClick={() => setSosVisible(true)}
+                                style={{ fontWeight: 'bold' }}
+                            >
+                                {t('common.sos_btn')}
+                            </Button>
+                        )}
 
                         <Button
                             type="text"
@@ -301,8 +341,10 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     </div>
                 </Content>
 
+                <SosModal visible={sosVisible} onClose={() => setSosVisible(false)} />
+
                 <Footer style={{ textAlign: 'center', color: '#999', background: 'transparent' }}>
-                    RegionStat ©2026 Toshkent viloyati SES
+                    {t('common.app_name')} ©{new Date().getFullYear()} {t('common.footer_org')}
                 </Footer>
             </Layout>
         </Layout>
@@ -363,6 +405,7 @@ function App() {
 
                     <Route path="/analysis" element={<ProtectedRoute><AnalysisDashboard /></ProtectedRoute>} />
                     <Route path="/analysis/global" element={<ProtectedRoute><GlobalMonitoringPage /></ProtectedRoute>} />
+                    <Route path="/sos-monitoring" element={<ProtectedRoute><SosAlertPage /></ProtectedRoute>} />
                     <Route path="/users" element={<ProtectedRoute><UserManagementPage /></ProtectedRoute>} />
                     <Route path="/departments" element={<ProtectedRoute><DepartmentManagementPage /></ProtectedRoute>} />
                     <Route path="/roles" element={<ProtectedRoute><RoleManagementPage /></ProtectedRoute>} />

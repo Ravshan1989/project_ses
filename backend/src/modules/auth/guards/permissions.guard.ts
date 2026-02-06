@@ -52,11 +52,21 @@ export class PermissionsGuard implements CanActivate {
             hasRolePermission = true;
         }
 
-        // UZ: Kesishma (Intersection) - ikkalasi ham bo'lishi kerak (agar rol biriktirilgan bo'lsa)
-        if (!hasDeptPermission || !hasRolePermission) {
+        // UZ: 4. Shaxsiy (Individual) ruxsatni tekshirish
+        let hasIndividualPermission = false;
+        if (user.userPermissions) {
+            hasIndividualPermission = user.userPermissions.some(
+                (up: any) => up.permissionCode === requiredPermission && (up.canView || up.canEdit)
+            );
+        }
+
+        // UZ: Kesishma (Intersection) - Bo'limda bo'lishi SHART, 
+        // va (Rol'da bo'lishi kerak YOKI shaxsan berilgan bo'lishi kerak)
+        if (!hasDeptPermission || (!hasRolePermission && !hasIndividualPermission)) {
             throw new ForbiddenException("Sizda ushbu ma'lumotni ko'rish huquqi yo'q.");
         }
 
         return true;
     }
 }
+

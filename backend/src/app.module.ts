@@ -10,11 +10,20 @@ import { ExportsModule } from "./modules/exports/exports.module";
 import { ImportsModule } from "./modules/imports/imports.module";
 import { DailyReportsModule } from "./modules/daily-reports/daily-reports.module";
 import { AnalysisModule } from "./modules/analysis/analysis.module";
+import { TelegramModule } from "./modules/telegram/telegram.module";
+import { SosModule } from "./modules/sos/sos.module";
 
 import { AuthModule } from "./modules/auth/auth.module";
 import { DepartmentsModule } from "./modules/departments/departments.module";
 import { PermissionsModule } from "./modules/permissions/permissions.module";
 import { RolesModule } from "./modules/roles/roles.module";
+import { AuditModule } from "./modules/audit/audit.module"; // UZ: Audit loglari uchun moduli
+import { APP_INTERCEPTOR } from "@nestjs/core"; // UZ: Global interceptor uchun
+import { AuditInterceptor } from "./modules/audit/audit.interceptor"; // UZ: Audit interceptori
+import { ValidationModule } from "./modules/validation/validation.module"; // UZ: Validatsiya moduli
+import { NotificationsModule } from "./modules/notifications/notifications.module"; // UZ: Real-vaqt bildirishnomalari
+import { NotificationInterceptor } from "./modules/notifications/notifications.interceptor"; // UZ: Bildirishnomalar interceptori
+import { EventEmitterModule } from "@nestjs/event-emitter"; // UZ: Ichki eventlar uchun
 
 @Module({
   imports: [
@@ -33,8 +42,17 @@ import { RolesModule } from "./modules/roles/roles.module";
     DepartmentsModule,
     PermissionsModule,
     RolesModule,
+    TelegramModule,
+    SosModule,
+    AuditModule, // UZ: Audit moduli qo'shildi
+    ValidationModule, // UZ: Mantiqiy validatsiya moduli qo'shildi
+    NotificationsModule, // UZ: Bildirishnomalar moduli qo'shildi
+    EventEmitterModule.forRoot(), // UZ: Eventlar tizimini yoqish
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    { provide: APP_INTERCEPTOR, useClass: AuditInterceptor }, // UZ: Global audit loglarini yozish uchun
+    { provide: APP_INTERCEPTOR, useClass: NotificationInterceptor }, // UZ: Bildirishnomalar uchun interceptor
+  ],
 })
 export class AppModule { }

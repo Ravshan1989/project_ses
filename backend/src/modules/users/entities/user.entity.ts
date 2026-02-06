@@ -3,6 +3,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
+  OneToMany,
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
@@ -11,6 +12,7 @@ import { Organization } from "../../organizations/entities/organization.entity";
 import { UserRole } from "../../../common/enums/role.enum";
 import { Department } from "../../departments/entities/department.entity";
 import { Role } from "../../roles/entities/role.entity";
+import { UserPermission } from "../../permissions/entities/user-permission.entity"; // UZ: Foydalanuvchi shaxsiy ruxsatlari
 
 @Entity("users")
 export class User {
@@ -47,6 +49,9 @@ export class User {
   @ManyToOne(() => Role, (role) => role.users, { nullable: true })
   @JoinColumn({ name: "role_id" })
   dynamicRole: Role; // UZ: Dinamik rol biriktirish (Yangi tizim)
+
+  @OneToMany(() => UserPermission, (up) => up.user)
+  userPermissions: UserPermission[]; // UZ: Foydalanuvchining shaxsiy (qo'shimcha) ruxsatlari
 
   @CreateDateColumn()
   createdAt: Date;

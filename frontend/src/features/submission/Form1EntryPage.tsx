@@ -5,6 +5,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { read, utils } from 'xlsx';
 import { diseasesApi, submissionApi, api } from '../../services/api';
 import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
 import PermissionGate from '../../components/PermissionGate';
 
 const { Title, Text } = Typography;
@@ -24,6 +25,7 @@ interface Form1Record {
 }
 
 const Form1EntryPage: React.FC = () => {
+    const { t } = useTranslation();
     const [data, setData] = useState<Form1Record[]>([]);
     const [loading, setLoading] = useState(false);
     const [period, setPeriod] = useState(dayjs().subtract(1, 'month'));
@@ -71,7 +73,7 @@ const Form1EntryPage: React.FC = () => {
             }));
             setData(mappedData);
         } catch (error) {
-            message.error("Yo'nalishlarni yuklashda xatolik");
+            message.error(t('form1.actions.error_load_diseases'));
         } finally {
             setLoading(false);
         }
@@ -89,6 +91,26 @@ const Form1EntryPage: React.FC = () => {
     const calculateGrowthPer = (curr: number, prev: number) => {
         if (!prev || prev === 0) return curr > 0 ? 100 : 0;
         return parseFloat((((curr - prev) / prev) * 100).toFixed(1));
+    };
+
+    // UZ: "Smart" (aqlli) o'sish/kamayish formulasi
+    const calculateSmartGrowth = (curr: number, prev: number) => {
+        if (curr === prev) return t('analysis_labels.equal');
+        if (!prev || prev === 0) return `+${curr}`;
+        if (!curr || curr === 0) return `-${prev} (0)`;
+
+        const diffPercent = Math.abs((curr / prev - 1) * 100);
+
+        if (diffPercent < 50) {
+            const val = ((curr / prev - 1) * 100).toFixed(1);
+            return `${val}%`;
+        } else {
+            if (curr > prev) {
+                return `${(curr / prev).toFixed(1)} ${t('analysis_labels.increased')}`;
+            } else {
+                return `-${(prev / curr).toFixed(1)} ${t('analysis_labels.decreased')}`;
+            }
+        }
     };
 
     const handleInputChange = (value: number | null, key: string, field: keyof Form1Record) => {
@@ -154,9 +176,9 @@ const Form1EntryPage: React.FC = () => {
                     }
                 }
                 setData(newData);
-                message.success('Excel ma\'lumotlari yuklandi!');
+                message.success(t('form1.actions.success_excel_upload'));
             } catch (error) {
-                message.error('Excel o\'qishda xatolik');
+                message.error(t('form1.actions.error_excel_read'));
             }
         };
         reader.readAsArrayBuffer(file);
@@ -184,30 +206,51 @@ const Form1EntryPage: React.FC = () => {
         />
     );
 
-    const getStatColumns = (prefix: string) => [
-        { title: '2023 йил (абс)', width: 80, align: 'center' as const, key: `${prefix}_p_a`, className: 'bg-prev', render: (_: any, r: any) => renderInput(r, `${prefix}_p_a` as any) },
-        { title: '2023 йил (инт.к)', width: 80, align: 'center' as const, key: `${prefix}_p_i`, className: 'bg-prev', render: (_: any, r: any) => renderInput(r, `${prefix}_p_i` as any, true) },
-        { title: '2024 йил (абс)', width: 80, align: 'center' as const, key: `${prefix}_c_a`, className: 'bg-curr', render: (_: any, r: any) => renderInput(r, `${prefix}_c_a` as any) },
-        { title: '2024 йил (инт.к)', width: 80, align: 'center' as const, key: `${prefix}_c_i`, className: 'bg-curr', render: (_: any, r: any) => renderInput(r, `${prefix}_c_i` as any, true) },
-        { title: 'рост/камайиш абс.', width: 80, align: 'center' as const, key: `${prefix}_g_a`, render: (_: any, r: any) => renderInput(r, `${prefix}_g_a` as any, true) },
-        { title: 'рост/камайиш %', width: 80, align: 'center' as const, key: `${prefix}_g_p`, render: (_: any, r: any) => renderInput(r, `${prefix}_g_p` as any, true) },
-    ];
+    const getStatColumns = (prefix: string) => {
+        const currentYear = period.year();
+        const prevYear = currentYear - 1;
+        return [
+            { title: `${prevYear} ${t('form1.table.abs')}`, width: 80, align: 'center' as const, key: `${prefix}_p_a`, className: 'bg-prev', render: (_: any, r: any) => renderInput(r, `${prefix}_p_a` as any) },
+            { title: `${prevYear} ${t('form1.table.int')}`, width: 80, align: 'center' as const, key: `${prefix}_p_i`, className: 'bg-prev', render: (_: any, r: any) => renderInput(r, `${prefix}_p_i` as any, true) },
+            { title: `${currentYear} ${t('form1.table.abs')}`, width: 80, align: 'center' as const, key: `${prefix}_c_a`, className: 'bg-curr', render: (_: any, r: any) => renderInput(r, `${prefix}_c_a` as any) },
+            { title: `${currentYear} ${t('form1.table.int')}`, width: 80, align: 'center' as const, key: `${prefix}_c_i`, className: 'bg-curr', render: (_: any, r: any) => renderInput(r, `${prefix}_c_i` as any, true) },
+            { title: t('form1.table.growth_abs'), width: 80, align: 'center' as const, key: `${prefix}_g_a`, render: (_: any, r: any) => renderInput(r, `${prefix}_g_a` as any, true) },
+            {
+                title: t('form1.table.growth_per'),
+                width: 120,
+                align: 'center' as const,
+                key: `${prefix}_g_p`,
+                render: (_: any, r: any) => {
+                    const curr = Number(r[`${prefix}_c_a`]) || 0;
+                    const prev = Number(r[`${prefix}_p_a`]) || 0;
+                    const text = calculateSmartGrowth(curr, prev);
+                    const isGrowth = curr > prev;
+                    const isStable = curr === prev;
+                    return (
+                        <Text type={isStable ? "secondary" : (isGrowth ? "danger" : "success")} style={{ fontSize: '11px', fontWeight: 600 }}>
+                            {text}
+                        </Text>
+                    );
+                }
+            },
+        ];
+    };
 
     const columns: ColumnsType<Form1Record> = [
-        { title: 'Кўрсаткичлар номи', dataIndex: 'name', key: 'name', width: 250, fixed: 'left', render: (t) => <Text strong>{t}</Text> },
-        { title: 'Код', dataIndex: 'code', key: 'code', width: 60, align: 'center', fixed: 'left' },
+        { title: t('form1.table.indicator'), dataIndex: 'name', key: 'name', width: 250, fixed: 'left', render: (t) => <Text strong>{t}</Text> },
+        { title: t('form1.table.code'), dataIndex: 'code', key: 'code', width: 60, align: 'center', fixed: 'left' },
         {
-            title: 'жорий ой',
+            title: t('form1.table.current_month'),
             children: [
-                { title: 'жами', children: getStatColumns('m_t') as any },
-                { title: '14 ёшгача', children: getStatColumns('m_u') as any },
+                { title: t('form1.table.total'), children: getStatColumns('m_t') as any },
+                { title: t('form1.table.u14'), children: getStatColumns('m_u') as any },
             ]
         },
         {
-            title: 'йил бошиdan buyon',
+            title: t('form1.table.ytd'),
             children: [
-                { title: 'жами', children: getStatColumns('y_t') as any },
-                { title: '14 ёшгача', children: getStatColumns('y_u') as any },
+                { title: t('form1.table.total'), children: getStatColumns('y_t') as any },
+                { title: t('form1.table.u14'), children: getStatColumns('y_u') as any },
             ]
         }
     ];
@@ -227,7 +270,7 @@ const Form1EntryPage: React.FC = () => {
     };
 
     const territoryColumns: ColumnsType<any> = [
-        { title: 'Tuman/Shahar', dataIndex: 'orgName', key: 'orgName', width: 200, fixed: 'left' },
+        { title: t('form1.table.district_city'), dataIndex: 'orgName', key: 'orgName', width: 200, fixed: 'left' },
         ...(getStatColumns('m_t') as any).map((c: any) => ({
             ...c,
             key: `t_${c.key}`,
@@ -244,7 +287,7 @@ const Form1EntryPage: React.FC = () => {
         if (!selectedDisease || !allSubmissions.length) return [];
 
         const results: any[] = [];
-        const totals: any = { orgName: 'JAMI (Viloyat)', isTotal: true };
+        const totals: any = { orgName: t('form1.table.total_province'), isTotal: true };
 
         allSubmissions.forEach(sub => {
             const diseaseData = sub.data.find((d: any) => d.code === selectedDisease);
@@ -303,19 +346,19 @@ const Form1EntryPage: React.FC = () => {
     };
 
     const globalMatrixColumns: ColumnsType<any> = [
-        { title: 'Hudud', dataIndex: 'orgName', key: 'orgName', width: 180, fixed: 'left' },
+        { title: t('form1.table.district_city'), dataIndex: 'orgName', key: 'orgName', width: 180, fixed: 'left' },
         ...['101', '106', '108', '136', '140', '145', '148', '162'].map(code => ({
             title: data.find(d => d.code === code)?.name || `Kod ${code}`,
             children: [
-                { title: 'абс', dataIndex: `abs_${code}`, key: `abs_${code}`, width: 60, align: 'center' as const },
-                { title: 'инт', dataIndex: `int_${code}`, key: `int_${code}`, width: 60, align: 'center' as const },
+                { title: t('form1.table.abs'), dataIndex: `abs_${code}`, key: `abs_${code}`, width: 60, align: 'center' as const },
+                { title: t('form1.table.int'), dataIndex: `int_${code}`, key: `int_${code}`, width: 60, align: 'center' as const },
             ]
         }))
     ];
 
     const onFinish = async () => {
         if (!templateId) {
-            message.error("Hisobot shakli topilmadi");
+            message.error(t('form1.actions.error_no_template'));
             return;
         }
         setLoading(true);
@@ -328,7 +371,7 @@ const Form1EntryPage: React.FC = () => {
                 status: 'SUBMITTED',
                 isTest: isTestMode // UZ: Test bayrog'i yuboriladi
             });
-            message.success(isTestMode ? 'Test hisoboti saqlandi!' : 'Shakl 1 hisoboti muvaffaqiyatli saqlandi!');
+            message.success(isTestMode ? t('form1.actions.success_save_test') : t('form1.actions.success_save'));
             fetchAllSubmissions();
         } catch (error) {
             message.error('Saqlashda xatolik yuz berdi');
@@ -341,10 +384,56 @@ const Form1EntryPage: React.FC = () => {
         setLoading(true);
         try {
             await submissionApi.cleanupTest();
-            message.success("Test hisobotlari tozalandi");
+            message.success(t('form1.actions.success_cleanup'));
             fetchAllSubmissions();
         } catch (error) {
-            message.error("Tozalashda xatolik");
+            message.error(t('form1.actions.error_cleanup'));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // UZ: Kunlik hisobotlardan ma'lumotlarni yig'ish (Aggregation)
+    const handleAggregateDaily = async () => {
+        setLoading(true);
+        try {
+            const periodStr = period.startOf('month').format('YYYY-MM-DD');
+            const res = await submissionApi.aggregateDaily(periodStr, isTestMode);
+
+            // UZ: Kelgan ma'lumotlarni davlat (Diseases) ro'yxati bilan solishtirib yangilaymiz
+            const newData = [...data];
+            const aggregatedData = res.data; // Array of Form1Record like objects
+
+            aggregatedData.forEach((aggRow: any) => {
+                const index = newData.findIndex(item => item.code === aggRow.code);
+                if (index > -1) {
+                    // Faqat jami holatlar va 14 yoshgachani yangilaymiz
+                    const r = { ...newData[index] };
+                    r.m_t_c_a = aggRow.m_t_c_a;
+                    r.m_u_c_a = aggRow.m_u_c_a;
+
+                    // Qolgan intensiv va o'sish ko'rsatkichlarini qayta hisoblaymiz
+                    const updateGroup = (p: string, row: any) => {
+                        const prev = Number(row[`${p}_p_a`]) || 0;
+                        const curr = Number(row[`${p}_c_a`]) || 0;
+                        row[`${p}_p_i`] = calculateIntensive(prev);
+                        row[`${p}_c_i`] = calculateIntensive(curr);
+                        row[`${p}_g_a`] = calculateGrowthAbs(curr, prev);
+                        row[`${p}_g_p`] = calculateGrowthPer(curr, prev);
+                    };
+
+                    updateGroup('m_t', r);
+                    updateGroup('m_u', r);
+
+                    newData[index] = r;
+                }
+            });
+
+            setData(newData);
+            message.success(t('form1.actions.success_aggregate'));
+        } catch (error) {
+            console.error(error);
+            message.error(t('form1.actions.error_aggregate'));
         } finally {
             setLoading(false);
         }
@@ -366,31 +455,39 @@ const Form1EntryPage: React.FC = () => {
                                 <FileExcelOutlined style={{ fontSize: '24px', color: '#1677ff' }} />
                             </div>
                             <div>
-                                <Title level={3} style={{ margin: 0 }}>Hisobot Shakl №1</Title>
-                                <Text type="secondary">Yuqumli kasalliklar to'g'risida oylik hisobot</Text>
+                                <Title level={3} style={{ margin: 0 }}>{t('form1.title')}</Title>
+                                <Text type="secondary">{t('form1.subtitle')}</Text>
                             </div>
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                         {isTestMode && (
-                            <Popconfirm title="Barcha test hisobotlarini o'chirishni xohlaysizmi?" onConfirm={handleCleanup}>
-                                <Button danger icon={<DeleteOutlined />}>Tozalash</Button>
+                            <Popconfirm title={t('daily_reports.test_mode.cleanup_confirm')} onConfirm={handleCleanup}>
+                                <Button danger icon={<DeleteOutlined />}>{t('daily_reports.test_mode.cleanup_btn')}</Button>
                             </Popconfirm>
                         )}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #d9d9d9', padding: '4px 12px', borderRadius: '6px' }}>
                             <ExperimentOutlined style={{ color: isTestMode ? '#f5222d' : '#8c8c8c' }} />
-                            <Text strong={isTestMode} type={isTestMode ? "danger" : "secondary"}>Test Rejimi</Text>
+                            <Text strong={isTestMode} type={isTestMode ? "danger" : "secondary"}>{t('daily_reports.test_mode.label')}</Text>
                             <Switch size="small" checked={isTestMode} onChange={setIsTestMode} />
                         </div>
                         <PermissionGate permission="VIEW_FORM1_TABLE1" action="edit">
+                            <Button
+                                icon={<ExperimentOutlined />}
+                                onClick={handleAggregateDaily}
+                                loading={loading}
+                                style={{ backgroundColor: '#f9f0ff', borderColor: '#d3adf7', color: '#722ed1' }}
+                            >
+                                {t('form1.actions.fill_daily')}
+                            </Button>
                             <Upload beforeUpload={handleExcelUpload} showUploadList={false}>
-                                <Button icon={<UploadOutlined />}>Excel Yuklash</Button>
+                                <Button icon={<UploadOutlined />}>{t('form1.actions.excel_upload')}</Button>
                             </Upload>
                         </PermissionGate>
                         <DatePicker picker="month" value={period} onChange={(v) => v && setPeriod(v)} format="MMMM YYYY" />
                         <PermissionGate permission="VIEW_FORM1_TABLE1" action="edit">
                             <Button type="primary" size="large" icon={<SaveOutlined />} onClick={onFinish} loading={loading}>
-                                Saqlash
+                                {t('daily_reports.actions.save')}
                             </Button>
                         </PermissionGate>
                     </div>
@@ -398,8 +495,8 @@ const Form1EntryPage: React.FC = () => {
 
                 {isTestMode && (
                     <Alert
-                        message="DIQQAT: TEST REJIMI FAOL"
-                        description="Hozirgi kiritilayotgan barcha ma'lumotlar 'Test' deb belgilanadi va real hisobotga ta'sir qilmaydi."
+                        message={t('daily_reports.test_mode.active_alert')}
+                        description={t('daily_reports.test_mode.active_desc')}
                         type="error"
                         showIcon
                         icon={<ExperimentOutlined />}
@@ -484,7 +581,7 @@ const Form1EntryPage: React.FC = () => {
                             key: '1',
                             label: (
                                 <PermissionGate permission="VIEW_FORM1_TABLE1">
-                                    <span><FileExcelOutlined /> Kasalliklar bo'yicha</span>
+                                    <span><FileExcelOutlined /> {t('form1.tabs.by_disease')}</span>
                                 </PermissionGate>
                             ),
                             children: (
@@ -504,23 +601,23 @@ const Form1EntryPage: React.FC = () => {
                             key: '2',
                             label: (
                                 <PermissionGate permission="VIEW_FORM1_TABLE2">
-                                    <span><BarChartOutlined /> Hududlar bo'yicha</span>
+                                    <span><BarChartOutlined /> {t('form1.tabs.by_territory')}</span>
                                 </PermissionGate>
                             ),
                             children: (
                                 <PermissionGate permission="VIEW_FORM1_TABLE2">
                                     <div>
                                         <Space style={{ marginBottom: 16 }}>
-                                            <Text strong>Kasallikni tanlang:</Text>
+                                            <Text strong>{t('form1.table.select_disease')}</Text>
                                             <Select
                                                 showSearch
                                                 style={{ width: 400 }}
-                                                placeholder="Qidirish..."
+                                                placeholder={t('form1.table.search')}
                                                 optionFilterProp="label"
                                                 options={data.map(d => ({ label: `${d.code} - ${d.name}`, value: d.code }))}
                                                 onChange={setSelectedDisease}
                                             />
-                                            <Button type="primary" onClick={fetchAllSubmissions}>Ma'lumotlarni yuklash</Button>
+                                            <Button type="primary" onClick={fetchAllSubmissions}>{t('form1.table.load_data')}</Button>
                                         </Space>
                                         <Table
                                             columns={territoryColumns}
@@ -538,16 +635,16 @@ const Form1EntryPage: React.FC = () => {
                             key: '3',
                             label: (
                                 <PermissionGate permission="VIEW_FORM1_TABLE3">
-                                    <span><GlobalOutlined /> Umumiy Tahlil (Matritsa)</span>
+                                    <span><GlobalOutlined /> {t('form1.tabs.matrix')}</span>
                                 </PermissionGate>
                             ),
                             children: (
                                 <PermissionGate permission="VIEW_FORM1_TABLE3">
                                     <div>
                                         <div style={{ marginBottom: 16 }}>
-                                            <Button onClick={fetchAllSubmissions}>Matritsani yangilash</Button>
+                                            <Button onClick={fetchAllSubmissions}>{t('form1.actions.matrix_refresh')}</Button>
                                             <Text type="secondary" style={{ marginLeft: 16 }}>
-                                                * Tanlangan oy uchun barcha tumanlar va asosiy kasalliklar kesishmasi.
+                                                {t('form1.table.matrix_hint')}
                                             </Text>
                                         </div>
                                         <Table

@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AnalysisService } from "./analysis.service";
 import { AnalysisController } from "./analysis.controller";
+import { ForecastingService } from "./forecasting.service"; // UZ: Bashorat qilish xizmati
 import { Organization } from "../organizations/entities/organization.entity";
 import { HepatitisDailyReport } from "../daily-reports/entities/hepatitis-daily-report.entity";
 import { FluDailyReport } from "../daily-reports/entities/flu-daily-report.entity";
@@ -23,7 +24,13 @@ import { Disease } from "../diseases/entities/disease.entity";
     ]),
   ],
   controllers: [AnalysisController],
-  providers: [AnalysisService],
-  exports: [AnalysisService],
+  providers: [
+    AnalysisService,
+    ForecastingService, // UZ: ForecastingService qo'shildi
+  ],
+  exports: [
+    AnalysisService,
+    ForecastingService, // UZ: Tashqi modullar uchun export qilindi
+  ],
 })
-export class AnalysisModule {}
+export class AnalysisModule { }

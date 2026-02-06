@@ -19,6 +19,7 @@ export class UsersService {
         "department",
         "department.permissions",
         "department.permissions.permission",
+        "userPermissions", // UZ: Foydalanuvchi shaxsiy ruxsatlarini ham yuklash
       ], // UZ: Tashkilot va Bo'lim ma'lumotlarini olish
       // Explicitly select passwordHash because it's marked as { select: false } in entity
       select: [
@@ -81,6 +82,7 @@ export class UsersService {
         "department.permissions.permission",
         "dynamicRole",
         "dynamicRole.rolePermissions",
+        "userPermissions", // UZ: Shaxsiy ruxsatlarni yuklash
       ],
     });
   }

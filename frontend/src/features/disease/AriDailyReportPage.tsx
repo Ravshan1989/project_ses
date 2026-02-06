@@ -125,11 +125,11 @@ const AriDailyReportPage: React.FC = () => {
                     isTest: isTestMode // UZ: Test bayrog'i yuboriladi
                 });
             }
-            notification.success({ message: isTestMode ? "Test ma'lumoti saqlandi" : t('user.save') });
+            notification.success({ message: isTestMode ? t('daily_reports.test_mode.save_success') : t('user.save') });
             fetchReports();
         } catch (error) {
             notification.error({
-                message: isTestMode ? "Test ma'lumoti saqlashda xatolik" : t('auth.error_system'),
+                message: isTestMode ? t('daily_reports.test_mode.save_error') : t('auth.error_system'),
                 description: t('daily_reports.actions.error_save')
             });
         } finally {
@@ -141,10 +141,10 @@ const AriDailyReportPage: React.FC = () => {
         setLoading(true);
         try {
             await dailyReportsApi.cleanupTest();
-            notification.success({ message: "Test ma'lumotlari tozalandi" });
+            notification.success({ message: t('daily_reports.test_mode.cleanup_success') });
             fetchReports();
         } catch (error) {
-            notification.error({ message: "Tozalashda xatolik" });
+            notification.error({ message: t('daily_reports.test_mode.cleanup_error') });
         } finally {
             setLoading(false);
         }
@@ -204,13 +204,13 @@ const AriDailyReportPage: React.FC = () => {
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Space>
                         {isTestMode && (
-                            <Popconfirm title="Barcha test ma'lumotlarini o'chirishni xohlaysizmi?" onConfirm={handleCleanup}>
-                                <Button danger icon={<DeleteOutlined />}>Tozalash</Button>
+                            <Popconfirm title={t('daily_reports.test_mode.cleanup_confirm')} onConfirm={handleCleanup}>
+                                <Button danger icon={<DeleteOutlined />}>{t('daily_reports.test_mode.cleanup_btn')}</Button>
                             </Popconfirm>
                         )}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #d9d9d9', padding: '4px 12px', borderRadius: '6px' }}>
                             <ExperimentOutlined style={{ color: isTestMode ? '#f5222d' : '#8c8c8c' }} />
-                            <Text strong={isTestMode} type={isTestMode ? "danger" : "secondary"}>Test Rejimi</Text>
+                            <Text strong={isTestMode} type={isTestMode ? "danger" : "secondary"}>{t('daily_reports.test_mode.label')}</Text>
                             <Switch size="small" checked={isTestMode} onChange={setIsTestMode} />
                         </div>
                         <DatePicker value={date} onChange={(d) => d && setDate(d)} format="DD.MM.YYYY" />
@@ -221,8 +221,8 @@ const AriDailyReportPage: React.FC = () => {
 
                 {isTestMode && (
                     <Alert
-                        message="DIQQAT: TEST REJIMI FAOL"
-                        description="Hozirgi kiritilayotgan barcha ma'lumotlar 'Test' deb belgilanadi va real hisobotga ta'sir qilmaydi."
+                        message={t('daily_reports.test_mode.active_alert')}
+                        description={t('daily_reports.test_mode.active_desc')}
                         type="error"
                         showIcon
                         icon={<ExperimentOutlined />}

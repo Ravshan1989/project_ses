@@ -25,6 +25,8 @@ export const submissionApi = {
         api.patch(`/submissions/${id}/status`, { action, comment }),
     getStatusSummary: (templateCode: string, period: string, isTest = false) =>
         api.get(`/submissions/status-summary?templateCode=${templateCode}&period=${period}&isTest=${isTest}`),
+    aggregateDaily: (month: string, isTest = false) =>
+        api.get(`/submissions/aggregate-daily?month=${month}&isTest=${isTest}`),
     cleanupTest: () => api.post('/submissions/cleanup-test'),
 };
 

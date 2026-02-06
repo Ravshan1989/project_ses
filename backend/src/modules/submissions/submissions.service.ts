@@ -13,12 +13,16 @@ import { SubmissionStatus } from "../../common/enums/status.enum";
 import { User } from "../../modules/users/entities/user.entity";
 import { UserRole } from "../../common/enums/role.enum";
 import { getRoleLevel } from "../../common/utils/role.util";
+import { DailyReportsService } from "../daily-reports/daily-reports.service";
+import { DiseasesService } from "../diseases/diseases.service";
 
 @Injectable()
 export class SubmissionsService {
   constructor(
     @InjectRepository(Submission)
     private submissionRepository: Repository<Submission>,
+    private dailyReportsService: DailyReportsService,
+    private diseasesService: DiseasesService,
   ) { }
 
   async create(createSubmissionDto: CreateSubmissionDto, user: User) {
@@ -160,5 +164,66 @@ export class SubmissionsService {
   async cleanupTest() {
     await this.submissionRepository.delete({ isTest: true });
     return { success: true, message: "Test hisobotlari muvaffaqiyatli o'chirildi" };
+  }
+
+  /**
+   * UZ: Kunlik hisobotlarni Forma-1 uchun jamlash
+   */
+  async aggregateDaily(month: string, isTest: boolean, user: User) {
+    if (!user.organization) {
+      throw new BadRequestException("User does not belong to any organization");
+    }
+
+    // 1. Kunlik ma'lumotlarni yig'ish
+    const aggregates = await this.dailyReportsService.getMonthlyAggregation(
+      month,
+      user.organization.id,
+      isTest
+    );
+
+    // 2. Barqaror Form-1 strukturasini yaratish (Diseases asosida)
+    const diseases = await this.diseasesService.findAll();
+
+    // Mapping: Daily Key -> Disease Code
+    const mapping = {
+      hepatitis: '138',
+      ari: '159',
+      flu: '161',
+      covid: '183'
+    };
+
+    const dataArray = diseases.map(d => {
+      const row = {
+        key: d.id,
+        code: d.code,
+        name: d.name,
+        // Default values
+        m_t_c_a: 0, m_t_c_i: 0, m_t_g_a: 0, m_t_g_p: 0,
+        m_u_c_a: 0, m_u_c_i: 0, m_u_g_a: 0, m_u_g_p: 0,
+        y_t_c_a: 0, y_t_c_i: 0, y_t_g_a: 0, y_t_g_p: 0,
+        y_u_c_a: 0, y_u_c_i: 0, y_u_g_a: 0, y_u_g_p: 0,
+        m_t_p_a: 0, m_t_p_i: 0, m_u_p_a: 0, m_u_p_i: 0,
+        y_t_p_a: 0, y_t_p_i: 0, y_u_p_a: 0, y_u_p_i: 0,
+      };
+
+      // Apply aggregated data if code matches
+      if (d.code === mapping.hepatitis) {
+        row.m_t_c_a = aggregates.hepatitis.total;
+        row.m_u_c_a = aggregates.hepatitis.under14;
+      } else if (d.code === mapping.ari) {
+        row.m_t_c_a = aggregates.ari.total;
+        row.m_u_c_a = aggregates.ari.under14;
+      } else if (d.code === mapping.flu) {
+        row.m_t_c_a = aggregates.flu.total;
+        row.m_u_c_a = aggregates.flu.under14;
+      } else if (d.code === mapping.covid) {
+        row.m_t_c_a = aggregates.covid.total;
+        row.m_u_c_a = aggregates.covid.under14;
+      }
+
+      return row;
+    });
+
+    return dataArray;
   }
 }

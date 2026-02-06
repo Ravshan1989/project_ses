@@ -14,6 +14,41 @@
         "forgot_password": "Паролни унутдингизми?",
         "login_btn": "Кириш"
     },
+    "regions": {
+        "nurafshon_city": "Нурафшон шаҳри",
+        "angren_city": "Ангрен шаҳри",
+        "bekobod_city": "Бекобод шаҳри",
+        "chirchiq_city": "Чирчиқ шаҳри",
+        "olmaliq_city": "Олмалиқ шаҳри",
+        "ohangaron_city": "Оҳангарон шаҳри",
+        "yangiyol_city": "Янгийўл шаҳри",
+        "oqqorgon_dist": "Оққўрғон тумани",
+        "ohangaron_dist": "Оҳангарон тумани",
+        "bekobod_dist": "Бекобод тумани",
+        "bostonliq_dist": "Бўстонлиқ тумани",
+        "boka_dist": "Бўка тумани",
+        "quyi_chirchiq_dist": "Қуйи Чирчиқ тумани",
+        "zangiota_dist": "Зангиота тумани",
+        "yuqori_chirchiq_dist": "Юқори Чирчиқ тумани",
+        "qibray_dist": "Қибрай тумани",
+        "parkent_dist": "Паркент тумани",
+        "piskent_dist": "Пискент тумани",
+        "orta_chirchiq_dist": "Ўрта Чирчиқ тумани",
+        "chinoz_dist": "Чиноз тумани",
+        "yangiyol_dist": "Янгийўл тумани",
+        "toshkent_dist": "Тошкент тумани",
+        "city_suffix": "шаҳри",
+        "district_suffix": "тумани",
+        "ses_suffix": "СЭО",
+        "type_city": "Шаҳар",
+        "type_district": "Туман"
+    },
+    "report_templates": {
+        "form1": "Юқумли касалликлар ҳисоботи (Шакл 1)",
+        "vaccination": "Эмлаш ишлари бўйича ойлик ҳисобот",
+        "water": "Сув сифати мониторинги",
+        "school": "Мактаблардаги санитария ҳолати"
+    },
     "common": {
         "dashboard": "Дашборд",
         "reports": "Ҳисоботлар",
@@ -25,7 +60,22 @@
         "vaccination_entry": "Эмлашни Рўйхатга Олиш",
         "export": "Экспорт (Excel)",
         "import": "Импорт (Excel)",
-        "diseases": "Касалликлар"
+        "diseases": "Касалликлар",
+        "departments": "Бўлимлар",
+        "roles_menu": "Роллар (Ҳуқуқлар)",
+        "users_menu": "Фойдаланувчилар Бошқаруви",
+        "sos_monitoring": "SOS Мониторинги",
+        "app_name": "Smart SES",
+        "footer_org": "Тошкент вилояти СЭО",
+        "user_fallback": "Фойдаланувчи",
+        "success_approve": "Ҳисобот тасдиқланди",
+        "success_reject": "Ҳисобот рад этилди",
+        "error_load_data": "Маълумотларни юклашда хатолик",
+        "success_export": "Excel файл юклаб олинди",
+        "import_success": "{{count}} та ёзув муваффақиятли ўқилди",
+        "import_empty": "Файл бўш",
+        "import_error": "Файлни ўқишда хатолик бўлди",
+        "sos_btn": "SOS"
     },
     "dashboard_page": {
         "title": "Асосий панель",
@@ -45,18 +95,35 @@
             "report_type": "Ҳисобот Тури",
             "period": "Ҳисобот Даври",
             "status": "Ҳолат",
-            "actions": "Амаллар"
+            "actions": "Амаллар",
+            "approve_tooltip": "Тасдиқлаш",
+            "reject_tooltip": "Рад этиш",
+            "view_details_tooltip": "Батафсил кўриш"
         },
         "statuses": {
             "DRAFT": "Қоралама",
             "SUBMITTED": "Юборилган",
             "APPROVED": "Тасдиқланган",
             "REJECTED": "Рад этилган"
+        },
+        "analysis": {
+            "chart_submissions_title": "Статистикаси",
+            "chart_regions_title": "Ҳудудлар бўйича таҳлил (Топ 10)",
+            "forecast_card_title": "Smart Analytics: Келгуси ой учун прогноз (Гепатит)",
+            "expected_cases": "Кутилаётган ҳолатлар сони",
+            "confidence_level": "Ишонч даражаси",
+            "forecast_footer_hint": "* Ушбу прогноз охирги 6 ойлик статистик маълумотлар асосида алгоритмик ҳисобланган.",
+            "historical_label": "Тарихий",
+            "forecast_label": "Башорат",
+            "month_offset_label": "{{offset}} ойдаги ҳолат",
+            "next_month_label": "Келгуси ой (Башорат)",
+            "region_alias": "Ҳудуд",
+            "population_alias": "Аҳоли сони"
         }
     },
     "daily_reports": {
         "hepatitis_title": "Вирусли гепатит А касаллиги бўйича кунлик маълумоти",
-        "flu_title": "Грипп ва ЎРВИ касалликлари бўйича кунлик маълумот",
+        "flu_title": "Грипп va ЎРВИ касалликлари бўйича кунлик маълумот",
         "ari_title": "Ўткир респиратор инфекциялари бўйича кунлик маълумот",
         "weekly_title": "Грипп ва ЎРВИ касалликлари бўйича ҲАФТАЛИК МАЪЛУМОТ (Автоматик)",
         "epidemiology_title": "Эпидемиологияга қарши тадбирлар бўйича кунлик маълумот",
@@ -134,11 +201,85 @@
             "success_save": "Кунлик маълумотлар муваффақиятли сақланди",
             "error_save": "Сақлашда муаммо бўлди",
             "error_load": "Маълумотларни юклашда муаммо бўлди"
+        },
+        "analysis_labels": {
+            "equal": "тенг",
+            "increased": "марта ўсди",
+            "decreased": "марта камайди"
+        },
+        "form1": {
+            "title": "Ҳисобот Шакл №1",
+            "subtitle": "Юқумли касалликлер тўғрисида ойлик ҳисобот",
+            "tabs": {
+                "by_disease": "Касалликлар бўйича",
+                "by_territory": "Ҳудудлар бўйича",
+                "matrix": "Умумий Таҳлил (Матрица)"
+            },
+            "table": {
+                "indicator": "Кўрсаткичлар номи",
+                "code": "Код",
+                "current_month": "жорий ой",
+                "ytd": "йил бошидан буён",
+                "total": "жами",
+                "u14": "14 ёшгача",
+                "abs": "абс",
+                "int": "инт.к",
+                "growth_abs": "рост/камайиш абс.",
+                "growth_per": "рост/камайиш %",
+                "district_city": "Туман/Шаҳар",
+                "total_province": "ЖАМИ (Вилоят)",
+                "search": "Қидириш...",
+                "select_disease": "Касалликни танланг:",
+                "load_data": "Маълумотларни юклаш",
+                "matrix_hint": "* Танланган ой учун барча туманлар ва асосий касалликлар кесишмаси."
+            },
+            "actions": {
+                "error_load_diseases": "Йўналишларни юклашда хатолик",
+                "error_no_template": "Ҳисобот шакли топилмади",
+                "success_save": "Шакл 1 ҳисоботи муваффақиятли сақланди!",
+                "success_save_test": "Тест ҳисоботи сақланди!",
+                "error_save": "Сақлашда хатолик юз берди",
+                "success_cleanup": "Тест ҳисоботлари тозаланди",
+                "error_cleanup": "Тозалашда хатолик",
+                "success_aggregate": "Кунлик ҳисоботлардан маълумотлар муваффақиятли йиғилди!",
+                "error_aggregate": "Кунлик ҳисоботларни йиғишда хатолик юз берди",
+                "success_excel_upload": "Excel маълумотлари юкланди!",
+                "error_excel_read": "Excel ўқишда хатолик",
+                "fill_daily": "Кунликдан тўлдириш",
+                "excel_upload": "Excel Юклаш",
+                "matrix_refresh": "Матрицани янгилаш"
+            }
+        },
+        "test_mode": {
+            "label": "Тест Режими",
+            "active_alert": "ДИҚҚАТ: ТЕСТ РЕЖИМИ ФАОЛ",
+            "active_desc": "Ҳозирги киритилаётган барча маълумотлар 'Тест' деб белгиланади ва реал ҳисоботга таъсир қилмайди.",
+            "cleanup_confirm": "Барча тест маълумотларини ўчиришни хоҳлайсизми?",
+            "cleanup_btn": "Тозалаш",
+            "save_success": "Тест маълумоти сақланди",
+            "cleanup_success": "Тест маълумотлари тозаланди",
+            "cleanup_error": "Тозалашда хатолик"
+        },
+        "table_v2": {
+            "total_hepatitis": "Жами қайд қилинган ВГ А беморлар",
+            "age_under_1_yr": "1 ёшгача",
+            "age_20_plus_yrs": "20 ёшдан катталар",
+            "occ_organized_nursery": "Уюшган ясли ёшидаги болалар",
+            "occ_unorganized_nursery": "Уюшмаган ясли ёшидаги болалар",
+            "occ_organized_preschool": "Уюшган боғча ёшидаги болалар",
+            "occ_unorganized_preschool": "Уюшмаган боғча ёшидаги болалар",
+            "factor_food_detailed": "Овқат-озиқ маҳсулотлари",
+            "factor_contact_detailed": "Маиший мулоқот",
+            "lab_samples_detailed": "Жами олинган намуналар",
+            "lab_positive_detailed": "Мусбат натижа",
+            "disinfection_detailed": "Дезинфекция ўтказилган ўчоқлар"
         }
     },
     "reports": {
         "daily": "Кунлик Ҳисоботлар",
         "monthly": "Ойлик Ҳисоботлар",
+        "daily_menu": "Кунлик Ҳисоботлар",
+        "monthly_menu": "Ойлик Ҳисоботлар (Форма-1)",
         "form1": "Шакл 1 (Ойлик)",
         "hepatitis": "Гепатит",
         "daily_hepatitis": "Кунлик Ҳисоботлар (ВГА)",
