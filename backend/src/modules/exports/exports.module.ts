@@ -7,6 +7,8 @@ import { FluDailyReport } from "../daily-reports/entities/flu-daily-report.entit
 import { AriDailyReport } from "../daily-reports/entities/ari-daily-report.entity";
 import { Submission } from "../submissions/entities/submission.entity";
 import { VerificationService } from "../daily-reports/verification.service";
+import { DiseasesModule } from "../diseases/diseases.module";
+import { OrganizationsModule } from "../organizations/organizations.module";
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { VerificationService } from "../daily-reports/verification.service";
       AriDailyReport,
       Submission,
     ]),
+    DiseasesModule,
+    OrganizationsModule,
   ],
   controllers: [ExportsController],
   providers: [ExportsService, VerificationService],

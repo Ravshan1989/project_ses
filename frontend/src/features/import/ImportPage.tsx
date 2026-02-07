@@ -19,7 +19,7 @@ const ImportPage: React.FC = () => {
     const [result, setResult] = useState<any>(null);
 
     const userRole = localStorage.getItem('user_role');
-    const isAllowed = userRole === 'REGION_HEAD';
+    const isAllowed = userRole === 'REGION_HEAD' || userRole === 'ADMIN';
 
     if (!isAllowed) {
         return (

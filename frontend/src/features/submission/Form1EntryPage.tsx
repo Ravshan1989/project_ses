@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileExcelOutlined, SaveOutlined, UploadOutlined, BarChartOutlined, GlobalOutlined, ExperimentOutlined, DeleteOutlined } from '@ant-design/icons';
+import { FileExcelOutlined, SaveOutlined, UploadOutlined, BarChartOutlined, GlobalOutlined, ExperimentOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
 import { Button, Table, Card, Typography, DatePicker, message, InputNumber, Upload, Tabs, Select, Space, Switch, Alert, Popconfirm } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { read, utils } from 'xlsx';
@@ -41,7 +41,7 @@ const Form1EntryPage: React.FC = () => {
 
     const fetchOrgInfo = async () => {
         try {
-            const res = await api.get('/auth/me');
+            const res = await api.get('/auth/profile');
             if (res.data?.organization?.population) {
                 setPopulation(res.data.organization.population);
             }
@@ -153,10 +153,16 @@ const Form1EntryPage: React.FC = () => {
         })
             .then(res => {
                 message.success(res.data.message);
-                fetchAllSubmissions();
+                if (res.data.period) {
+                    setPeriod(dayjs(res.data.period));
+                }
+                // Fetch will happen automatically if period changes, or we force it if period is same
+                if (!res.data.period || dayjs(res.data.period).isSame(period, 'month')) {
+                    fetchAllSubmissions();
+                }
             })
             .catch(err => {
-                message.error(err.response?.data?.message || 'Yuklashda xatolik');
+                message.error(err.response?.data?.message || t('form1.actions.error_excel_read'));
             })
             .finally(() => setLoading(false));
 
@@ -232,29 +238,76 @@ const Form1EntryPage: React.FC = () => {
         const currentYear = period.year();
         const prevYear = currentYear - 1;
         return [
-            { title: `${prevYear} ${t('form1.table.abs')}`, width: 80, align: 'center' as const, key: `${prefix}_p_a`, className: 'bg-prev', render: (_: any, r: any) => renderInput(r, `${prefix}_p_a` as any) },
-            { title: `${prevYear} ${t('form1.table.int')}`, width: 80, align: 'center' as const, key: `${prefix}_p_i`, className: 'bg-prev', render: (_: any, r: any) => renderInput(r, `${prefix}_p_i` as any, true) },
-            { title: `${currentYear} ${t('form1.table.abs')}`, width: 80, align: 'center' as const, key: `${prefix}_c_a`, className: 'bg-curr', render: (_: any, r: any) => renderInput(r, `${prefix}_c_a` as any) },
-            { title: `${currentYear} ${t('form1.table.int')}`, width: 80, align: 'center' as const, key: `${prefix}_c_i`, className: 'bg-curr', render: (_: any, r: any) => renderInput(r, `${prefix}_c_i` as any, true) },
-            { title: t('form1.table.growth_abs'), width: 80, align: 'center' as const, key: `${prefix}_g_a`, render: (_: any, r: any) => renderInput(r, `${prefix}_g_a` as any, true) },
             {
-                title: t('form1.table.growth_per'),
-                width: 120,
-                align: 'center' as const,
-                key: `${prefix}_g_p`,
-                render: (_: any, r: any) => {
-                    const curr = Number(r[`${prefix}_c_a`]) || 0;
-                    const prev = Number(r[`${prefix}_p_a`]) || 0;
-                    const text = calculateSmartGrowth(curr, prev);
-                    const isGrowth = curr > prev;
-                    const isStable = curr === prev;
-                    return (
-                        <Text type={isStable ? "secondary" : (isGrowth ? "danger" : "success")} style={{ fontSize: '11px', fontWeight: 600 }}>
-                            {text}
-                        </Text>
-                    );
-                }
+                title: `${prevYear} ${t('form1.table.year_suffix') || 'yil'}`,
+                className: 'bg-prev',
+                onHeaderCell: () => ({ className: 'bg-prev' }),
+                children: [
+                    {
+                        title: t('form1.table.abs'),
+                        width: 70,
+                        align: 'center' as const,
+                        key: `${prefix}_p_a`,
+                        className: 'bg-prev',
+                        render: (_: any, r: any) => renderInput(r, `${prefix}_p_a` as any)
+                    },
+                    {
+                        title: t('form1.table.int'),
+                        width: 70,
+                        align: 'center' as const,
+                        key: `${prefix}_p_i`,
+                        className: 'bg-prev',
+                        render: (_: any, r: any) => renderInput(r, `${prefix}_p_i` as any, true)
+                    },
+                ]
             },
+            {
+                title: `${currentYear} ${t('form1.table.year_suffix') || 'yil'}`,
+                className: 'bg-curr',
+                onHeaderCell: () => ({ className: 'bg-curr' }),
+                children: [
+                    {
+                        title: t('form1.table.abs'),
+                        width: 70,
+                        align: 'center' as const,
+                        key: `${prefix}_c_a`,
+                        className: 'bg-curr',
+                        render: (_: any, r: any) => renderInput(r, `${prefix}_c_a` as any)
+                    },
+                    {
+                        title: t('form1.table.int'),
+                        width: 70,
+                        align: 'center' as const,
+                        key: `${prefix}_c_i`,
+                        className: 'bg-curr',
+                        render: (_: any, r: any) => renderInput(r, `${prefix}_c_i` as any, true)
+                    },
+                ]
+            },
+            {
+                title: t('form1.table.growth_title') || "o'sish/pasayish",
+                children: [
+                    { title: t('form1.table.growth_abs'), width: 70, align: 'center' as const, key: `${prefix}_g_a`, render: (_: any, r: any) => renderInput(r, `${prefix}_g_a` as any, true) },
+                    {
+                        title: t('form1.table.growth_per'),
+                        width: 100,
+                        align: 'center' as const,
+                        key: `${prefix}_g_p`,
+                        render: (_: any, r: any) => {
+                            const curr = Number(r[`${prefix}_c_a`]) || 0;
+                            const prev = Number(r[`${prefix}_p_a`]) || 0;
+                            const text = calculateSmartGrowth(curr, prev);
+                            const isGrowth = curr > prev;
+                            const isStable = curr === prev;
+                            return (
+                                <Text type={isStable ? "secondary" : (isGrowth ? "danger" : "success")} style={{ fontSize: '11px', fontWeight: 600 }}>
+                                    {text}
+                                </Text>
+                            );
+                        }
+                    },
+                ]
+            }
         ];
     };
 
@@ -286,6 +339,45 @@ const Form1EntryPage: React.FC = () => {
             // UZ: Test rejimi bo'yicha filterlash
             const res = await api.get(`/submissions?period=${periodStr}&isTest=${isTestMode}`);
             setAllSubmissions(res.data);
+
+            // UZ: Agar ma'lumotlar bor bo'lsa va bu "Admin" bo'lsa, Table 1 ga summani chiqarib beramiz.
+            if (res.data.length > 0) {
+                const aggregated: Record<string, any> = {};
+                res.data.forEach((sub: any) => {
+                    sub.data.forEach((d: any) => {
+                        if (!aggregated[d.code]) {
+                            aggregated[d.code] = { ...d };
+                            // Reset counters to 0 to sum them up properly
+                            ['m_t_p_a', 'm_t_p_i', 'm_t_c_a', 'm_t_c_i', 'm_u_p_a', 'm_u_p_i', 'm_u_c_a', 'm_u_c_i'].forEach(k => aggregated[d.code][k] = 0);
+                        }
+                        const acc = aggregated[d.code];
+                        acc.m_t_p_a += Number(d.m_t_p_a) || 0;
+                        acc.m_t_c_a += Number(d.m_t_c_a) || 0;
+                        acc.m_u_p_a += Number(d.m_u_p_a) || 0;
+                        acc.m_u_c_a += Number(d.m_u_c_a) || 0;
+                        // Recalculate logic for growth/int could be complex, for now raw sum
+                    });
+                });
+                // Merge aggregated into current 'data' state
+                setData(prev => prev.map(item => {
+                    const agg = aggregated[item.code];
+                    if (agg) {
+                        const newItem = { ...item, ...agg };
+                        // Recalculate growth/int logic locally
+                        const update = (p: string) => {
+                            const prev = Number(newItem[`${p}_p_a`]) || 0;
+                            const curr = Number(newItem[`${p}_c_a`]) || 0;
+                            newItem[`${p}_g_a`] = calculateGrowthAbs(curr, prev);
+                            newItem[`${p}_g_p`] = calculateGrowthPer(curr, prev);
+                            // Intensive is tricky without population, keep as is or 0
+                        };
+                        update('m_t');
+                        update('m_u');
+                        return newItem;
+                    }
+                    return item;
+                }));
+            }
         } catch (e) {
             console.error("Failed to fetch all submissions", e);
         }
@@ -293,16 +385,33 @@ const Form1EntryPage: React.FC = () => {
 
     const territoryColumns: ColumnsType<any> = [
         { title: t('form1.table.district_city'), dataIndex: 'orgName', key: 'orgName', width: 200, fixed: 'left' },
-        ...(getStatColumns('m_t') as any).map((c: any) => ({
-            ...c,
-            key: `t_${c.key}`,
-            render: (_: any, r: any) => <span style={{ fontWeight: r.isTotal ? 700 : 400 }}>{r[c.key] || 0}</span>
-        })),
-        ...(getStatColumns('m_u') as any).map((c: any) => ({
-            ...c,
-            key: `t_${c.key}`,
-            render: (_: any, r: any) => <span style={{ fontWeight: r.isTotal ? 700 : 400 }}>{r[c.key] || 0}</span>
-        })),
+        {
+            title: t('form1.table.current_month'), // "Joriy oy"
+            children: [
+                {
+                    title: t('form1.table.total'), // "Jami"
+                    children: (getStatColumns('m_t') as any).map((group: any) => ({
+                        ...group,
+                        children: group.children?.map((c: any) => ({
+                            ...c,
+                            key: `t_${c.key}`,
+                            render: (_: any, r: any) => <span style={{ fontWeight: r.isTotal ? 700 : 400 }}>{r[c.key] || 0}</span>
+                        }))
+                    }))
+                },
+                {
+                    title: t('form1.table.u14'), // "14 yoshgacha"
+                    children: (getStatColumns('m_u') as any).map((group: any) => ({
+                        ...group,
+                        children: group.children?.map((c: any) => ({
+                            ...c,
+                            key: `t_${c.key}`,
+                            render: (_: any, r: any) => <span style={{ fontWeight: r.isTotal ? 700 : 400 }}>{r[c.key] || 0}</span>
+                        }))
+                    }))
+                }
+            ]
+        }
     ];
 
     const getTerritoryData = () => {
@@ -396,7 +505,33 @@ const Form1EntryPage: React.FC = () => {
             message.success(isTestMode ? t('form1.actions.success_save_test') : t('form1.actions.success_save'));
             fetchAllSubmissions();
         } catch (error) {
-            message.error('Saqlashda xatolik yuz berdi');
+            message.error(t('form1.actions.error_save'));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleExportExcel = async () => {
+        setLoading(true);
+        try {
+            const periodStr = period.startOf('month').format('YYYY-MM-DD');
+            const response = await api.get(`/exports/form1/excel`, {
+                params: {
+                    startDate: periodStr,
+                    endDate: period.endOf('month').format('YYYY-MM-DD'),
+                    isTest: isTestMode
+                },
+                responseType: 'blob'
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Form1_${periodStr}.xlsx`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            message.error("Eksport qilishda xatolik yuz berdi");
         } finally {
             setLoading(false);
         }
@@ -464,10 +599,20 @@ const Form1EntryPage: React.FC = () => {
     return (
         <div style={{ padding: '24px 0' }}>
             <style>{`
-                .bg-prev { background-color: #f6ffed !important; }
-                .bg-curr { background-color: #fffbe6 !important; }
-                .ant-table-thead > tr > th { background-color: #fafafa !important; font-weight: 700 !important; }
-                .ant-input-number-input { text-align: center !important; }
+                /* Excel-like Vivid Colors */
+                .bg-prev { background-color: #b7eb8f !important; } /* Green for Previous Year (2024) */
+                .bg-curr { background-color: #fffb8f !important; } /* Yellow for Current Year (2025) */
+                
+                /* Header Styling */
+                .ant-table-thead > tr > th.bg-prev { background-color: #73d13d !important; color: #000; }
+                .ant-table-thead > tr > th.bg-curr { background-color: #ffec3d !important; color: #000; }
+                
+                /* Ensure input background matches cell */
+                .bg-prev .ant-input-number-input { background-color: #b7eb8f !important; }
+                .bg-curr .ant-input-number-input { background-color: #fffb8f !important; }
+                
+                .ant-table-thead > tr > th { font-weight: 700 !important; }
+                .ant-input-number-input { text-align: center !important; font-weight: 600; }
             `}</style>
             <Card bordered={false} style={{ borderRadius: 8 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
@@ -514,6 +659,13 @@ const Form1EntryPage: React.FC = () => {
                             <Upload beforeUpload={handleExcelUpload} showUploadList={false}>
                                 <Button icon={<UploadOutlined />}>{t('form1.actions.excel_upload')}</Button>
                             </Upload>
+                            <Button
+                                icon={<DownloadOutlined />}
+                                onClick={handleExportExcel}
+                                loading={loading}
+                            >
+                                Yuklab olish (Excel)
+                            </Button>
                         </PermissionGate>
                         <DatePicker picker="month" value={period} onChange={(v) => v && setPeriod(v)} format="MMMM YYYY" />
                         <PermissionGate permission="VIEW_FORM1_TABLE1" action="edit">

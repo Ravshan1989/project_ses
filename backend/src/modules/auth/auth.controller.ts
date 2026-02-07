@@ -13,7 +13,7 @@ import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post("login")
   async login(@Body() loginDto: LoginDto) {
@@ -28,6 +28,12 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get("profile")
   getProfile(@Request() req) {
+    return req.user;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get("me")
+  getMe(@Request() req) {
     return req.user;
   }
 }

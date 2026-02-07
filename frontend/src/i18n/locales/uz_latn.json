@@ -262,10 +262,15 @@
             "approve_success": "Rahbar muvaffaqiyatli tasdiqladi",
             "approve_error": "Rahbar tasdiqlashida xatolik yuz berdi"
         },
-        "analysis_labels": {
-            "equal": "teng",
-            "increased": "marta o'sdi",
-            "decreased": "marta kamaydi"
+        "test_mode": {
+            "label": "Test Rejimi",
+            "active_alert": "DIQQAT: TEST REJIMI FAOL",
+            "active_desc": "Hozirgi kiritilayotgan barcha ma'lumotlar 'Test' deb belgilanadi va real hisobotga ta'sir qilmaydi.",
+            "cleanup_confirm": "Barcha test ma'lumotlarini o'chirishni xohlaysizmi?",
+            "cleanup_btn": "Tozalash",
+            "save_success": "Test ma'lumoti saqlandi",
+            "cleanup_success": "Test ma'lumotlari tozalandi",
+            "cleanup_error": "Tozalashda xatolik"
         }
     },
     "form1": {
@@ -312,15 +317,10 @@
             "matrix_refresh": "Matritsani yangilash"
         }
     },
-    "test_mode": {
-        "label": "Test Rejimi",
-        "active_alert": "DIQQAT: TEST REJIMI FAOL",
-        "active_desc": "Hozirgi kiritilayotgan barcha ma'lumotlar 'Test' deb belgilanadi va real hisobotga ta'sir qilmaydi.",
-        "cleanup_confirm": "Barcha test ma'lumotlarini o'chirishni xohlaysizmi?",
-        "cleanup_btn": "Tozalash",
-        "save_success": "Test ma'lumoti saqlandi",
-        "cleanup_success": "Test ma'lumotlari tozalandi",
-        "cleanup_error": "Tozalashda xatolik"
+    "analysis_labels": {
+        "equal": "teng",
+        "increased": "marta o'sdi",
+        "decreased": "marta kamaydi"
     },
     "table_v2": {
         "total_hepatitis": "Jami qayd qilingan VG A bemorlar",

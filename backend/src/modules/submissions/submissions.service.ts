@@ -18,6 +18,8 @@ import { DiseasesService } from "../diseases/diseases.service";
 import { OrganizationsService } from "../organizations/organizations.service";
 import * as XLSX from 'xlsx';
 import { Template } from "../forms/entities/template.entity";
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class SubmissionsService {
@@ -50,6 +52,16 @@ export class SubmissionsService {
   async findAll(query: any, user: User) {
     const level = getRoleLevel(user.role);
     const where: any = { ...query };
+
+    // Fix: Map 'period' to 'reportingPeriod' to match Entity definition
+    if (where.period) {
+      where.reportingPeriod = where.period;
+      delete where.period;
+    }
+
+    // Fix: Cast 'isTest' to boolean
+    if (where.isTest === 'true') where.isTest = true;
+    if (where.isTest === 'false') where.isTest = false;
 
     if (level === 3) {
       where.organization = { id: user.organization.id };
@@ -236,42 +248,118 @@ export class SubmissionsService {
   async bulkUpload(file: Express.Multer.File, period: string, isTest: boolean, user: User) {
     if (!file) throw new BadRequestException("File is required");
 
+    const logPath = path.join(process.cwd(), 'bulk_upload_debug.log');
+    const log = (msg: string) => fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${msg}\n`);
+
+    log(`[BulkUpload Start] File: ${file.originalname}, Period: ${period}, isTest: ${isTest}`);
+
     const workbook = XLSX.read(file.buffer, { type: 'buffer' });
     const sheetNames = workbook.SheetNames;
+    log(`[BulkUpload] Total sheets: ${sheetNames.length}: ${sheetNames.join(', ')}`);
 
     // We start from sheet 4 (index 3) as per user requirement
     // Sheets 1, 2, 3 (index 0, 1, 2) are summaries
     const districtSheets = sheetNames.slice(3);
+    log(`[BulkUpload] District sheets to process: ${districtSheets.length}`);
     const results = [];
 
     // 1. Get Template
     const template = await this.templateRepository.findOneBy({ code: 'FORM1' });
-    if (!template) throw new NotFoundException("Form 1 template not found");
+    if (!template) {
+      log("[BulkUpload] Template FORM1 not found");
+      throw new NotFoundException("Form 1 template not found");
+    }
 
-    // 2. Get All Organizations for mapping
+    // 2. Detect Period from Filename (NEW)
+    const monthNamesMap: Record<string, number> = {
+      // Uz Latin
+      'yanvar': 0, 'fevral': 1, 'mart': 2, 'aprel': 3, 'may': 4, 'iyun': 5,
+      'iyul': 6, 'avgust': 7, 'sentyabr': 8, 'oktyabr': 9, 'noyabr': 10, 'dekabr': 11,
+      // Uz Cyrillic
+      'январ': 0, 'феврал': 1, 'март': 2, 'апрел': 3, 'май': 4, 'июн': 5,
+      'июл': 6, 'август': 7, 'сентябр': 8, 'октябр': 9, 'ноябр': 10, 'декабр': 11,
+      // Russian
+      'январь': 0, 'февраль': 1, 'апрель': 3, 'июнь': 5, 'июль': 6, 'сентябрь': 8, 'октябрь': 9, 'ноябрь': 10, 'декабрь': 11
+    };
+
+    let finalPeriod = period;
+    const filenameLow = file.originalname.toLowerCase();
+
+    // Extract year
+    const yearMatch = filenameLow.match(/\b(20\d{2})\b/);
+    const foundYear = yearMatch ? parseInt(yearMatch[1]) : null;
+
+    // Extract month
+    let foundMonth = null;
+    for (const [name, index] of Object.entries(monthNamesMap)) {
+      if (filenameLow.includes(name)) {
+        foundMonth = index;
+        break;
+      }
+    }
+
+    if (foundYear !== null && foundMonth !== null) {
+      finalPeriod = `${foundYear}-${String(foundMonth + 1).padStart(2, '0')}-01`;
+      log(`[BulkUpload] Auto-detected period from filename "${file.originalname}": ${finalPeriod}`);
+    } else {
+      log(`[BulkUpload] Using provided/default period: ${finalPeriod} (Detection failed)`);
+    }
+
+    // 3. Get All Organizations for mapping
     const organizations = await this.organizationsService.findAll();
     const diseases = await this.diseasesService.findAll();
+    log(`[BulkUpload] Found ${organizations.length} organizations and ${diseases.length} diseases`);
+
+    // UZ: Robust qidiruv uchun nomlarni normalizatsiya qilish
+    const normalize = (name: string) => {
+      let n = name.toLowerCase()
+        // Standardize suffixes
+        .replace(/shaxri|shaxar|sh\.|sh$/g, ' sh')
+        .replace(/tuman|t\.|t$/g, ' t')
+        // Normalize specific Uzbek letters
+        .replace(/h/g, 'x')
+        .replace(/[ʻʼ'`‘’]/g, '')
+        // Russian to Latin (basic for common district names)
+        .replace(/я/g, 'ya').replace(/ю/g, 'yu').replace(/ч/g, 'ch').replace(/ш/g, 'sh')
+        .replace(/қ/g, 'q').replace(/ў/g, 'o').replace(/ғ/g, 'g').replace(/ҳ/g, 'x')
+        .replace(/\s+/g, '') // Remove spaces for even tighter matching
+        .trim();
+      return n;
+    };
 
     for (const sheetName of districtSheets) {
+      log(`[BulkUpload] Processing sheet: ${sheetName}`);
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json<any[]>(worksheet, { header: 1 });
 
-      // Find matching organization
-      // User said list names might be short (e.g., "Bo'ka t" for "Bo'ka tumani")
-      const org = organizations.find(o =>
-        sheetName.toLowerCase().includes(o.name.toLowerCase().split(' ')[0]) ||
-        o.name.toLowerCase().includes(sheetName.toLowerCase().split(' ')[0])
-      );
-
-      if (!org) {
-        console.warn(`Could not find organization for sheet: ${sheetName}`);
+      if (!jsonData || jsonData.length === 0) {
+        log(`[BulkUpload] Sheet ${sheetName} rows: 0`);
+        log(`[BulkUpload] WARNING: Could not find organization for sheet: "${sheetName}"`);
         continue;
       }
+      log(`[BulkUpload] Sheet ${sheetName} rows: ${jsonData.length}`);
 
-      // Map Excel rows to Form1Data
-      // Assuming columns: [Code, Name, m_t_p_a, m_t_p_i, m_t_c_a, m_t_c_i, m_t_g_a, m_t_g_p, ...]
+      // Try exact match first, then normalized match
+      let org = organizations.find(o => o.name === sheetName);
+      if (!org) {
+        const normSheet = normalize(sheetName);
+        org = organizations.find(o => normalize(o.name) === normSheet);
+      }
+
+      if (!org) {
+        log(`[BulkUpload] WARNING: Could not find organization for sheet: "${sheetName}"`);
+        continue;
+      }
+      log(`[BulkUpload] SUCCESS: Mapped sheet "${sheetName}" to org: "${org.name}" (${org.id})`);
+
+      // 4. Map Excel rows to Form1Data (Restored)
       const mappedData = diseases.map(disease => {
-        const row = jsonData.find(r => r && String(r[1]).trim() === disease.code);
+        const row = jsonData.find(r => r && (
+          String(r[0]).trim() === disease.code ||
+          String(r[1]).trim() === disease.code ||
+          String(r[0]).trim() === String(Number(disease.code)) // Handle leading zeros removal by excel
+        ));
+
         const dataRow: any = {
           key: disease.id,
           code: disease.code,
@@ -289,7 +377,6 @@ export class SubmissionsService {
             'y_t_p_a', 'y_t_p_i', 'y_t_c_a', 'y_t_c_i', 'y_t_g_a', 'y_t_g_p',
             'y_u_p_a', 'y_u_p_i', 'y_u_c_a', 'y_u_c_i', 'y_u_g_a', 'y_u_g_p'
           ];
-          // Assuming data starts from column index 2 in our standard format
           fields.forEach((f, idx) => {
             dataRow[f] = Number(row[2 + idx]) || 0;
           });
@@ -297,12 +384,12 @@ export class SubmissionsService {
         return dataRow;
       });
 
-      // Check if already exists for this period and org
+      // 5. Overwrite/Update check using finalPeriod
       let submission = await this.submissionRepository.findOne({
         where: {
           template: { id: template.id },
           organization: { id: org.id },
-          reportingPeriod: period,
+          reportingPeriod: finalPeriod,
           isTest: isTest
         }
       });
@@ -314,7 +401,7 @@ export class SubmissionsService {
         submission = this.submissionRepository.create({
           template,
           organization: org,
-          reportingPeriod: period,
+          reportingPeriod: finalPeriod,
           data: mappedData,
           status: SubmissionStatus.SUBMITTED,
           submittedBy: user,
@@ -323,12 +410,15 @@ export class SubmissionsService {
       }
 
       await this.submissionRepository.save(submission);
-      results.push({ sheet: sheetName, org: org.name, status: 'SUCCESS' });
+      log(`[BulkUpload] Saved submission for ${org.name}`);
+      results.push(await this.submissionRepository.save(submission));
     }
 
+    log(`[BulkUpload Finished] Successfully processed ${results.length} districts for period ${finalPeriod}.`);
     return {
-      message: `${results.length} ta tuman uchun hisobotlar muvaffaqiyatli yuklandi`,
-      results
+      message: `Successfully processed ${results.length} districts for period: ${finalPeriod}`,
+      period: finalPeriod,
+      count: results.length
     };
   }
 }

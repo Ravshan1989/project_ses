@@ -66,7 +66,7 @@
         "users_menu": "User Management",
         "sos_monitoring": "SOS Monitoring",
         "app_name": "Smart SES",
-        "footer_org": "Tashkent Region SES",
+        "footer_org": "Toshkent Region SES",
         "user_fallback": "User",
         "success_approve": "Report approved",
         "success_reject": "Report rejected",
@@ -90,7 +90,7 @@
         "export_btn": "Export Excel",
         "upload_btn": "Upload",
         "reject_prompt": "Rejection reason:",
-        "region_title": "Tashkent Region Population",
+        "region_title": "Toshkent Region Population",
         "table": {
             "region": "Region",
             "report_type": "Report Type",
@@ -250,11 +250,6 @@
             "error_save": "Error during saving",
             "error_load": "Error loading data"
         },
-        "analysis_labels": {
-            "title": "Analysis Results",
-            "growth": "Growth/Decrease Analysis",
-            "no_prev_data": "No previous data for comparison"
-        },
         "test_mode": {
             "label": "Test Mode",
             "active_alert": "ATTENTION: TEST MODE ACTIVE",
@@ -264,63 +259,70 @@
             "save_success": "Test data saved",
             "cleanup_success": "Test data cleared",
             "cleanup_error": "Error during cleanup"
-        },
-        "table_v2": {
-            "total_hepatitis": "Total registered hepatitis A cases",
-            "age_under_1_yr": "under 1 year",
-            "age_20_plus_yrs": "over 20 years",
-            "occ_organized_nursery": "Nursery age children (target)",
-            "occ_unorganized_nursery": "Nursery age children (unorganized)",
-            "occ_organized_preschool": "Preschool age children (organized)",
-            "occ_unorganized_preschool": "Preschool age children (unorganized)",
-            "factor_food_detailed": "Food products",
-            "factor_contact_detailed": "Household contact",
-            "lab_samples_detailed": "Total samples taken",
-            "lab_positive_detailed": "Positive results",
-            "disinfection_detailed": "Foci with disinfection performed"
-        },
-        "form1": {
-            "title": "Monthly Report Form №1",
-            "subtitle": "Monthly report on infectious diseases",
-            "tabs": {
-                "by_disease": "By Diseases",
-                "by_territory": "By Territory",
-                "matrix": "General Analysis (Matrix)"
-            },
-            "table": {
-                "indicator": "Indicators",
-                "code": "Code",
-                "current_month": "current month",
-                "ytd": "since start of year",
-                "total": "total",
-                "u14": "under 14 yrs",
-                "abs": "abs",
-                "int": "int.k",
-                "growth_abs": "growth/dec abs.",
-                "growth_per": "growth/dec %",
-                "district_city": "District/City",
-                "total_province": "TOTAL (Province)",
-                "search": "Search...",
-                "select_disease": "Select disease:",
-                "load_data": "Load Data",
-                "matrix_hint": "* Intersection of all districts and main diseases for selected month."
-            },
-            "actions": {
-                "error_load_diseases": "Error loading diseases",
-                "error_no_template": "Report template not found",
-                "success_save": "Form 1 report successfully saved!",
-                "success_save_test": "Test report saved!",
-                "error_save": "Error during saving",
-                "success_cleanup": "Test reports cleared",
-                "error_cleanup": "Error during cleanup",
-                "success_aggregate": "Daily report data successfully aggregated!",
-                "error_aggregate": "Error aggregating daily reports",
-                "success_excel_upload": "Excel data loaded!",
-                "error_excel_read": "Error reading Excel",
-                "fill_daily": "Fill from daily",
-                "excel_upload": "Upload Excel",
-                "matrix_refresh": "Refresh matrix"
-            }
         }
+    },
+    "form1": {
+        "title": "Monthly Report Form №1",
+        "subtitle": "Monthly report on infectious diseases",
+        "tabs": {
+            "by_disease": "By Diseases",
+            "by_territory": "By Territory",
+            "matrix": "General Analysis (Matrix)"
+        },
+        "table": {
+            "indicator": "Indicators",
+            "code": "Code",
+            "current_month": "current month",
+            "ytd": "since start of year",
+            "total": "total",
+            "u14": "under 14 yrs",
+            "abs": "abs",
+            "int": "int.k",
+            "growth_abs": "growth/dec abs.",
+            "growth_per": "growth/dec %",
+            "district_city": "District/City",
+            "total_province": "TOTAL (Province)",
+            "search": "Search...",
+            "select_disease": "Select disease:",
+            "load_data": "Load Data",
+            "matrix_hint": "* Intersection of all districts and main diseases for selected month."
+        },
+        "actions": {
+            "error_load_diseases": "Error loading diseases",
+            "error_no_template": "Report template not found",
+            "success_save": "Form 1 report successfully saved!",
+            "success_save_test": "Test report saved!",
+            "error_save": "Error during saving",
+            "success_cleanup": "Test reports cleared",
+            "error_cleanup": "Error during cleanup",
+            "success_aggregate": "Daily report data successfully aggregated!",
+            "error_aggregate": "Error aggregating daily reports",
+            "success_excel_upload": "Excel data loaded!",
+            "error_excel_read": "Error reading Excel",
+            "fill_daily": "Fill from daily",
+            "excel_upload": "Upload Excel",
+            "bulk_upload": "Bulk Upload (25 sheets)",
+            "matrix_refresh": "Refresh matrix"
+        }
+    },
+    "analysis_labels": {
+        "equal": "equal",
+        "increased": "increased by times",
+        "decreased": "decreased by times"
+    },
+    "table_v2": {
+        "total_hepatitis": "Total registered hepatitis A cases",
+        "age_under_1_yr": "under 1 year",
+        "age_20_plus_yrs": "over 20 years",
+        "occ_organized_nursery": "Nursery age children (target)",
+        "occ_unorganized_nursery": "Nursery age children (unorganized)",
+        "occ_organized_preschool": "Preschool age children (organized)",
+        "occ_unorganized_preschool": "Preschool age children (unorganized)",
+        "factor_food_detailed": "Food products",
+        "factor_contact_detailed": "Household contact",
+        "lab_samples_detailed": "Total samples taken",
+        "lab_positive_detailed": "Positive results",
+        "decimal_positive_detailed": "Positive results (%)",
+        "disinfection_detailed": "Foci with disinfection performed"
     }
 }

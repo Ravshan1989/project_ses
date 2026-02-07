@@ -26,14 +26,16 @@ export class SubmissionsController {
   constructor(private readonly submissionsService: SubmissionsService) { }
 
   @Post()
-  @RequirePermission("EDIT_FORM1")
+  @RequirePermission("EDIT_FORM1_TABLE1")
   create(@Body() createSubmissionDto: CreateSubmissionDto, @Request() req) {
+    console.log(`[SubmissionsController] Request entry: POST /submissions, User: ${req.user?.username}`);
     return this.submissionsService.create(createSubmissionDto, req.user);
   }
 
   @Get()
   @RequirePermission("VIEW_FORM1_TABLE1")
   findAll(@Query() query, @Request() req) {
+    console.log(`[SubmissionsController] Request entry: GET /submissions, User: ${req.user?.username}`);
     return this.submissionsService.findAll(query, req.user);
   }
 
@@ -55,7 +57,7 @@ export class SubmissionsController {
   }
 
   @Patch(":id/status")
-  @RequirePermission("APPROVE_FORM1")
+  @RequirePermission("EDIT_FORM1_TABLE1")
   updateStatus(
     @Param("id") id: string,
     @Body() updateStatusDto: UpdateStatusDto,
@@ -84,7 +86,7 @@ export class SubmissionsController {
   }
 
   @Post("bulk-upload")
-  @RequirePermission("EDIT_FORM1")
+  @RequirePermission("EDIT_FORM1_TABLE1")
   @UseInterceptors(FileInterceptor("file"))
   async bulkUpload(
     @UploadedFile() file: Express.Multer.File,
@@ -92,6 +94,7 @@ export class SubmissionsController {
     @Query("isTest") isTest: string,
     @Request() req,
   ) {
+    console.log(`[SubmissionsController] bulk-upload hit. File: ${file?.originalname}, Size: ${file?.size}, User: ${req.user?.username}`);
     return this.submissionsService.bulkUpload(file, period, isTest === "true", req.user);
   }
 }

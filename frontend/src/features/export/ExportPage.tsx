@@ -11,7 +11,7 @@ const { Title, Text } = Typography;
 
 // Professional styling constants
 const HEADER_STYLE = {
-    font: { bold: true, size: 10 },
+    font: { bold: true, size: 9, name: 'Times New Roman' },
     alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
     border: {
         top: { style: 'thin' }, bottom: { style: 'thin' },
@@ -20,13 +20,33 @@ const HEADER_STYLE = {
     fill: { fgColor: { rgb: "E9E9E9" } }
 };
 
+const PREV_HEADER_STYLE = {
+    ...HEADER_STYLE,
+    fill: { fgColor: { rgb: "B7EB8F" } }
+};
+
+const CURR_HEADER_STYLE = {
+    ...HEADER_STYLE,
+    fill: { fgColor: { rgb: "FFFB8F" } }
+};
+
 const DATA_STYLE = {
-    font: { size: 10 },
+    font: { size: 9, name: 'Times New Roman' },
     alignment: { horizontal: 'center', vertical: 'center' },
     border: {
         top: { style: 'thin' }, bottom: { style: 'thin' },
         left: { style: 'thin' }, right: { style: 'thin' }
     }
+};
+
+const PREV_DATA_STYLE = {
+    ...DATA_STYLE,
+    fill: { fgColor: { rgb: "B7EB8F" } }
+};
+
+const CURR_DATA_STYLE = {
+    ...DATA_STYLE,
+    fill: { fgColor: { rgb: "FFFB8F" } }
 };
 
 const NAME_STYLE = {
@@ -35,7 +55,7 @@ const NAME_STYLE = {
 };
 
 const TITLE_STYLE = {
-    font: { bold: true, size: 12 },
+    font: { bold: true, size: 12, name: 'Times New Roman' },
     alignment: { horizontal: 'center', vertical: 'center' }
 };
 
@@ -97,9 +117,16 @@ const ExportPage: React.FC = () => {
                 } else if (r === 1) {
                     // Spacer row
                 } else if (r < headerRows) {
-                    ws[addr].s = HEADER_STYLE;
+                    // Header rows coloring logic
+                    if ([2, 3, 8, 9, 14, 15, 20, 21].includes(c)) ws[addr].s = PREV_HEADER_STYLE;
+                    else if ([4, 5, 10, 11, 16, 17, 22, 23].includes(c)) ws[addr].s = CURR_HEADER_STYLE;
+                    else ws[addr].s = HEADER_STYLE;
                 } else {
-                    ws[addr].s = (c === 0) ? NAME_STYLE : DATA_STYLE;
+                    // Data rows coloring logic
+                    if (c === 0) ws[addr].s = NAME_STYLE;
+                    else if ([2, 3, 8, 9, 14, 15, 20, 21].includes(c)) ws[addr].s = PREV_DATA_STYLE;
+                    else if ([4, 5, 10, 11, 16, 17, 22, 23].includes(c)) ws[addr].s = CURR_DATA_STYLE;
+                    else ws[addr].s = DATA_STYLE;
                 }
             }
         }
@@ -347,14 +374,23 @@ const ExportPage: React.FC = () => {
                         for (let c = 0; c < 26; c++) {
                             const addr = XLSX.utils.encode_cell({ r, c });
                             if (!ws2[addr]) ws2[addr] = { v: '' };
-                            ws2[addr].s = HEADER_STYLE;
+
+                            // Header coloring
+                            if ([2, 3, 8, 9, 14, 15, 20, 21].includes(c)) ws2[addr].s = PREV_HEADER_STYLE;
+                            else if ([4, 5, 10, 11, 16, 17, 22, 23].includes(c)) ws2[addr].s = CURR_HEADER_STYLE;
+                            else ws2[addr].s = HEADER_STYLE;
                         }
                     }
                     for (let r = rPos + 5; r < rPos + 5 + data.length; r++) {
                         for (let c = 0; c < 26; c++) {
                             const addr = XLSX.utils.encode_cell({ r, c });
                             if (!ws2[addr]) ws2[addr] = { v: '' };
-                            ws2[addr].s = (c === 0) ? NAME_STYLE : DATA_STYLE;
+
+                            // Data coloring
+                            if (c === 0) ws2[addr].s = NAME_STYLE;
+                            else if ([2, 3, 8, 9, 14, 15, 20, 21].includes(c)) ws2[addr].s = PREV_DATA_STYLE;
+                            else if ([4, 5, 10, 11, 16, 17, 22, 23].includes(c)) ws2[addr].s = CURR_DATA_STYLE;
+                            else ws2[addr].s = DATA_STYLE;
                         }
                     }
                     rPos += (5 + data.length + 1);

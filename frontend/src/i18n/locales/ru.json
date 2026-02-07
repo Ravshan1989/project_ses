@@ -250,11 +250,6 @@
             "error_save": "Ошибка при сохранении",
             "error_load": "Ошибка загрузки данных"
         },
-        "analysis_labels": {
-            "title": "Результаты анализа",
-            "growth": "Анализ роста/снижения",
-            "no_prev_data": "Нет данных за предыдущий период для сравнения"
-        },
         "test_mode": {
             "label": "Тестовый режим",
             "active_alert": "ВНИМАНИЕ: ТЕСТОВЫЙ РЕЖИМ АКТИВЕН",
@@ -264,63 +259,70 @@
             "save_success": "Тестовые данные сохранены",
             "cleanup_success": "Тестовые данные очищены",
             "cleanup_error": "Ошибка при очистке"
-        },
-        "table_v2": {
-            "total_hepatitis": "Всего зарегистрированных больных ВГ А",
-            "age_under_1_yr": "до 1 года",
-            "age_20_plus_yrs": "старше 20 лет",
-            "occ_organized_nursery": "Дети ясельного возраста (целевые)",
-            "occ_unorganized_nursery": "Дети ясельного возраста (неорганизованные)",
-            "occ_organized_preschool": "Дети дошкольного возраста (организованные)",
-            "occ_unorganized_preschool": "Дети дошкольного возраста (неорганизованные)",
-            "factor_food_detailed": "Пищевые продукты",
-            "factor_contact_detailed": "Бытовой контакт",
-            "lab_samples_detailed": "Всего взято проб",
-            "lab_positive_detailed": "Положительный результат",
-            "disinfection_detailed": "Очаги с проведенной дезинфекцией"
-        },
-        "form1": {
-            "title": "Отчетная форма №1",
-            "subtitle": "Ежемесячный отчет об инфекционных заболеваниях",
-            "tabs": {
-                "by_disease": "По заболеваниям",
-                "by_territory": "По территориям",
-                "matrix": "Общий анализ (Матрица)"
-            },
-            "table": {
-                "indicator": "Наименование показателей",
-                "code": "Код",
-                "current_month": "текущий месяц",
-                "ytd": "с начала года",
-                "total": "всего",
-                "u14": "до 14 лет",
-                "abs": "абс",
-                "int": "инт.к",
-                "growth_abs": "рост/снижение абс.",
-                "growth_per": "рост/снижение %",
-                "district_city": "Район/Город",
-                "total_province": "ИТОГО (Область)",
-                "search": "Поиск...",
-                "select_disease": "Выберите заболевание:",
-                "load_data": "Загрузить данные",
-                "matrix_hint": "* Пересечение всех районов и основных заболеваний за выбранный месяц."
-            },
-            "actions": {
-                "error_load_diseases": "Ошибка при загрузке направлений",
-                "error_no_template": "Шаблон отчета не найден",
-                "success_save": "Отчет по Форме 1 успешно сохранен!",
-                "success_save_test": "Тестовый отчет сохранен!",
-                "error_save": "Произошла ошибка при сохранении",
-                "success_cleanup": "Тестовые отчеты очищены",
-                "error_cleanup": "Ошибка при очистке",
-                "success_aggregate": "Данные из ежедневных отчетов успешно собраны!",
-                "error_aggregate": "Ошибка при сборе ежедневных отчетов",
-                "success_excel_upload": "Данные из Excel загружены!",
-                "error_excel_read": "Ошибка при чтении Excel",
-                "fill_daily": "Заполнить из ежедневных",
-                "excel_upload": "Загрузить Excel",
-                "matrix_refresh": "Обновить матрицу"
-            }
         }
+    },
+    "form1": {
+        "title": "Отчетная форма №1",
+        "subtitle": "Ежемесячный отчет об инфекционных заболеваниях",
+        "tabs": {
+            "by_disease": "По заболеваниям",
+            "by_territory": "По территориям",
+            "matrix": "Общий анализ (Матрица)"
+        },
+        "table": {
+            "indicator": "Наименование показателей",
+            "code": "Код",
+            "current_month": "текущий месяц",
+            "ytd": "с начала года",
+            "total": "всего",
+            "u14": "до 14 лет",
+            "abs": "абс",
+            "int": "инт.к",
+            "growth_abs": "рост/снижение абс.",
+            "growth_per": "рост/снижение %",
+            "district_city": "Район/Город",
+            "total_province": "ИТОГО (Область)",
+            "search": "Поиск...",
+            "select_disease": "Выберите заболевание:",
+            "load_data": "Загрузить данные",
+            "matrix_hint": "* Пересечение всех районов и основных заболеваний за выбранный месяц."
+        },
+        "actions": {
+            "error_load_diseases": "Ошибка при загрузке направлений",
+            "error_no_template": "Шаблон отчета не найден",
+            "success_save": "Отчет по Форме 1 успешно сохранен!",
+            "success_save_test": "Тестовый отчет сохранен!",
+            "error_save": "Произошла ошибка при сохранении",
+            "success_cleanup": "Тестовые отчеты очищены",
+            "error_cleanup": "Ошибка при очистке",
+            "success_aggregate": "Данные из ежедневных отчетов успешно собраны!",
+            "error_aggregate": "Ошибка при сборе ежедневных отчетов",
+            "success_excel_upload": "Данные из Excel загружены!",
+            "error_excel_read": "Ошибка при чтении Excel",
+            "fill_daily": "Заполнить из ежедневных",
+            "excel_upload": "Загрузить Excel",
+            "bulk_upload": "Массовая загрузка (25 листов)",
+            "matrix_refresh": "Обновить матрицу"
+        }
+    },
+    "analysis_labels": {
+        "equal": "равно",
+        "increased": "выросло в раза",
+        "decreased": "снизилось в раза"
+    },
+    "table_v2": {
+        "total_hepatitis": "Всего зарегистрированных больных ВГ А",
+        "age_under_1_yr": "до 1 года",
+        "age_20_plus_yrs": "старше 20 лет",
+        "occ_organized_nursery": "Дети ясельного возраста (целевые)",
+        "occ_unorganized_nursery": "Дети ясельного возраста (неорганизованные)",
+        "occ_organized_preschool": "Дети дошкольного возраста (организованные)",
+        "occ_unorganized_preschool": "Дети дошкольного возраста (неорганизованные)",
+        "factor_food_detailed": "Пищевые продукты",
+        "factor_contact_detailed": "Бытовой контакт",
+        "lab_samples_detailed": "Всего взято проб",
+        "lab_positive_detailed": "Положительный результат",
+        "decimal_positive_detailed": "Положительный результат (%)",
+        "disinfection_detailed": "Очаги с проведенной дезинфекцией"
     }
 }

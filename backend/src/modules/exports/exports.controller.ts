@@ -43,6 +43,18 @@ export class ExportsController {
     return this.exportsService.getForm1Reports(startDate, endDate, isTest === 'true', req.user);
   }
 
+  @Get("form1/excel")
+  @RequirePermission("VIEW_FORM1_TABLE1")
+  async exportForm1Excel(
+    @Query("startDate") startDate: string,
+    @Query("endDate") endDate: string,
+    @Query("isTest") isTest: string,
+    @Request() req,
+    @Res() res: Response
+  ) {
+    return this.exportsService.exportForm1ToExcel(res, startDate, endDate, isTest === 'true', req.user);
+  }
+
   @Get("flu/excel")
   @RequirePermission("VIEW_FLU")
   async exportFluExcel(
