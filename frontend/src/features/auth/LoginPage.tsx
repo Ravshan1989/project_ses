@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { API_BASE_URL } from '../../config';
-import { Form, Input, Button, message, Typography, theme, ConfigProvider } from 'antd';
+import { Form, Input, Button, message, Typography, theme, ConfigProvider, Badge } from 'antd';
 import { UserOutlined, LockOutlined, MedicineBoxOutlined, RightOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -166,6 +166,10 @@ const LoginPage: React.FC = () => {
                         @keyframes slideUp {
                             from { opacity: 0; transform: translateY(30px); }
                             to { opacity: 1; transform: translateY(0); }
+                        }
+                        @keyframes hue {
+                            from { filter: hue-rotate(0deg); }
+                            to { filter: hue-rotate(360deg); }
                         }
                         .login-left-panel > * {
                             animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
