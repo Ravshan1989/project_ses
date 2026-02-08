@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { SaveOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined } from '@ant-design/icons';
+import { SaveOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined, DownloadOutlined } from '@ant-design/icons';
 import { Table, Typography, Card, DatePicker, Button, InputNumber, notification, Space, Switch, Alert, Popconfirm, Badge, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
+import { exportDailyReport } from '../../services/excelExportService'; // UZ: Excel eksport service
 
 const { Title, Text } = Typography;
 
@@ -341,6 +342,7 @@ const CovidDailyReportPage: React.FC = () => {
                             <Switch size="small" checked={false} onChange={setIsTestMode} />
                         </div>
                         <DatePicker value={date} onChange={(d) => d && setDate(d)} format="DD.MM.YYYY" />
+                        <Button icon={<DownloadOutlined />} onClick={handleExcelExport}>Excel</Button>
                         <Button icon={<ReloadOutlined />} onClick={fetchReports}>{t('daily_reports.actions.refresh')}</Button>
                         <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>{t('daily_reports.actions.save')}</Button>
                     </Space>

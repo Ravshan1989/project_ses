@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { SaveOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined } from '@ant-design/icons';
+import { SaveOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined, DownloadOutlined } from '@ant-design/icons';
 import { Table, Typography, Card, DatePicker, Button, InputNumber, notification, Space, Switch, Alert, Popconfirm, Badge, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
+import { exportDailyReport } from '../../services/excelExportService'; // UZ: Excel eksport service
 import PermissionGate from '../../components/PermissionGate';
 
 const { Title, Text } = Typography;
@@ -192,6 +193,28 @@ const EpidemiologyDailyReportPage: React.FC = () => {
         }
     };
 
+    // UZ: Excel ga eksport qilish funksiyasi
+    const handleExcelExport = () => {
+        // UZ: Ustunlar ro'yxati
+        const columns = [
+            { header: '№', key: 'key', width: 5 },
+            { header: t('daily_reports.table.district'), key: 'district_name', width: 20 },
+            { header: 'Tekshirilgan', key: 'inspected_total', width: 12 },
+            { header: 'Kamchiliklar', key: 'defects_total', width: 12 },
+            { header: 'Jarimalar', key: 'fines_total', width: 12 },
+            { header: 'To\'xtatilgan', key: 'suspended_total', width: 12 },
+        ];
+
+        // UZ: Fayl nomi va sarlavha
+        const fileName = `Epidemiologiya_Kunlik_${date.format('DD-MM-YYYY')}`;
+        const title = t('reports.epidemiology');
+        const dateStr = date.format('DD.MM.YYYY');
+
+        // UZ: Excel ga eksport qilish
+        exportDailyReport(data, fileName, title, dateStr, columns);
+        notification.success({ message: 'Excel fayl yuklab olindi!' });
+    };
+
     const handleVerify = async (id: string) => {
         try {
             await dailyReportsApi.verify('epidemiology', id);
@@ -359,6 +382,7 @@ const EpidemiologyDailyReportPage: React.FC = () => {
                                 <Switch size="small" checked={false} onChange={setIsTestMode} />
                             </div>
                             <DatePicker value={date} onChange={(d) => d && setDate(d)} format="DD.MM.YYYY" />
+                            <Button icon={<DownloadOutlined />} onClick={handleExcelExport}>Excel</Button>
                             <Button icon={<ReloadOutlined />} onClick={fetchReports}>{t('daily_reports.actions.refresh')}</Button>
                             <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>{t('daily_reports.actions.save')}</Button>
                         </Space>
