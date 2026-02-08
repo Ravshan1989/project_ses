@@ -179,6 +179,27 @@ const CovidDailyReportPage: React.FC = () => {
         }
     };
 
+    // UZ: Excel ga eksport qilish funksiyasi
+    const handleExcelExport = () => {
+        // UZ: Ustunlar ro'yxati
+        const columns = data.length > 0 ? Object.keys(data[0])
+            .filter(key => !['is_submitted', 'id', 'organizationId', 'status', 'verificationToken'].includes(key))
+            .map(key => ({
+                header: key === 'key' ? '№' : key === 'district_name' ? t('daily_reports.table.district') : key,
+                key: key,
+                width: key === 'key' ? 5 : key === 'district_name' ? 20 : 12
+            })) : [];
+
+        // UZ: Fayl nomi va sarlavha
+        const fileName = `COVID_Kunlik_${date.format('DD-MM-YYYY')}`;
+        const title = t('daily_reports.covid_title');
+        const dateStr = date.format('DD.MM.YYYY');
+
+        // UZ: Excel ga eksport qilish
+        exportDailyReport(data, fileName, title, dateStr, columns);
+        notification.success({ message: 'Excel fayl yuklab olindi!' });
+    };
+
     const handleVerify = async (id: string) => {
         try {
             await dailyReportsApi.verify('covid', id);
