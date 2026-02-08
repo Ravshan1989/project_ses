@@ -419,3 +419,204 @@ const LoginPage: React.FC = () => {
 };
 
 export default LoginPage;
+
+/**
+ * [ORIGINAL_REDACTED_CODE_PRESERVATION]
+ * 
+ * import React, { useState } from 'react';
+ * import { API_BASE_URL } from '../../config';
+ * import { Form, Input, Button, message, Typography, theme, ConfigProvider } from 'antd';
+ * import { UserOutlined, LockOutlined, MedicineBoxOutlined, RightOutlined } from '@ant-design/icons';
+ * import { useNavigate } from 'react-router-dom';
+ * import { useTranslation } from 'react-i18next';
+ * import LanguageSwitcher from '../../components/LanguageSwitcher';
+ * 
+ * const { Title, Text, Link } = Typography;
+ * 
+ * const LoginPage: React.FC = () => {
+ *     const [loading, setLoading] = useState(false);
+ *     const navigate = useNavigate();
+ *     const { token } = theme.useToken();
+ *     const { t } = useTranslation();
+ * 
+ *     const onFinish = async (values: any) => {
+ *         setLoading(true);
+ *         try {
+ *             const response = await fetch(`${API_BASE_URL}/auth/login`, {
+ *                 method: 'POST',
+ *                 headers: {
+ *                     'Content-Type': 'application/json',
+ *                 },
+ *                 body: JSON.stringify(values),
+ *             });
+ * 
+ *             const data = await response.json();
+ * 
+ *             if (response.ok) {
+ *                 localStorage.setItem('access_token', data.access_token);
+ *                 localStorage.setItem('user_role', data.user.role);
+ *                 localStorage.setItem('username', data.user.username);
+ *                 const firstName = data.user.firstName;
+ *                 const lastName = data.user.lastName;
+ *                 const fullName = (firstName && lastName) ? `${firstName} ${lastName}` : (data.user.fullName || data.user.username);
+ * 
+ *                 localStorage.setItem('user_full_name', fullName);
+ *                 if (data.user.organization) {
+ *                     localStorage.setItem('user_org_id', data.user.organization.id);
+ *                     localStorage.setItem('user_org_name', data.user.organization.name);
+ *                     const level = data.user.organization.parent ? '3' : '2';
+ *                     localStorage.setItem('user_level', level);
+ *                 }
+ * 
+ *                 const deptPerms = data.user.department?.permissions?.map((dp: any) => dp.permission.code) || [];
+ *                 localStorage.setItem('user_dept_permissions', JSON.stringify(deptPerms));
+ * 
+ *                 if (data.user.dynamicRole && data.user.dynamicRole.rolePermissions) {
+ *                     localStorage.setItem('user_role_permissions', JSON.stringify(data.user.dynamicRole.rolePermissions));
+ *                 } else {
+ *                     localStorage.removeItem('user_role_permissions');
+ *                 }
+ * 
+ *                 localStorage.setItem('user_permissions', JSON.stringify(deptPerms));
+ * 
+ *                 if (data.user.department) {
+ *                     localStorage.setItem('user_department_name', data.user.department.name);
+ *                 }
+ * 
+ *                 message.success(t('auth.success_login', 'Xush kelibsiz!'));
+ *                 navigate('/dashboard');
+ *             } else {
+ *                 message.error(data.message || t('auth.error_login', 'Login yoki parol noto\'g\'ri'));
+ *             }
+ *         } catch (error) {
+ *             console.error('Login error:', error);
+ *             message.error(t('auth.error_system', 'Tizimga ulanishda xatolik yuz berdi'));
+ *         } finally {
+ *             setLoading(false);
+ *         }
+ *     };
+ * 
+ *     return (
+ *         <ConfigProvider
+ *             theme={{
+ *                 components: {
+ *                     Input: {
+ *                         controlHeight: 50,
+ *                         borderRadius: 8,
+ *                         colorBorder: '#d9d9d9',
+ *                         hoverBorderColor: token.colorPrimary,
+ *                         activeBorderColor: token.colorPrimary,
+ *                     },
+ *                     Button: {
+ *                         controlHeight: 50,
+ *                         borderRadius: 8,
+ *                         fontSize: 16,
+ *                         fontWeight: 600,
+ *                     }
+ *                 }
+ *             }}
+ *         >
+ *             <style>
+ *                 {\`
+ *                     @media (max-width: 768px) {
+ *                         .login-container {
+ *                             flex-direction: column !important;
+ *                         }
+ *                         .login-left-panel {
+ *                             flex: none !important;
+ *                             width: 100% !important;
+ *                             padding: 40px 20px !important;
+ *                         }
+ *                         .login-left-panel h1 {
+ *                             font-size: 28px !important;
+ *                         }
+ *                         .login-right-panel {
+ *                             padding: 20px !important;
+ *                         }
+ *                     }
+ *                 \`}
+ *             </style>
+ *             <div className="login-container" style={{ display: 'flex', minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', fontFamily: 'Inter, sans-serif' }}>
+ *                 <div className="login-left-panel" style={{
+ *                     flex: '0 0 45%',
+ *                     background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%)',
+ *                     position: 'relative',
+ *                     overflow: 'hidden',
+ *                     display: 'flex',
+ *                     flexDirection: 'column',
+ *                     justifyContent: 'space-between',
+ *                     padding: '60px',
+ *                     boxShadow: '20px 0 60px rgba(0,0,0,0.3)'
+ *                 }}>
+ *                     <div style={{ zIndex: 1, display: 'flex', alignItems: 'center', gap: '15px' }}>
+ *                         <div style={{
+ *                             width: '50px', height: '50px',
+ *                             background: 'linear-gradient(135deg, #fff 0%, #e0e7ff 100%)',
+ *                             borderRadius: '12px',
+ *                             display: 'flex', alignItems: 'center', justifyContent: 'center',
+ *                             color: '#1e3c72', fontSize: '24px',
+ *                         }}>
+ *                             <MedicineBoxOutlined />
+ *                         </div>
+ *                         <Text style={{ color: '#fff', fontSize: '20px', fontWeight: 600, letterSpacing: '1.5px' }}>
+ *                             SMART <span style={{ fontWeight: 800 }}>SES</span>
+ *                         </Text>
+ *                     </div>
+ *                     <div style={{ zIndex: 1, maxWidth: '500px', margin: '40px 0' }}>
+ *                         <Title level={1} style={{ color: '#fff', fontSize: '42px', lineHeight: '1.2', fontWeight: 800, marginBottom: '24px', margin: 0 }}>
+ *                             {t('auth.slogan_part1', 'Aholining salomatligi')} — <br />
+ *                             <span style={{ color: '#60a5fa' }}>{t('auth.slogan_part2', 'bizning ustuvor vazifamiz')}</span>
+ *                         </Title>
+ *                         <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: '17px', lineHeight: '1.7', display: 'block', maxWidth: '450px', marginTop: '24px' }}>
+ *                             {t('auth.description', 'Toshkent viloyati Sanitariya-epidemiologik osoyishtalik va jamoat salomatligi boshqarmasi yagona monitoring tizimi.')}
+ *                         </Text>
+ *                     </div>
+ *                     <div style={{ zIndex: 1 }}>
+ *                         <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>
+ *                             © {new Date().getFullYear()} {t('common.app_name')}. {t('auth.footer_text', 'Barcha huquqlar himoyalangan.')}
+ *                         </Text>
+ *                     </div>
+ *                 </div>
+ *                 <div className="login-right-panel" style={{
+ *                     flex: 1,
+ *                     display: 'flex',
+ *                     alignItems: 'center',
+ *                     justifyContent: 'center',
+ *                     background: '#fff',
+ *                     position: 'relative'
+ *                 }}>
+ *                     <div style={{ width: '100%', maxWidth: '440px', padding: '50px' }}>
+ *                         <div style={{ marginBottom: '40px' }}>
+ *                             <Title level={2} style={{ color: '#1f1f1f', marginBottom: '8px', fontWeight: 800, fontSize: '32px' }}>
+ *                                 {t('auth.welcome_title', 'Xush kelibsiz')} 👋
+ *                             </Title>
+ *                             <Text type="secondary" style={{ fontSize: '16px' }}>{t('auth.welcome_subtitle', 'Hisobingizga kiring')}</Text>
+ *                         </div>
+ *                         <Form name="login" onFinish={onFinish} layout="vertical" size="large">
+ *                             <Form.Item
+ *                                 label={t('user.username')}
+ *                                 name="username"
+ *                                 rules={[{ required: true, message: t('auth.username_required') }]}
+ *                             >
+ *                                 <Input prefix={<UserOutlined />} />
+ *                             </Form.Item>
+ *                             <Form.Item
+ *                                 label={t('user.password')}
+ *                                 name="password"
+ *                                 rules={[{ required: true, message: t('auth.password_required') }]}
+ *                             >
+ *                                 <Input.Password prefix={<LockOutlined />} />
+ *                             </Form.Item>
+ *                             <Form.Item>
+ *                                 <Button type="primary" htmlType="submit" loading={loading} block>
+ *                                     {t('auth.login_btn', 'Kirish')}
+ *                                 </Button>
+ *                             </Form.Item>
+ *                         </Form>
+ *                     </div>
+ *                 </div>
+ *             </div>
+ *         </ConfigProvider>
+ *     );
+ * };
+ */
