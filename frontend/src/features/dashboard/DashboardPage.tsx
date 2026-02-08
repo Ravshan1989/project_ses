@@ -115,11 +115,12 @@ const DashboardPage: React.FC = () => {
     };
 
     const [forecastData, setForecastData] = useState<any>(null); // UZ: Bashorat ma'lumotlari
+    const [selectedDiseaseType, setSelectedDiseaseType] = useState<string>('hepatitis'); // UZ: Tanlangan kasallik turi
 
-    const fetchForecast = async () => {
+    const fetchForecast = async (diseaseType: string = selectedDiseaseType) => {
         try {
-            // UZ: Gepatit bo'yicha bashoratni olish (API hali ulanmagan bo'lsa mock qaytadi)
-            const res = await api.get('/analysis/forecast?diseaseType=hepatitis');
+            // UZ: Tanlangan kasallik bo'yicha bashoratni olish
+            const res = await api.get(`/analysis/forecast?diseaseType=${diseaseType}`);
             setForecastData(res.data);
         } catch (e) {
             console.error("Forecast fetch error", e);
@@ -557,11 +558,27 @@ const DashboardPage: React.FC = () => {
                         <Card
                             bordered={false}
                             title={
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span style={{ fontSize: '24px' }}>🧠</span>
-                                    <Typography.Text strong style={{ fontSize: '16px', color: '#1f1f1f' }}>
-                                        {t('dashboard_page.analysis.forecast_card_title')}
-                                    </Typography.Text>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span style={{ fontSize: '24px' }}>🧠</span>
+                                        <Typography.Text strong style={{ fontSize: '16px', color: '#1f1f1f' }}>
+                                            {t('dashboard_page.analysis.forecast_card_title')}
+                                        </Typography.Text>
+                                    </div>
+                                    <Select
+                                        value={selectedDiseaseType}
+                                        onChange={(value) => {
+                                            setSelectedDiseaseType(value);
+                                            fetchForecast(value);
+                                        }}
+                                        style={{ width: 200 }}
+                                        options={[
+                                            { value: 'hepatitis', label: '🟡 Gepatit' },
+                                            { value: 'flu', label: '🤧 Gripp' },
+                                            { value: 'ari', label: '😷 YUQTI' },
+                                            { value: 'covid', label: '🦠 COVID-19' }
+                                        ]}
+                                    />
                                 </div>
                             }
                             style={{
