@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Tag, Button, Space, message, Card, Row, Col, Statistic, Select, Input, Typography, Badge, Tooltip } from 'antd';
+import { Table, Tag, Button, Space, message, Card, Row, Col, Statistic, Select, Input, Typography, Badge, Tooltip, Collapse } from 'antd';
 import {
     CheckCircleOutlined,
     ClockCircleOutlined,
@@ -546,7 +546,7 @@ const DashboardPage: React.FC = () => {
                 </Col>
             </Row>
 
-            {/* UZ: Smart Analytics - Bashorat qismi - Enhanced with Gradient Border */}
+            {/* UZ: Smart Analytics - Bashorat qismi - Accordion Style */}
             <Row gutter={16} style={{ marginBottom: '32px' }}>
                 <Col span={24}>
                     <div style={{
@@ -558,27 +558,11 @@ const DashboardPage: React.FC = () => {
                         <Card
                             bordered={false}
                             title={
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ fontSize: '24px' }}>🧠</span>
-                                        <Typography.Text strong style={{ fontSize: '16px', color: '#1f1f1f' }}>
-                                            {t('dashboard_page.analysis.forecast_card_title')}
-                                        </Typography.Text>
-                                    </div>
-                                    <Select
-                                        value={selectedDiseaseType}
-                                        onChange={(value) => {
-                                            setSelectedDiseaseType(value);
-                                            fetchForecast(value);
-                                        }}
-                                        style={{ width: 200 }}
-                                        options={[
-                                            { value: 'hepatitis', label: '🟡 Gepatit' },
-                                            { value: 'flu', label: '🤧 Gripp' },
-                                            { value: 'ari', label: '😷 YUQTI' },
-                                            { value: 'covid', label: '🦠 COVID-19' }
-                                        ]}
-                                    />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ fontSize: '24px' }}>🧠</span>
+                                    <Typography.Text strong style={{ fontSize: '16px', color: '#1f1f1f' }}>
+                                        {t('dashboard_page.analysis.forecast_card_title')}
+                                    </Typography.Text>
                                 </div>
                             }
                             style={{
@@ -587,27 +571,135 @@ const DashboardPage: React.FC = () => {
                                 margin: 0
                             }}
                         >
-                            <Row gutter={24} align="middle">
-                                <Col span={16}>
-                                    <Line {...forecastConfig} height={300} />
-                                </Col>
-                                <Col span={8}>
-                                    <div style={{ background: 'linear-gradient(135deg, #e0f2fe 0%, #ddd6fe 100%)', padding: '32px', borderRadius: '16px', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-                                        <ClockCircleOutlined style={{ fontSize: '40px', color: '#667eea', marginBottom: '20px' }} />
-                                        <Statistic
-                                            title={t('dashboard_page.analysis.expected_cases')}
-                                            value={forecastData?.predictedValue || 0}
-                                            valueStyle={{ color: '#cf1322', fontSize: '42px', fontWeight: 'bold' }}
-                                        />
-                                        <div style={{ marginTop: '20px' }}>
-                                            <Badge status="processing" text={`${t('dashboard_page.analysis.confidence_level')}: ${forecastData?.confidence || '0%'}`} />
-                                        </div>
-                                        <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '16px' }}>
-                                            {t('dashboard_page.analysis.forecast_footer_hint')}
-                                        </Text>
-                                    </div>
-                                </Col>
-                            </Row>
+                            <Collapse
+                                accordion
+                                defaultActiveKey={['hepatitis']}
+                                onChange={(key) => {
+                                    if (key && key.length > 0) {
+                                        const diseaseType = Array.isArray(key) ? key[0] : key;
+                                        setSelectedDiseaseType(diseaseType as string);
+                                        fetchForecast(diseaseType as string);
+                                    }
+                                }}
+                                items={[
+                                    {
+                                        key: 'hepatitis',
+                                        label: (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                <span style={{ fontSize: '24px' }}>🟡</span>
+                                                <Typography.Text strong style={{ fontSize: '15px' }}>Gepatit (Hepatitis)</Typography.Text>
+                                            </div>
+                                        ),
+                                        children: selectedDiseaseType === 'hepatitis' && forecastData ? (
+                                            <Row gutter={24} align="middle">
+                                                <Col span={16}>
+                                                    <Line {...forecastConfig} height={280} />
+                                                </Col>
+                                                <Col span={8}>
+                                                    <div style={{ background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', padding: '28px', borderRadius: '16px', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                                                        <ClockCircleOutlined style={{ fontSize: '36px', color: '#f59e0b', marginBottom: '16px' }} />
+                                                        <Statistic
+                                                            title={t('dashboard_page.analysis.expected_cases')}
+                                                            value={forecastData?.predictedValue || 0}
+                                                            valueStyle={{ color: '#dc2626', fontSize: '38px', fontWeight: 'bold' }}
+                                                        />
+                                                        <div style={{ marginTop: '16px' }}>
+                                                            <Badge status="processing" text={`${t('dashboard_page.analysis.confidence_level')}: ${forecastData?.confidence || '0%'}`} />
+                                                        </div>
+                                                    </div>
+                                                </Col>
+                                            </Row>
+                                        ) : <div style={{ textAlign: 'center', padding: '20px' }}><Text type="secondary">Yuklanmoqda...</Text></div>
+                                    },
+                                    {
+                                        key: 'flu',
+                                        label: (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                <span style={{ fontSize: '24px' }}>🤧</span>
+                                                <Typography.Text strong style={{ fontSize: '15px' }}>Gripp (Influenza)</Typography.Text>
+                                            </div>
+                                        ),
+                                        children: selectedDiseaseType === 'flu' && forecastData ? (
+                                            <Row gutter={24} align="middle">
+                                                <Col span={16}>
+                                                    <Line {...forecastConfig} height={280} />
+                                                </Col>
+                                                <Col span={8}>
+                                                    <div style={{ background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)', padding: '28px', borderRadius: '16px', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                                                        <ClockCircleOutlined style={{ fontSize: '36px', color: '#3b82f6', marginBottom: '16px' }} />
+                                                        <Statistic
+                                                            title={t('dashboard_page.analysis.expected_cases')}
+                                                            value={forecastData?.predictedValue || 0}
+                                                            valueStyle={{ color: '#dc2626', fontSize: '38px', fontWeight: 'bold' }}
+                                                        />
+                                                        <div style={{ marginTop: '16px' }}>
+                                                            <Badge status="processing" text={`${t('dashboard_page.analysis.confidence_level')}: ${forecastData?.confidence || '0%'}`} />
+                                                        </div>
+                                                    </div>
+                                                </Col>
+                                            </Row>
+                                        ) : <div style={{ textAlign: 'center', padding: '20px' }}><Text type="secondary">Yuklanmoqda...</Text></div>
+                                    },
+                                    {
+                                        key: 'ari',
+                                        label: (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                <span style={{ fontSize: '24px' }}>😷</span>
+                                                <Typography.Text strong style={{ fontSize: '15px' }}>YUQTI (ARI)</Typography.Text>
+                                            </div>
+                                        ),
+                                        children: selectedDiseaseType === 'ari' && forecastData ? (
+                                            <Row gutter={24} align="middle">
+                                                <Col span={16}>
+                                                    <Line {...forecastConfig} height={280} />
+                                                </Col>
+                                                <Col span={8}>
+                                                    <div style={{ background: 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)', padding: '28px', borderRadius: '16px', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                                                        <ClockCircleOutlined style={{ fontSize: '36px', color: '#22c55e', marginBottom: '16px' }} />
+                                                        <Statistic
+                                                            title={t('dashboard_page.analysis.expected_cases')}
+                                                            value={forecastData?.predictedValue || 0}
+                                                            valueStyle={{ color: '#dc2626', fontSize: '38px', fontWeight: 'bold' }}
+                                                        />
+                                                        <div style={{ marginTop: '16px' }}>
+                                                            <Badge status="processing" text={`${t('dashboard_page.analysis.confidence_level')}: ${forecastData?.confidence || '0%'}`} />
+                                                        </div>
+                                                    </div>
+                                                </Col>
+                                            </Row>
+                                        ) : <div style={{ textAlign: 'center', padding: '20px' }}><Text type="secondary">Yuklanmoqda...</Text></div>
+                                    },
+                                    {
+                                        key: 'covid',
+                                        label: (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                <span style={{ fontSize: '24px' }}>🦠</span>
+                                                <Typography.Text strong style={{ fontSize: '15px' }}>COVID-19</Typography.Text>
+                                            </div>
+                                        ),
+                                        children: selectedDiseaseType === 'covid' && forecastData ? (
+                                            <Row gutter={24} align="middle">
+                                                <Col span={16}>
+                                                    <Line {...forecastConfig} height={280} />
+                                                </Col>
+                                                <Col span={8}>
+                                                    <div style={{ background: 'linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%)', padding: '28px', borderRadius: '16px', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                                                        <ClockCircleOutlined style={{ fontSize: '36px', color: '#ec4899', marginBottom: '16px' }} />
+                                                        <Statistic
+                                                            title={t('dashboard_page.analysis.expected_cases')}
+                                                            value={forecastData?.predictedValue || 0}
+                                                            valueStyle={{ color: '#dc2626', fontSize: '38px', fontWeight: 'bold' }}
+                                                        />
+                                                        <div style={{ marginTop: '16px' }}>
+                                                            <Badge status="processing" text={`${t('dashboard_page.analysis.confidence_level')}: ${forecastData?.confidence || '0%'}`} />
+                                                        </div>
+                                                    </div>
+                                                </Col>
+                                            </Row>
+                                        ) : <div style={{ textAlign: 'center', padding: '20px' }}><Text type="secondary">Yuklanmoqda...</Text></div>
+                                    }
+                                ]}
+                            />
                         </Card>
                     </div>
                 </Col>
