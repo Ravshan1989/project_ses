@@ -71,7 +71,7 @@ const ExportPage: React.FC = () => {
     const [reportType, setReportType] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [diseases, setDiseases] = useState<any[]>([]);
-    const [isTestMode, setIsTestMode] = useState(false); // UZ: Test rejimi holati
+    const [false, setIsTestMode] = useState(false); // UZ: Test rejimi holati
 
     useEffect(() => {
         fetchDiseases();
@@ -147,7 +147,7 @@ const ExportPage: React.FC = () => {
             let fileName = 'report';
 
             if (reportType === 'hepatitis') {
-                const url = `${API_BASE_URL}/exports/hepatitis/excel?startDate=${startDate}&endDate=${endDate}&isTest=${isTestMode}`;
+                const url = `${API_BASE_URL}/exports/hepatitis/excel?startDate=${startDate}&endDate=${endDate}&isTest=${false}`;
                 const response = await fetch(url, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -157,12 +157,12 @@ const ExportPage: React.FC = () => {
                 const downloadUrl = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = downloadUrl;
-                link.setAttribute('download', `VGA_Report_${startDate}_${endDate}${isTestMode ? '_TEST' : ''}.xlsx`);
+                link.setAttribute('download', `VGA_Report_${startDate}_${endDate}${false ? '_TEST' : ''}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 link.parentNode?.removeChild(link);
             } else if (reportType === 'flu') {
-                const url = `${API_BASE_URL}/exports/flu/excel?startDate=${startDate}&endDate=${endDate}&isTest=${isTestMode}`;
+                const url = `${API_BASE_URL}/exports/flu/excel?startDate=${startDate}&endDate=${endDate}&isTest=${false}`;
                 const response = await fetch(url, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -172,12 +172,12 @@ const ExportPage: React.FC = () => {
                 const downloadUrl = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = downloadUrl;
-                link.setAttribute('download', `Flu_Report_${startDate}_${endDate}${isTestMode ? '_TEST' : ''}.xlsx`);
+                link.setAttribute('download', `Flu_Report_${startDate}_${endDate}${false ? '_TEST' : ''}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 link.parentNode?.removeChild(link);
             } else if (reportType === 'ari') {
-                const url = `${API_BASE_URL}/exports/ari/excel?startDate=${startDate}&endDate=${endDate}&isTest=${isTestMode}`;
+                const url = `${API_BASE_URL}/exports/ari/excel?startDate=${startDate}&endDate=${endDate}&isTest=${false}`;
                 const response = await fetch(url, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -187,14 +187,14 @@ const ExportPage: React.FC = () => {
                 const downloadUrl = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = downloadUrl;
-                link.setAttribute('download', `ARI_Report_${startDate}_${endDate}${isTestMode ? '_TEST' : ''}.xlsx`);
+                link.setAttribute('download', `ARI_Report_${startDate}_${endDate}${false ? '_TEST' : ''}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 link.parentNode?.removeChild(link);
             } else if (reportType === 'form1') {
-                const res = await exportsApi.getForm1(startDate, endDate, isTestMode);
+                const res = await exportsApi.getForm1(startDate, endDate, false);
                 data = res.data;
-                fileName = `Form1_Report_${startDate}_${endDate}${isTestMode ? '_TEST' : ''}`;
+                fileName = `Form1_Report_${startDate}_${endDate}${false ? '_TEST' : ''}`;
                 if (!data || data.length === 0) {
                     message.info("Tanlangan oraliqda ma'lumot topilmadi.");
                     setLoading(false);
@@ -478,13 +478,13 @@ const ExportPage: React.FC = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Text type="secondary">Vaqt oralig'i va hisobot turini tanlang, so'ngra Excel faylni yuklab oling.</Text>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #d9d9d9', padding: '4px 12px', borderRadius: '6px' }}>
-                        <ExperimentOutlined style={{ color: isTestMode ? '#f5222d' : '#8c8c8c' }} />
-                        <Text strong={isTestMode} type={isTestMode ? "danger" : "secondary"}>Test Ma'lumotlari</Text>
-                        <Switch size="small" checked={isTestMode} onChange={setIsTestMode} />
+                        <ExperimentOutlined style={{ color: false ? '#f5222d' : '#8c8c8c' }} />
+                        <Text strong={false} type={false ? "danger" : "secondary"}>Test Ma'lumotlari</Text>
+                        <Switch size="small" checked={false} onChange={setIsTestMode} />
                     </div>
                 </div>
 
-                {isTestMode && (
+                {false && (
                     <Alert
                         message="DIQQAT: TEST MA'LUMOTLARI EKSPORTI"
                         description="Hozirgi sozlamalar faqat 'Test' rejimidagi ma'lumotlarni eksport qilish uchun. Real hisobotlar yuklanmaydi."

@@ -48,7 +48,7 @@ const DailyHepatitisPage: React.FC = () => {
     const [data, setData] = useState<ReportData[]>([]);
     const [loading, setLoading] = useState(false);
     const [organizations, setOrganizations] = useState<any[]>([]);
-    const [isTestMode, setIsTestMode] = useState(false); // UZ: Test rejimi holati
+
 
     // Auth context (simulated)
     // Auth context (simulated)
@@ -64,7 +64,7 @@ const DailyHepatitisPage: React.FC = () => {
 
     useEffect(() => {
         fetchReports();
-    }, [date, isTestMode]); // UZ: Test rejimi o'zgarganda ham qayta yuklanadi
+    }, [date]);
 
     const fetchReports = async () => {
         setLoading(true);
@@ -92,7 +92,7 @@ const DailyHepatitisPage: React.FC = () => {
                 setOrganizations(currentOrgs);
             }
 
-            const res = await dailyReportsApi.getByDate(formattedDate, isTestMode);
+            const res = await dailyReportsApi.getByDate(formattedDate, false);
             const apiData = res.data || [];
 
             let tableData = currentOrgs.map((org, idx) => {
@@ -401,11 +401,11 @@ const DailyHepatitisPage: React.FC = () => {
                     ...row,
                     reportDate: formattedDate,
                     organizationId: row.organizationId,
-                    isTest: isTestMode // UZ: Test rejimi bayrog'i yuboriladi
+
                 });
             }
             notification.success({
-                message: isTestMode ? t('daily_reports.test_mode.save_success') : t('daily_reports.actions.save'),
+                message: t('daily_reports.actions.save'),
                 description: t('daily_reports.actions.success_save')
             });
             fetchReports();
@@ -420,18 +420,7 @@ const DailyHepatitisPage: React.FC = () => {
         }
     };
 
-    const handleCleanup = async () => {
-        setLoading(true);
-        try {
-            await dailyReportsApi.cleanupTest();
-            notification.success({ message: t('daily_reports.test_mode.cleanup_success') });
-            fetchReports();
-        } catch (error) {
-            notification.error({ message: t('daily_reports.test_mode.cleanup_error') });
-        } finally {
-            setLoading(false);
-        }
-    };
+
 
     const handleVerify = async (id: string) => {
         try {
@@ -470,16 +459,7 @@ const DailyHepatitisPage: React.FC = () => {
                             <Text type="secondary">{t('daily_reports.date_status', { date: date.format('DD.MM.YYYY') })}</Text>
                         </div>
                         <Space>
-                            {isTestMode && (
-                                <Popconfirm title={t('daily_reports.test_mode.cleanup_confirm')} onConfirm={handleCleanup}>
-                                    <Button danger icon={<DeleteOutlined />}>{t('daily_reports.test_mode.cleanup_btn')}</Button>
-                                </Popconfirm>
-                            )}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #d9d9d9', padding: '4px 12px', borderRadius: '6px' }}>
-                                <ExperimentOutlined style={{ color: isTestMode ? '#f5222d' : '#8c8c8c' }} />
-                                <Text strong={isTestMode} type={isTestMode ? "danger" : "secondary"}>{t('daily_reports.test_mode.label')}</Text>
-                                <Switch size="small" checked={isTestMode} onChange={setIsTestMode} />
-                            </div>
+
                             <DatePicker
                                 value={date}
                                 onChange={(d) => d && setDate(d)}
@@ -490,15 +470,7 @@ const DailyHepatitisPage: React.FC = () => {
                         </Space>
                     </div>
 
-                    {isTestMode && (
-                        <Alert
-                            message={t('daily_reports.test_mode.active_alert')}
-                            description={t('daily_reports.test_mode.active_desc')}
-                            type="error"
-                            showIcon
-                            icon={<ExperimentOutlined />}
-                        />
-                    )}
+
 
                     {/* YANGI TABLE KODI (03.02.2026) - columnsV2 ishlatilmoqda */}
                     <Table

@@ -56,7 +56,7 @@ const CovidDailyReportPage: React.FC = () => {
     const [data, setData] = useState<CovidReportData[]>([]);
     const [loading, setLoading] = useState(false);
     const [organizations, setOrganizations] = useState<any[]>([]);
-    const [isTestMode, setIsTestMode] = useState(false); // UZ: Test rejimi holati
+    const [false, setIsTestMode] = useState(false); // UZ: Test rejimi holati
 
     // Auth context (simulated)
     const userRole = localStorage.getItem('user_role') || 'REGION_HEAD';
@@ -71,7 +71,7 @@ const CovidDailyReportPage: React.FC = () => {
 
     useEffect(() => {
         fetchReports();
-    }, [date, isTestMode]); // UZ: Test rejimi o'zgarganda ham qayta yuklanadi
+    }, [date]); // UZ: Test rejimi o'zgarganda ham qayta yuklanadi
 
     const fetchReports = async () => {
         setLoading(true);
@@ -90,7 +90,7 @@ const CovidDailyReportPage: React.FC = () => {
                 setOrganizations(currentOrgs);
             }
 
-            const res = await dailyReportsApi.getCovidByDate(formattedDate, isTestMode);
+            const res = await dailyReportsApi.getCovidByDate(formattedDate, false);
             const apiData = res.data || [];
 
             const tableData = currentOrgs.map((org, idx) => {
@@ -166,26 +166,13 @@ const CovidDailyReportPage: React.FC = () => {
                     ...row,
                     reportDate: formattedDate,
                     organizationId: row.organizationId,
-                    isTest: isTestMode // UZ: Test bayrog'i yuboriladi
+                    isTest: false // UZ: Test bayrog'i yuboriladi
                 });
             }
-            notification.success({ message: isTestMode ? t('daily_reports.test_mode.save_success') : t('daily_reports.actions.success_save') });
+            notification.success({ message: false ? t('daily_reports.test_mode.save_success') : t('daily_reports.actions.success_save') });
             fetchReports();
         } catch (error) {
-            notification.error({ message: t('auth.error_system'), description: isTestMode ? t('daily_reports.test_mode.save_error') : t('daily_reports.actions.error_save') });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleCleanup = async () => {
-        setLoading(true);
-        try {
-            await dailyReportsApi.cleanupTest();
-            notification.success({ message: t('daily_reports.test_mode.cleanup_success') });
-            fetchReports();
-        } catch (error) {
-            notification.error({ message: t('daily_reports.test_mode.cleanup_error') });
+            notification.error({ message: t('auth.error_system'), description: false ? t('daily_reports.test_mode.save_error') : t('daily_reports.actions.error_save') });
         } finally {
             setLoading(false);
         }
@@ -343,15 +330,15 @@ const CovidDailyReportPage: React.FC = () => {
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Space>
-                        {isTestMode && (
+                        {false && (
                             <Popconfirm title={t('daily_reports.test_mode.cleanup_confirm')} onConfirm={handleCleanup}>
                                 <Button danger icon={<DeleteOutlined />}>{t('daily_reports.test_mode.cleanup_btn')}</Button>
                             </Popconfirm>
                         )}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #d9d9d9', padding: '4px 12px', borderRadius: '6px' }}>
-                            <ExperimentOutlined style={{ color: isTestMode ? '#f5222d' : '#8c8c8c' }} />
-                            <Text strong={isTestMode} type={isTestMode ? "danger" : "secondary"}>{t('daily_reports.test_mode.label')}</Text>
-                            <Switch size="small" checked={isTestMode} onChange={setIsTestMode} />
+                            <ExperimentOutlined style={{ color: false ? '#f5222d' : '#8c8c8c' }} />
+                            <Text strong={false} type={false ? "danger" : "secondary"}>{t('daily_reports.test_mode.label')}</Text>
+                            <Switch size="small" checked={false} onChange={setIsTestMode} />
                         </div>
                         <DatePicker value={date} onChange={(d) => d && setDate(d)} format="DD.MM.YYYY" />
                         <Button icon={<ReloadOutlined />} onClick={fetchReports}>{t('daily_reports.actions.refresh')}</Button>
@@ -359,7 +346,7 @@ const CovidDailyReportPage: React.FC = () => {
                     </Space>
                 </div>
 
-                {isTestMode && (
+                {false && (
                     <Alert
                         message={t('daily_reports.test_mode.active_alert')}
                         description={t('daily_reports.test_mode.active_desc')}
