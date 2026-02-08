@@ -232,15 +232,6 @@ const LoginPage: React.FC = () => {
                                     {t('auth.login_btn', 'Kirish')}
                                 </Button>
                             </Form.Item>
-
-                            <div style={{ marginTop: '24px', padding: '16px', background: '#f5f5f5', borderRadius: '8px', borderLeft: `3px solid ${token.colorPrimary}` }}>
-                                <Text style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '4px' }}>
-                                    <span style={{ fontWeight: 600 }}>Demo:</span> admin / admin123
-                                </Text>
-                                <Text style={{ fontSize: '13px', color: '#666' }}>
-                                    <span style={{ fontWeight: 600 }}>Demo:</span> tuman / tuman123
-                                </Text>
-                            </div>
                         </Form>
                     </div>
                 </div>
