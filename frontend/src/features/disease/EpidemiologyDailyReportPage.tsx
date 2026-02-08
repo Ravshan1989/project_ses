@@ -50,7 +50,6 @@ const EpidemiologyDailyReportPage: React.FC = () => {
     const [data, setData] = useState<EpiReportData[]>([]);
     const [loading, setLoading] = useState(false);
     const [organizations, setOrganizations] = useState<any[]>([]);
-    const [false, setIsTestMode] = useState(false); // UZ: Test rejimi holati
 
     // Auth context (simulated)
     const userRole = localStorage.getItem('user_role') || 'REGION_HEAD';

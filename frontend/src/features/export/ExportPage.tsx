@@ -71,7 +71,6 @@ const ExportPage: React.FC = () => {
     const [reportType, setReportType] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [diseases, setDiseases] = useState<any[]>([]);
-    const [false, setIsTestMode] = useState(false); // UZ: Test rejimi holati
 
     useEffect(() => {
         fetchDiseases();
