@@ -574,7 +574,7 @@ const DashboardPage: React.FC = () => {
                             <Collapse
                                 accordion
                                 defaultActiveKey={['hepatitis']}
-                                onChange={(key) => {
+                                onChange={(key: string | string[]) => {
                                     if (key && key.length > 0) {
                                         const diseaseType = Array.isArray(key) ? key[0] : key;
                                         setSelectedDiseaseType(diseaseType as string);
