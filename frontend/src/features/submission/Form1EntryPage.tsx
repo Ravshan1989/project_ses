@@ -31,7 +31,7 @@ const Form1EntryPage: React.FC = () => {
     const [period, setPeriod] = useState(dayjs().subtract(1, 'month'));
     const [templateId, setTemplateId] = useState<string>('');
     const [population, setPopulation] = useState<number>(100000); // Default or fetch
-    const [isTestMode, setIsTestMode] = useState(false); // UZ: Test rejimi holati
+
 
     useEffect(() => {
         fetchDiseases();
@@ -148,7 +148,7 @@ const Form1EntryPage: React.FC = () => {
         const periodStr = period.startOf('month').format('YYYY-MM-DD');
         setLoading(true);
 
-        api.post(`/submissions/bulk-upload?period=${periodStr}&isTest=${isTestMode}`, formData, {
+        api.post(`/submissions/bulk-upload?period=${periodStr}`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         })
             .then(res => {
@@ -336,8 +336,7 @@ const Form1EntryPage: React.FC = () => {
     const fetchAllSubmissions = async () => {
         try {
             const periodStr = period.startOf('month').format('YYYY-MM-DD');
-            // UZ: Test rejimi bo'yicha filterlash
-            const res = await api.get(`/submissions?period=${periodStr}&isTest=${isTestMode}`);
+            const res = await api.get(`/submissions?period=${periodStr}`);
             setAllSubmissions(res.data);
 
             // UZ: Agar ma'lumotlar bor bo'lsa va bu "Admin" bo'lsa, Table 1 ga summani chiqarib beramiz.
@@ -500,9 +499,8 @@ const Form1EntryPage: React.FC = () => {
                 reportingPeriod: periodStr,
                 data: data,
                 status: 'SUBMITTED',
-                isTest: isTestMode // UZ: Test bayrog'i yuboriladi
             });
-            message.success(isTestMode ? t('form1.actions.success_save_test') : t('form1.actions.success_save'));
+            message.success(t('form1.actions.success_save'));
             fetchAllSubmissions();
         } catch (error) {
             message.error(t('form1.actions.error_save'));
@@ -519,7 +517,7 @@ const Form1EntryPage: React.FC = () => {
                 params: {
                     startDate: periodStr,
                     endDate: period.endOf('month').format('YYYY-MM-DD'),
-                    isTest: isTestMode
+
                 },
                 responseType: 'blob'
             });
@@ -537,25 +535,14 @@ const Form1EntryPage: React.FC = () => {
         }
     };
 
-    const handleCleanup = async () => {
-        setLoading(true);
-        try {
-            await submissionApi.cleanupTest();
-            message.success(t('form1.actions.success_cleanup'));
-            fetchAllSubmissions();
-        } catch (error) {
-            message.error(t('form1.actions.error_cleanup'));
-        } finally {
-            setLoading(false);
-        }
-    };
+
 
     // UZ: Kunlik hisobotlardan ma'lumotlarni yig'ish (Aggregation)
     const handleAggregateDaily = async () => {
         setLoading(true);
         try {
             const periodStr = period.startOf('month').format('YYYY-MM-DD');
-            const res = await submissionApi.aggregateDaily(periodStr, isTestMode);
+            const res = await submissionApi.aggregateDaily(periodStr, false);
 
             // UZ: Kelgan ma'lumotlarni davlat (Diseases) ro'yxati bilan solishtirib yangilaymiz
             const newData = [...data];
@@ -628,16 +615,7 @@ const Form1EntryPage: React.FC = () => {
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                        {isTestMode && (
-                            <Popconfirm title={t('daily_reports.test_mode.cleanup_confirm')} onConfirm={handleCleanup}>
-                                <Button danger icon={<DeleteOutlined />}>{t('daily_reports.test_mode.cleanup_btn')}</Button>
-                            </Popconfirm>
-                        )}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #d9d9d9', padding: '4px 12px', borderRadius: '6px' }}>
-                            <ExperimentOutlined style={{ color: isTestMode ? '#f5222d' : '#8c8c8c' }} />
-                            <Text strong={isTestMode} type={isTestMode ? "danger" : "secondary"}>{t('daily_reports.test_mode.label')}</Text>
-                            <Switch size="small" checked={isTestMode} onChange={setIsTestMode} />
-                        </div>
+
                         <PermissionGate permission="VIEW_FORM1_TABLE1" action="edit">
                             <Upload beforeUpload={handleBulkUpload} showUploadList={false}>
                                 <Button
@@ -676,16 +654,7 @@ const Form1EntryPage: React.FC = () => {
                     </div>
                 </div>
 
-                {isTestMode && (
-                    <Alert
-                        message={t('daily_reports.test_mode.active_alert')}
-                        description={t('daily_reports.test_mode.active_desc')}
-                        type="error"
-                        showIcon
-                        icon={<ExperimentOutlined />}
-                        style={{ marginBottom: 16 }}
-                    />
-                )}
+
 
                 {/* UZ: ESKI KOD (Xatolik: Barcha tablar ko'rinadi)
                 <Tabs defaultActiveKey="1" items={[
