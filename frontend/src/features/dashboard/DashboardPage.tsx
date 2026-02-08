@@ -645,7 +645,7 @@ const DashboardPage: React.FC = () => {
                                         label: (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                 <span style={{ fontSize: '24px' }}>😷</span>
-                                                <Typography.Text strong style={{ fontSize: '15px' }}>YUQTI (ARI)</Typography.Text>
+                                                <Typography.Text strong style={{ fontSize: '15px' }}>O'tkir Respirator Infeksiya (YUQTI)</Typography.Text>
                                             </div>
                                         ),
                                         children: selectedDiseaseType === 'ari' && forecastData ? (
