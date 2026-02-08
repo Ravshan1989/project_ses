@@ -65,9 +65,10 @@ export class AnalysisService {
 
     const form1Agg = await this.submissionRepo
       .createQueryBuilder("sub")
+      .leftJoin("sub.template", "template")
       .select("sub.organization_id", "organization_id")
       .addSelect("sub.data", "data")
-      .where("sub.template.code = :code", { code: "form_1" })
+      .where("template.code = :code", { code: "form_1" })
       .andWhere("sub.reportingPeriod BETWEEN :startDate AND :endDate", {
         startDate,
         endDate,
