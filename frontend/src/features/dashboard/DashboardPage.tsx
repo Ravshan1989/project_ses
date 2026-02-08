@@ -344,84 +344,183 @@ const DashboardPage: React.FC = () => {
 
     return (
         <div>
-            {/* Statistics Cards */}
-            <Row gutter={16} style={{ marginBottom: '24px' }}>
+            <style>{`
+                @keyframes fadeInUp {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes pulse {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.05); }
+                }
+                .stat-card {
+                    animation: fadeInUp 0.6s ease-out;
+                    transition: all 0.3s ease;
+                }
+                .stat-card:hover {
+                    transform: translateY(-8px);
+                    box-shadow: 0 12px 24px rgba(0,0,0,0.15) !important;
+                }
+            `}</style>
+
+            {/* Modern Gradient Statistics Cards */}
+            <Row gutter={16} style={{ marginBottom: '32px' }}>
                 <Col span={6}>
-                    <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                    <Card
+                        className="stat-card"
+                        bordered={false}
+                        style={{
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            borderRadius: '16px',
+                            boxShadow: '0 8px 16px rgba(102, 126, 234, 0.3)',
+                            overflow: 'hidden',
+                            position: 'relative'
+                        }}
+                    >
+                        <div style={{
+                            position: 'absolute',
+                            top: '-20px',
+                            right: '-20px',
+                            width: '100px',
+                            height: '100px',
+                            background: 'rgba(255,255,255,0.1)',
+                            borderRadius: '50%',
+                            filter: 'blur(20px)'
+                        }} />
                         <Statistic
-                            title={t('dashboard_page.total_reports')}
+                            title={<span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px', fontWeight: 500 }}>{t('dashboard_page.total_reports')}</span>}
                             value={totalSubmissions}
-                            prefix={<FileTextOutlined style={{ color: '#1677ff' }} />}
-                            valueStyle={{ fontWeight: 600 }}
+                            prefix={<FileTextOutlined style={{ color: '#fff', fontSize: '24px' }} />}
+                            valueStyle={{ color: '#fff', fontWeight: 700, fontSize: '32px', position: 'relative', zIndex: 1 }}
                         />
                     </Card>
                 </Col>
                 <Col span={6}>
-                    <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                    <Card
+                        className="stat-card"
+                        bordered={false}
+                        style={{
+                            background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+                            borderRadius: '16px',
+                            boxShadow: '0 8px 16px rgba(56, 239, 125, 0.3)',
+                            overflow: 'hidden',
+                            position: 'relative'
+                        }}
+                    >
+                        <div style={{
+                            position: 'absolute',
+                            top: '-20px',
+                            right: '-20px',
+                            width: '100px',
+                            height: '100px',
+                            background: 'rgba(255,255,255,0.1)',
+                            borderRadius: '50%',
+                            filter: 'blur(20px)'
+                        }} />
                         <Statistic
-                            title={t('dashboard_page.approved')}
+                            title={<span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px', fontWeight: 500 }}>{t('dashboard_page.approved')}</span>}
                             value={approvedSubmissions}
-                            prefix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
-                            valueStyle={{ color: '#52c41a', fontWeight: 600 }}
+                            prefix={<CheckCircleOutlined style={{ color: '#fff', fontSize: '24px' }} />}
+                            valueStyle={{ color: '#fff', fontWeight: 700, fontSize: '32px', position: 'relative', zIndex: 1 }}
                         />
                     </Card>
                 </Col>
                 <Col span={6}>
-                    <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                    <Card
+                        className="stat-card"
+                        bordered={false}
+                        style={{
+                            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                            borderRadius: '16px',
+                            boxShadow: '0 8px 16px rgba(245, 87, 108, 0.3)',
+                            overflow: 'hidden',
+                            position: 'relative'
+                        }}
+                    >
+                        <div style={{
+                            position: 'absolute',
+                            top: '-20px',
+                            right: '-20px',
+                            width: '100px',
+                            height: '100px',
+                            background: 'rgba(255,255,255,0.1)',
+                            borderRadius: '50%',
+                            filter: 'blur(20px)'
+                        }} />
                         <Statistic
-                            title={t('dashboard_page.pending')}
+                            title={<span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px', fontWeight: 500 }}>{t('dashboard_page.pending')}</span>}
                             value={pendingSubmissions}
-                            prefix={<ClockCircleOutlined style={{ color: '#faad14' }} />}
-                            valueStyle={{ color: '#faad14', fontWeight: 600 }}
+                            prefix={<ClockCircleOutlined style={{ color: '#fff', fontSize: '24px' }} />}
+                            valueStyle={{ color: '#fff', fontWeight: 700, fontSize: '32px', position: 'relative', zIndex: 1 }}
                         />
                     </Card>
                 </Col>
                 <Col span={6}>
-                    <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                    <Card
+                        className="stat-card"
+                        bordered={false}
+                        style={{
+                            background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                            borderRadius: '16px',
+                            boxShadow: '0 8px 16px rgba(250, 112, 154, 0.3)',
+                            overflow: 'hidden',
+                            position: 'relative'
+                        }}
+                    >
+                        <div style={{
+                            position: 'absolute',
+                            top: '-20px',
+                            right: '-20px',
+                            width: '100px',
+                            height: '100px',
+                            background: 'rgba(255,255,255,0.1)',
+                            borderRadius: '50%',
+                            filter: 'blur(20px)'
+                        }} />
                         <Statistic
-                            title={t('dashboard_page.rejected')}
+                            title={<span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px', fontWeight: 500 }}>{t('dashboard_page.rejected')}</span>}
                             value={rejectedSubmissions}
-                            prefix={<CloseCircleOutlined style={{ color: '#ff4d4f' }} />}
-                            valueStyle={{ color: '#ff4d4f', fontWeight: 600 }}
+                            prefix={<CloseCircleOutlined style={{ color: '#fff', fontSize: '24px' }} />}
+                            valueStyle={{ color: '#fff', fontWeight: 700, fontSize: '32px', position: 'relative', zIndex: 1 }}
                         />
                     </Card>
                 </Col>
             </Row>
 
             {/* UZ: Yangi Vizual Analitika qismi (Append) */}
-            <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+            <Row gutter={[16, 16]} style={{ marginBottom: '32px' }}>
                 <Col span={10}>
-                    <Card bordered={false} title={<><Typography.Text strong>📊 {t('dashboard_page.statuses.SUBMITTED')} {t('dashboard_page.analysis.chart_submissions_title')}</Typography.Text></>} style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                    <Card bordered={false} title={<><Typography.Text strong style={{ fontSize: '16px' }}>📊 {t('dashboard_page.statuses.SUBMITTED')} {t('dashboard_page.analysis.chart_submissions_title')}</Typography.Text></>} style={{ borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
                         <Pie {...statusPieConfig} height={250} />
                     </Card>
                 </Col>
                 <Col span={14}>
-                    <Card bordered={false} title={<><Typography.Text strong>📈 {t('dashboard_page.analysis.chart_regions_title')}</Typography.Text></>} style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                    <Card bordered={false} title={<><Typography.Text strong style={{ fontSize: '16px' }}>📈 {t('dashboard_page.analysis.chart_regions_title')}</Typography.Text></>} style={{ borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
                         <Column {...regionColumnConfig} height={250} />
                     </Card>
                 </Col>
             </Row>
 
             {/* UZ: Smart Analytics - Bashorat qismi (Append) */}
-            <Row gutter={16} style={{ marginBottom: '24px' }}>
+            <Row gutter={16} style={{ marginBottom: '32px' }}>
                 <Col span={24}>
-                    <Card bordered={false} title={<><Typography.Text strong>🧠 {t('dashboard_page.analysis.forecast_card_title')}</Typography.Text></>} style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                    <Card bordered={false} title={<><Typography.Text strong style={{ fontSize: '16px' }}>🧠 {t('dashboard_page.analysis.forecast_card_title')}</Typography.Text></>} style={{ borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
                         <Row gutter={24} align="middle">
                             <Col span={16}>
                                 <Line {...forecastConfig} height={300} />
                             </Col>
                             <Col span={8}>
-                                <div style={{ background: '#f0f5ff', padding: '24px', borderRadius: '12px', textAlign: 'center' }}>
-                                    <ClockCircleOutlined style={{ fontSize: '32px', color: '#1677ff', marginBottom: '16px' }} />
+                                <div style={{ background: 'linear-gradient(135deg, #e0f2fe 0%, #ddd6fe 100%)', padding: '32px', borderRadius: '16px', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                                    <ClockCircleOutlined style={{ fontSize: '40px', color: '#667eea', marginBottom: '20px' }} />
                                     <Statistic
                                         title={t('dashboard_page.analysis.expected_cases')}
                                         value={forecastData?.predictedValue || 0}
-                                        valueStyle={{ color: '#cf1322', fontSize: '36px', fontWeight: 'bold' }}
+                                        valueStyle={{ color: '#cf1322', fontSize: '42px', fontWeight: 'bold' }}
                                     />
-                                    <div style={{ marginTop: '16px' }}>
+                                    <div style={{ marginTop: '20px' }}>
                                         <Badge status="processing" text={`${t('dashboard_page.analysis.confidence_level')}: ${forecastData?.confidence || '0%'}`} />
                                     </div>
-                                    <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '12px' }}>
+                                    <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '16px' }}>
                                         {t('dashboard_page.analysis.forecast_footer_hint')}
                                     </Text>
                                 </div>
@@ -435,7 +534,7 @@ const DashboardPage: React.FC = () => {
             <Row gutter={24}>
                 {/* Left Column: Submissions Table */}
                 <Col span={16}>
-                    <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                    <Card bordered={false} style={{ borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
                             <Title level={4} style={{ margin: 0, whiteSpace: 'nowrap' }}>{t('dashboard_page.incoming_reports')}</Title>
                             <Space wrap>
@@ -476,7 +575,7 @@ const DashboardPage: React.FC = () => {
 
                 {/* Right Column: Population Stats */}
                 <Col span={8}>
-                    <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', height: '100%' }}>
+                    <Card bordered={false} style={{ borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', height: '100%' }}>
                         <Title level={4} style={{ marginBottom: '16px' }}>{t('dashboard_page.region_title')}</Title>
                         <div style={{ maxHeight: '500px', overflowY: 'auto', paddingRight: '4px' }}>
                             {REGION_DATA.sort((a, b) => b.population - a.population).map((item, index) => (
@@ -488,7 +587,7 @@ const DashboardPage: React.FC = () => {
                                     borderBottom: '1px solid #f0f0f0'
                                 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <Badge count={index + 1} style={{ backgroundColor: index < 3 ? '#1677ff' : '#d9d9d9', boxShadow: 'none' }} />
+                                        <Badge count={index + 1} style={{ backgroundColor: index < 3 ? '#667eea' : '#d9d9d9', boxShadow: 'none' }} />
                                         <div>
                                             <Text strong style={{ display: 'block' }}>{item.name}</Text>
                                             <Text type="secondary" style={{ fontSize: '11px' }}>{item.type}</Text>
