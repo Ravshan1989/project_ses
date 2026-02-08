@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { SaveOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined } from '@ant-design/icons';
+import { SaveOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined, DownloadOutlined } from '@ant-design/icons';
 import { Table, Typography, Card, DatePicker, Button, InputNumber, notification, Space, Switch, Alert, Popconfirm, Badge, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
 import PermissionGate from '../../components/PermissionGate';
+import { exportDailyReport } from '../../services/excelExportService'; // UZ: Excel eksport service
 
 const { Title, Text } = Typography;
 
@@ -214,6 +215,34 @@ const FluDailyReportPage: React.FC = () => {
         }
     };
 
+    // UZ: Excel ga eksport qilish funksiyasi
+    const handleExcelExport = () => {
+        // UZ: Ustunlar ro'yxati
+        const columns = [
+            { header: '№', key: 'key', width: 5 },
+            { header: t('daily_reports.table.district'), key: 'district_name', width: 20 },
+            { header: 'ARI Jami', key: 'ari_total', width: 10 },
+            { header: 'ARI 0-1', key: 'ari_0_1', width: 8 },
+            { header: 'ARI 1-2', key: 'ari_1_2', width: 8 },
+            { header: 'ARI 3-6', key: 'ari_3_6', width: 8 },
+            { header: 'ARI 7-14', key: 'ari_7_14', width: 8 },
+            { header: 'ARI Kattalar', key: 'ari_adult', width: 10 },
+            { header: 'Pneu Jami', key: 'pneu_total', width: 10 },
+            { header: 'Gripp Jami', key: 'flu_total', width: 10 },
+            { header: 'SARI Jami', key: 'sari_total', width: 10 },
+            { header: 'Vafot', key: 'death_total', width: 8 },
+        ];
+
+        // UZ: Fayl nomi va sarlavha
+        const fileName = `Gripp_Kunlik_${date.format('DD-MM-YYYY')}`;
+        const title = t('daily_reports.flu_title');
+        const dateStr = date.format('DD.MM.YYYY');
+
+        // UZ: Excel ga eksport qilish
+        exportDailyReport(data, fileName, title, dateStr, columns);
+        notification.success({ message: 'Excel fayl yuklab olindi!' });
+    };
+
     const handleVerify = async (id: string) => {
         try {
             await dailyReportsApi.verify('flu', id);
@@ -407,6 +436,7 @@ const FluDailyReportPage: React.FC = () => {
                                 <Switch size="small" checked={false} onChange={setIsTestMode} />
                             </div>
                             <DatePicker value={date} onChange={(d) => d && setDate(d)} format="DD.MM.YYYY" />
+                            <Button icon={<DownloadOutlined />} onClick={handleExcelExport}>Excel</Button>
                             <Button icon={<ReloadOutlined />} onClick={fetchReports}>{t('daily_reports.actions.refresh')}</Button>
                             <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>{t('daily_reports.actions.save')}</Button>
                         </Space>

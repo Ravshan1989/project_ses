@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { SaveOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined } from '@ant-design/icons';
+import { SaveOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined, DownloadOutlined } from '@ant-design/icons';
 import { Table, Typography, Card, DatePicker, Button, InputNumber, notification, Space, Switch, Alert, Popconfirm, Badge, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
+import { exportDailyReport } from '../../services/excelExportService'; // UZ: Excel eksport service
 import PermissionGate from '../../components/PermissionGate';
 
 const { Title, Text } = Typography;
@@ -420,6 +421,43 @@ const DailyHepatitisPage: React.FC = () => {
         }
     };
 
+    // UZ: Excel ga eksport qilish funksiyasi
+    const handleExcelExport = () => {
+        // UZ: Ustunlar ro'yxati
+        const columns = [
+            { header: '№', key: 'key', width: 5 },
+            { header: t('daily_reports.table.district'), key: 'district_name', width: 20 },
+            { header: t('daily_reports.table.total_cases'), key: 'total_cases', width: 12 },
+            { header: t('daily_reports.table.age_1'), key: 'age_under_1', width: 10 },
+            { header: t('daily_reports.table.age_1_3'), key: 'age_1_3', width: 10 },
+            { header: t('daily_reports.table.age_4_6'), key: 'age_4_6', width: 10 },
+            { header: t('daily_reports.table.age_7_14'), key: 'age_7_14', width: 10 },
+            { header: t('daily_reports.table.age_15_19'), key: 'age_15_19', width: 10 },
+            { header: t('daily_reports.table.age_20'), key: 'age_20_plus', width: 10 },
+            { header: t('daily_reports.table.unorganized'), key: 'occ_unorganized', width: 12 },
+            { header: t('daily_reports.table.unorg_preschool'), key: 'occ_unorganized_1_6', width: 12 },
+            { header: t('daily_reports.table.org_preschool'), key: 'occ_organized_1_6', width: 12 },
+            { header: t('daily_reports.table.unorg_school'), key: 'occ_unorganized_school_age', width: 12 },
+            { header: t('daily_reports.table.students'), key: 'occ_students', width: 12 },
+            { header: t('daily_reports.table.college_students'), key: 'occ_college_students', width: 12 },
+            { header: t('daily_reports.table.adults'), key: 'occ_workers', width: 12 },
+            { header: t('daily_reports.table.water'), key: 'factor_water', width: 10 },
+            { header: t('daily_reports.table.food'), key: 'factor_food', width: 10 },
+            { header: t('daily_reports.table.contact'), key: 'factor_contact', width: 10 },
+            { header: t('daily_reports.table.lab_total'), key: 'lab_samples', width: 10 },
+            { header: t('daily_reports.table.lab_positive'), key: 'lab_positive', width: 10 },
+            { header: t('daily_reports.table.disinfection'), key: 'disinfection_done', width: 12 },
+        ];
+
+        // UZ: Fayl nomi va sarlavha
+        const fileName = `VGA_Kunlik_${date.format('DD-MM-YYYY')}`;
+        const title = t('daily_reports.hepatitis_title');
+        const dateStr = date.format('DD.MM.YYYY');
+
+        // UZ: Excel ga eksport qilish
+        exportDailyReport(data, fileName, title, dateStr, columns);
+        notification.success({ message: 'Excel fayl yuklab olindi!' });
+    };
 
 
     const handleVerify = async (id: string) => {
@@ -465,6 +503,7 @@ const DailyHepatitisPage: React.FC = () => {
                                 onChange={(d) => d && setDate(d)}
                                 format="DD.MM.YYYY"
                             />
+                            <Button icon={<DownloadOutlined />} onClick={handleExcelExport}>Excel</Button>
                             <Button icon={<ReloadOutlined />} onClick={fetchReports}>{t('daily_reports.actions.refresh')}</Button>
                             <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>{t('daily_reports.actions.save')}</Button>
                         </Space>
