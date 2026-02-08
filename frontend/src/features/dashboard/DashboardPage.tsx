@@ -487,46 +487,112 @@ const DashboardPage: React.FC = () => {
                 </Col>
             </Row>
 
-            {/* UZ: Yangi Vizual Analitika qismi (Append) */}
+            {/* UZ: Yangi Vizual Analitika qismi - Enhanced with Gradient Borders */}
             <Row gutter={[16, 16]} style={{ marginBottom: '32px' }}>
                 <Col span={10}>
-                    <Card bordered={false} title={<><Typography.Text strong style={{ fontSize: '16px' }}>📊 {t('dashboard_page.statuses.SUBMITTED')} {t('dashboard_page.analysis.chart_submissions_title')}</Typography.Text></>} style={{ borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-                        <Pie {...statusPieConfig} height={250} />
-                    </Card>
+                    <div style={{
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        padding: '3px',
+                        borderRadius: '18px',
+                        boxShadow: '0 8px 16px rgba(102, 126, 234, 0.25)'
+                    }}>
+                        <Card
+                            bordered={false}
+                            title={
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ fontSize: '24px' }}>📊</span>
+                                    <Typography.Text strong style={{ fontSize: '16px', color: '#1f1f1f' }}>
+                                        {t('dashboard_page.statuses.SUBMITTED')} {t('dashboard_page.analysis.chart_submissions_title')}
+                                    </Typography.Text>
+                                </div>
+                            }
+                            style={{
+                                borderRadius: '16px',
+                                background: '#fff',
+                                margin: 0
+                            }}
+                        >
+                            <Pie {...statusPieConfig} height={250} />
+                        </Card>
+                    </div>
                 </Col>
                 <Col span={14}>
-                    <Card bordered={false} title={<><Typography.Text strong style={{ fontSize: '16px' }}>📈 {t('dashboard_page.analysis.chart_regions_title')}</Typography.Text></>} style={{ borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-                        <Column {...regionColumnConfig} height={250} />
-                    </Card>
+                    <div style={{
+                        background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+                        padding: '3px',
+                        borderRadius: '18px',
+                        boxShadow: '0 8px 16px rgba(56, 239, 125, 0.25)'
+                    }}>
+                        <Card
+                            bordered={false}
+                            title={
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ fontSize: '24px' }}>📈</span>
+                                    <Typography.Text strong style={{ fontSize: '16px', color: '#1f1f1f' }}>
+                                        {t('dashboard_page.analysis.chart_regions_title')}
+                                    </Typography.Text>
+                                </div>
+                            }
+                            style={{
+                                borderRadius: '16px',
+                                background: '#fff',
+                                margin: 0
+                            }}
+                        >
+                            <Column {...regionColumnConfig} height={250} />
+                        </Card>
+                    </div>
                 </Col>
             </Row>
 
-            {/* UZ: Smart Analytics - Bashorat qismi (Append) */}
+            {/* UZ: Smart Analytics - Bashorat qismi - Enhanced with Gradient Border */}
             <Row gutter={16} style={{ marginBottom: '32px' }}>
                 <Col span={24}>
-                    <Card bordered={false} title={<><Typography.Text strong style={{ fontSize: '16px' }}>🧠 {t('dashboard_page.analysis.forecast_card_title')}</Typography.Text></>} style={{ borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-                        <Row gutter={24} align="middle">
-                            <Col span={16}>
-                                <Line {...forecastConfig} height={300} />
-                            </Col>
-                            <Col span={8}>
-                                <div style={{ background: 'linear-gradient(135deg, #e0f2fe 0%, #ddd6fe 100%)', padding: '32px', borderRadius: '16px', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-                                    <ClockCircleOutlined style={{ fontSize: '40px', color: '#667eea', marginBottom: '20px' }} />
-                                    <Statistic
-                                        title={t('dashboard_page.analysis.expected_cases')}
-                                        value={forecastData?.predictedValue || 0}
-                                        valueStyle={{ color: '#cf1322', fontSize: '42px', fontWeight: 'bold' }}
-                                    />
-                                    <div style={{ marginTop: '20px' }}>
-                                        <Badge status="processing" text={`${t('dashboard_page.analysis.confidence_level')}: ${forecastData?.confidence || '0%'}`} />
-                                    </div>
-                                    <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '16px' }}>
-                                        {t('dashboard_page.analysis.forecast_footer_hint')}
-                                    </Text>
+                    <div style={{
+                        background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                        padding: '3px',
+                        borderRadius: '18px',
+                        boxShadow: '0 8px 16px rgba(245, 87, 108, 0.25)'
+                    }}>
+                        <Card
+                            bordered={false}
+                            title={
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ fontSize: '24px' }}>🧠</span>
+                                    <Typography.Text strong style={{ fontSize: '16px', color: '#1f1f1f' }}>
+                                        {t('dashboard_page.analysis.forecast_card_title')}
+                                    </Typography.Text>
                                 </div>
-                            </Col>
-                        </Row>
-                    </Card>
+                            }
+                            style={{
+                                borderRadius: '16px',
+                                background: '#fff',
+                                margin: 0
+                            }}
+                        >
+                            <Row gutter={24} align="middle">
+                                <Col span={16}>
+                                    <Line {...forecastConfig} height={300} />
+                                </Col>
+                                <Col span={8}>
+                                    <div style={{ background: 'linear-gradient(135deg, #e0f2fe 0%, #ddd6fe 100%)', padding: '32px', borderRadius: '16px', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                                        <ClockCircleOutlined style={{ fontSize: '40px', color: '#667eea', marginBottom: '20px' }} />
+                                        <Statistic
+                                            title={t('dashboard_page.analysis.expected_cases')}
+                                            value={forecastData?.predictedValue || 0}
+                                            valueStyle={{ color: '#cf1322', fontSize: '42px', fontWeight: 'bold' }}
+                                        />
+                                        <div style={{ marginTop: '20px' }}>
+                                            <Badge status="processing" text={`${t('dashboard_page.analysis.confidence_level')}: ${forecastData?.confidence || '0%'}`} />
+                                        </div>
+                                        <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '16px' }}>
+                                            {t('dashboard_page.analysis.forecast_footer_hint')}
+                                        </Text>
+                                    </div>
+                                </Col>
+                            </Row>
+                        </Card>
+                    </div>
                 </Col>
             </Row>
 
