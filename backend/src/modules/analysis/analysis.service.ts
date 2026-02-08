@@ -30,7 +30,7 @@ export class AnalysisService {
     @InjectRepository(Disease)
     private diseaseRepo: Repository<Disease>,
     private forecastingService: ForecastingService, // UZ: ForecastingService ineksiya qilindi
-  ) {}
+  ) { }
 
   async getGlobalSummary(startDate: string, endDate: string) {
     const organizations = await this.orgRepo.find({
@@ -46,13 +46,13 @@ export class AnalysisService {
     ) => {
       return repo
         .createQueryBuilder("report")
-        .select("report.organizationId", "organizationId")
+        .select("report.organization_id", "organization_id")
         .addSelect(`SUM(report.${sumField})`, "total")
         .where("report.reportDate BETWEEN :startDate AND :endDate", {
           startDate,
           endDate,
         })
-        .groupBy("report.organizationId")
+        .groupBy("report.organization_id")
         .getRawMany();
     };
 
@@ -65,7 +65,7 @@ export class AnalysisService {
 
     const form1Agg = await this.submissionRepo
       .createQueryBuilder("sub")
-      .select("sub.organizationId", "organizationId")
+      .select("sub.organization_id", "organization_id")
       .addSelect("sub.data", "data")
       .where("sub.template.code = :code", { code: "form_1" })
       .andWhere("sub.reportingPeriod BETWEEN :startDate AND :endDate", {
@@ -80,7 +80,7 @@ export class AnalysisService {
       const orgDiseases: any[] = [];
 
       const addSpecialized = (agg: any[], name: string) => {
-        const found = agg.find((a) => a.organizationId === org.id);
+        const found = agg.find((a) => a.organization_id === org.id);
         const cases = found ? parseInt(found.total) : 0;
         if (cases > 0) orgDiseases.push({ disease: name, cases });
       };
@@ -91,7 +91,7 @@ export class AnalysisService {
       addSpecialized(covidAgg, "Koronavirus (COVID-19)");
 
       const orgSubmissions = form1Agg.filter(
-        (a) => a.organizationId === org.id,
+        (a) => a.organization_id === org.id,
       );
       for (const sub of orgSubmissions) {
         if (!sub.data) continue;
@@ -177,17 +177,17 @@ export class AnalysisService {
 
     const caseAggregation = await repo
       .createQueryBuilder("report")
-      .select("report.organizationId", "organizationId")
+      .select("report.organization_id", "organization_id")
       .addSelect(`SUM(report.${sumField})`, "total")
       .where("report.reportDate BETWEEN :startDate AND :endDate", {
         startDate,
         endDate,
       })
-      .groupBy("report.organizationId")
+      .groupBy("report.organization_id")
       .getRawMany();
 
     const results = organizations.map((org) => {
-      const agg = caseAggregation.find((a) => a.organizationId === org.id);
+      const agg = caseAggregation.find((a) => a.organization_id === org.id);
       const totalCases = agg ? parseInt(agg.total) : 0;
       const incidenceRate =
         org.population > 0 ? (totalCases / org.population) * 100000 : 0;
