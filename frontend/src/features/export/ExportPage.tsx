@@ -476,23 +476,7 @@ const ExportPage: React.FC = () => {
                 <Title level={2}>Hisobotlarni Eksport Qilish</Title>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Text type="secondary">Vaqt oralig'i va hisobot turini tanlang, so'ngra Excel faylni yuklab oling.</Text>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #d9d9d9', padding: '4px 12px', borderRadius: '6px' }}>
-                        <ExperimentOutlined style={{ color: false ? '#f5222d' : '#8c8c8c' }} />
-                        <Text strong={false} type={false ? "danger" : "secondary"}>Test Ma'lumotlari</Text>
-                        <Switch size="small" checked={false} onChange={setIsTestMode} />
-                    </div>
                 </div>
-
-                {false && (
-                    <Alert
-                        message="DIQQAT: TEST MA'LUMOTLARI EKSPORTI"
-                        description="Hozirgi sozlamalar faqat 'Test' rejimidagi ma'lumotlarni eksport qilish uchun. Real hisobotlar yuklanmaydi."
-                        type="error"
-                        showIcon
-                        icon={<ExperimentOutlined />}
-                        style={{ marginTop: 16 }}
-                    />
-                )}
                 <Row gutter={[16, 16]} style={{ marginTop: '24px' }}>
                     <Col xs={24} md={8}>
                         <div style={{ marginBottom: '8px' }}><Text strong>Vaqt oralig'i:</Text></div>

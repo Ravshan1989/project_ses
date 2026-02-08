@@ -424,16 +424,6 @@ const FluDailyReportPage: React.FC = () => {
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                         <Space>
-                            {false && (
-                                <Popconfirm title={t('daily_reports.test_mode.cleanup_confirm')} onConfirm={handleCleanup}>
-                                    <Button danger icon={<DeleteOutlined />}>{t('daily_reports.test_mode.cleanup_btn')}</Button>
-                                </Popconfirm>
-                            )}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #d9d9d9', padding: '4px 12px', borderRadius: '6px' }}>
-                                <ExperimentOutlined style={{ color: false ? '#f5222d' : '#8c8c8c' }} />
-                                <Text strong={false} type={false ? "danger" : "secondary"}>{t('daily_reports.test_mode.label')}</Text>
-                                <Switch size="small" checked={false} onChange={setIsTestMode} />
-                            </div>
                             <DatePicker value={date} onChange={(d) => d && setDate(d)} format="DD.MM.YYYY" />
                             <Button icon={<DownloadOutlined />} onClick={handleExcelExport}>Excel</Button>
                             <Button icon={<ReloadOutlined />} onClick={fetchReports}>{t('daily_reports.actions.refresh')}</Button>
