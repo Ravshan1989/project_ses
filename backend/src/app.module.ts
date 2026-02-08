@@ -58,4 +58,4 @@ import { ScheduleModule } from "@nestjs/schedule";
     { provide: APP_INTERCEPTOR, useClass: NotificationInterceptor }, // UZ: Bildirishnomalar uchun interceptor
   ],
 })
-export class AppModule { }
+export class AppModule {}

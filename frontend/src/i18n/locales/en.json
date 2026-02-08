@@ -75,7 +75,14 @@
         "import_success": "{{count}} records successfully read",
         "import_empty": "File is empty",
         "import_error": "Error reading file",
-        "sos_btn": "SOS"
+        "sos_btn": "SOS",
+        "export_title": "Export Reports",
+        "export_subtitle": "Select a date range and report type, then download an Excel or PDF file.",
+        "date_range": "Date range:",
+        "report_type": "Report type:",
+        "select_type": "Select type",
+        "district": "Region (District/City):",
+        "all_districts": "All regions"
     },
     "dashboard_page": {
         "title": "Main Board",

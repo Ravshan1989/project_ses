@@ -51,7 +51,7 @@
     },
     "common": {
         "dashboard": "Dashboard",
-        "reports": "Hisobotlar",
+        "reports": "Ma'lumot kiritish",
         "analysis": "Tahlil",
         "settings": "Sozalamalar",
         "logout": "Chiqish",
@@ -75,7 +75,15 @@
         "import_success": "{{count}} ta yozuv muvaffaqiyatli o'qildi",
         "import_empty": "Fayl bo'sh",
         "import_error": "Faylni o'qishda xatolik bo'ldi",
-        "sos_btn": "SOS"
+        "sos_btn": "SOS",
+        "actions": "Amallar",
+        "export_title": "Hisobotlarni Eksport Qilish",
+        "export_subtitle": "Vaqt oralig'i va hisobot turini tanlang, so'ngra Excel yoki PDF faylni yuklab oling.",
+        "date_range": "Vaqt oralig'i:",
+        "report_type": "Hisobot turi:",
+        "select_type": "Turini tanlang",
+        "district": "Hudud (Tuman/Shahar):",
+        "all_districts": "Barcha hududlar"
     },
     "dashboard_page": {
         "title": "Asosiy panel",
@@ -123,10 +131,10 @@
         }
     },
     "reports": {
-        "daily": "Kunlik Hisobotlar",
-        "monthly": "Oylik Hisobotlar",
-        "daily_menu": "Kunlik Hisobotlar",
-        "monthly_menu": "Oylik Hisobotlar (Forma-1)",
+        "daily": "Kunlik Ma'lumotlar",
+        "monthly": "Oylik Ma'lumotlar",
+        "daily_menu": "Kunlik Ma'lumot Kiritish",
+        "monthly_menu": "Oylik Ma'lumot Kiritish (Forma-1)",
         "form1": "Shakl 1 (Oylik)",
         "hepatitis": "Gepatit",
         "daily_hepatitis": "Kunlik Hisobotlar (VGA)",
@@ -180,6 +188,7 @@
         "flu_title": "Gripp va O'RVI kasalliklari bo'yicha kunlik ma'lumot",
         "ari_title": "O'tkir respirator infeksiyalari bo'yicha kunlik ma'lumot",
         "weekly_title": "Gripp va O'RVI kasalliklari bo'yicha HAFTALIK MA'LUMOT (Avtomatik)",
+        "weekly_export_title": "Gripp va O'RVI bo'yicha haftalik (yig'ma) hisobot",
         "epidemiology_title": "Epidemiologiyaga qarshi tadbirlar bo'yicha kunlik ma'lumot",
         "covid_title": "Koronavirus infektsiyasi bo'yicha kunlik ma'lumot",
         "period": "{{start}} - {{end}} davri uchun",
@@ -246,6 +255,7 @@
             "dpm": "DPM",
             "including": "Jumladan",
             "nursery_short": "Tarb.",
+            "nursery": "Bog'cha",
             "deaths": "Vafot etganlar",
             "pregnant": "Homiladorlar",
             "sari": "SARI"
@@ -272,6 +282,21 @@
             "save_success": "Test ma'lumoti saqlandi",
             "cleanup_success": "Test ma'lumotlari tozalandi",
             "cleanup_error": "Tozalashda xatolik"
+        },
+        "table_v2": {
+            "total_hepatitis": "Jami qayd qilingan VG A bemorlar",
+            "age_under_1_yr": "1 yoshgacha",
+            "age_20_plus_yrs": "20 yoshdan kattalar",
+            "occ_organized_nursery": "Uyushgan yasli yoshidagi bolalar",
+            "occ_unorganized_nursery": "Uyushmagan yasli yoshidagi bolalar",
+            "occ_organized_preschool": "Uyushgan bog'cha yoshidagi bolalar",
+            "occ_unorganized_preschool": "Uyushmagan bog'cha yoshidagi bolalar",
+            "factor_food_detailed": "Ovqat-oziq mahsulotlari",
+            "factor_contact_detailed": "Maishiy muloqot",
+            "lab_samples_detailed": "Jami olingan namunalar",
+            "lab_positive_detailed": "Musbat natija",
+            "decimal_positive_detailed": "Musbat natija (%)",
+            "disinfection_detailed": "Dezinfeksiya o'tkazilgan o'choqlar"
         }
     },
     "form1": {
@@ -324,20 +349,5 @@
         "equal": "teng",
         "increased": "marta o'sdi",
         "decreased": "marta kamaydi"
-    },
-    "table_v2": {
-        "total_hepatitis": "Jami qayd qilingan VG A bemorlar",
-        "age_under_1_yr": "1 yoshgacha",
-        "age_20_plus_yrs": "20 yoshdan kattalar",
-        "occ_organized_nursery": "Uyushgan yasli yoshidagi bolalar",
-        "occ_unorganized_nursery": "Uyushmagan yasli yoshidagi bolalar",
-        "occ_organized_preschool": "Uyushgan bog'cha yoshidagi bolalar",
-        "occ_unorganized_preschool": "Uyushmagan bog'cha yoshidagi bolalar",
-        "factor_food_detailed": "Ovqat-oziq mahsulotlari",
-        "factor_contact_detailed": "Maishiy muloqot",
-        "lab_samples_detailed": "Jami olingan namunalar",
-        "lab_positive_detailed": "Musbat natija",
-        "decimal_positive_detailed": "Musbat natija (%)",
-        "disinfection_detailed": "Dezinfeksiya o'tkazilgan o'choqlar"
     }
 }

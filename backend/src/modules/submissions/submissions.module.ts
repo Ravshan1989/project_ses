@@ -19,4 +19,4 @@ import { Template } from "../forms/entities/template.entity";
   providers: [SubmissionsService],
   exports: [SubmissionsService],
 })
-export class SubmissionsModule { }
+export class SubmissionsModule {}

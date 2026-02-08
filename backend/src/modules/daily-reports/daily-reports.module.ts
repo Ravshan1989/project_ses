@@ -28,4 +28,4 @@ import { ApprovalController } from "./approval.controller";
   controllers: [DailyReportsController, ApprovalController],
   exports: [DailyReportsService, VerificationService],
 })
-export class DailyReportsModule { }
+export class DailyReportsModule {}

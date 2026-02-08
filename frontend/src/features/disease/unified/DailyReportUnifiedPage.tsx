@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Typography, DatePicker, Button, Space, Tabs, notification } from 'antd';
+import { Typography, DatePicker, Button, Space, Tabs, notification } from 'antd';
 import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
 import { dailyReportsApi, organizationsApi } from '../../../services/api';
 
 import HepatitisTab from './HepatitisTab';
@@ -12,6 +13,7 @@ import EpiTab from './EpiTab';
 const { Title, Text } = Typography;
 
 const DailyReportUnifiedPage: React.FC = () => {
+    const { t } = useTranslation();
     const [date, setDate] = useState(dayjs());
     const [loading, setLoading] = useState(false);
     const [organizations, setOrganizations] = useState<any[]>([]);
@@ -174,6 +176,114 @@ const DailyReportUnifiedPage: React.FC = () => {
         },
     ];
 
+    // --- PREMIUM UI UPDATE ---
+    // UZ: Kunlik hisobotlar uchun "Wow" dizayn: Glassmorphism + Vibrant Tabs
+
+    const glassStyle: React.CSSProperties = {
+        background: 'rgba(255, 255, 255, 0.7)',
+        backdropFilter: 'blur(15px)',
+        WebkitBackdropFilter: 'blur(15px)',
+        borderRadius: '24px',
+        border: '1px solid rgba(255, 255, 255, 0.4)',
+        boxShadow: '0 12px 40px rgba(31, 38, 135, 0.1)',
+        padding: '32px'
+    };
+
+    const gradientHeader: React.CSSProperties = {
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        padding: '24px',
+        borderRadius: '20px',
+        marginBottom: '24px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        color: '#fff',
+        boxShadow: '0 8px 20px rgba(102, 126, 234, 0.3)'
+    };
+
+    return (
+        <div style={{ padding: '20px', minHeight: '100vh', background: '#f0f2f5' }}>
+            <style>{`
+                .premium-tabs .ant-tabs-nav {
+                    background: rgba(255, 255, 255, 0.5);
+                    border-radius: 12px;
+                    padding: 8px;
+                    margin-bottom: 24px !important;
+                }
+                .premium-tabs .ant-tabs-tab {
+                    border-radius: 8px !important;
+                    transition: all 0.3s ease !important;
+                    margin: 0 4px !important;
+                    border: none !important;
+                    background: transparent !important;
+                }
+                .premium-tabs .ant-tabs-tab-active {
+                    background: #fff !important;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+                }
+                .premium-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+                    color: #1677ff !important;
+                    font-weight: 700 !important;
+                }
+                .action-btn {
+                    height: 45px;
+                    border-radius: 10px;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+            `}</style>
+
+            <div style={gradientHeader}>
+                <div>
+                    <Title level={3} style={{ margin: 0, color: '#fff', fontWeight: 800 }}>
+                        {t('reports.unified_title') || 'Yagona Kunlik Hisobotlar'}
+                    </Title>
+                    <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: '15px' }}>
+                        {date.format('DD MMMM YYYY')} kungi barcha bo'limlar bo'yicha ma'lumotlar
+                    </Text>
+                </div>
+                <Space size="middle">
+                    <DatePicker
+                        value={date}
+                        onChange={(d) => d && setDate(d)}
+                        format="DD.MM.YYYY"
+                        size="large"
+                        style={{ borderRadius: '10px', width: '160px' }}
+                    />
+                    <Button
+                        icon={<ReloadOutlined />}
+                        onClick={fetchAllData}
+                        className="action-btn"
+                        style={{ background: 'rgba(255, 255, 255, 0.2)', border: 'none', color: '#fff' }}
+                    >
+                        Yangilash
+                    </Button>
+                    <Button
+                        type="primary"
+                        icon={<SaveOutlined />}
+                        onClick={handleSave}
+                        className="action-btn"
+                        style={{ background: '#fff', color: '#764ba2' }}
+                    >
+                        Barchasini Saqlash
+                    </Button>
+                </Space>
+            </div>
+
+            <div style={glassStyle}>
+                <Tabs
+                    defaultActiveKey="hepatitis"
+                    items={items}
+                    className="premium-tabs"
+                    type="card"
+                />
+            </div>
+        </div>
+    );
+
+    /* --- ESKI DIZAYN (O'zgarmas Qoidalar asosida saqlab qolindi) ---
     return (
         <Card>
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -193,6 +303,7 @@ const DailyReportUnifiedPage: React.FC = () => {
             </Space>
         </Card>
     );
+    */
 };
 
 export default DailyReportUnifiedPage;

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Button, Modal, Form, Input, Switch, message, Space, Transfer, Tag, Typography, Select } from 'antd';
+import { Table, Button, Modal, Form, Input, Switch, message, Space, Transfer, Tag, Typography, Select } from 'antd';
 import { ClusterOutlined, PlusOutlined, SafetyCertificateOutlined, EditOutlined } from '@ant-design/icons';
 import { departmentsApi, permissionsApi } from '../../services/api';
+// import { useTranslation } from 'react-i18next';
 
-const { Text } = Typography;
+const { Title, Text } = Typography;
 
 const DepartmentManagementPage: React.FC = () => {
+    // const { t } = useTranslation();
     const [departments, setDepartments] = useState<any[]>([]);
     const [permissions, setPermissions] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -124,6 +126,156 @@ const DepartmentManagementPage: React.FC = () => {
         }
     ];
 
+    // --- PREMIUM UI UPDATE ---
+    const glassStyle: React.CSSProperties = {
+        background: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderRadius: '24px',
+        border: '1px solid rgba(255, 255, 255, 0.4)',
+        boxShadow: '0 15px 35px rgba(0, 0, 0, 0.05)',
+        padding: '32px'
+    };
+
+    const headerStyle: React.CSSProperties = {
+        background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+        padding: '30px 40px',
+        borderRadius: '24px',
+        marginBottom: '24px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        color: '#fff',
+        boxShadow: '0 10px 30px rgba(17, 153, 142, 0.2)'
+    };
+
+    return (
+        <div style={{ padding: '24px', minHeight: '100vh', background: '#f5f7fa' }}>
+            <style>{`
+                .dept-table .ant-table { background: transparent !important; }
+                .dept-table .ant-table-thead > tr > th {
+                    background: rgba(255, 255, 255, 0.5) !important;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    font-size: 12px;
+                }
+                .action-pill {
+                    border-radius: 12px;
+                    height: 42px;
+                    font-weight: 600;
+                    border: none !important;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                .add-dept-btn {
+                    background: #fff !important;
+                    color: #11998e !important;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                }
+                .add-dept-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+                }
+            `}</style>
+
+            <div style={headerStyle}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.2)', padding: '15px', borderRadius: '18px' }}>
+                        <ClusterOutlined style={{ fontSize: '32px', color: '#fff' }} />
+                    </div>
+                    <div>
+                        <Title level={2} style={{ margin: 0, color: '#fff', fontWeight: 800 }}>
+                            Bo'limlarni Boshqarish
+                        </Title>
+                        <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: '15px' }}>
+                            Tizim tarkibiy bo'linmalarini sozlosh va boshqarish
+                        </Text>
+                    </div>
+                </div>
+                <Button
+                    type="primary"
+                    size="large"
+                    icon={<PlusOutlined />}
+                    onClick={() => {
+                        setSelectedDept(null);
+                        form.resetFields();
+                        form.setFieldsValue({ isActive: true, level: 3 });
+                        setIsDeptModalVisible(true);
+                    }}
+                    className="action-pill add-dept-btn"
+                >
+                    Yangi Bo'lim Qo'shish
+                </Button>
+            </div>
+
+            <div style={glassStyle}>
+                <Table
+                    dataSource={departments}
+                    columns={columns}
+                    rowKey="id"
+                    loading={loading}
+                    className="dept-table"
+                />
+            </div>
+
+            <Modal
+                title={selectedDept ? "Bo'limni tahrirlash" : "Yangi bo'lim qo'shish"}
+                open={isDeptModalVisible}
+                onCancel={() => setIsDeptModalVisible(false)}
+                onOk={() => form.submit()}
+                centered
+                style={{ borderRadius: '20px' }}
+            >
+                <Form form={form} layout="vertical" onFinish={handleCreateOrUpdateDept} style={{ paddingTop: '10px' }}>
+                    <Form.Item name="name" label="Bo'lim Nomi" rules={[{ required: true, message: "Nomini kiriting" }]}>
+                        <Input size="large" style={{ borderRadius: '10px' }} />
+                    </Form.Item>
+                    <Form.Item name="level" label="Bo'lim Darajasi" rules={[{ required: true }]}>
+                        <Select size="large" style={{ borderRadius: '10px' }} options={[
+                            { label: 'Respublika (1-daraja)', value: 1 },
+                            { label: 'Viloyat (2-daraja)', value: 2 },
+                            { label: 'Tuman (3-daraja)', value: 3 },
+                        ]} />
+                    </Form.Item>
+                    <Form.Item name="description" label="Tavsif">
+                        <Input.TextArea rows={3} style={{ borderRadius: '10px' }} />
+                    </Form.Item>
+                    <Form.Item name="isActive" label="Faol" valuePropName="checked" initialValue={true}>
+                        <Switch />
+                    </Form.Item>
+                </Form>
+            </Modal>
+
+            <Modal
+                title={<span><SafetyCertificateOutlined /> {selectedDept?.name} uchun ruxsatlar</span>}
+                open={isPermModalVisible}
+                onCancel={() => setIsPermModalVisible(false)}
+                width={800}
+                footer={null}
+                centered
+                style={{ borderRadius: '20px' }}
+            >
+                <div style={{ padding: '20px 0', display: 'flex', justifyContent: 'center' }}>
+                    <Transfer
+                        dataSource={permissions.map(p => ({ key: p.code, title: `${p.code} - ${p.description}` }))}
+                        targetKeys={selectedDept?.permissions?.map((p: any) => p.permission?.code) || []}
+                        onChange={handleSyncPermissions}
+                        render={item => item.title}
+                        listStyle={{ width: 320, height: 400, borderRadius: '12px' }}
+                        titles={['Mavjud ruxsatlar', 'Biriktirilgan']}
+                    />
+                </div>
+                <div style={{ marginTop: 20, textAlign: 'right' }}>
+                    <Button size="large" onClick={() => setIsPermModalVisible(false)} style={{ borderRadius: '10px', minWidth: '100px' }}>
+                        Yopish
+                    </Button>
+                </div>
+            </Modal>
+        </div>
+    );
+
+    /* --- ESKI DIZAYN (O'zgarmas Qoidalar asosida saqlab qolindi) ---
     return (
         <Card
             title={<span><ClusterOutlined /> Bo'limlarni Boshqarish</span>}
@@ -141,7 +293,6 @@ const DepartmentManagementPage: React.FC = () => {
                 loading={loading}
             />
 
-            {/* UZ: Bo'lim yaratish/tahrirlash Modali */}
             <Modal
                 title={selectedDept ? "Bo'limni tahrirlash" : "Yangi bo'lim qo'shish"}
                 open={isDeptModalVisible}
@@ -168,7 +319,6 @@ const DepartmentManagementPage: React.FC = () => {
                 </Form>
             </Modal>
 
-            {/* UZ: Ruxsatlar Matrix (Transfer) Modali */}
             <Modal
                 title={<span><SafetyCertificateOutlined /> {selectedDept?.name} uchun ruxsatlar</span>}
                 open={isPermModalVisible}
@@ -190,6 +340,7 @@ const DepartmentManagementPage: React.FC = () => {
             </Modal>
         </Card>
     );
+    */
 };
 
 export default DepartmentManagementPage;

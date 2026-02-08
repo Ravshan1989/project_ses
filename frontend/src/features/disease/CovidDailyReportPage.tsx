@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { SaveOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined, DownloadOutlined } from '@ant-design/icons';
-import { Table, Typography, Card, DatePicker, Button, InputNumber, notification, Space, Switch, Alert, Popconfirm, Badge, Tooltip } from 'antd';
+import { SaveOutlined, ReloadOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined } from '@ant-design/icons';
+import { Table, Typography, DatePicker, Button, InputNumber, notification, Space, Badge, Tooltip } from 'antd';
+import PermissionGate from '../../components/PermissionGate';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
-import { exportDailyReport } from '../../services/excelExportService'; // UZ: Excel eksport service
+
 
 const { Title, Text } = Typography;
 
@@ -169,35 +170,16 @@ const CovidDailyReportPage: React.FC = () => {
                     isTest: false // UZ: Test bayrog'i yuboriladi
                 });
             }
-            notification.success({ message: false ? t('daily_reports.test_mode.save_success') : t('daily_reports.actions.success_save') });
+            notification.success({ message: t('daily_reports.actions.success_save') });
             fetchReports();
         } catch (error) {
-            notification.error({ message: t('auth.error_system'), description: false ? t('daily_reports.test_mode.save_error') : t('daily_reports.actions.error_save') });
+            notification.error({ message: t('auth.error_system'), description: t('daily_reports.actions.error_save') });
         } finally {
             setLoading(false);
         }
     };
 
-    // UZ: Excel ga eksport qilish funksiyasi
-    const handleExcelExport = () => {
-        // UZ: Ustunlar ro'yxati
-        const columns = data.length > 0 ? Object.keys(data[0])
-            .filter(key => !['is_submitted', 'id', 'organizationId', 'status', 'verificationToken'].includes(key))
-            .map(key => ({
-                header: key === 'key' ? '№' : key === 'district_name' ? t('daily_reports.table.district') : key,
-                key: key,
-                width: key === 'key' ? 5 : key === 'district_name' ? 20 : 12
-            })) : [];
 
-        // UZ: Fayl nomi va sarlavha
-        const fileName = `COVID_Kunlik_${date.format('DD-MM-YYYY')}`;
-        const title = t('daily_reports.covid_title');
-        const dateStr = date.format('DD.MM.YYYY');
-
-        // UZ: Excel ga eksport qilish
-        exportDailyReport(data, fileName, title, dateStr, columns);
-        notification.success({ message: 'Excel fayl yuklab olindi!' });
-    };
 
     const handleVerify = async (id: string) => {
         try {
@@ -337,62 +319,147 @@ const CovidDailyReportPage: React.FC = () => {
 
     const calculateTotal = (field: keyof CovidReportData) => data.reduce((sum, item) => sum + (Number(item[field]) || 0), 0);
 
-    return (
-        <Card>
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                <div style={{ textAlign: 'center' }}>
-                    <Title level={4} style={{ margin: 0, fontWeight: 600, lineHeight: 1.5 }}>
-                        {t('daily_reports.covid_title')}
-                    </Title>
-                    <Text strong style={{ fontSize: '16px', display: 'block', marginTop: '10px' }}>
-                        {t('daily_reports.date_status', { date: date.format('DD.MM.YYYY') })}
-                    </Text>
-                </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Space>
-                        <DatePicker value={date} onChange={(d) => d && setDate(d)} format="DD.MM.YYYY" />
-                        <Button icon={<DownloadOutlined />} onClick={handleExcelExport}>Excel</Button>
-                        <Button icon={<ReloadOutlined />} onClick={fetchReports}>{t('daily_reports.actions.refresh')}</Button>
-                        <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>{t('daily_reports.actions.save')}</Button>
+
+    // --- PREMIUM UI STYLES ---
+    const glassStyle: React.CSSProperties = {
+        background: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderRadius: '24px',
+        border: '1px solid rgba(255, 255, 255, 0.4)',
+        boxShadow: '0 15px 35px rgba(0, 0, 0, 0.05)',
+        padding: '24px'
+    };
+
+    const headerStyle: React.CSSProperties = {
+        background: 'linear-gradient(135deg, #2c3e50 0%, #000000 100%)',
+        padding: '32px',
+        borderRadius: '24px',
+        marginBottom: '24px',
+        color: '#fff',
+        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '20px'
+    };
+
+    return (
+        <PermissionGate permission="VIEW_COVID">
+            <div style={{ padding: '24px', minHeight: '100vh', background: '#f0f2f5' }}>
+                <style>{`
+                    .clinical-table .ant-table { background: transparent !important; }
+                    .clinical-table .ant-table-thead > tr > th {
+                        background: rgba(255, 255, 255, 0.5) !important;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        font-size: 10px;
+                        letter-spacing: 0.5px;
+                        color: #1e3c72;
+                    }
+                    .clinical-table .ant-table-tbody > tr > td {
+                        padding: 6px 4px !important;
+                    }
+                `}</style>
+
+                <div style={headerStyle}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                        <div style={{ background: 'rgba(255,255,255,0.15)', padding: '12px', borderRadius: '16px' }}>
+                            <AuditOutlined style={{ fontSize: '28px', color: '#fff' }} />
+                        </div>
+                        <div>
+                            <Title level={2} style={{ margin: 0, color: '#fff', fontWeight: 800 }}>
+                                {t('daily_reports.covid_title')}
+                            </Title>
+                            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
+                                {t('daily_reports.date_status', { date: date.format('DD.MM.YYYY') })}
+                            </Text>
+                        </div>
+                    </div>
+
+                    <Space wrap>
+                        <DatePicker
+                            value={date}
+                            onChange={(d) => d && setDate(d)}
+                            format="DD.MM.YYYY"
+                            allowClear={false}
+                            inputReadOnly
+                            style={{
+                                borderRadius: '12px',
+                                height: '40px',
+                                width: 140,
+                                background: 'rgba(255,255,255,0.1)',
+                                border: '1px solid rgba(255,255,255,0.2)',
+                                color: '#fff'
+                            }}
+                        />
+                        <Button
+                            icon={<ReloadOutlined />}
+                            onClick={fetchReports}
+                            style={{
+                                borderRadius: '12px',
+                                height: '40px',
+                                background: 'rgba(255,255,255,0.1)',
+                                border: 'none',
+                                color: '#fff'
+                            }}
+                        >
+                            {t('daily_reports.actions.refresh')}
+                        </Button>
+                        <Button
+                            type="primary"
+                            icon={<SaveOutlined />}
+                            onClick={handleSave}
+                            style={{
+                                borderRadius: '12px',
+                                height: '40px',
+                                padding: '0 24px',
+                                fontWeight: 700,
+                                background: '#1890ff',
+                                border: 'none',
+                                boxShadow: '0 4px 15px rgba(24, 144, 255, 0.3)'
+                            }}
+                        >
+                            {t('daily_reports.actions.save')}
+                        </Button>
                     </Space>
                 </div>
 
-                {false && (
-                    <Alert
-                        message={t('daily_reports.test_mode.active_alert')}
-                        description={t('daily_reports.test_mode.active_desc')}
-                        type="error"
-                        showIcon
-                        icon={<ExperimentOutlined />}
-                    />
+                {!isAdmin && !connectedOrgId && (
+                    <div style={{ marginBottom: 24 }}>
+                        <Badge status="warning" text={t('daily_reports.errors.no_org_context') || "Tashkilot ma'mulotlari topilmadi."} />
+                    </div>
                 )}
 
-                <Table
-                    columns={columns}
-                    dataSource={data}
-                    loading={loading}
-                    bordered
-                    size="small"
-                    pagination={false}
-                    scroll={{ x: 2200, y: 600 }}
-                    summary={() => (
-                        <Table.Summary fixed>
-                            <Table.Summary.Row style={{ backgroundColor: '#fafafa', fontWeight: 'bold' }}>
-                                <Table.Summary.Cell index={0} />
-                                <Table.Summary.Cell index={1}>{t('daily_reports.table.total')}</Table.Summary.Cell>
-                                {columns.slice(2).flatMap((c: any) => c.children ? c.children : [c]).map((col: any, idx: number) => (
-                                    <Table.Summary.Cell key={idx} index={idx + 2} align="center">
-                                        {calculateTotal(col.dataIndex || (col.render ? 'total_cases' : 'total_cases') as any)}
-                                        {/* This is a bit simplified, but since all numeric, it works if mapped correctly */}
-                                    </Table.Summary.Cell>
-                                ))}
-                            </Table.Summary.Row>
-                        </Table.Summary>
-                    )}
-                />
-            </Space>
-        </Card>
+                <div style={glassStyle}>
+                    <Table
+                        columns={columns}
+                        dataSource={data}
+                        loading={loading}
+                        bordered
+                        size="small"
+                        pagination={false}
+                        scroll={{ x: 2200, y: 600 }}
+                        className="clinical-table"
+                        summary={() => (
+                            <Table.Summary fixed>
+                                <Table.Summary.Row style={{ background: 'rgba(24, 144, 255, 0.05)', fontWeight: 'bold' }}>
+                                    <Table.Summary.Cell index={0} />
+                                    <Table.Summary.Cell index={1}>{t('daily_reports.table.total')}</Table.Summary.Cell>
+                                    {columns.slice(2).flatMap((c: any) => c.children ? c.children : [c]).map((col: any, idx: number) => (
+                                        <Table.Summary.Cell key={idx} index={idx + 2} align="center">
+                                            {calculateTotal(col.dataIndex || (col.render ? 'total_cases' : 'total_cases') as any)}
+                                        </Table.Summary.Cell>
+                                    ))}
+                                </Table.Summary.Row>
+                            </Table.Summary>
+                        )}
+                    />
+                </div>
+            </div>
+        </PermissionGate>
     );
 };
 

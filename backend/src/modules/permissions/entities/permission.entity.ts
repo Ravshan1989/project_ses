@@ -3,15 +3,15 @@ import { DepartmentPermission } from "./department-permission.entity";
 
 @Entity("permissions")
 export class Permission {
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
-    @Column({ unique: true })
-    code: string; // e.g., VIEW_HEPATITIS
+  @Column({ unique: true })
+  code: string; // e.g., VIEW_HEPATITIS
 
-    @Column({ nullable: true })
-    description: string;
+  @Column({ nullable: true })
+  description: string;
 
-    @OneToMany(() => DepartmentPermission, (dp) => dp.permission)
-    departmentPermissions: DepartmentPermission[];
+  @OneToMany(() => DepartmentPermission, (dp) => dp.permission)
+  departmentPermissions: DepartmentPermission[];
 }

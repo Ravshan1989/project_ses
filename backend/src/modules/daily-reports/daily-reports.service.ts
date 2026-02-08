@@ -35,7 +35,7 @@ export class DailyReportsService {
     private orgRepo: Repository<Organization>,
     @Inject(forwardRef(() => TelegramService))
     private telegramService: TelegramService,
-  ) { }
+  ) {}
 
   private validateIsolation(user: User, organizationId: string) {
     if (!user || !user.organization) return; // Should not happen with JwtGuard
@@ -43,7 +43,9 @@ export class DailyReportsService {
     const level = getRoleLevel(user.role);
     if (level === 3) {
       if (user.organization.id !== organizationId) {
-        throw new Error("Siz faqat o'z tashkilotingiz uchun ma'lumot kiritishingiz mumkin.");
+        throw new Error(
+          "Siz faqat o'z tashkilotingiz uchun ma'lumot kiritishingiz mumkin.",
+        );
       }
     } else if (level === 2) {
       // Viloyat: faqat o'ziga tegishli tumanlar (agar kerak bo'lsa implement qilinadi)
@@ -72,7 +74,12 @@ export class DailyReportsService {
     const saved = await this.reportRepo.save(report);
     if (!dto.isTest) {
       const details = `Jami: ${saved.total_cases}\nMusbat: ${saved.lab_positive}`;
-      this.telegramService.sendReportNotification("Gepatit", user.organization?.name || "Tuman", saved.reportDate, details);
+      this.telegramService.sendReportNotification(
+        "Gepatit",
+        user.organization?.name || "Tuman",
+        saved.reportDate,
+        details,
+      );
     }
     return saved;
   }
@@ -90,7 +97,7 @@ export class DailyReportsService {
     const level = getRoleLevel(user.role);
     const where: FindOptionsWhere<HepatitisDailyReport> = {
       reportDate: date,
-      isTest: includeTest // UZ: Test yoki Real ma'lumotni tanlash
+      isTest: includeTest, // UZ: Test yoki Real ma'lumotni tanlash
     };
 
     // Level 2 (Viloyat): O'z viloyatiga qarashli
@@ -130,7 +137,12 @@ export class DailyReportsService {
     const saved = await this.fluRepo.save(report);
     if (!dto.isTest) {
       const details = `O'RI: ${saved.ari_total}\nZotiljam: ${saved.pneu_total}\nGripp: ${saved.flu_total}\nSARI: ${saved.sari_total}\nVafot: ${saved.death_total}`;
-      this.telegramService.sendReportNotification("Gripp va O'RVI (Batafsil)", user.organization?.name || "Tuman", saved.reportDate, details);
+      this.telegramService.sendReportNotification(
+        "Gripp va O'RVI (Batafsil)",
+        user.organization?.name || "Tuman",
+        saved.reportDate,
+        details,
+      );
     }
     return saved;
   }
@@ -148,7 +160,7 @@ export class DailyReportsService {
     const level = getRoleLevel(user.role);
     const where: FindOptionsWhere<FluDailyReport> = {
       reportDate: date,
-      isTest: includeTest
+      isTest: includeTest,
     };
 
     if (level === 2 && user.organization) {
@@ -185,7 +197,12 @@ export class DailyReportsService {
     const saved = await this.ariRepo.save(report);
     if (!dto.isTest) {
       const details = `O'RI: ${saved.ari}\nZotiljam: ${saved.pneumonia}\nGrippsimon: ${saved.gk}`;
-      this.telegramService.sendReportNotification("O'RVI (Qisqa)", user.organization?.name || "Tuman", saved.reportDate, details);
+      this.telegramService.sendReportNotification(
+        "O'RVI (Qisqa)",
+        user.organization?.name || "Tuman",
+        saved.reportDate,
+        details,
+      );
     }
     return saved;
   }
@@ -203,7 +220,7 @@ export class DailyReportsService {
     const level = getRoleLevel(user.role);
     const where: FindOptionsWhere<AriDailyReport> = {
       reportDate: date,
-      isTest: includeTest
+      isTest: includeTest,
     };
 
     if (level === 2 && user.organization) {
@@ -240,7 +257,12 @@ export class DailyReportsService {
     const saved = await this.epiRepo.save(report);
     if (!dto.isTest) {
       const details = `Tekshirildi: ${saved.inspected_total}\nKamchiliklar: ${saved.defects_total}\nJarima: ${saved.fines_total}\nTo'xtatildi: ${saved.suspended_total}`;
-      this.telegramService.sendReportNotification("Epidemiologiya", user.organization?.name || "Tuman", saved.reportDate, details);
+      this.telegramService.sendReportNotification(
+        "Epidemiologiya",
+        user.organization?.name || "Tuman",
+        saved.reportDate,
+        details,
+      );
     }
     return saved;
   }
@@ -258,7 +280,7 @@ export class DailyReportsService {
     const level = getRoleLevel(user.role);
     const where: FindOptionsWhere<EpidemiologyDailyReport> = {
       reportDate: date,
-      isTest: includeTest
+      isTest: includeTest,
     };
 
     if (level === 2 && user.organization) {
@@ -294,15 +316,25 @@ export class DailyReportsService {
     */
 
   // YANGI YECHIM (Barcha tumanlarni chiqarish uchun Organization dan boshlaymiz):
-  async getWeeklySummary(startDate: string, endDate: string, user: User, includeTest = false) {
+  async getWeeklySummary(
+    startDate: string,
+    endDate: string,
+    user: User,
+    includeTest = false,
+  ) {
     const qb = this.orgRepo
       .createQueryBuilder("organization")
       .leftJoin("organization.parent", "parent")
-      .leftJoin("organization.flu_reports", "report", "report.reportDate BETWEEN :startDate AND :endDate AND report.isTest = :includeTest", {
-        startDate,
-        endDate,
-        includeTest
-      })
+      .leftJoin(
+        "organization.flu_reports",
+        "report",
+        "report.reportDate BETWEEN :startDate AND :endDate AND report.isTest = :includeTest",
+        {
+          startDate,
+          endDate,
+          includeTest,
+        },
+      )
       .select([
         "organization.id AS organization_id",
         "organization.name AS organization_name",
@@ -342,7 +374,9 @@ export class DailyReportsService {
     // UZ: Role Level bo'yicha filtr
     const level = getRoleLevel(user.role);
     if (level === 2 && user.organization) {
-      qb.andWhere("organization.parent_id = :orgId", { orgId: user.organization.id });
+      qb.andWhere("organization.parent_id = :orgId", {
+        orgId: user.organization.id,
+      });
     } else if (level === 3 && user.organization) {
       qb.andWhere("organization.id = :orgId", { orgId: user.organization.id });
     } else {
@@ -418,7 +452,12 @@ export class DailyReportsService {
     const saved = await this.covidRepo.save(report);
     if (!dto.isTest) {
       const details = `Jami: ${saved.total_cases}\nHospital: ${saved.hospitalized_count}\nQayta: ${saved.reinfected}`;
-      this.telegramService.sendReportNotification("Covid", user.organization?.name || "Tuman", saved.reportDate, details);
+      this.telegramService.sendReportNotification(
+        "Covid",
+        user.organization?.name || "Tuman",
+        saved.reportDate,
+        details,
+      );
     }
     return saved;
   }
@@ -436,7 +475,7 @@ export class DailyReportsService {
     const level = getRoleLevel(user.role);
     const where: FindOptionsWhere<CovidDailyReport> = {
       reportDate: date,
-      isTest: includeTest
+      isTest: includeTest,
     };
 
     if (level === 2 && user.organization) {
@@ -457,64 +496,92 @@ export class DailyReportsService {
     await this.ariRepo.delete({ isTest: true });
     await this.epiRepo.delete({ isTest: true });
     await this.covidRepo.delete({ isTest: true });
-    return { success: true, message: "Test ma'lumotlari muvaffaqiyatli o'chirildi" };
+    return {
+      success: true,
+      message: "Test ma'lumotlari muvaffaqiyatli o'chirildi",
+    };
   }
 
   /**
    * UZ: Bir oylik kunlik hisobotlarni jamlash (Forma-1 uchun)
    */
-  async getMonthlyAggregation(month: string, organizationId: string, isTest: boolean) {
+  async getMonthlyAggregation(
+    month: string,
+    organizationId: string,
+    isTest: boolean,
+  ) {
     const start = new Date(month);
     const end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
 
-    const startDate = start.toISOString().split('T')[0];
-    const endDate = end.toISOString().split('T')[0];
+    const startDate = start.toISOString().split("T")[0];
+    const endDate = end.toISOString().split("T")[0];
 
     // 1. Gepatit
-    const hepatitis = await this.reportRepo.createQueryBuilder("r")
+    const hepatitis = await this.reportRepo
+      .createQueryBuilder("r")
       .select("SUM(r.total_cases)", "total")
-      .addSelect("SUM(r.age_under_1 + r.age_1_3 + r.age_4_6 + r.age_7_14)", "under14")
+      .addSelect(
+        "SUM(r.age_under_1 + r.age_1_3 + r.age_4_6 + r.age_7_14)",
+        "under14",
+      )
       .where("r.organizationId = :organizationId", { organizationId })
-      .andWhere("r.reportDate BETWEEN :startDate AND :endDate", { startDate, endDate })
+      .andWhere("r.reportDate BETWEEN :startDate AND :endDate", {
+        startDate,
+        endDate,
+      })
       .andWhere("r.isTest = :isTest", { isTest })
       .getRawOne();
 
     // 2. Gripp va O'RVI
-    const flu = await this.fluRepo.createQueryBuilder("r")
+    const flu = await this.fluRepo
+      .createQueryBuilder("r")
       .select("SUM(r.flu_total)", "flu")
       .addSelect("SUM(r.ari_total)", "ari")
-      .addSelect("SUM(r.flu_0_1 + r.flu_1_2 + r.flu_3_6 + r.flu_7_14)", "fluUnder14")
-      .addSelect("SUM(r.ari_0_1 + r.ari_1_2 + r.ari_3_6 + r.ari_7_14)", "ariUnder14")
+      .addSelect(
+        "SUM(r.flu_0_1 + r.flu_1_2 + r.flu_3_6 + r.flu_7_14)",
+        "fluUnder14",
+      )
+      .addSelect(
+        "SUM(r.ari_0_1 + r.ari_1_2 + r.ari_3_6 + r.ari_7_14)",
+        "ariUnder14",
+      )
       .where("r.organizationId = :organizationId", { organizationId })
-      .andWhere("r.reportDate BETWEEN :startDate AND :endDate", { startDate, endDate })
+      .andWhere("r.reportDate BETWEEN :startDate AND :endDate", {
+        startDate,
+        endDate,
+      })
       .andWhere("r.isTest = :isTest", { isTest })
       .getRawOne();
 
     // 3. Koronavirus
-    const covid = await this.covidRepo.createQueryBuilder("r")
+    const covid = await this.covidRepo
+      .createQueryBuilder("r")
       .select("SUM(r.total_cases)", "total")
       .where("r.organizationId = :organizationId", { organizationId })
-      .andWhere("r.reportDate BETWEEN :startDate AND :endDate", { startDate, endDate })
+      .andWhere("r.reportDate BETWEEN :startDate AND :endDate", {
+        startDate,
+        endDate,
+      })
       .andWhere("r.isTest = :isTest", { isTest })
       .getRawOne();
 
     return {
       hepatitis: {
         total: Number(hepatitis?.total || 0),
-        under14: Number(hepatitis?.under14 || 0)
+        under14: Number(hepatitis?.under14 || 0),
       },
       flu: {
         total: Number(flu?.flu || 0),
-        under14: Number(flu?.fluUnder14 || 0)
+        under14: Number(flu?.fluUnder14 || 0),
       },
       ari: {
         total: Number(flu?.ari || 0),
-        under14: Number(flu?.ariUnder14 || 0)
+        under14: Number(flu?.ariUnder14 || 0),
       },
       covid: {
         total: Number(covid?.total || 0),
-        under14: 0 // Covid report doesn't have age breakdown in current entity
-      }
+        under14: 0, // Covid report doesn't have age breakdown in current entity
+      },
     };
   }
 }

@@ -1,4 +1,11 @@
-import { Controller, Get, Query, UseGuards, Request, Res } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Query,
+  UseGuards,
+  Request,
+  Res,
+} from "@nestjs/common";
 import { Response } from "express";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { PermissionsGuard } from "../auth/guards/permissions.guard";
@@ -8,7 +15,7 @@ import { ExportsService } from "./exports.service";
 @Controller("exports")
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 export class ExportsController {
-  constructor(private readonly exportsService: ExportsService) { }
+  constructor(private readonly exportsService: ExportsService) {}
 
   @Get("flu")
   @RequirePermission("VIEW_FLU")
@@ -16,9 +23,16 @@ export class ExportsController {
     @Query("startDate") startDate: string,
     @Query("endDate") endDate: string,
     @Query("isTest") isTest: string,
-    @Request() req
+    @Query("districtId") districtId: string, // New param
+    @Request() req,
   ) {
-    return this.exportsService.getFluReports(startDate, endDate, isTest === 'true', req.user);
+    return this.exportsService.getFluReports(
+      startDate,
+      endDate,
+      isTest === "true",
+      req.user,
+      districtId,
+    );
   }
 
   @Get("hepatitis")
@@ -27,9 +41,16 @@ export class ExportsController {
     @Query("startDate") startDate: string,
     @Query("endDate") endDate: string,
     @Query("isTest") isTest: string,
-    @Request() req
+    @Query("districtId") districtId: string,
+    @Request() req,
   ) {
-    return this.exportsService.getHepatitisReports(startDate, endDate, isTest === 'true', req.user);
+    return this.exportsService.getHepatitisReports(
+      startDate,
+      endDate,
+      isTest === "true",
+      req.user,
+      districtId,
+    );
   }
 
   @Get("form1")
@@ -38,9 +59,70 @@ export class ExportsController {
     @Query("startDate") startDate: string,
     @Query("endDate") endDate: string,
     @Query("isTest") isTest: string,
-    @Request() req
+    @Query("districtId") districtId: string,
+    @Request() req,
   ) {
-    return this.exportsService.getForm1Reports(startDate, endDate, isTest === 'true', req.user);
+    return this.exportsService.getForm1Reports(
+      startDate,
+      endDate,
+      isTest === "true",
+      req.user,
+      districtId,
+    );
+  }
+
+  @Get("ari")
+  @RequirePermission("VIEW_ARI")
+  async getAriReports(
+    @Query("startDate") startDate: string,
+    @Query("endDate") endDate: string,
+    @Query("isTest") isTest: string,
+    @Query("districtId") districtId: string,
+    @Request() req,
+  ) {
+    return this.exportsService.getAriReports(
+      startDate,
+      endDate,
+      isTest === "true",
+      req.user,
+      districtId,
+    );
+  }
+
+  @Get("covid")
+  @RequirePermission("VIEW_COVID")
+  async getCovidReports(
+    @Query("startDate") startDate: string,
+    @Query("endDate") endDate: string,
+    @Query("isTest") isTest: string,
+    @Query("districtId") districtId: string,
+    @Request() req,
+  ) {
+    return this.exportsService.getCovidReports(
+      startDate,
+      endDate,
+      isTest === "true",
+      req.user,
+      districtId,
+    );
+  }
+
+  @Get("epidemiology")
+  @RequirePermission("VIEW_EPIDEMIOLOGY")
+  async getEpidemiologyReports(
+    @Query("startDate") startDate: string,
+    @Query("endDate") endDate: string,
+    @Query("isTest") isTest: string,
+    @Query("districtId") districtId: string,
+    @Request() req,
+  ) {
+    return this.exportsService.getEpidemiologyReports(
+      startDate,
+      endDate,
+      isTest === "true",
+      req.user,
+      districtId,
+    );
   }
 
   @Get("form1/excel")
@@ -49,10 +131,18 @@ export class ExportsController {
     @Query("startDate") startDate: string,
     @Query("endDate") endDate: string,
     @Query("isTest") isTest: string,
+    @Query("districtId") districtId: string,
     @Request() req,
-    @Res() res: Response
+    @Res() res: Response,
   ) {
-    return this.exportsService.exportForm1ToExcel(res, startDate, endDate, isTest === 'true', req.user);
+    return this.exportsService.exportForm1ToExcel(
+      res,
+      startDate,
+      endDate,
+      isTest === "true",
+      req.user,
+      districtId,
+    );
   }
 
   @Get("flu/excel")
@@ -61,10 +151,18 @@ export class ExportsController {
     @Query("startDate") startDate: string,
     @Query("endDate") endDate: string,
     @Query("isTest") isTest: string,
+    @Query("districtId") districtId: string,
     @Request() req,
-    @Res() res: Response
+    @Res() res: Response,
   ) {
-    return this.exportsService.exportFluToExcel(res, startDate, endDate, isTest === 'true', req.user);
+    return this.exportsService.exportFluToExcel(
+      res,
+      startDate,
+      endDate,
+      isTest === "true",
+      req.user,
+      districtId,
+    );
   }
 
   @Get("ari/excel")
@@ -73,10 +171,18 @@ export class ExportsController {
     @Query("startDate") startDate: string,
     @Query("endDate") endDate: string,
     @Query("isTest") isTest: string,
+    @Query("districtId") districtId: string,
     @Request() req,
-    @Res() res: Response
+    @Res() res: Response,
   ) {
-    return this.exportsService.exportAriToExcel(res, startDate, endDate, isTest === 'true', req.user);
+    return this.exportsService.exportAriToExcel(
+      res,
+      startDate,
+      endDate,
+      isTest === "true",
+      req.user,
+      districtId,
+    );
   }
 
   @Get("hepatitis/excel")
@@ -85,9 +191,17 @@ export class ExportsController {
     @Query("startDate") startDate: string,
     @Query("endDate") endDate: string,
     @Query("isTest") isTest: string,
+    @Query("districtId") districtId: string,
     @Request() req,
-    @Res() res: Response
+    @Res() res: Response,
   ) {
-    return this.exportsService.exportHepatitisToExcel(res, startDate, endDate, isTest === 'true', req.user);
+    return this.exportsService.exportHepatitisToExcel(
+      res,
+      startDate,
+      endDate,
+      isTest === "true",
+      req.user,
+      districtId,
+    );
   }
 }

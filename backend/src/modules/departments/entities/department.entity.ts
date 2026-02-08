@@ -4,24 +4,24 @@ import { DepartmentPermission } from "../../permissions/entities/department-perm
 
 @Entity("departments")
 export class Department {
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
-    @Column({ unique: true })
-    name: string;
+  @Column({ unique: true })
+  name: string;
 
-    @Column({ nullable: true })
-    description: string;
+  @Column({ nullable: true })
+  description: string;
 
-    @Column({ default: true })
-    isActive: boolean;
+  @Column({ default: true })
+  isActive: boolean;
 
-    @Column({ type: "int", default: 3 }) // 1: Respublika, 2: Viloyat, 3: Tuman
-    level: number;
+  @Column({ type: "int", default: 3 }) // 1: Respublika, 2: Viloyat, 3: Tuman
+  level: number;
 
-    @OneToMany(() => User, (user) => user.department)
-    users: User[];
+  @OneToMany(() => User, (user) => user.department)
+  users: User[];
 
-    @OneToMany(() => DepartmentPermission, (dp) => dp.department)
-    permissions: DepartmentPermission[];
+  @OneToMany(() => DepartmentPermission, (dp) => dp.department)
+  permissions: DepartmentPermission[];
 }

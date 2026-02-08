@@ -75,7 +75,14 @@
         "import_success": "{{count}} jazuw jetiskenlikli oqıldı",
         "import_empty": "Fayl bos",
         "import_error": "Fayldı oqıwda qátelik boldı",
-        "sos_btn": "SOS"
+        "sos_btn": "SOS",
+        "export_title": "Esabatlardı Eksport Qılıw",
+        "export_subtitle": "Waqıt aralıǵı hám esabat túrin saylań, sońra Excel yamasa PDF faylın júklep alıń.",
+        "date_range": "Waqıt aralıǵı:",
+        "report_type": "Esabat túri:",
+        "select_type": "Túrin saylań",
+        "district": "Aymaq (Rayon/Qala):",
+        "all_districts": "Barlıq aymaqlar"
     },
     "dashboard_page": {
         "title": "Tiykarǵı panel",

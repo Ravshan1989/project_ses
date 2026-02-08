@@ -8,14 +8,14 @@ import { PermissionsGuard } from "../auth/guards/permissions.guard";
 @Controller("permissions")
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 export class PermissionsController {
-    constructor(
-        @InjectRepository(Permission)
-        private readonly permissionRepo: Repository<Permission>,
-    ) { }
+  constructor(
+    @InjectRepository(Permission)
+    private readonly permissionRepo: Repository<Permission>,
+  ) {}
 
-    @Get()
-    async findAll() {
-        // UZ: Barcha mavjud ruxsatlarni qaytarish
-        return this.permissionRepo.find({ order: { code: "ASC" } });
-    }
+  @Get()
+  async findAll() {
+    // UZ: Barcha mavjud ruxsatlarni qaytarish
+    return this.permissionRepo.find({ order: { code: "ASC" } });
+  }
 }

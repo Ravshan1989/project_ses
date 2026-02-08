@@ -8,11 +8,11 @@ import { Permission } from "../permissions/entities/permission.entity";
 import { DepartmentPermission } from "../permissions/entities/department-permission.entity";
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([Department, Permission, DepartmentPermission]),
-        PermissionsModule,
-    ],
-    controllers: [DepartmentsController],
-    exports: [TypeOrmModule],
+  imports: [
+    TypeOrmModule.forFeature([Department, Permission, DepartmentPermission]),
+    PermissionsModule,
+  ],
+  controllers: [DepartmentsController],
+  exports: [TypeOrmModule],
 })
-export class DepartmentsModule { }
+export class DepartmentsModule {}

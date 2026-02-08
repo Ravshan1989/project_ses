@@ -62,9 +62,12 @@ export const organizationsApi = {
 };
 
 export const exportsApi = {
-    getFlu: (startDate: string, endDate: string, isTest = false) => api.get(`/exports/flu?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}`),
-    getHepatitis: (startDate: string, endDate: string, isTest = false) => api.get(`/exports/hepatitis?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}`),
-    getForm1: (startDate: string, endDate: string, isTest = false) => api.get(`/exports/form1?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}`),
+    getFlu: (startDate: string, endDate: string, isTest = false, districtId?: string) => api.get(`/exports/flu?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}&districtId=${districtId || ''}`),
+    getHepatitis: (startDate: string, endDate: string, isTest = false, districtId?: string) => api.get(`/exports/hepatitis?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}&districtId=${districtId || ''}`),
+    getAri: (startDate: string, endDate: string, isTest = false, districtId?: string) => api.get(`/exports/ari?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}&districtId=${districtId || ''}`),
+    getCovid: (startDate: string, endDate: string, isTest = false, districtId?: string) => api.get(`/exports/covid?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}&districtId=${districtId || ''}`),
+    getEpidemiology: (startDate: string, endDate: string, isTest = false, districtId?: string) => api.get(`/exports/epidemiology?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}&districtId=${districtId || ''}`),
+    getForm1: (startDate: string, endDate: string, isTest = false, districtId?: string) => api.get(`/exports/form1?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}&districtId=${districtId || ''}`),
 };
 
 export const importsApi = {

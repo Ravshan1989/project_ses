@@ -1,10 +1,10 @@
-import { IsString, IsEnum, IsOptional } from 'class-validator';
-import { SosDiseaseType } from '../entities/sos-disease.entity';
+import { IsString, IsEnum, IsOptional } from "class-validator";
+import { SosDiseaseType } from "../entities/sos-disease.entity";
 
 export class CreateSosDiseaseDto {
-    @IsString()
-    name: string;
+  @IsString()
+  name: string;
 
-    @IsEnum(SosDiseaseType)
-    type: SosDiseaseType;
+  @IsEnum(SosDiseaseType)
+  type: SosDiseaseType;
 }

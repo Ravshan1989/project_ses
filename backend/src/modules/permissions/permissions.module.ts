@@ -7,8 +7,14 @@ import { UserPermission } from "./entities/user-permission.entity"; // UZ: Foyda
 import { PermissionsController } from "./permissions.controller";
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Permission, DepartmentPermission, UserPermission])],
-    controllers: [PermissionsController],
-    exports: [TypeOrmModule],
+  imports: [
+    TypeOrmModule.forFeature([
+      Permission,
+      DepartmentPermission,
+      UserPermission,
+    ]),
+  ],
+  controllers: [PermissionsController],
+  exports: [TypeOrmModule],
 })
-export class PermissionsModule { }
+export class PermissionsModule {}

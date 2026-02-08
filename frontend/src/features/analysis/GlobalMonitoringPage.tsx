@@ -43,29 +43,39 @@ const GlobalMonitoringPage: React.FC = () => {
     }, [dateRange]);
 
     // Flatten data for matrix: rows = diseases, cols = districts
-    const diseasesMap: Record<string, Record<string, number>> = {};
-    const districtNames: string[] = data.map(d => d.organizationName);
+    const { districtNames, diseaseRows } = React.useMemo(() => {
+        const diseasesMap: Record<string, Record<string, number>> = {};
+        const names = data.map(d => d.organizationName);
 
-    data.forEach(districtData => {
-        districtData.diseases.forEach((d: any) => {
-            if (!diseasesMap[d.disease]) diseasesMap[d.disease] = {};
-            diseasesMap[d.disease][districtData.organizationName] = d.rate;
+        data.forEach(districtData => {
+            districtData.diseases.forEach((d: any) => {
+                if (!diseasesMap[d.disease]) diseasesMap[d.disease] = {};
+                diseasesMap[d.disease][districtData.organizationName] = d.rate;
+            });
         });
-    });
 
-    const diseaseRows = Object.keys(diseasesMap)
-        .filter(name => name.toLowerCase().includes(searchText.toLowerCase()))
-        .map(name => {
+        const rows = Object.keys(diseasesMap).map(name => {
             const row: any = { disease: name };
-            districtNames.forEach(dn => {
+            names.forEach(dn => {
                 row[dn] = diseasesMap[name][dn] || 0;
             });
             return row;
         });
 
-    const filteredRows = highRiskOnly
-        ? diseaseRows.filter(row => districtNames.some(dn => row[dn] > 50))
-        : diseaseRows;
+        return { districtNames: names, diseaseRows: rows };
+    }, [data]);
+
+    const filteredRows = React.useMemo(() => {
+        let rows = diseaseRows.filter(row =>
+            row.disease.toLowerCase().includes(searchText.toLowerCase())
+        );
+
+        if (highRiskOnly) {
+            rows = rows.filter(row => districtNames.some(dn => row[dn] > 50));
+        }
+
+        return rows;
+    }, [diseaseRows, searchText, highRiskOnly, districtNames]);
 
     const getCellColor = (rate: number) => {
         if (rate === 0) return 'transparent';
@@ -81,22 +91,22 @@ const GlobalMonitoringPage: React.FC = () => {
         return '#389e0d';
     };
 
-    const columns: any[] = [
+    const columns = React.useMemo(() => [
         {
             title: 'Kasallik nomi',
             dataIndex: 'disease',
             key: 'disease',
-            fixed: 'left',
+            fixed: 'left' as const,
             width: 200,
             render: (text: string) => <Text strong>{text}</Text>,
             sorter: (a: any, b: any) => a.disease.localeCompare(b.disease),
         },
         ...districtNames.map(dn => ({
-            title: dn,
+            title: dn as any,
             dataIndex: dn,
             key: dn,
             width: 120,
-            align: 'center',
+            align: 'center' as const,
             render: (val: number) => (
                 <div style={{
                     backgroundColor: getCellColor(val),
@@ -109,13 +119,156 @@ const GlobalMonitoringPage: React.FC = () => {
                 </div>
             )
         }))
-    ];
+    ], [districtNames]);
 
     // Top Alerts: Diseases with highest rates anywhere
     const alerts = data.flatMap(dist => dist.diseases.map((d: any) => ({ ...d, district: dist.organizationName })))
         .sort((a, b) => b.rate - a.rate)
         .slice(0, 5);
 
+    // --- PREMIUM UI UPDATE ---
+
+    const headerStyle: React.CSSProperties = {
+        background: 'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)',
+        padding: '40px',
+        borderRadius: '24px',
+        marginBottom: '32px',
+        color: '#fff',
+        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+    };
+
+    return (
+        <div style={{ padding: '24px', minHeight: '100vh', background: '#f5f7fa' }}>
+            <style>{`
+                .monitoring-table .ant-table { background: transparent !important; }
+                .monitoring-table .ant-table-thead > tr > th {
+                    background: rgba(255, 255, 255, 0.5) !important;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    font-size: 10px;
+                    letter-spacing: 0.5px;
+                }
+                .monitoring-card {
+                    background: rgba(255, 255, 255, 0.8) !important;
+                    backdrop-filter: blur(20px) !important;
+                    border-radius: 20px !important;
+                    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.03) !important;
+                }
+                .monitoring-filter {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    backdrop-filter: blur(10px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 16px;
+                    padding: 12px 20px;
+                }
+                .alert-item {
+                    transition: all 0.3s ease;
+                    cursor: pointer;
+                }
+                .alert-item:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 8px 24px rgba(255, 77, 79, 0.2);
+                }
+            `}</style>
+
+            <div style={headerStyle}>
+                <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px' }}>
+                        <div style={{ background: 'rgba(255, 255, 255, 0.1)', padding: '12px', borderRadius: '14px' }}>
+                            <GlobalOutlined style={{ fontSize: '28px', color: '#fff' }} />
+                        </div>
+                        <Title level={1} style={{ margin: 0, color: '#fff', fontWeight: 800, fontSize: '30px' }}>
+                            Global Monitoring
+                        </Title>
+                    </div>
+                    <Text style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '15px' }}>
+                        Barcha 100+ kasalliklar bo'yicha tumanlararo xavf tahlili
+                    </Text>
+                </div>
+
+                <div className="monitoring-filter">
+                    <Space direction="vertical" align="end" size={12}>
+                        <RangePicker
+                            value={dateRange}
+                            onChange={(dates) => dates && setDateRange([dates[0]!, dates[1]!])}
+                            variant="borderless"
+                            style={{ color: '#fff' }}
+                            placeholder={['Boshlanish', 'Tugash']}
+                        />
+                        <Space>
+                            <Input
+                                placeholder="Qidiruv..."
+                                prefix={<SearchOutlined style={{ color: 'rgba(255,255,255,0.5)' }} />}
+                                style={{ width: 160, background: 'rgba(255,255,255,0.05)', border: 'none', color: '#fff' }}
+                                onChange={e => setSearchText(e.target.value)}
+                            />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Text style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>Faqat xavfli</Text>
+                                <Switch size="small" checked={highRiskOnly} onChange={setHighRiskOnly} />
+                            </div>
+                        </Space>
+                    </Space>
+                </div>
+            </div>
+
+            <Row gutter={[24, 24]}>
+                <Col span={24}>
+                    <Card
+                        className="monitoring-card"
+                        title={<Space><WarningOutlined style={{ color: '#ff4d4f' }} /> <span style={{ fontWeight: 700 }}>Eng yuqori xavf hududlari</span></Space>}
+                    >
+                        <Row gutter={16}>
+                            {alerts.map((alert, i) => (
+                                <Col span={4} key={i}>
+                                    <div className="alert-item" style={{ padding: '16px', background: '#fff1f0', borderRadius: '16px', borderLeft: '6px solid #ff4d4f' }}>
+                                        <Text type="secondary" style={{ fontSize: '10px', display: 'block', letterSpacing: '1px' }}>{alert.district.toUpperCase()}</Text>
+                                        <Text strong style={{ display: 'block', fontSize: '14px', margin: '4px 0' }}>{alert.disease}</Text>
+                                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                                            <Text style={{ fontSize: '24px', fontWeight: 900, color: '#cf1322' }}>{alert.rate.toFixed(1)}</Text>
+                                            <Text type="secondary" style={{ fontSize: '10px' }}>100k</Text>
+                                        </div>
+                                    </div>
+                                </Col>
+                            ))}
+                            {alerts.length === 0 && <Col span={24}><Empty description="Hozircha xavf aniqlanmadi" /></Col>}
+                        </Row>
+                    </Card>
+                </Col>
+
+                <Col span={24}>
+                    <Card
+                        className="monitoring-card"
+                        title={<Space><FilterOutlined style={{ color: '#1677ff' }} /> <span style={{ fontWeight: 700 }}>Kasalliklar va Hududlar Matritsasi</span></Space>}
+                    >
+                        <Table
+                            columns={columns}
+                            dataSource={filteredRows}
+                            rowKey="disease"
+                            loading={loading}
+                            scroll={{ x: 'max-content', y: 600 }}
+                            pagination={false}
+                            className="monitoring-table"
+                            bordered
+                            size="middle"
+                            footer={() => (
+                                <div style={{ display: 'flex', gap: '32px', fontSize: '12px', padding: '10px' }}>
+                                    <Space><Badge color="#52c41a" /> <Text type="secondary">Xavf darajasi: Past</Text></Space>
+                                    <Space><Badge color="#faad14" /> <Text type="secondary">Xavf darajasi: O'rta</Text></Space>
+                                    <Space><Badge color="#ff4d4f" /> <Text type="secondary">Xavf darajasi: Yuqori</Text></Space>
+                                </div>
+                            )}
+                        />
+                    </Card>
+                </Col>
+            </Row>
+        </div>
+    );
+
+    /* --- ESKI DIZAYN ---
     return (
         <div style={{ padding: '24px' }}>
             <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -147,7 +300,6 @@ const GlobalMonitoringPage: React.FC = () => {
             </div>
 
             <Row gutter={[24, 24]}>
-                {/* Alerts Section */}
                 <Col span={24}>
                     <Card title={<Space><WarningOutlined style={{ color: '#ff4d4f' }} /> Eng yuqori xavf hududlari</Space>} bordered={false}>
                         <Row gutter={16}>
@@ -166,7 +318,6 @@ const GlobalMonitoringPage: React.FC = () => {
                     </Card>
                 </Col>
 
-                {/* Risk Matrix Section */}
                 <Col span={24}>
                     <Card title={<Space><FilterOutlined /> Kasalliklar va Hududlar Matritsasi</Space>} bordered={false}>
                         <Table
@@ -191,6 +342,7 @@ const GlobalMonitoringPage: React.FC = () => {
             </Row>
         </div>
     );
+    */
 };
 
 export default GlobalMonitoringPage;

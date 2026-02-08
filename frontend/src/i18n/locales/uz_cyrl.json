@@ -51,7 +51,7 @@
     },
     "common": {
         "dashboard": "Дашборд",
-        "reports": "Ҳисоботлар",
+        "reports": "Маълумот киритиш",
         "analysis": "Таҳлил",
         "settings": "Созламалар",
         "logout": "Чиқиш",
@@ -75,7 +75,15 @@
         "import_success": "{{count}} та ёзув муваффақиятли ўқилди",
         "import_empty": "Файл бўш",
         "import_error": "Файлни ўқишда хатолик бўлди",
-        "sos_btn": "SOS"
+        "sos_btn": "SOS",
+        "actions": "Амаллар",
+        "export_title": "Ҳисоботларни Экспорт Қилиш",
+        "export_subtitle": "Вақт оралиғи ва ҳисобот турини танланг, сўнгра Excel ёки PDF файлни юклаб олинг.",
+        "date_range": "Вақт оралиғи:",
+        "report_type": "Ҳисобот тури:",
+        "select_type": "Турини танланг",
+        "district": "Ҳудуд (Туман/Шаҳар):",
+        "all_districts": "Барча ҳудудлар"
     },
     "dashboard_page": {
         "title": "Асосий панель",
@@ -123,20 +131,21 @@
         }
     },
     "reports": {
-        "daily": "Кунлик Ҳисоботлар",
-        "monthly": "Ойлик Ҳисоботлар",
-        "daily_menu": "Кунлик Ҳисоботлар",
-        "monthly_menu": "Ойлик Ҳисоботлар (Форма-1)",
+        "daily": "Кунлик Маълумотлар",
+        "monthly": "Ойлик Маълумотлар",
+        "daily_menu": "Кунлик Маълумот Киритилиши",
+        "monthly_menu": "Ойлик Маълумот Киритилиши (Форма-1)",
         "form1": "Шакл 1 (Ойлик)",
         "hepatitis": "Гепатит",
-        "daily_hepatitis": "Кунлик Ҳисоботлар (ВГА)",
+        "daily_hepatitis": "Кунлик Маълумотлар (ВГА)",
         "flu": "Грипп ва ЎРВИ",
         "ari": "ГК, ЎРИ ва ЎП",
         "epidemiology": "Эпидемиология Тадбирлари",
         "weekly_flu": "Ҳафталик Грипп/ЎРВИ",
         "covid": "Коронавирус (Кунлик)",
         "unified": "Ягона Ойна (Тест)",
-        "form1_monitoring": "Шакл 1 Мониторинг"
+        "form1_monitoring": "Шакл 1 Мониторинг",
+        "pneumonia": "Пневмония"
     },
     "analysis": {
         "regional": "Ҳудудий Таҳлил",
@@ -179,6 +188,7 @@
         "flu_title": "Грипп va ЎРВИ касалликлари бўйича кунлик маълумот",
         "ari_title": "Ўткир респиратор инфекциялари бўйича кунлик маълумот",
         "weekly_title": "Грипп ва ЎРВИ касалликлари бўйича ҲАФТАЛИК МАЪЛУМОТ (Автоматик)",
+        "weekly_export_title": "Грипп ва ЎРВИ бўйича ҳафталик (йиғма) ҳисобот",
         "epidemiology_title": "Эпидемиологияга қарши тадбирлар бўйича кунлик маълумот",
         "covid_title": "Коронавирус инфекцияси бўйича кунлик маълумот",
         "period": "{{start}} - {{end}} даври учун",
@@ -245,6 +255,7 @@
             "dpm": "ДПМ",
             "including": "Жумладан",
             "nursery_short": "Тарб.",
+            "nursery": "Боғча",
             "deaths": "Вафот этганлар",
             "pregnant": "Ҳомиладорлар",
             "sari": "САРИ"
@@ -271,6 +282,21 @@
             "save_success": "Teст маълумоти сақланди",
             "cleanup_success": "Teст маълумотлари тозаланди",
             "cleanup_error": "Toзалашда хатолик"
+        },
+        "table_v2": {
+            "total_hepatitis": "Жами қайд қилинган ВГ А беморлар",
+            "age_under_1_yr": "1 ёшгача",
+            "age_20_plus_yrs": "20 ёшдан катталар",
+            "occ_organized_nursery": "Уюшган ясли ёшидаги болалар",
+            "occ_unorganized_nursery": "Уюшмаган ясли ёшидаги болалар",
+            "occ_organized_preschool": "Уюшган боғча ёшидаги болалар",
+            "occ_unorganized_preschool": "Уюшмаган боғча ёшидаги болалар",
+            "factor_food_detailed": "Овқат-озиқ маҳсулотлари",
+            "factor_contact_detailed": "Маиший мулоқот",
+            "lab_samples_detailed": "Жами олинган намуналар",
+            "lab_positive_detailed": "Мусбат натижа",
+            "decimal_positive_detailed": "Мусбат натижа (%)",
+            "disinfection_detailed": "Дезинфекция ўтказилган ўчоқлар"
         }
     },
     "form1": {
@@ -321,20 +347,5 @@
         "equal": "тенг",
         "increased": "марта ўсди",
         "decreased": "марта камайди"
-    },
-    "table_v2": {
-        "total_hepatitis": "Жами қайд қилинган ВГ А беморлар",
-        "age_under_1_yr": "1 ёшгача",
-        "age_20_plus_yrs": "20 ёшдан катталар",
-        "occ_organized_nursery": "Уюшган ясли ёшидаги болалар",
-        "occ_unorganized_nursery": "Уюшмаган ясли ёшидаги болалар",
-        "occ_organized_preschool": "Уюшган боғча ёшидаги болалар",
-        "occ_unorganized_preschool": "Уюшмаган боғча ёшидаги болалар",
-        "factor_food_detailed": "Овқат-озиқ маҳсулотлари",
-        "factor_contact_detailed": "Маиший мулоқот",
-        "lab_samples_detailed": "Жами олинган намуналар",
-        "lab_positive_detailed": "Мусбат натижа",
-        "decimal_positive_detailed": "Мусбат натижа (%)",
-        "disinfection_detailed": "Дезинфекция ўтказилган ўчоқлар"
     }
 }

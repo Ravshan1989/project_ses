@@ -23,19 +23,23 @@ import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 @Controller("submissions")
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 export class SubmissionsController {
-  constructor(private readonly submissionsService: SubmissionsService) { }
+  constructor(private readonly submissionsService: SubmissionsService) {}
 
   @Post()
   @RequirePermission("EDIT_FORM1_TABLE1")
   create(@Body() createSubmissionDto: CreateSubmissionDto, @Request() req) {
-    console.log(`[SubmissionsController] Request entry: POST /submissions, User: ${req.user?.username}`);
+    console.log(
+      `[SubmissionsController] Request entry: POST /submissions, User: ${req.user?.username}`,
+    );
     return this.submissionsService.create(createSubmissionDto, req.user);
   }
 
   @Get()
   @RequirePermission("VIEW_FORM1_TABLE1")
   findAll(@Query() query, @Request() req) {
-    console.log(`[SubmissionsController] Request entry: GET /submissions, User: ${req.user?.username}`);
+    console.log(
+      `[SubmissionsController] Request entry: GET /submissions, User: ${req.user?.username}`,
+    );
     return this.submissionsService.findAll(query, req.user);
   }
 
@@ -47,7 +51,12 @@ export class SubmissionsController {
     @Query("isTest") isTest: string,
     @Request() req,
   ) {
-    return this.submissionsService.getStatusSummary(templateCode, period, isTest === 'true', req.user);
+    return this.submissionsService.getStatusSummary(
+      templateCode,
+      period,
+      isTest === "true",
+      req.user,
+    );
   }
 
   @Get(":id")
@@ -82,7 +91,11 @@ export class SubmissionsController {
     @Query("isTest") isTest: string,
     @Request() req,
   ) {
-    return this.submissionsService.aggregateDaily(month, isTest === "true", req.user);
+    return this.submissionsService.aggregateDaily(
+      month,
+      isTest === "true",
+      req.user,
+    );
   }
 
   @Post("bulk-upload")
@@ -94,7 +107,14 @@ export class SubmissionsController {
     @Query("isTest") isTest: string,
     @Request() req,
   ) {
-    console.log(`[SubmissionsController] bulk-upload hit. File: ${file?.originalname}, Size: ${file?.size}, User: ${req.user?.username}`);
-    return this.submissionsService.bulkUpload(file, period, isTest === "true", req.user);
+    console.log(
+      `[SubmissionsController] bulk-upload hit. File: ${file?.originalname}, Size: ${file?.size}, User: ${req.user?.username}`,
+    );
+    return this.submissionsService.bulkUpload(
+      file,
+      period,
+      isTest === "true",
+      req.user,
+    );
   }
 }

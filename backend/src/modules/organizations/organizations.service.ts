@@ -8,7 +8,7 @@ export class OrganizationsService {
   constructor(
     @InjectRepository(Organization)
     private orgRepo: Repository<Organization>,
-  ) { }
+  ) {}
 
   /* 
     ESKI KOD (Barcha tashkilotlarni, jumladan viloyat darajasini ham qaytaradi):

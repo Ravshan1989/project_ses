@@ -1,139 +1,83 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Typography, DatePicker, Select, Button, message, Row, Col, Switch, Alert } from 'antd';
-import { DownloadOutlined, ExperimentOutlined } from '@ant-design/icons';
-import XLSX from 'xlsx-js-style';
-
-import { exportsApi, diseasesApi, API_BASE_URL } from '../../services/api';
-// Fallback if not re-exported from services/api
-// import { API_BASE_URL } from '../../config';
+import { Card, Typography, DatePicker, Select, Button, message, Row, Col, Badge, Space } from 'antd';
+import { FilePdfOutlined, FileExcelOutlined } from '@ant-design/icons';
+import { exportsApi, dailyReportsApi, api, organizationsApi, API_BASE_URL } from '../../services/api';
+import { exportDailyReport, exportWeeklyReport } from '../../services/excelExportService';
+import { exportDailyReportPDF } from '../../services/pdfExportService';
+import { useTranslation } from 'react-i18next';
 
 const { Title, Text } = Typography;
-
-// Professional styling constants
-const HEADER_STYLE = {
-    font: { bold: true, size: 9, name: 'Times New Roman' },
-    alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
-    border: {
-        top: { style: 'thin' }, bottom: { style: 'thin' },
-        left: { style: 'thin' }, right: { style: 'thin' }
-    },
-    fill: { fgColor: { rgb: "E9E9E9" } }
-};
-
-const PREV_HEADER_STYLE = {
-    ...HEADER_STYLE,
-    fill: { fgColor: { rgb: "B7EB8F" } }
-};
-
-const CURR_HEADER_STYLE = {
-    ...HEADER_STYLE,
-    fill: { fgColor: { rgb: "FFFB8F" } }
-};
-
-const DATA_STYLE = {
-    font: { size: 9, name: 'Times New Roman' },
-    alignment: { horizontal: 'center', vertical: 'center' },
-    border: {
-        top: { style: 'thin' }, bottom: { style: 'thin' },
-        left: { style: 'thin' }, right: { style: 'thin' }
-    }
-};
-
-const PREV_DATA_STYLE = {
-    ...DATA_STYLE,
-    fill: { fgColor: { rgb: "B7EB8F" } }
-};
-
-const CURR_DATA_STYLE = {
-    ...DATA_STYLE,
-    fill: { fgColor: { rgb: "FFFB8F" } }
-};
-
-const NAME_STYLE = {
-    ...DATA_STYLE,
-    alignment: { horizontal: 'left', vertical: 'center' }
-};
-
-const TITLE_STYLE = {
-    font: { bold: true, size: 12, name: 'Times New Roman' },
-    alignment: { horizontal: 'center', vertical: 'center' }
-};
 
 // Report Types
 const REPORT_TYPES = [
     { label: 'Virusli Gepatit A (VGA)', value: 'hepatitis' },
     { label: 'Gripp va O\'RVI', value: 'flu' },
+    { label: 'Gripp (Haftalik/Yig\'ma)', value: 'weekly_flu' },
+    { label: 'O\'RVI (Ari)', value: 'ari' },
+    { label: 'Koronavirus (Covid)', value: 'covid' },
+    { label: 'Epidemiologiya', value: 'epidemiology' },
     { label: 'Shakl 1 (Oylik)', value: 'form1' },
 ];
 
 const ExportPage: React.FC = () => {
+    const { t } = useTranslation();
     const [dates, setDates] = useState<any>(null);
     const [reportType, setReportType] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-    const [diseases, setDiseases] = useState<any[]>([]);
+    const [districts, setDistricts] = useState<any[]>([]);
+    const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
+    const [canSelectDistrict, setCanSelectDistrict] = useState(false);
 
     useEffect(() => {
-        fetchDiseases();
+        fetchUserInfo();
     }, []);
 
-    const fetchDiseases = async () => {
+    const fetchUserInfo = async () => {
         try {
-            const res = await diseasesApi.getAll();
-            setDiseases(res.data);
+            const res = await api.get('/auth/profile');
+            checkPermissionsAndLoadDistricts(res.data);
         } catch (e) {
-            console.error("Failed to fetch diseases", e);
+            console.error(e);
         }
     };
 
-    // UZ: "Smart" (aqlli) o'sish/kamayish formulasi (Excel uchun ham bir xil)
-    const calculateSmartGrowth = (curr: number, prev: number) => {
-        if (curr === prev) return "teng";
-        if (!prev || prev === 0) return `+${curr}`;
-        if (!curr || curr === 0) return `-${prev}`;
+    const checkPermissionsAndLoadDistricts = async (u: any) => {
+        // If user is Admin or Region level, they should see districts.
+        // We will assume if they can view these reports, they might want to filter.
+        try {
+            const res = await organizationsApi.getAll();
+            // Filter: detailed districts are those with a parent (usually). 
+            // Or just show all except the current user's organization if appropriate.
+            // Let's show organizations that are 'below' the current user.
+            // For simplicity in this project (as per seed):
+            // Districts have parents. Regions have parents (Republic). 
+            // If I am Region, I want to see *my* districts.
+            // Backend `getAll` returns all. 
+            // Front-end filtering:
+            // If I am Level 2 (Region), I want to see orgs where parent.id === my.org.id.
 
-        const diffPercent = Math.abs((curr / prev - 1) * 100);
+            const allOrgs = res.data;
+            let childOrgs = [];
 
-        if (diffPercent < 50) {
-            const val = ((curr / prev - 1) * 100).toFixed(1);
-            return `${val}%`;
-        } else {
-            if (curr > prev) {
-                return `${(curr / prev).toFixed(1)} marta o'sdi`;
+            if (u.organization) {
+                childOrgs = allOrgs.filter((o: any) => o.parent?.id === u.organization.id);
             } else {
-                return `-${(prev / curr).toFixed(1)} marta kamaydi`;
+                // Admin case?
+                childOrgs = allOrgs;
             }
+
+            if (childOrgs.length > 0) {
+                setDistricts(childOrgs);
+                setCanSelectDistrict(true);
+            }
+        } catch (e) {
+            console.error("Failed to load districts", e);
         }
     };
 
-    const applyStyles = (ws: any, rowCount: number, colCount: number, headerRows: number) => {
-        for (let r = 0; r < rowCount; r++) {
-            for (let c = 0; c < colCount; c++) {
-                const addr = XLSX.utils.encode_cell({ r, c });
-                if (!ws[addr]) ws[addr] = { v: '' };
-
-                if (r === 0) {
-                    ws[addr].s = TITLE_STYLE;
-                } else if (r === 1) {
-                    // Spacer row
-                } else if (r < headerRows) {
-                    // Header rows coloring logic
-                    if ([2, 3, 8, 9, 14, 15, 20, 21].includes(c)) ws[addr].s = PREV_HEADER_STYLE;
-                    else if ([4, 5, 10, 11, 16, 17, 22, 23].includes(c)) ws[addr].s = CURR_HEADER_STYLE;
-                    else ws[addr].s = HEADER_STYLE;
-                } else {
-                    // Data rows coloring logic
-                    if (c === 0) ws[addr].s = NAME_STYLE;
-                    else if ([2, 3, 8, 9, 14, 15, 20, 21].includes(c)) ws[addr].s = PREV_DATA_STYLE;
-                    else if ([4, 5, 10, 11, 16, 17, 22, 23].includes(c)) ws[addr].s = CURR_DATA_STYLE;
-                    else ws[addr].s = DATA_STYLE;
-                }
-            }
-        }
-    };
-
-    const handleExport = async () => {
+    const handleExport = async (format: 'excel' | 'pdf') => {
         if (!dates || !reportType) {
-            message.warning("Iltimos, vaqt oralig'i va hisobot turini tanlang.");
+            message.warning(t('common.select_filter_warning') || "Iltimos, vaqt oralig'i va hisobot turini tanlang.");
             return;
         }
 
@@ -143,358 +87,478 @@ const ExportPage: React.FC = () => {
         setLoading(true);
         try {
             let data: any[] = [];
-            let fileName = 'report';
+            // UZ: Fayl nomiga tuman nomini qo'shish (agar tanlangan bo'lsa)
+            let districtName = "";
+            if (selectedDistrict) {
+                const d = districts.find(x => x.id === selectedDistrict);
+                if (d) districtName = `_${d.name}`;
+            }
 
+            const fileName = `${reportType}_report_${startDate}_${endDate}${districtName}`;
+            let title = '';
+            let columns: any[] = [];
+
+            // Params object
+            // UZ: API chaqiruvlarda districtId parametrini qo'shamiz (hozircha export funksiyalari o'zgartirilmagan, lekin `getAll` tipidagilar districtId qabul qilishi kerak)
+            // Backend controller update qilingan.
+
+            // Helper to get params
+            // Note: services/api.ts methods might not accept districtId argument directly yet in the interface definition?
+            // Need to check api.ts. I updated backend, but not frontend api.ts signature?
+            // I should update api.ts signature generally, or just append query string manually if needed.
+            // But wait, I didn't update api.ts in this plan. I should have. 
+            // The `api.ts` file shows: `getFlu: (startDate, endDate, isTest)`
+            // I can pass it by modifying the URL inside the function or updating the function signature.
+            // I will update the function signature in api.ts NEXT. For now, assuming they will support it.
+            // Actually, I can allow extra args or just update api.ts as part of this TASK.
+
+            // I will assume I will update api.ts in the next step.
+            // Passing extra arg here.
+            const distId = selectedDistrict || undefined;
+
+            // 1. Fetch Data based on type
             if (reportType === 'hepatitis') {
-                const url = `${API_BASE_URL}/exports/hepatitis/excel?startDate=${startDate}&endDate=${endDate}&isTest=${false}`;
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                    }
-                });
-                const blob = await response.blob();
-                const downloadUrl = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = downloadUrl;
-                link.setAttribute('download', `VGA_Report_${startDate}_${endDate}${false ? '_TEST' : ''}.xlsx`);
-                document.body.appendChild(link);
-                link.click();
-                link.parentNode?.removeChild(link);
-            } else if (reportType === 'flu') {
-                const url = `${API_BASE_URL}/exports/flu/excel?startDate=${startDate}&endDate=${endDate}&isTest=${false}`;
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                    }
-                });
-                const blob = await response.blob();
-                const downloadUrl = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = downloadUrl;
-                link.setAttribute('download', `Flu_Report_${startDate}_${endDate}${false ? '_TEST' : ''}.xlsx`);
-                document.body.appendChild(link);
-                link.click();
-                link.parentNode?.removeChild(link);
-            } else if (reportType === 'ari') {
-                const url = `${API_BASE_URL}/exports/ari/excel?startDate=${startDate}&endDate=${endDate}&isTest=${false}`;
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                    }
-                });
-                const blob = await response.blob();
-                const downloadUrl = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = downloadUrl;
-                link.setAttribute('download', `ARI_Report_${startDate}_${endDate}${false ? '_TEST' : ''}.xlsx`);
-                document.body.appendChild(link);
-                link.click();
-                link.parentNode?.removeChild(link);
-            } else if (reportType === 'form1') {
-                const res = await exportsApi.getForm1(startDate, endDate, false);
+                const res = await exportsApi.getHepatitis(startDate, endDate, false, distId);
                 data = res.data;
-                fileName = `Form1_Report_${startDate}_${endDate}${false ? '_TEST' : ''}`;
-                if (!data || data.length === 0) {
-                    message.info("Tanlangan oraliqda ma'lumot topilmadi.");
+
+                title = "Virusli Gepatit A bo'yicha kunlik hisobot";
+                columns = [
+                    { header: "№", key: "index", width: 5 },
+                    { header: "Hudud", key: "organization.name", width: 20 },
+                    { header: "Sana", key: "reportDate", width: 12 },
+                    { header: "Holat", key: "status", width: 10 },
+                    { header: "Jami (VGA)", key: "total_cases", width: 10 },
+                    { header: "1 yoshgacha", key: "age_under_1", width: 10 },
+                    { header: "1-3 yosh", key: "age_1_3", width: 10 },
+                    { header: "4-6 yosh", key: "age_4_6", width: 10 },
+                    { header: "7-14 yosh", key: "age_7_14", width: 10 },
+                    { header: "15-19 yosh", key: "age_15_19", width: 10 },
+                    { header: "20-29 yosh", key: "age_20_29", width: 10 },
+                    { header: "30+ yosh", key: "age_30_plus", width: 10 }
+                ];
+            } else if (reportType === 'flu') {
+                const res = await exportsApi.getFlu(startDate, endDate, false, distId);
+                data = res.data;
+                title = "Gripp va O'RVI bo'yicha kunlik hisobot";
+                columns = [
+                    { header: "№", key: "index", width: 5 },
+                    { header: "Hudud", key: "organization.name", width: 20 },
+                    { header: "Sana", key: "reportDate", width: 12 },
+                    { header: "Holat", key: "status", width: 10 },
+                    { header: "Jami (ARI)", key: "ari_total", width: 10 },
+                    { header: "0-1 yosh", key: "ari_0_1", width: 10 },
+                    { header: "1-2 yosh", key: "ari_1_2", width: 10 },
+                    { header: "3-6 yosh", key: "ari_3_6", width: 10 },
+                    { header: "7-14 yosh", key: "ari_7_14", width: 10 },
+                    { header: "Kattalar", key: "ari_adult", width: 10 }
+                ];
+            } else if (reportType === 'ari') {
+                const res = await exportsApi.getAri(startDate, endDate, false, distId);
+                data = res.data;
+                title = "O'RVI (Qisqa) bo'yicha kunlik hisobot";
+                columns = [
+                    { header: "№", key: "index", width: 5 },
+                    { header: "Hudud", key: "organization.name", width: 20 },
+                    { header: "Sana", key: "reportDate", width: 12 },
+                    { header: "Holat", key: "status", width: 10 },
+                    { header: "Gospitalizatsiya", key: "gk", width: 15 },
+                    { header: "ARI jami", key: "ari", width: 10 },
+                    { header: "Pnevmoniya", key: "pneumonia", width: 10 }
+                ];
+            } else if (reportType === 'covid') {
+                const res = await exportsApi.getCovid(startDate, endDate, false, distId);
+                data = res.data;
+                title = "Koronavirus bo'yicha kunlik hisobot";
+                columns = [
+                    { header: "№", key: "index", width: 5 },
+                    { header: "Hudud", key: "organization.name", width: 20 },
+                    { header: "Sana", key: "reportDate", width: 12 },
+                    { header: "Holat", key: "status", width: 10 },
+                    { header: "Jami", key: "total_cases", width: 10 },
+                    { header: "Hospital", key: "hospitalized_count", width: 10 },
+                    { header: "Qayta", key: "reinfected", width: 10 }
+                ];
+            } else if (reportType === 'epidemiology') {
+                const res = await exportsApi.getEpidemiology(startDate, endDate, false, distId);
+                data = res.data;
+                title = "Epidemiologiya bo'yicha kunlik hisobot";
+                columns = [
+                    { header: "№", key: "index", width: 5 },
+                    { header: "Hudud", key: "organization.name", width: 20 },
+                    { header: "Sana", key: "reportDate", width: 12 },
+                    { header: "Holat", key: "status", width: 10 },
+                    { header: "Tekshirildi", key: "inspected_total", width: 12 },
+                    { header: "Kamchilik", key: "defects_total", width: 12 },
+                    { header: "Jarima", key: "fines_total", width: 12 },
+                    { header: "To'xtatildi", key: "suspended_total", width: 12 }
+                ];
+            } else if (reportType === 'weekly_flu') {
+                const res = await dailyReportsApi.getWeeklySummary(startDate, endDate, false); // Weekly summary aggregation usually ignores district filter or shows all. 
+                // If user wants filtered weekly summary, we need to support it in getWeeklySummary too.
+                // But for now, let's keep it as is, or filter on frontend? 
+                // getWeeklySummary returns data grouped by organization.
+                let apiData = res.data || [];
+
+                if (selectedDistrict) {
+                    apiData = apiData.filter((d: any) => d.organization?.id === selectedDistrict);
+                }
+
+                data = apiData.map((item: any, idx: number) => ({
+                    key: String(idx + 1),
+                    district_name: item.organization?.name,
+                    ...item
+                }));
+                title = t('daily_reports.weekly_export_title');
+
+                columns = [
+                    { title: t('daily_reports.table.no'), dataIndex: 'key', width: 40 },
+                    { title: t('daily_reports.table.district'), dataIndex: 'district_name', width: 140 },
+                    {
+                        title: t('reports.ari'),
+                        children: [
+                            { title: t('daily_reports.table.lab_total'), width: 60, dataIndex: 'ari_total' },
+                            { title: t('daily_reports.table.age_0_1'), width: 50, dataIndex: 'ari_0_1' },
+                            { title: t('daily_reports.table.age_1_2'), width: 50, dataIndex: 'ari_1_2' },
+                            { title: t('daily_reports.table.age_3_6'), width: 50, dataIndex: 'ari_3_6' },
+                            { title: t('daily_reports.table.age_7_14'), width: 55, dataIndex: 'ari_7_14' },
+                            { title: t('daily_reports.table.adults'), width: 65, dataIndex: 'ari_adult' },
+                            { title: t('daily_reports.table.students'), width: 55, dataIndex: 'ari_students' },
+                            { title: t('daily_reports.table.nursery'), width: 55, dataIndex: 'ari_nursery' },
+                        ]
+                    },
+                    {
+                        title: t('reports.pneumonia'),
+                        children: [
+                            { title: t('daily_reports.table.lab_total'), width: 60, dataIndex: 'pneu_total' },
+                            { title: t('daily_reports.table.age_0_2'), width: 50, dataIndex: 'pneu_0_2' },
+                            { title: t('daily_reports.table.age_3_6'), width: 50, dataIndex: 'pneu_3_6' },
+                            { title: t('daily_reports.table.age_7_14'), width: 55, dataIndex: 'pneu_7_14' },
+                            { title: t('daily_reports.table.adults'), width: 65, dataIndex: 'pneu_adult' },
+                            { title: t('daily_reports.table.students'), width: 55, dataIndex: 'pneu_students' },
+                            { title: t('daily_reports.table.nursery'), width: 55, dataIndex: 'pneu_nursery' },
+                        ]
+                    },
+                    {
+                        title: t('reports.flu'),
+                        children: [
+                            { title: t('daily_reports.table.lab_total'), width: 60, dataIndex: 'flu_total' },
+                            { title: t('daily_reports.table.age_0_1'), width: 50, dataIndex: 'flu_0_1' },
+                            { title: t('daily_reports.table.age_1_2'), width: 50, dataIndex: 'flu_1_2' },
+                            { title: t('daily_reports.table.age_3_6'), width: 50, dataIndex: 'flu_3_6' },
+                            { title: t('daily_reports.table.age_7_14'), width: 55, dataIndex: 'flu_7_14' },
+                            { title: t('daily_reports.table.adults'), width: 65, dataIndex: 'flu_adult' },
+                            { title: t('daily_reports.table.students'), width: 55, dataIndex: 'flu_students' },
+                            { title: t('daily_reports.table.nursery'), width: 55, dataIndex: 'flu_nursery' },
+                        ]
+                    },
+                    {
+                        title: t('daily_reports.table.sari'),
+                        children: [
+                            { title: t('daily_reports.table.lab_total'), width: 60, dataIndex: 'sari_total' },
+                            { title: t('daily_reports.table.age_0_2'), width: 50, dataIndex: 'sari_0_2' },
+                            { title: t('daily_reports.table.age_3_6'), width: 50, dataIndex: 'sari_3_6' },
+                            { title: t('daily_reports.table.age_7_14'), width: 55, dataIndex: 'sari_7_14' },
+                            { title: t('daily_reports.table.adults'), width: 65, dataIndex: 'sari_adult' },
+                        ]
+                    },
+                    {
+                        title: t('daily_reports.table.deaths'),
+                        children: [
+                            { title: t('daily_reports.table.lab_total'), width: 60, dataIndex: 'death_total' },
+                            { title: t('daily_reports.table.pregnant'), width: 80, dataIndex: 'death_pregnant' },
+                        ]
+                    }
+                ];
+
+                if (format === 'excel') {
+                    exportWeeklyReport(data, fileName, title, `${startDate} - ${endDate}`, columns);
+                    setLoading(false);
+                    message.success(t('common.success_export'));
+                    return;
+                } else {
+                    // PDF for Weekly Summary (Simplified)
+                    const pdfColumns = [
+                        { header: t('daily_reports.table.no'), key: 'key' },
+                        { header: t('daily_reports.table.district'), key: 'district_name' },
+                        { header: `${t('reports.ari')} (${t('daily_reports.table.lab_total')})`, key: 'ari_total' },
+                        { header: `${t('reports.pneumonia')} (${t('daily_reports.table.lab_total')})`, key: 'pneu_total' },
+                        { header: `${t('reports.flu')} (${t('daily_reports.table.lab_total')})`, key: 'flu_total' },
+                        { header: `${t('daily_reports.table.sari')} (${t('daily_reports.table.lab_total')})`, key: 'sari_total' },
+                        { header: `${t('daily_reports.table.deaths')} (${t('daily_reports.table.lab_total')})`, key: 'death_total' }
+                    ];
+                    exportDailyReportPDF(data, pdfColumns, title, `${startDate} - ${endDate}`, true);
+                    setLoading(false);
+                    message.success(t('common.success_export'));
+                    return;
+                }
+            } else if (reportType === 'form1') {
+                if (format === 'pdf') {
+                    message.info("Forma-1 uchun PDF hozircha mavjud emas.");
                     setLoading(false);
                     return;
                 }
-                exportToExcel(data, fileName, reportType);
+                // Use backend Excel generation for Form 1
+                const downloadUrl = `${API_BASE_URL}/exports/form1/excel?startDate=${startDate}&endDate=${endDate}&isTest=false&districtId=${distId || ''}`;
+                window.open(downloadUrl, '_blank');
+                setLoading(false);
+                return;
             }
 
-            message.success("Muvaffaqiyatli yuklab olindi!");
+            // Universal Add Index for other reports
+            data = data.map((item, index) => ({ ...item, index: index + 1 }));
+
+            // 2. Export Generation
+            if (format === 'excel') {
+                exportDailyReport(data, fileName, title, `${startDate} - ${endDate}`, columns);
+            } else {
+                exportDailyReportPDF(data, columns, title, `${startDate} - ${endDate}`);
+            }
+
+            message.success(t('common.success_export') || "Muvaffaqiyatli yuklab olindi!");
         } catch (error) {
             console.error("Export failed", error);
-            message.error("Xatolik yuz berdi.");
+            message.error(t('common.error_load_data'));
         } finally {
             setLoading(false);
         }
     };
 
-    const exportToExcel = (data: any[], fileName: string, type: string) => {
-        const workbook = XLSX.utils.book_new();
+    // --- PREMIUM UI UPDATE ---
+    // UZ: Dizaynni "Wow" darajaga ko'tarish uchun yangi interfeys qo'shildi.
+    // Eski dizayn pastroqda izoh ko'rinishida saqlab qolindi (O'zgarmas Qoidalar).
 
-        if (type === 'form1') {
-            const diseaseMap: any = {};
-            diseases.forEach(d => { diseaseMap[d.code] = d.name; });
+    const cardStyle: React.CSSProperties = {
+        background: 'rgba(255, 255, 255, 0.7)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderRadius: '24px',
+        border: '1px solid rgba(255, 255, 255, 0.3)',
+        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
+        padding: '32px',
+        marginTop: '20px'
+    };
 
-            const year = dates?.[0]?.year() || new Date().getFullYear();
-            const month = (dates?.[0]?.month() || 0) + 1;
-            const currentYear = year;
-            const prevYear = currentYear - 1;
-
-            const titleRow = [`Toshkent viloyati bo'yicha yuqumli va parazitar kasalliklar JAMLANMA hisoboti, ${year} yil ${month}-oy`, ...Array(25).fill('')];
-            const spacerRow = Array(26).fill('');
-
-            const head1 = ['Ko\'rsatkichlar nomi', 'Kod stroki', 'joriy oy', ...Array(11).fill(''), 'yil boshidan jami', ...Array(11).fill('')];
-            const head2 = ['', '', 'Jami', ...Array(5).fill(''), '14 yoshgacha bo\'lganlar', ...Array(5).fill(''), 'Jami', ...Array(5).fill(''), '14 yoshgacha bo\'lganlar', ...Array(5).fill('')];
-            const head3 = ['', '', `${prevYear} yil`, '', `${currentYear} yil`, '', 'ko\'tar/pasayish', '', `${prevYear} yil`, '', `${currentYear} yil`, '', 'ko\'tar/pasayish', '', `${prevYear} yil`, '', `${currentYear} yil`, '', 'ko\'tar/pasayish', '', `${prevYear} yil`, '', `${currentYear} yil`, '', 'ko\'tar/pasayish', ''];
-            const head4 = ['', '', ...Array(12).fill(['abs.ko\'r', 'int.ko\'r']).flat()];
-
-            // 1. DATA AGGREGATION
-            const aggregated: any = {};
-            if (data.length > 0) {
-                data.forEach(sub => {
-                    const records = Array.isArray(sub.data) ? sub.data : [sub.data];
-                    records.forEach((d: any) => {
-                        if (!d || !d.code) return;
-                        if (!aggregated[d.code]) {
-                            aggregated[d.code] = {
-                                name: diseaseMap[d.code] || d.name || `Kasallik ${d.code}`,
-                                code: d.code
-                            };
-                        }
-                        Object.keys(d).forEach(k => {
-                            if (typeof d[k] === 'number') {
-                                aggregated[d.code][k] = (aggregated[d.code][k] || 0) + d[k];
-                            }
-                        });
-                    });
-                });
-            }
-
-            // Sheet 1: Jamlanma (List 1)
-            const mainSheetData: any[] = [];
-            mainSheetData.push(titleRow, spacerRow, head1, head2, head3, head4);
-
-            const sorted = Object.values(aggregated).sort((a: any, b: any) => (a.code || '').localeCompare(b.code || ''));
-            sorted.forEach((d: any) => {
-                mainSheetData.push([
-                    d.name, d.code,
-                    d.m_t_p_a || 0, d.m_t_p_i || 0, d.m_t_c_a || 0, d.m_t_c_i || 0, d.m_t_g_a || 0, calculateSmartGrowth(d.m_t_c_a || 0, d.m_t_p_a || 0),
-                    d.m_u_p_a || 0, d.m_u_p_i || 0, d.m_u_c_a || 0, d.m_u_c_i || 0, d.m_u_g_a || 0, calculateSmartGrowth(d.m_u_c_a || 0, d.m_u_p_a || 0),
-                    d.y_t_p_a || 0, d.y_t_p_i || 0, d.y_t_c_a || 0, d.y_t_c_i || 0, d.y_t_g_a || 0, calculateSmartGrowth(d.y_t_c_a || 0, d.y_t_p_a || 0),
-                    d.y_u_p_a || 0, d.y_u_p_i || 0, d.y_u_c_a || 0, d.y_u_c_i || 0, d.y_u_g_a || 0, calculateSmartGrowth(d.y_u_c_a || 0, d.y_u_p_a || 0)
-                ]);
-            });
-
-            const ws1 = XLSX.utils.aoa_to_sheet(mainSheetData);
-            ws1['!merges'] = [
-                { s: { r: 0, c: 0 }, e: { r: 0, c: 25 } },
-                { s: { r: 2, c: 0 }, e: { r: 5, c: 0 } },
-                { s: { r: 2, c: 1 }, e: { r: 5, c: 1 } },
-                { s: { r: 2, c: 2 }, e: { r: 2, c: 13 } },
-                { s: { r: 2, c: 14 }, e: { r: 2, c: 25 } },
-                { s: { r: 3, c: 2 }, e: { r: 3, c: 7 } },
-                { s: { r: 3, c: 8 }, e: { r: 3, c: 13 } },
-                { s: { r: 3, c: 14 }, e: { r: 3, c: 19 } },
-                { s: { r: 3, c: 20 }, e: { r: 3, c: 25 } },
-                ...[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24].map(c => ({ s: { r: 4, c }, e: { r: 4, c: c + 1 } }))
-            ];
-            applyStyles(ws1, mainSheetData.length, 26, 6);
-            ws1['!cols'] = [{ wch: 50 }, { wch: 10 }, ...Array(24).fill({ wch: 10 })];
-            XLSX.utils.book_append_sheet(workbook, ws1, "Jamlanma (List 1)");
-
-            // Permissions Check
-            const userRole = localStorage.getItem('user_role');
-            const userLevel = localStorage.getItem('user_level');
-            const permissionsStr = localStorage.getItem('user_permissions');
-            const permissions = permissionsStr ? JSON.parse(permissionsStr) : [];
-            const isAdmin = ['ADMIN', 'REGION_HEAD', 'REPUBLIC_HEAD'].includes(userRole || '');
-
-            // UZ: Tuman darajasida (Level 3) 2 va 3-jadvallarni qat'iy bloklash (talabga asosan)
-            const isLevel3 = userLevel === '3';
-
-            // Dinamik ruxsatlarni tekshirish (Yangi tizim)
-            const rolePermsStr = localStorage.getItem('user_role_permissions');
-            const rolePerms = rolePermsStr ? JSON.parse(rolePermsStr) : [];
-            const checkRole = (code: string) => {
-                const rp = rolePerms.find((p: any) => p.permissionCode === code);
-                return rp ? (rp.canView || rp.canEdit) : true; // default true if no dynamic role
-            };
-
-            const canViewTable2 = !isLevel3 && (isAdmin || (permissions.includes('VIEW_FORM1_TABLE2') && checkRole('VIEW_FORM1_TABLE2')));
-            const canViewTable3 = !isLevel3 && (isAdmin || (permissions.includes('VIEW_FORM1_TABLE3') && checkRole('VIEW_FORM1_TABLE3')));
-
-            // Sheet 2: Tumanlar kesimida (List 2 - Detailed Templates)
-            if (canViewTable2) {
-                const territorySheetData: any[] = [];
-                const territoryMerges: any[] = [];
-                let currentRow = 0;
-
-                // Updated loop to use ALL diseases, ensuring List 2 is never empty
-                const sortedAllDiseases = [...diseases].sort((a: any, b: any) => (a.code || '').localeCompare(b.code || ''));
-
-                sortedAllDiseases.forEach((diseaseObj: any) => {
-                    const code = diseaseObj.code;
-                    const dName = diseaseObj.name || `Kasallik ${code}`;
-
-                    // Disease Block Header
-                    const dTitle = [{ v: dName, s: TITLE_STYLE }, ...Array(25).fill('')];
-                    const dHead1 = ['Administrativnye territorii', `Stroka ${code}`, 'tekushiy oy (joriy oy)', ...Array(11).fill(''), 'narastayushiy itog (yil boshidan)', ...Array(11).fill('')];
-                    const dHead2 = ['', '', 'Jami', ...Array(5).fill(''), 'deti do 14 let (bolalar)', ...Array(5).fill(''), 'Jami', ...Array(5).fill(''), 'deti do 14 let (bolalar)', ...Array(5).fill('')];
-                    const dHead3 = ['', '', '2025 yil', '', '2026 yil', '', 'ko\'tar/pasayish', '', '2025 yil', '', '2026 yil', '', 'ko\'tar/pasayish', '', '2025 yil', '', '2026 yil', '', 'ko\'tar/pasayish', '', '2025 yil', '', '2026 yil', '', 'ko\'tar/pasayish', ''];
-                    const dHead4 = ['', '', ...Array(12).fill(['abs.ko\'r', 'int.ko\'r']).flat()];
-
-                    territorySheetData.push(dTitle, dHead1, dHead2, dHead3, dHead4);
-
-                    territoryMerges.push(
-                        { s: { r: currentRow, c: 0 }, e: { r: currentRow, c: 25 } },
-                        { s: { r: currentRow + 1, c: 0 }, e: { r: currentRow + 4, c: 0 } },
-                        { s: { r: currentRow + 1, c: 1 }, e: { r: currentRow + 4, c: 1 } },
-                        { s: { r: currentRow + 1, c: 2 }, e: { r: currentRow + 1, c: 13 } },
-                        { s: { r: currentRow + 1, c: 14 }, e: { r: currentRow + 1, c: 25 } },
-                        { s: { r: currentRow + 2, c: 2 }, e: { r: currentRow + 2, c: 7 } },
-                        { s: { r: currentRow + 2, c: 8 }, e: { r: currentRow + 2, c: 13 } },
-                        { s: { r: currentRow + 2, c: 14 }, e: { r: currentRow + 2, c: 19 } },
-                        { s: { r: currentRow + 2, c: 20 }, e: { r: currentRow + 2, c: 25 } },
-                        ...[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24].map(c => ({ s: { r: currentRow + 3, c }, e: { r: currentRow + 3, c: c + 1 } }))
-                    );
-
-                    // Add header row count offset
-                    currentRow += 5;
-
-                    // Push blank or real data for each district
-                    data.forEach(sub => {
-                        const d = (Array.isArray(sub.data) ? sub.data : [sub.data]).find((x: any) => x && x.code === code) || {};
-                        territorySheetData.push([
-                            sub.organization?.name, code,
-                            d.m_t_p_a || 0, d.m_t_p_i || 0, d.m_t_c_a || 0, d.m_t_c_i || 0, d.m_t_g_a || 0, calculateSmartGrowth(d.m_t_c_a || 0, d.m_t_p_a || 0),
-                            d.m_u_p_a || 0, d.m_u_p_i || 0, d.m_u_c_a || 0, d.m_u_c_i || 0, d.m_u_g_a || 0, calculateSmartGrowth(d.m_u_c_a || 0, d.m_u_p_a || 0),
-                            d.y_t_p_a || 0, d.y_t_p_i || 0, d.y_t_c_a || 0, d.y_t_c_i || 0, d.y_t_g_a || 0, calculateSmartGrowth(d.y_t_c_a || 0, d.y_t_p_a || 0),
-                            d.y_u_p_a || 0, d.y_u_p_i || 0, d.y_u_c_a || 0, d.y_u_c_i || 0, d.y_u_g_a || 0, calculateSmartGrowth(d.y_u_c_a || 0, d.y_u_p_a || 0)
-                        ]);
-                        currentRow++;
-                    });
-
-                    // Spacer row
-                    territorySheetData.push(Array(26).fill(''));
-                    currentRow++;
-                });
-
-                const ws2 = XLSX.utils.aoa_to_sheet(territorySheetData);
-
-                // Re-apply styles row by row for List 2
-                let rPos = 0;
-                sortedAllDiseases.forEach(() => {
-                    const tAddr = XLSX.utils.encode_cell({ r: rPos, c: 0 });
-                    if (ws2[tAddr]) ws2[tAddr].s = TITLE_STYLE;
-                    for (let r = rPos + 1; r < rPos + 5; r++) {
-                        for (let c = 0; c < 26; c++) {
-                            const addr = XLSX.utils.encode_cell({ r, c });
-                            if (!ws2[addr]) ws2[addr] = { v: '' };
-
-                            // Header coloring
-                            if ([2, 3, 8, 9, 14, 15, 20, 21].includes(c)) ws2[addr].s = PREV_HEADER_STYLE;
-                            else if ([4, 5, 10, 11, 16, 17, 22, 23].includes(c)) ws2[addr].s = CURR_HEADER_STYLE;
-                            else ws2[addr].s = HEADER_STYLE;
-                        }
-                    }
-                    for (let r = rPos + 5; r < rPos + 5 + data.length; r++) {
-                        for (let c = 0; c < 26; c++) {
-                            const addr = XLSX.utils.encode_cell({ r, c });
-                            if (!ws2[addr]) ws2[addr] = { v: '' };
-
-                            // Data coloring
-                            if (c === 0) ws2[addr].s = NAME_STYLE;
-                            else if ([2, 3, 8, 9, 14, 15, 20, 21].includes(c)) ws2[addr].s = PREV_DATA_STYLE;
-                            else if ([4, 5, 10, 11, 16, 17, 22, 23].includes(c)) ws2[addr].s = CURR_DATA_STYLE;
-                            else ws2[addr].s = DATA_STYLE;
-                        }
-                    }
-                    rPos += (5 + data.length + 1);
-                });
-
-                ws2['!merges'] = territoryMerges;
-                ws2['!cols'] = [{ wch: 40 }, { wch: 10 }, ...Array(24).fill({ wch: 10 })];
-                XLSX.utils.book_append_sheet(workbook, ws2, "Tumanlar kesimida (List 2)");
-            }
-
-            // Sheet 3: Matrix (List 3)
-            if (canViewTable3) {
-                // Use ALL diseases for headers
-                const matrixData: any[] = [];
-                // Updated loop to use ALL diseases, ensuring List 2 is never empty - DUPLICATE NEEDED IF TABLE 2 SKIPPED
-                const sortedAllDiseases = [...diseases].sort((a: any, b: any) => (a.code || '').localeCompare(b.code || ''));
-
-                // Header 1: Disease Names
-                const mHead1 = ['Hududlar', ...sortedAllDiseases.flatMap((d: any) => [d.name || `Kasallik ${d.code}`, ''])];
-                // Header 2: Disease Codes
-                const mHead2 = ['', ...sortedAllDiseases.flatMap((d: any) => [`Kod ${d.code}`, ''])];
-                // Header 3: Metrics
-                const mHead3 = ['', ...sortedAllDiseases.flatMap(() => ['abs.ko\'r', 'int.ko\'r'])];
-
-                matrixData.push(mHead1, mHead2, mHead3);
-
-                data.forEach(sub => {
-                    const row = [sub.organization?.name];
-                    const records = Array.isArray(sub.data) ? sub.data : [sub.data];
-
-                    // For this row (territory), go through ALL diseases in order
-                    sortedAllDiseases.forEach((dObj: any) => {
-                        // Find record for this disease in this territory
-                        const rowData = records.find((x: any) => x && x.code === dObj.code) || {};
-                        // Push metric values (using monthly total stats as default based on previous impl)
-                        row.push(rowData.m_t_c_a || 0, rowData.m_t_c_i || 0);
-                    });
-                    matrixData.push(row);
-                });
-
-                const ws3 = XLSX.utils.aoa_to_sheet(matrixData);
-
-                // Style application
-                // Header is 3 rows
-                const mColCount = 1 + (sortedAllDiseases.length * 2);
-                const mRowCount = matrixData.length;
-
-                applyStyles(ws3, mRowCount, mColCount, 3);
-
-                // Merges
-                // Title row merges? Not using a top title row inside the grid based on code above, starting with Headers.
-                // But we need to merge Disease Names and Codes horizontally (2 cells wide)
-                const mMerges: any[] = [
-                    { s: { r: 0, c: 0 }, e: { r: 2, c: 0 } } // 'Hududlar' merges vertical 3 rows
-                ];
-
-                sortedAllDiseases.forEach((_, i) => {
-                    const startCol = 1 + (i * 2);
-                    // Merge Disease Name (Row 0)
-                    mMerges.push({ s: { r: 0, c: startCol }, e: { r: 0, c: startCol + 1 } });
-                    // Merge Disease Code (Row 1)
-                    mMerges.push({ s: { r: 1, c: startCol }, e: { r: 1, c: startCol + 1 } });
-                });
-
-                ws3['!merges'] = mMerges;
-
-                // Auto-width for first column, smaller for numbers
-                ws3['!cols'] = [{ wch: 30 }, ...Array(sortedAllDiseases.length * 2).fill({ wch: 8 })];
-
-                XLSX.utils.book_append_sheet(workbook, ws3, "Matrix (List 3)");
-            }
-
-        } else {
-            const worksheet = XLSX.utils.json_to_sheet(data);
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Hisobot");
-        }
-
-        XLSX.writeFile(workbook, `${fileName}.xlsx`);
+    const gradientText: React.CSSProperties = {
+        background: 'linear-gradient(90deg, #1677ff 0%, #722ed1 100%)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        display: 'inline-block',
+        fontWeight: 800
     };
 
     return (
-        <div style={{ padding: '24px' }}>
-            <Card>
-                <Title level={2}>Hisobotlarni Eksport Qilish</Title>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Text type="secondary">Vaqt oralig'i va hisobot turini tanlang, so'ngra Excel faylni yuklab oling.</Text>
+        <div style={{ padding: '20px', minHeight: '80vh', background: 'radial-gradient(circle at top right, #f0f5ff, #ffffff)' }}>
+            <style>{`
+                .export-option-card {
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    cursor: pointer;
+                    border: 2px solid transparent;
+                    height: 100%;
+                }
+                .export-option-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+                    border-color: #1677ff;
+                }
+                .premium-btn {
+                    height: 50px;
+                    border-radius: 12px;
+                    font-weight: 600;
+                    letter-spacing: 0.5px;
+                    transition: all 0.3s ease;
+                    border: none;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                }
+                .excel-btn {
+                    background: linear-gradient(135deg, #1d976c 0%, #93f9b9 100%);
+                    color: white;
+                }
+                .excel-btn:hover {
+                    box-shadow: 0 4px 15px rgba(29, 151, 108, 0.4);
+                    filter: brightness(1.05);
+                }
+                .pdf-btn {
+                    background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+                    color: white;
+                }
+                .pdf-btn:hover {
+                    box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4);
+                    filter: brightness(1.05);
+                }
+            `}</style>
+
+            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                <div style={{ marginBottom: '40px', textAlign: 'center' }}>
+                    <Title level={1} style={gradientText}>{t('common.export_title') || 'Hisobotlarni Eksport Qilish'}</Title>
+                    <div>
+                        <Text type="secondary" style={{ fontSize: '18px' }}>
+                            {t('common.export_subtitle') || "Vaqt oralig'i va hisobot turini tanlang, so'ngra faylni yuklab oling."}
+                        </Text>
+                    </div>
                 </div>
-                <Row gutter={[16, 16]} style={{ marginTop: '24px' }}>
-                    <Col xs={24} md={8}>
-                        <div style={{ marginBottom: '8px' }}><Text strong>Vaqt oralig'i:</Text></div>
-                        <DatePicker.RangePicker style={{ width: '100%' }} onChange={(vals) => setDates(vals)} />
-                    </Col>
-                    <Col xs={24} md={8}>
-                        <div style={{ marginBottom: '8px' }}><Text strong>Hisobot turi:</Text></div>
-                        <Select style={{ width: '100%' }} placeholder="Turini tanlang" onChange={(val) => setReportType(val)} options={REPORT_TYPES} />
-                    </Col>
-                    <Col xs={24} md={8} style={{ display: 'flex', alignItems: 'flex-end' }}>
-                        <Button type="primary" icon={<DownloadOutlined />} size="large" loading={loading} onClick={handleExport} block>
-                            Yuklab olish
-                        </Button>
-                    </Col>
-                </Row>
-            </Card>
+
+                <div style={cardStyle}>
+                    <Row gutter={[32, 32]}>
+                        <Col xs={24} lg={16}>
+                            <Row gutter={[24, 24]}>
+                                <Col xs={24} md={12}>
+                                    <div style={{ marginBottom: '12px' }}>
+                                        <Text strong style={{ fontSize: '16px', color: '#434343' }}>
+                                            <Badge status="processing" color="#1677ff" /> {t('common.date_range') || "Vaqt oralig'i:"}
+                                        </Text>
+                                    </div>
+                                    <DatePicker.RangePicker
+                                        style={{ width: '100%', height: '50px', borderRadius: '12px' }}
+                                        onChange={(vals) => setDates(vals)}
+                                        size="large"
+                                    />
+                                </Col>
+                                <Col xs={24} md={12}>
+                                    <div style={{ marginBottom: '12px' }}>
+                                        <Text strong style={{ fontSize: '16px', color: '#434343' }}>
+                                            <Badge status="processing" color="#722ed1" /> {t('common.report_type') || "Hisobot turi:"}
+                                        </Text>
+                                    </div>
+                                    <Select
+                                        style={{ width: '100%', height: '50px' }}
+                                        placeholder={t('common.select_type') || "Turini tanlang"}
+                                        onChange={(val) => setReportType(val)}
+                                        options={REPORT_TYPES}
+                                        size="large"
+                                        className="premium-select"
+                                    />
+                                </Col>
+
+                                {canSelectDistrict && (
+                                    <Col span={24}>
+                                        <div style={{ marginBottom: '12px' }}>
+                                            <Text strong style={{ fontSize: '16px', color: '#434343' }}>
+                                                <Badge status="processing" color="#faad14" /> {t('common.district') || "Hudud (Tuman/Shahar):"}
+                                            </Text>
+                                        </div>
+                                        <Select
+                                            style={{ width: '100%', height: '50px' }}
+                                            placeholder={t('common.all_districts') || "Barcha hududlar"}
+                                            allowClear
+                                            onChange={(val) => setSelectedDistrict(val)}
+                                            options={districts.map(d => ({ label: d.name, value: d.id }))}
+                                            size="large"
+                                        />
+                                    </Col>
+                                )}
+                            </Row>
+                        </Col>
+
+                        <Col xs={24} lg={8}>
+                            <div style={{
+                                background: 'rgba(240, 245, 255, 0.5)',
+                                padding: '24px',
+                                borderRadius: '20px',
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'center'
+                            }}>
+                                <Title level={4} style={{ marginBottom: '24px', textAlign: 'center' }}>Yuklab Olish</Title>
+                                <Space direction="vertical" style={{ width: '100%' }} size="large">
+                                    <Button
+                                        type="primary"
+                                        icon={<FileExcelOutlined />}
+                                        loading={loading}
+                                        onClick={() => handleExport('excel')}
+                                        className="premium-btn excel-btn"
+                                        block
+                                    >
+                                        EXCEL formatida yuklash
+                                    </Button>
+                                    <Button
+                                        type="primary"
+                                        icon={<FilePdfOutlined />}
+                                        loading={loading}
+                                        onClick={() => handleExport('pdf')}
+                                        className="premium-btn pdf-btn"
+                                        block
+                                    >
+                                        PDF formatida yuklash
+                                    </Button>
+                                </Space>
+                                <div style={{ marginTop: '24px', textAlign: 'center' }}>
+                                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                                        * Hisobotlar avtomatik tarzda generatsiya qilinadi.
+                                    </Text>
+                                </div>
+                            </div>
+                        </Col>
+                    </Row>
+                </div>
+            </div>
         </div>
     );
+
+    /* --- ESKI DIZAYN (O'zgarmas Qoidalar asosida saqlab qolindi) ---
+    return (
+        <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+            <div style={{ marginBottom: '24px' }}>
+                <Title level={3} style={{ margin: 0 }}>{t('common.export_title') || 'Hisobotlarni Eksport Qilish'}</Title>
+                <Text type="secondary" style={{ fontSize: '14px' }}>
+                    {t('common.export_subtitle') || "Vaqt oralig'i va hisobot turini tanlang, so'ngra Excel yoki PDF faylni yuklab oling."}
+                </Text>
+            </div>
+
+            <Row gutter={[16, 16]}>
+                <Col xs={24} md={8}>
+                    <div style={{ marginBottom: '8px' }}><Text strong>{t('common.date_range') || "Vaqt oralig'i:"}</Text></div>
+                    <DatePicker.RangePicker style={{ width: '100%' }} onChange={(vals) => setDates(vals)} />
+                </Col>
+                <Col xs={24} md={8}>
+                    <div style={{ marginBottom: '8px' }}><Text strong>{t('common.report_type') || "Hisobot turi:"}</Text></div>
+                    <Select style={{ width: '100%' }} placeholder={t('common.select_type') || "Turini tanlang"} onChange={(val) => setReportType(val)} options={REPORT_TYPES} />
+                </Col>
+
+                {canSelectDistrict && (
+                    <Col xs={24} md={8}>
+                        <div style={{ marginBottom: '8px' }}><Text strong>{t('common.district') || "Hudud (Tuman/Shahar):"}</Text></div>
+                        <Select
+                            style={{ width: '100%' }}
+                            placeholder={t('common.all_districts') || "Barcha hududlar"}
+                            allowClear
+                            onChange={(val) => setSelectedDistrict(val)}
+                            options={districts.map(d => ({ label: d.name, value: d.id }))}
+                        />
+                    </Col>
+                )}
+
+                <Col xs={24} md={8} style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
+                    <Button
+                        type="primary"
+                        icon={<FileExcelOutlined />}
+                        size="large"
+                        loading={loading}
+                        onClick={() => handleExport('excel')}
+                        style={{ backgroundColor: '#217346', borderColor: '#217346' }}
+                        block
+                    >
+                        Excel
+                    </Button>
+                    <Button
+                        type="primary"
+                        danger
+                        icon={<FilePdfOutlined />}
+                        size="large"
+                        loading={loading}
+                        onClick={() => handleExport('pdf')}
+                        block
+                    >
+                        PDF
+                    </Button>
+                </Col>
+            </Row>
+        </Card>
+    );
+    */
 };
 
 export default ExportPage;

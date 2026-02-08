@@ -62,7 +62,7 @@ const AnalysisDashboard: React.FC = () => {
         },
     };
 
-    const columns = [
+    const columns = React.useMemo(() => [
         {
             title: 'Hudud nomi',
             dataIndex: 'organizationName',
@@ -93,8 +93,150 @@ const AnalysisDashboard: React.FC = () => {
                 return <Text style={{ color, fontWeight: 'bold' }}>{val.toFixed(2)}</Text>;
             },
         },
-    ];
+    ], []);
 
+    // --- PREMIUM UI UPDATE ---
+
+    const headerStyle: React.CSSProperties = {
+        background: 'linear-gradient(135deg, #243B55 0%, #141E30 100%)',
+        padding: '40px',
+        borderRadius: '24px',
+        marginBottom: '32px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '24px',
+        color: '#fff',
+        boxShadow: '0 10px 30px rgba(20, 30, 48, 0.3)'
+    };
+
+    return (
+        <div style={{ padding: '24px', minHeight: '100vh', background: '#f0f2f5' }}>
+            <style>{`
+                .analysis-table .ant-table { background: transparent !important; }
+                .analysis-table .ant-table-thead > tr > th {
+                    background: rgba(255, 255, 255, 0.5) !important;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    font-size: 11px;
+                    letter-spacing: 0.8px;
+                }
+                .filter-glass {
+                    background: rgba(255, 255, 255, 0.15) !important;
+                    backdrop-filter: blur(10px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 16px;
+                    padding: 16px 24px;
+                    display: flex;
+                    gap: 32px;
+                    width: fit-content;
+                }
+                .analysis-card {
+                    background: rgba(255, 255, 255, 0.8) !important;
+                    backdrop-filter: blur(20px) !important;
+                    border-radius: 20px !important;
+                    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.03) !important;
+                }
+            `}</style>
+
+            <div style={headerStyle}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px' }}>
+                            <div style={{ background: 'rgba(255, 255, 255, 0.1)', padding: '12px', borderRadius: '14px' }}>
+                                <LineChartOutlined style={{ fontSize: '28px', color: '#fff' }} />
+                            </div>
+                            <Title level={1} style={{ margin: 0, color: '#fff', fontWeight: 800, fontSize: '32px' }}>
+                                Epidemiologik Analiz
+                            </Title>
+                        </div>
+                        <Text style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '16px' }}>
+                            Hududlar bo'yicha kasallanish darajasini aholi soniga nisbatan tahlili
+                        </Text>
+                    </div>
+
+                    <div className="filter-glass">
+                        <Space direction="vertical" size={0}>
+                            <Text style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', fontWeight: 700 }}>
+                                <HeatMapOutlined /> Kasallik
+                            </Text>
+                            <Select
+                                value={diseaseType}
+                                onChange={setDiseaseType}
+                                style={{ width: 180, color: '#fff' }}
+                                variant="borderless"
+                                dropdownStyle={{ background: '#fff', borderRadius: '12px' }}
+                            >
+                                <Option value="hepatitis">Gepatit</Option>
+                                <Option value="flu">Gripp</Option>
+                                <Option value="ari">O'RVI</Option>
+                                <Option value="covid">COVID-19</Option>
+                            </Select>
+                        </Space>
+                        <div style={{ width: '1px', background: 'rgba(255,255,255,0.1)' }} />
+                        <Space direction="vertical" size={0}>
+                            <Text style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', fontWeight: 700 }}>
+                                <CalendarOutlined /> Davr
+                            </Text>
+                            <RangePicker
+                                value={dateRange}
+                                onChange={(dates) => dates && setDateRange([dates[0]!, dates[1]!])}
+                                variant="borderless"
+                                style={{ color: '#fff' }}
+                            />
+                        </Space>
+                    </div>
+                </div>
+            </div>
+
+            <Row gutter={[24, 24]}>
+                <Col span={24}>
+                    <Card
+                        className="analysis-card"
+                        title={
+                            <Space>
+                                <EnvironmentOutlined style={{ color: '#1677ff' }} />
+                                <span style={{ fontWeight: 700 }}>Eng yuqori kasallanish ko'rsatkichiga ega hududlar (Top 10)</span>
+                            </Space>
+                        }
+                    >
+                        {loading ? (
+                            <div style={{ height: '400px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                <Spin size="large" />
+                            </div>
+                        ) : (
+                            <div style={{ height: '400px' }}>
+                                <Bar {...(barConfig as any)} theme="light" />
+                            </div>
+                        )}
+                    </Card>
+                </Col>
+
+                <Col span={24}>
+                    <Card
+                        className="analysis-card"
+                        title={<span style={{ fontWeight: 700 }}>Hududlar bo'yicha batafsil ma'lumotlar</span>}
+                    >
+                        <Table
+                            columns={columns}
+                            dataSource={data}
+                            rowKey="organizationId"
+                            loading={loading}
+                            pagination={{ pageSize: 12 }}
+                            className="analysis-table"
+                            footer={() => (
+                                <div style={{ fontSize: '12px', color: '#8c8c8c', padding: '10px' }}>
+                                    * Ko'rsatkich har 100 000 aholiga nisbatan hisoblangan.
+                                </div>
+                            )}
+                        />
+                    </Card>
+                </Col>
+            </Row>
+        </div>
+    );
+
+    /* --- ESKI DIZAYN (O'zgarmas Qoidalar asosida saqlab qolindi) ---
     return (
         <div style={{ padding: '24px' }}>
             <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -169,6 +311,7 @@ const AnalysisDashboard: React.FC = () => {
             </Row>
         </div>
     );
+    */
 };
 
 export default AnalysisDashboard;

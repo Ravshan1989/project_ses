@@ -51,7 +51,7 @@
     },
     "common": {
         "dashboard": "Дашборд",
-        "reports": "Отчеты",
+        "reports": "Ввод данных",
         "analysis": "Анализ",
         "settings": "Настройки",
         "logout": "Выйти",
@@ -75,7 +75,15 @@
         "import_success": "{{count}} записей успешно прочитано",
         "import_empty": "Файл пуст",
         "import_error": "Ошибка при чтении файла",
-        "sos_btn": "SOS"
+        "sos_btn": "SOS",
+        "actions": "Действия",
+        "export_title": "Экспорт отчетов",
+        "export_subtitle": "Выберите диапазон дат и тип отчета, затем скачайте файл Excel или PDF.",
+        "date_range": "Диапазон дат:",
+        "report_type": "Тип отчета:",
+        "select_type": "Выберите тип",
+        "district": "Регион (Район/Город):",
+        "all_districts": "Все регионы"
     },
     "dashboard_page": {
         "title": "Главная панель",
@@ -123,20 +131,21 @@
         }
     },
     "reports": {
-        "daily": "Ежедневные отчеты",
-        "monthly": "Ежемесячные отчеты",
-        "daily_menu": "Ежедневные отчеты",
-        "monthly_menu": "Ежемесячные отчеты (Форма-1)",
+        "daily": "Ежедневный ввод данных",
+        "monthly": "Ежемесячный ввод данных",
+        "daily_menu": "Ежедневный ввод данных",
+        "monthly_menu": "Ежемесячный ввод данных (Форма-1)",
         "form1": "Форма 1 (Ежемесячно)",
         "hepatitis": "Гепатит",
-        "daily_hepatitis": "Ежедневные отчеты (ВГА)",
+        "daily_hepatitis": "Ежедневный ввод данных (ВГА)",
         "flu": "Грипп и ОРВИ",
         "ari": "ОКЗ, ОРИ и ВП",
         "epidemiology": "Эпидемиологические Меры",
         "weekly_flu": "Еженедельный Грипп/ОРВИ",
         "covid": "Коронавирус (Ежедневно)",
         "unified": "Единое Окно (Тест)",
-        "form1_monitoring": "Мониторинг Формы 1"
+        "form1_monitoring": "Мониторинг Формы 1",
+        "pneumonia": "Пневмония"
     },
     "analysis": {
         "regional": "Региональный Анализ",
@@ -179,6 +188,7 @@
         "flu_title": "Ежедневная информация по гриппу и ОРВИ",
         "ari_title": "Ежедневная информация по острым респираторным инфекциям",
         "weekly_title": "ЕЖЕНЕДЕЛЬНАЯ ИНФОРМАЦИЯ по гриппу и ОРИ (Автоматически)",
+        "weekly_export_title": "Еженедельный (сводный) отчет по гриппу и ОРВИ",
         "epidemiology_title": "Ежедневная информация по противоэпидемическим мероприятиям",
         "covid_title": "Ежедневная информация по коронавирусной инфекции",
         "period": "За период {{start}} - {{end}}",
@@ -259,6 +269,21 @@
             "save_success": "Тестовые данные сохранены",
             "cleanup_success": "Тестовые данные очищены",
             "cleanup_error": "Ошибка при очистке"
+        },
+        "table_v2": {
+            "total_hepatitis": "Всего зарегистрированных больных ВГ А",
+            "age_under_1_yr": "до 1 года",
+            "age_20_plus_yrs": "старше 20 лет",
+            "occ_organized_nursery": "Дети ясельного возраста (целевые)",
+            "occ_unorganized_nursery": "Дети ясельного возраста (неорганизованные)",
+            "occ_organized_preschool": "Дети дошкольного возраста (организованные)",
+            "occ_unorganized_preschool": "Дети дошкольного возраста (неорганизованные)",
+            "factor_food_detailed": "Пищевые продукты",
+            "factor_contact_detailed": "Бытовой контакт",
+            "lab_samples_detailed": "Всего взято проб",
+            "lab_positive_detailed": "Положительный результат",
+            "decimal_positive_detailed": "Положительный результат (%)",
+            "disinfection_detailed": "Очаги с проведенной дезинфекцией"
         }
     },
     "form1": {
@@ -309,20 +334,5 @@
         "equal": "равно",
         "increased": "выросло в раза",
         "decreased": "снизилось в раза"
-    },
-    "table_v2": {
-        "total_hepatitis": "Всего зарегистрированных больных ВГ А",
-        "age_under_1_yr": "до 1 года",
-        "age_20_plus_yrs": "старше 20 лет",
-        "occ_organized_nursery": "Дети ясельного возраста (целевые)",
-        "occ_unorganized_nursery": "Дети ясельного возраста (неорганизованные)",
-        "occ_organized_preschool": "Дети дошкольного возраста (организованные)",
-        "occ_unorganized_preschool": "Дети дошкольного возраста (неорганизованные)",
-        "factor_food_detailed": "Пищевые продукты",
-        "factor_contact_detailed": "Бытовой контакт",
-        "lab_samples_detailed": "Всего взято проб",
-        "lab_positive_detailed": "Положительный результат",
-        "decimal_positive_detailed": "Положительный результат (%)",
-        "disinfection_detailed": "Очаги с проведенной дезинфекцией"
     }
 }

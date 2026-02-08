@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { SaveOutlined, ReloadOutlined, ExperimentOutlined, DeleteOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined, DownloadOutlined } from '@ant-design/icons';
-import { Table, Typography, Card, DatePicker, Button, InputNumber, notification, Space, Switch, Alert, Popconfirm, Badge, Tooltip } from 'antd';
+import { SaveOutlined, ReloadOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined } from '@ant-design/icons';
+import { Table, Typography, DatePicker, Button, InputNumber, notification, Space, Badge, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
-import { exportDailyReport } from '../../services/excelExportService'; // UZ: Excel eksport service
+
 import PermissionGate from '../../components/PermissionGate';
 
 const { Title, Text } = Typography;
@@ -193,7 +193,7 @@ const DailyHepatitisPage: React.FC = () => {
         return !!record.is_submitted;
     };
 
-    // @ts-ignore
+    // @ts-expect-error: suppressing complex type error
     const columns: any = [
         {
             title: t('daily_reports.table.no'),
@@ -421,43 +421,7 @@ const DailyHepatitisPage: React.FC = () => {
         }
     };
 
-    // UZ: Excel ga eksport qilish funksiyasi
-    const handleExcelExport = () => {
-        // UZ: Ustunlar ro'yxati
-        const columns = [
-            { header: '№', key: 'key', width: 5 },
-            { header: t('daily_reports.table.district'), key: 'district_name', width: 20 },
-            { header: t('daily_reports.table.total_cases'), key: 'total_cases', width: 12 },
-            { header: t('daily_reports.table.age_1'), key: 'age_under_1', width: 10 },
-            { header: t('daily_reports.table.age_1_3'), key: 'age_1_3', width: 10 },
-            { header: t('daily_reports.table.age_4_6'), key: 'age_4_6', width: 10 },
-            { header: t('daily_reports.table.age_7_14'), key: 'age_7_14', width: 10 },
-            { header: t('daily_reports.table.age_15_19'), key: 'age_15_19', width: 10 },
-            { header: t('daily_reports.table.age_20'), key: 'age_20_plus', width: 10 },
-            { header: t('daily_reports.table.unorganized'), key: 'occ_unorganized', width: 12 },
-            { header: t('daily_reports.table.unorg_preschool'), key: 'occ_unorganized_1_6', width: 12 },
-            { header: t('daily_reports.table.org_preschool'), key: 'occ_organized_1_6', width: 12 },
-            { header: t('daily_reports.table.unorg_school'), key: 'occ_unorganized_school_age', width: 12 },
-            { header: t('daily_reports.table.students'), key: 'occ_students', width: 12 },
-            { header: t('daily_reports.table.college_students'), key: 'occ_college_students', width: 12 },
-            { header: t('daily_reports.table.adults'), key: 'occ_workers', width: 12 },
-            { header: t('daily_reports.table.water'), key: 'factor_water', width: 10 },
-            { header: t('daily_reports.table.food'), key: 'factor_food', width: 10 },
-            { header: t('daily_reports.table.contact'), key: 'factor_contact', width: 10 },
-            { header: t('daily_reports.table.lab_total'), key: 'lab_samples', width: 10 },
-            { header: t('daily_reports.table.lab_positive'), key: 'lab_positive', width: 10 },
-            { header: t('daily_reports.table.disinfection'), key: 'disinfection_done', width: 12 },
-        ];
 
-        // UZ: Fayl nomi va sarlavha
-        const fileName = `VGA_Kunlik_${date.format('DD-MM-YYYY')}`;
-        const title = t('daily_reports.hepatitis_title');
-        const dateStr = date.format('DD.MM.YYYY');
-
-        // UZ: Excel ga eksport qilish
-        exportDailyReport(data, fileName, title, dateStr, columns);
-        notification.success({ message: 'Excel fayl yuklab olindi!' });
-    };
 
 
     const handleVerify = async (id: string) => {
@@ -480,38 +444,130 @@ const DailyHepatitisPage: React.FC = () => {
         }
     };
 
-    // @ts-ignore
     const provinceTotals = data.reduce((acc, curr) => {
         const fields = Object.keys(curr).filter(k => k !== 'key' && k !== 'district_name' && k !== 'organizationId' && k !== 'is_submitted') as (keyof ReportData)[];
         fields.forEach(f => { acc[f] = (acc[f] || 0) + (curr[f] as number); });
         return acc;
     }, { district_name: t('daily_reports.table.total_province') } as any);
 
+    // --- PREMIUM UI STYLES ---
+    const glassStyle: React.CSSProperties = {
+        background: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderRadius: '24px',
+        border: '1px solid rgba(255, 255, 255, 0.4)',
+        boxShadow: '0 15px 35px rgba(0, 0, 0, 0.05)',
+        padding: '24px'
+    };
+
+    const headerStyle: React.CSSProperties = {
+        background: 'linear-gradient(135deg, #2c3e50 0%, #000000 100%)',
+        padding: '32px',
+        borderRadius: '24px',
+        marginBottom: '24px',
+        color: '#fff',
+        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '20px'
+    };
+
     return (
         <PermissionGate permission="VIEW_HEPATITIS">
-            <Card>
-                <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                            <Title level={4}>{t('daily_reports.hepatitis_title')}</Title>
-                            <Text type="secondary">{t('daily_reports.date_status', { date: date.format('DD.MM.YYYY') })}</Text>
-                        </div>
-                        <Space>
+            <div style={{ padding: '24px', minHeight: '100vh', background: '#f0f2f5' }}>
+                <style>{`
+                    .clinical-table .ant-table { background: transparent !important; }
+                    .clinical-table .ant-table-thead > tr > th {
+                        background: rgba(255, 255, 255, 0.5) !important;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        font-size: 11px;
+                        letter-spacing: 0.5px;
+                        color: #1e3c72;
+                    }
+                    .clinical-table .ant-table-tbody > tr > td {
+                        padding: 8px 4px !important;
+                    }
+                    .input-hover:hover {
+                        background: rgba(24, 144, 255, 0.05) !important;
+                        border-radius: 4px;
+                    }
+                `}</style>
 
-                            <DatePicker
-                                value={date}
-                                onChange={(d) => d && setDate(d)}
-                                format="DD.MM.YYYY"
-                            />
-                            <Button icon={<DownloadOutlined />} onClick={handleExcelExport}>Excel</Button>
-                            <Button icon={<ReloadOutlined />} onClick={fetchReports}>{t('daily_reports.actions.refresh')}</Button>
-                            <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>{t('daily_reports.actions.save')}</Button>
-                        </Space>
+                <div style={headerStyle}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                        <div style={{ background: 'rgba(255,255,255,0.15)', padding: '12px', borderRadius: '16px' }}>
+                            <AuditOutlined style={{ fontSize: '28px', color: '#fff' }} />
+                        </div>
+                        <div>
+                            <Title level={2} style={{ margin: 0, color: '#fff', fontWeight: 800 }}>
+                                {t('daily_reports.hepatitis_title')}
+                            </Title>
+                            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
+                                {t('daily_reports.date_status', { date: date.format('DD.MM.YYYY') })}
+                            </Text>
+                        </div>
                     </div>
 
+                    <Space wrap>
+                        <DatePicker
+                            value={date}
+                            onChange={(d) => d && setDate(d)}
+                            format="DD.MM.YYYY"
+                            allowClear={false}
+                            inputReadOnly
+                            style={{
+                                borderRadius: '12px',
+                                height: '40px',
+                                width: 150,
+                                background: 'rgba(255,255,255,0.1)',
+                                border: '1px solid rgba(255,255,255,0.2)',
+                                color: '#fff'
+                            }}
+                            className="custom-datepicker"
+                        />
+                        <Button
+                            icon={<ReloadOutlined />}
+                            onClick={fetchReports}
+                            style={{
+                                borderRadius: '12px',
+                                height: '40px',
+                                background: 'rgba(255,255,255,0.1)',
+                                border: 'none',
+                                color: '#fff'
+                            }}
+                        >
+                            {t('daily_reports.actions.refresh')}
+                        </Button>
+                        <Button
+                            type="primary"
+                            icon={<SaveOutlined />}
+                            onClick={handleSave}
+                            style={{
+                                borderRadius: '12px',
+                                height: '40px',
+                                padding: '0 24px',
+                                fontWeight: 700,
+                                background: '#1890ff',
+                                border: 'none',
+                                boxShadow: '0 4px 15px rgba(24, 144, 255, 0.3)'
+                            }}
+                        >
+                            {t('daily_reports.actions.save')}
+                        </Button>
+                    </Space>
+                </div>
 
+                {!isAdmin && !connectedOrgId && (
+                    <div style={{ marginBottom: 24 }}>
+                        <Badge status="warning" text={t('daily_reports.errors.no_org_context') || "Tashkilot ma'lumotlari topilmadi."} />
+                    </div>
+                )}
 
-                    {/* YANGI TABLE KODI (03.02.2026) - columnsV2 ishlatilmoqda */}
+                <div style={glassStyle}>
                     <Table
                         columns={columnsV2}
                         dataSource={data}
@@ -520,9 +576,10 @@ const DailyHepatitisPage: React.FC = () => {
                         size="small"
                         pagination={false}
                         scroll={{ x: 2000, y: 600 }}
+                        className="clinical-table"
                         summary={() => (
                             <Table.Summary fixed>
-                                <Table.Summary.Row style={{ background: '#fafafa', fontWeight: 'bold' }}>
+                                <Table.Summary.Row style={{ background: 'rgba(24, 144, 255, 0.05)', fontWeight: 'bold' }}>
                                     <Table.Summary.Cell index={0} align="center">-</Table.Summary.Cell>
                                     <Table.Summary.Cell index={1}>{t('daily_reports.table.total_province')}</Table.Summary.Cell>
                                     <Table.Summary.Cell index={2}>{provinceTotals.total_cases}</Table.Summary.Cell>
@@ -549,9 +606,9 @@ const DailyHepatitisPage: React.FC = () => {
                             </Table.Summary>
                         )}
                     />
-                </Space>
-            </Card>
-        </PermissionGate>
+                </div>
+            </div>
+        </PermissionGate >
     );
 };
 

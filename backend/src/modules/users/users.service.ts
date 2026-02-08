@@ -8,7 +8,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-  ) { }
+  ) {}
 
   async findOneByUsername(username: string): Promise<User | undefined> {
     return this.usersRepository.findOne({
@@ -44,7 +44,7 @@ export class UsersService {
   private validateUserMapping(userData: any) {
     // Sanitary roles (Level 3) should ideally not have access to Epidemiology or Vaccination departments
     // But per checklist #6: "noto'g'ri kombinatsiya bloklanishi"
-    const sanitaryRoles = ['SANITARY_DOCTOR', 'SANITARY_ASSISTANT'];
+    const sanitaryRoles = ["SANITARY_DOCTOR", "SANITARY_ASSISTANT"];
     if (sanitaryRoles.includes(userData.role)) {
       // Logic to check if department is sanitary-related could be added if departments have codes
     }

@@ -21,7 +21,7 @@ import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 @Controller("daily-reports")
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 export class DailyReportsController {
-  constructor(private readonly reportsService: DailyReportsService) { }
+  constructor(private readonly reportsService: DailyReportsService) {}
 
   @Post()
   async createOrUpdate(@Body() dto: CreateHepatitisReportDto, @Request() req) {
@@ -33,9 +33,9 @@ export class DailyReportsController {
   async getByDate(
     @Query("date") date: string,
     @Query("isTest") isTest: string,
-    @Request() req
+    @Request() req,
   ) {
-    return this.reportsService.getByDate(date, req.user, isTest === 'true');
+    return this.reportsService.getByDate(date, req.user, isTest === "true");
   }
 
   @Post("flu")
@@ -48,9 +48,9 @@ export class DailyReportsController {
   async getFluByDate(
     @Query("date") date: string,
     @Query("isTest") isTest: string,
-    @Request() req
+    @Request() req,
   ) {
-    return this.reportsService.getFluByDate(date, req.user, isTest === 'true');
+    return this.reportsService.getFluByDate(date, req.user, isTest === "true");
   }
 
   @Post("ari")
@@ -63,9 +63,9 @@ export class DailyReportsController {
   async getAriByDate(
     @Query("date") date: string,
     @Query("isTest") isTest: string,
-    @Request() req
+    @Request() req,
   ) {
-    return this.reportsService.getAriByDate(date, req.user, isTest === 'true');
+    return this.reportsService.getAriByDate(date, req.user, isTest === "true");
   }
 
   @Get("weekly-summary")
@@ -76,11 +76,19 @@ export class DailyReportsController {
     @Query("isTest") isTest: string,
     @Request() req,
   ) {
-    return this.reportsService.getWeeklySummary(startDate, endDate, req.user, isTest === 'true');
+    return this.reportsService.getWeeklySummary(
+      startDate,
+      endDate,
+      req.user,
+      isTest === "true",
+    );
   }
 
   @Post("epidemiology")
-  async createOrUpdateEpidemiology(@Body() dto: CreateEpidemiologyReportDto, @Request() req) {
+  async createOrUpdateEpidemiology(
+    @Body() dto: CreateEpidemiologyReportDto,
+    @Request() req,
+  ) {
     return this.reportsService.upsertEpidemiology(dto, req.user);
   }
 
@@ -89,9 +97,13 @@ export class DailyReportsController {
   async getEpidemiologyByDate(
     @Query("date") date: string,
     @Query("isTest") isTest: string,
-    @Request() req
+    @Request() req,
   ) {
-    return this.reportsService.getEpidemiologyByDate(date, req.user, isTest === 'true');
+    return this.reportsService.getEpidemiologyByDate(
+      date,
+      req.user,
+      isTest === "true",
+    );
   }
 
   @Post("covid")
@@ -104,9 +116,13 @@ export class DailyReportsController {
   async getCovidByDate(
     @Query("date") date: string,
     @Query("isTest") isTest: string,
-    @Request() req
+    @Request() req,
   ) {
-    return this.reportsService.getCovidByDate(date, req.user, isTest === 'true');
+    return this.reportsService.getCovidByDate(
+      date,
+      req.user,
+      isTest === "true",
+    );
   }
   @Post("cleanup-test")
   @RequirePermission("MANAGE_DEPARTMENTS") // Republic or higher

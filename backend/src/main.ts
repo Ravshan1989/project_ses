@@ -1,15 +1,15 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { ValidationPipe } from "@nestjs/common";
-import { json, urlencoded } from 'express';
+import { json, urlencoded } from "express";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+    logger: ["log", "error", "warn", "debug", "verbose"],
   });
 
-  app.use(json({ limit: '50mb' }));
-  app.use(urlencoded({ limit: '50mb', extended: true }));
+  app.use(json({ limit: "50mb" }));
+  app.use(urlencoded({ limit: "50mb", extended: true }));
 
   // Enable CORS for Frontend
   app.enableCors();

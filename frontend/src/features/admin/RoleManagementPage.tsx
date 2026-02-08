@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Button, Modal, Form, Input, Switch, message, Space, Tag, Typography, Select, Checkbox } from 'antd';
+import { Table, Button, Modal, Form, Input, Checkbox, message, Typography, Space, Tag, Select, Switch } from 'antd';
 import { TeamOutlined, PlusOutlined, SafetyCertificateOutlined, EditOutlined } from '@ant-design/icons';
 import { rolesApi, permissionsApi } from '../../services/api';
+import { useTranslation } from 'react-i18next';
 
-const { Text } = Typography;
+const { Title, Text } = Typography;
 
 const RoleManagementPage: React.FC = () => {
+    const { t } = useTranslation();
     const [roles, setRoles] = useState<any[]>([]);
     const [permissions, setPermissions] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -156,6 +158,156 @@ const RoleManagementPage: React.FC = () => {
         }
     ];
 
+    // --- PREMIUM UI UPDATE ---
+    const glassStyle: React.CSSProperties = {
+        background: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderRadius: '24px',
+        border: '1px solid rgba(255, 255, 255, 0.4)',
+        boxShadow: '0 15px 35px rgba(0, 0, 0, 0.05)',
+        padding: '32px'
+    };
+
+    const headerStyle: React.CSSProperties = {
+        background: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)',
+        padding: '30px 40px',
+        borderRadius: '24px',
+        marginBottom: '24px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        color: '#fff',
+        boxShadow: '0 10px 30px rgba(106, 17, 203, 0.2)'
+    };
+
+    return (
+        <div style={{ padding: '24px', minHeight: '100vh', background: '#f5f7fa' }}>
+            <style>{`
+                .role-table .ant-table { background: transparent !important; }
+                .role-table .ant-table-thead > tr > th {
+                    background: rgba(255, 255, 255, 0.5) !important;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    font-size: 12px;
+                }
+                .action-pill {
+                    border-radius: 12px;
+                    height: 42px;
+                    font-weight: 600;
+                    border: none !important;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                .add-role-btn {
+                    background: #fff !important;
+                    color: #6a11cb !important;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                }
+                .add-role-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+                }
+            `}</style>
+
+            <div style={headerStyle}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.2)', padding: '15px', borderRadius: '18px' }}>
+                        <TeamOutlined style={{ fontSize: '32px', color: '#fff' }} />
+                    </div>
+                    <div>
+                        <Title level={2} style={{ margin: 0, color: '#fff', fontWeight: 800 }}>
+                            {t('roles.title') || 'Rollarni Boshqarish'}
+                        </Title>
+                        <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: '15px' }}>
+                            {t('roles.subtitle') || 'Foydalanuvchi rollari va huquqlarini sozlash paneli'}
+                        </Text>
+                    </div>
+                </div>
+                <Button
+                    type="primary"
+                    size="large"
+                    icon={<PlusOutlined />}
+                    onClick={() => {
+                        setSelectedRole(null);
+                        form.resetFields();
+                        form.setFieldsValue({ isActive: true, level: 3 });
+                        setIsRoleModalVisible(true);
+                    }}
+                    className="action-pill add-role-btn"
+                >
+                    {t('roles.add_button') || 'Yangi Rol Qo\'shish'}
+                </Button>
+            </div>
+
+            <div style={glassStyle}>
+                <Table
+                    dataSource={roles}
+                    columns={columns}
+                    rowKey="id"
+                    loading={loading}
+                    className="role-table"
+                />
+            </div>
+
+            <Modal
+                title={selectedRole ? "Rolni tahrirlash" : "Yangi rol qo'shish"}
+                open={isRoleModalVisible}
+                onCancel={() => setIsRoleModalVisible(false)}
+                onOk={() => form.submit()}
+                okText="Saqlash"
+                cancelText="Bekor qilish"
+                centered
+                style={{ borderRadius: '20px' }}
+            >
+                <Form form={form} layout="vertical" onFinish={handleCreateOrUpdateRole}>
+                    <Form.Item name="name" label="Rol Nomi" rules={[{ required: true }]}>
+                        <Input size="large" style={{ borderRadius: '10px' }} placeholder="Masalan: Bo'lim boshlig'i" />
+                    </Form.Item>
+                    <Form.Item name="level" label="Amal qilish darajasi" rules={[{ required: true }]}>
+                        <Select size="large" style={{ borderRadius: '10px' }} options={[
+                            { label: 'Respublika (1-daraja)', value: 1 },
+                            { label: 'Viloyat (2-daraja)', value: 2 },
+                            { label: 'Tuman (3-daraja)', value: 3 },
+                        ]} />
+                    </Form.Item>
+                    <Form.Item name="description" label="Tavsif">
+                        <Input.TextArea rows={3} style={{ borderRadius: '10px' }} />
+                    </Form.Item>
+                    <Form.Item name="isActive" label="Faol holatda" valuePropName="checked">
+                        <Switch />
+                    </Form.Item>
+                </Form>
+            </Modal>
+
+            <Modal
+                title={<span><SafetyCertificateOutlined /> {selectedRole?.name} - Ruxsatlar Matritsasi</span>}
+                open={isPermModalVisible}
+                onCancel={() => setIsPermModalVisible(false)}
+                onOk={handleSavePermissions}
+                width={1000}
+                okText="Saqlash"
+                cancelText="Yopish"
+                centered
+                style={{ borderRadius: '20px' }}
+            >
+                <div style={{ padding: '10px 0' }}>
+                    <Table
+                        dataSource={permissions}
+                        columns={permColumns}
+                        rowKey="id"
+                        pagination={false}
+                        scroll={{ y: 500 }}
+                        bordered
+                        size="small"
+                    />
+                </div>
+            </Modal>
+        </div>
+    );
+
+    /* --- ESKI DIZAYN (O'zgarmas Qoidalar asosida saqlab qolindi) ---
     return (
         <Card
             title={<span><TeamOutlined /> Rollarni Boshqarish</span>}
@@ -168,7 +320,6 @@ const RoleManagementPage: React.FC = () => {
         >
             <Table dataSource={roles} columns={columns} rowKey="id" loading={loading} />
 
-            {/* UZ: Rol yaratish Modali */}
             <Modal
                 title={selectedRole ? "Rolni tahrirlash" : "Yangi rol qo'shish"}
                 open={isRoleModalVisible}
@@ -197,7 +348,6 @@ const RoleManagementPage: React.FC = () => {
                 </Form>
             </Modal>
 
-            {/* UZ: Granulyar Ruxsatlar Matrix Modali */}
             <Modal
                 title={<span><SafetyCertificateOutlined /> {selectedRole?.name} - Ruxsatlar Matritsasi</span>}
                 open={isPermModalVisible}
@@ -217,6 +367,7 @@ const RoleManagementPage: React.FC = () => {
             </Modal>
         </Card>
     );
+    */
 };
 
 export default RoleManagementPage;

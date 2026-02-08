@@ -16,10 +16,10 @@ import { getRoleLevel } from "../../common/utils/role.util";
 import { DailyReportsService } from "../daily-reports/daily-reports.service";
 import { DiseasesService } from "../diseases/diseases.service";
 import { OrganizationsService } from "../organizations/organizations.service";
-import * as XLSX from 'xlsx';
+import * as XLSX from "xlsx";
 import { Template } from "../forms/entities/template.entity";
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from "fs";
+import * as path from "path";
 
 @Injectable()
 export class SubmissionsService {
@@ -31,7 +31,7 @@ export class SubmissionsService {
     private organizationsService: OrganizationsService,
     @InjectRepository(Template)
     private templateRepository: Repository<Template>,
-  ) { }
+  ) {}
 
   async create(createSubmissionDto: CreateSubmissionDto, user: User) {
     // Basic validation: User must belong to an organization
@@ -60,8 +60,8 @@ export class SubmissionsService {
     }
 
     // Fix: Cast 'isTest' to boolean
-    if (where.isTest === 'true') where.isTest = true;
-    if (where.isTest === 'false') where.isTest = false;
+    if (where.isTest === "true") where.isTest = true;
+    if (where.isTest === "false") where.isTest = false;
 
     if (level === 3) {
       where.organization = { id: user.organization.id };
@@ -150,7 +150,12 @@ export class SubmissionsService {
   //     }));
   // }
 
-  async getStatusSummary(templateCode: string, period: string, includeTest = false, user: User) {
+  async getStatusSummary(
+    templateCode: string,
+    period: string,
+    includeTest = false,
+    user: User,
+  ) {
     const level = getRoleLevel(user.role);
     const where: any = {
       template: { code: templateCode },
@@ -181,7 +186,10 @@ export class SubmissionsService {
 
   async cleanupTest() {
     await this.submissionRepository.delete({ isTest: true });
-    return { success: true, message: "Test hisobotlari muvaffaqiyatli o'chirildi" };
+    return {
+      success: true,
+      message: "Test hisobotlari muvaffaqiyatli o'chirildi",
+    };
   }
 
   /**
@@ -196,7 +204,7 @@ export class SubmissionsService {
     const aggregates = await this.dailyReportsService.getMonthlyAggregation(
       month,
       user.organization.id,
-      isTest
+      isTest,
     );
 
     // 2. Barqaror Form-1 strukturasini yaratish (Diseases asosida)
@@ -204,24 +212,42 @@ export class SubmissionsService {
 
     // Mapping: Daily Key -> Disease Code
     const mapping = {
-      hepatitis: '138',
-      ari: '159',
-      flu: '161',
-      covid: '183'
+      hepatitis: "138",
+      ari: "159",
+      flu: "161",
+      covid: "183",
     };
 
-    const dataArray = diseases.map(d => {
+    const dataArray = diseases.map((d) => {
       const row = {
         key: d.id,
         code: d.code,
         name: d.name,
         // Default values
-        m_t_c_a: 0, m_t_c_i: 0, m_t_g_a: 0, m_t_g_p: 0,
-        m_u_c_a: 0, m_u_c_i: 0, m_u_g_a: 0, m_u_g_p: 0,
-        y_t_c_a: 0, y_t_c_i: 0, y_t_g_a: 0, y_t_g_p: 0,
-        y_u_c_a: 0, y_u_c_i: 0, y_u_g_a: 0, y_u_g_p: 0,
-        m_t_p_a: 0, m_t_p_i: 0, m_u_p_a: 0, m_u_p_i: 0,
-        y_t_p_a: 0, y_t_p_i: 0, y_u_p_a: 0, y_u_p_i: 0,
+        m_t_c_a: 0,
+        m_t_c_i: 0,
+        m_t_g_a: 0,
+        m_t_g_p: 0,
+        m_u_c_a: 0,
+        m_u_c_i: 0,
+        m_u_g_a: 0,
+        m_u_g_p: 0,
+        y_t_c_a: 0,
+        y_t_c_i: 0,
+        y_t_g_a: 0,
+        y_t_g_p: 0,
+        y_u_c_a: 0,
+        y_u_c_i: 0,
+        y_u_g_a: 0,
+        y_u_g_p: 0,
+        m_t_p_a: 0,
+        m_t_p_i: 0,
+        m_u_p_a: 0,
+        m_u_p_i: 0,
+        y_t_p_a: 0,
+        y_t_p_i: 0,
+        y_u_p_a: 0,
+        y_u_p_i: 0,
       };
 
       // Apply aggregated data if code matches
@@ -245,17 +271,27 @@ export class SubmissionsService {
     return dataArray;
   }
 
-  async bulkUpload(file: Express.Multer.File, period: string, isTest: boolean, user: User) {
+  async bulkUpload(
+    file: Express.Multer.File,
+    period: string,
+    isTest: boolean,
+    user: User,
+  ) {
     if (!file) throw new BadRequestException("File is required");
 
-    const logPath = path.join(process.cwd(), 'bulk_upload_debug.log');
-    const log = (msg: string) => fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${msg}\n`);
+    const logPath = path.join(process.cwd(), "bulk_upload_debug.log");
+    const log = (msg: string) =>
+      fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${msg}\n`);
 
-    log(`[BulkUpload Start] File: ${file.originalname}, Period: ${period}, isTest: ${isTest}`);
+    log(
+      `[BulkUpload Start] File: ${file.originalname}, Period: ${period}, isTest: ${isTest}`,
+    );
 
-    const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+    const workbook = XLSX.read(file.buffer, { type: "buffer" });
     const sheetNames = workbook.SheetNames;
-    log(`[BulkUpload] Total sheets: ${sheetNames.length}: ${sheetNames.join(', ')}`);
+    log(
+      `[BulkUpload] Total sheets: ${sheetNames.length}: ${sheetNames.join(", ")}`,
+    );
 
     // We start from sheet 4 (index 3) as per user requirement
     // Sheets 1, 2, 3 (index 0, 1, 2) are summaries
@@ -264,7 +300,7 @@ export class SubmissionsService {
     const results = [];
 
     // 1. Get Template
-    const template = await this.templateRepository.findOneBy({ code: 'FORM1' });
+    const template = await this.templateRepository.findOneBy({ code: "FORM1" });
     if (!template) {
       log("[BulkUpload] Template FORM1 not found");
       throw new NotFoundException("Form 1 template not found");
@@ -273,13 +309,41 @@ export class SubmissionsService {
     // 2. Detect Period from Filename (NEW)
     const monthNamesMap: Record<string, number> = {
       // Uz Latin
-      'yanvar': 0, 'fevral': 1, 'mart': 2, 'aprel': 3, 'may': 4, 'iyun': 5,
-      'iyul': 6, 'avgust': 7, 'sentyabr': 8, 'oktyabr': 9, 'noyabr': 10, 'dekabr': 11,
+      yanvar: 0,
+      fevral: 1,
+      mart: 2,
+      aprel: 3,
+      may: 4,
+      iyun: 5,
+      iyul: 6,
+      avgust: 7,
+      sentyabr: 8,
+      oktyabr: 9,
+      noyabr: 10,
+      dekabr: 11,
       // Uz Cyrillic
-      'январ': 0, 'феврал': 1, 'март': 2, 'апрел': 3, 'май': 4, 'июн': 5,
-      'июл': 6, 'август': 7, 'сентябр': 8, 'октябр': 9, 'ноябр': 10, 'декабр': 11,
+      январ: 0,
+      феврал: 1,
+      март: 2,
+      апрел: 3,
+      май: 4,
+      июн: 5,
+      июл: 6,
+      август: 7,
+      сентябр: 8,
+      октябр: 9,
+      ноябр: 10,
+      декабр: 11,
       // Russian
-      'январь': 0, 'февраль': 1, 'апрель': 3, 'июнь': 5, 'июль': 6, 'сентябрь': 8, 'октябрь': 9, 'ноябрь': 10, 'декабрь': 11
+      январь: 0,
+      февраль: 1,
+      апрель: 3,
+      июнь: 5,
+      июль: 6,
+      сентябрь: 8,
+      октябрь: 9,
+      ноябрь: 10,
+      декабрь: 11,
     };
 
     let finalPeriod = period;
@@ -299,30 +363,43 @@ export class SubmissionsService {
     }
 
     if (foundYear !== null && foundMonth !== null) {
-      finalPeriod = `${foundYear}-${String(foundMonth + 1).padStart(2, '0')}-01`;
-      log(`[BulkUpload] Auto-detected period from filename "${file.originalname}": ${finalPeriod}`);
+      finalPeriod = `${foundYear}-${String(foundMonth + 1).padStart(2, "0")}-01`;
+      log(
+        `[BulkUpload] Auto-detected period from filename "${file.originalname}": ${finalPeriod}`,
+      );
     } else {
-      log(`[BulkUpload] Using provided/default period: ${finalPeriod} (Detection failed)`);
+      log(
+        `[BulkUpload] Using provided/default period: ${finalPeriod} (Detection failed)`,
+      );
     }
 
     // 3. Get All Organizations for mapping
     const organizations = await this.organizationsService.findAll();
     const diseases = await this.diseasesService.findAll();
-    log(`[BulkUpload] Found ${organizations.length} organizations and ${diseases.length} diseases`);
+    log(
+      `[BulkUpload] Found ${organizations.length} organizations and ${diseases.length} diseases`,
+    );
 
     // UZ: Robust qidiruv uchun nomlarni normalizatsiya qilish
     const normalize = (name: string) => {
-      let n = name.toLowerCase()
+      const n = name
+        .toLowerCase()
         // Standardize suffixes
-        .replace(/shaxri|shaxar|sh\.|sh$/g, ' sh')
-        .replace(/tuman|t\.|t$/g, ' t')
+        .replace(/shaxri|shaxar|sh\.|sh$/g, " sh")
+        .replace(/tuman|t\.|t$/g, " t")
         // Normalize specific Uzbek letters
-        .replace(/h/g, 'x')
-        .replace(/[ʻʼ'`‘’]/g, '')
+        .replace(/h/g, "x")
+        .replace(/[ʻʼ'`‘’]/g, "")
         // Russian to Latin (basic for common district names)
-        .replace(/я/g, 'ya').replace(/ю/g, 'yu').replace(/ч/g, 'ch').replace(/ш/g, 'sh')
-        .replace(/қ/g, 'q').replace(/ў/g, 'o').replace(/ғ/g, 'g').replace(/ҳ/g, 'x')
-        .replace(/\s+/g, '') // Remove spaces for even tighter matching
+        .replace(/я/g, "ya")
+        .replace(/ю/g, "yu")
+        .replace(/ч/g, "ch")
+        .replace(/ш/g, "sh")
+        .replace(/қ/g, "q")
+        .replace(/ў/g, "o")
+        .replace(/ғ/g, "g")
+        .replace(/ҳ/g, "x")
+        .replace(/\s+/g, "") // Remove spaces for even tighter matching
         .trim();
       return n;
     };
@@ -330,52 +407,102 @@ export class SubmissionsService {
     for (const sheetName of districtSheets) {
       log(`[BulkUpload] Processing sheet: ${sheetName}`);
       const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json<any[]>(worksheet, { header: 1 });
+      const jsonData = XLSX.utils.sheet_to_json<any[]>(worksheet, {
+        header: 1,
+      });
 
       if (!jsonData || jsonData.length === 0) {
         log(`[BulkUpload] Sheet ${sheetName} rows: 0`);
-        log(`[BulkUpload] WARNING: Could not find organization for sheet: "${sheetName}"`);
+        log(
+          `[BulkUpload] WARNING: Could not find organization for sheet: "${sheetName}"`,
+        );
         continue;
       }
       log(`[BulkUpload] Sheet ${sheetName} rows: ${jsonData.length}`);
 
       // Try exact match first, then normalized match
-      let org = organizations.find(o => o.name === sheetName);
+      let org = organizations.find((o) => o.name === sheetName);
       if (!org) {
         const normSheet = normalize(sheetName);
-        org = organizations.find(o => normalize(o.name) === normSheet);
+        org = organizations.find((o) => normalize(o.name) === normSheet);
       }
 
       if (!org) {
-        log(`[BulkUpload] WARNING: Could not find organization for sheet: "${sheetName}"`);
+        log(
+          `[BulkUpload] WARNING: Could not find organization for sheet: "${sheetName}"`,
+        );
         continue;
       }
-      log(`[BulkUpload] SUCCESS: Mapped sheet "${sheetName}" to org: "${org.name}" (${org.id})`);
+      log(
+        `[BulkUpload] SUCCESS: Mapped sheet "${sheetName}" to org: "${org.name}" (${org.id})`,
+      );
 
       // 4. Map Excel rows to Form1Data (Restored)
-      const mappedData = diseases.map(disease => {
-        const row = jsonData.find(r => r && (
-          String(r[0]).trim() === disease.code ||
-          String(r[1]).trim() === disease.code ||
-          String(r[0]).trim() === String(Number(disease.code)) // Handle leading zeros removal by excel
-        ));
+      const mappedData = diseases.map((disease) => {
+        const row = jsonData.find(
+          (r) =>
+            r &&
+            (String(r[0]).trim() === disease.code ||
+              String(r[1]).trim() === disease.code ||
+              String(r[0]).trim() === String(Number(disease.code))), // Handle leading zeros removal by excel
+        );
 
         const dataRow: any = {
           key: disease.id,
           code: disease.code,
           name: disease.name,
-          m_t_p_a: 0, m_t_p_i: 0, m_t_c_a: 0, m_t_c_i: 0, m_t_g_a: 0, m_t_g_p: 0,
-          m_u_p_a: 0, m_u_p_i: 0, m_u_c_a: 0, m_u_c_i: 0, m_u_g_a: 0, m_u_g_p: 0,
-          y_t_p_a: 0, y_t_p_i: 0, y_t_c_a: 0, y_t_c_i: 0, y_t_g_a: 0, y_t_g_p: 0,
-          y_u_p_a: 0, y_u_p_i: 0, y_u_c_a: 0, y_u_c_i: 0, y_u_g_a: 0, y_u_g_p: 0,
+          m_t_p_a: 0,
+          m_t_p_i: 0,
+          m_t_c_a: 0,
+          m_t_c_i: 0,
+          m_t_g_a: 0,
+          m_t_g_p: 0,
+          m_u_p_a: 0,
+          m_u_p_i: 0,
+          m_u_c_a: 0,
+          m_u_c_i: 0,
+          m_u_g_a: 0,
+          m_u_g_p: 0,
+          y_t_p_a: 0,
+          y_t_p_i: 0,
+          y_t_c_a: 0,
+          y_t_c_i: 0,
+          y_t_g_a: 0,
+          y_t_g_p: 0,
+          y_u_p_a: 0,
+          y_u_p_i: 0,
+          y_u_c_a: 0,
+          y_u_c_i: 0,
+          y_u_g_a: 0,
+          y_u_g_p: 0,
         };
 
         if (row) {
           const fields = [
-            'm_t_p_a', 'm_t_p_i', 'm_t_c_a', 'm_t_c_i', 'm_t_g_a', 'm_t_g_p',
-            'm_u_p_a', 'm_u_p_i', 'm_u_c_a', 'm_u_c_i', 'm_u_g_a', 'm_u_g_p',
-            'y_t_p_a', 'y_t_p_i', 'y_t_c_a', 'y_t_c_i', 'y_t_g_a', 'y_t_g_p',
-            'y_u_p_a', 'y_u_p_i', 'y_u_c_a', 'y_u_c_i', 'y_u_g_a', 'y_u_g_p'
+            "m_t_p_a",
+            "m_t_p_i",
+            "m_t_c_a",
+            "m_t_c_i",
+            "m_t_g_a",
+            "m_t_g_p",
+            "m_u_p_a",
+            "m_u_p_i",
+            "m_u_c_a",
+            "m_u_c_i",
+            "m_u_g_a",
+            "m_u_g_p",
+            "y_t_p_a",
+            "y_t_p_i",
+            "y_t_c_a",
+            "y_t_c_i",
+            "y_t_g_a",
+            "y_t_g_p",
+            "y_u_p_a",
+            "y_u_p_i",
+            "y_u_c_a",
+            "y_u_c_i",
+            "y_u_g_a",
+            "y_u_g_p",
           ];
           fields.forEach((f, idx) => {
             dataRow[f] = Number(row[2 + idx]) || 0;
@@ -390,8 +517,8 @@ export class SubmissionsService {
           template: { id: template.id },
           organization: { id: org.id },
           reportingPeriod: finalPeriod,
-          isTest: isTest
-        }
+          isTest: isTest,
+        },
       });
 
       if (submission) {
@@ -405,7 +532,7 @@ export class SubmissionsService {
           data: mappedData,
           status: SubmissionStatus.SUBMITTED,
           submittedBy: user,
-          isTest: isTest
+          isTest: isTest,
         });
       }
 
@@ -414,11 +541,13 @@ export class SubmissionsService {
       results.push(await this.submissionRepository.save(submission));
     }
 
-    log(`[BulkUpload Finished] Successfully processed ${results.length} districts for period ${finalPeriod}.`);
+    log(
+      `[BulkUpload Finished] Successfully processed ${results.length} districts for period ${finalPeriod}.`,
+    );
     return {
       message: `Successfully processed ${results.length} districts for period: ${finalPeriod}`,
       period: finalPeriod,
-      count: results.length
+      count: results.length,
     };
   }
 }

@@ -4,7 +4,7 @@ import { AnalysisQueryDto } from "./dto/analysis-query.dto";
 
 @Controller("analysis")
 export class AnalysisController {
-  constructor(private readonly analysisService: AnalysisService) { }
+  constructor(private readonly analysisService: AnalysisService) {}
 
   @Get("incidence-rates")
   async getIncidenceRates(@Query() query: AnalysisQueryDto) {
@@ -28,5 +28,11 @@ export class AnalysisController {
   async getForecast(@Query("diseaseType") diseaseType: string) {
     // UZ: Tanlangan kasallik turi bo'yicha bashorat olish
     return this.analysisService.getForecast(diseaseType);
+  }
+
+  @Get("forecasts/ranked")
+  async getAllForecastsRanked() {
+    // UZ: Barcha kasalliklar uchun xavf darajasi bo'yicha tartiblangan prognoz
+    return this.analysisService.getAllForecastsRanked();
   }
 }

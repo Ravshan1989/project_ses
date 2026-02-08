@@ -33,4 +33,4 @@ import { Disease } from "../diseases/entities/disease.entity";
     ForecastingService, // UZ: Tashqi modullar uchun export qilindi
   ],
 })
-export class AnalysisModule { }
+export class AnalysisModule {}

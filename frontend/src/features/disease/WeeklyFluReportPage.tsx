@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Typography, Card, DatePicker, Button, notification, Space } from 'antd';
-import { ReloadOutlined, DownloadOutlined } from '@ant-design/icons';
+import { ReloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { dailyReportsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
-import { exportWeeklyReport } from '../../services/excelExportService';
+
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -83,13 +83,7 @@ const WeeklyFluReportPage: React.FC = () => {
         }
     };
 
-    const handleExcelExport = () => {
-        const fileName = `Haftalik_Gripp_${dates[0].format('DD.MM.YYYY')}_${dates[1].format('DD.MM.YYYY')}`;
-        const title = t('daily_reports.weekly_title');
-        const period = `${dates[0].format('DD.MM.YYYY')} - ${dates[1].format('DD.MM.YYYY')}`;
-        exportWeeklyReport(data, fileName, title, period, columns);
-        notification.success({ message: t('common.success_export') });
-    };
+
 
     const columns: any = [
         { title: t('daily_reports.table.no'), dataIndex: 'key', width: 40, align: 'center', fixed: 'left' },
@@ -174,7 +168,7 @@ const WeeklyFluReportPage: React.FC = () => {
                             allowClear={false}
                         />
                         <Button icon={<ReloadOutlined />} onClick={fetchSummary}>{t('daily_reports.actions.refresh')}</Button>
-                        <Button type="primary" icon={<DownloadOutlined />} onClick={handleExcelExport}>{t('common.export')} (Excel)</Button>
+
                     </Space>
                 </div>
 

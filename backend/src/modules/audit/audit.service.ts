@@ -5,22 +5,22 @@ import { AuditLog } from "./entities/audit.entity";
 
 @Injectable()
 export class AuditService {
-    constructor(
-        @InjectRepository(AuditLog)
-        private auditLogRepository: Repository<AuditLog>
-    ) { }
+  constructor(
+    @InjectRepository(AuditLog)
+    private auditLogRepository: Repository<AuditLog>,
+  ) {}
 
-    // UZ: Yangi audit yozuvini saqlash
-    async createLog(data: Partial<AuditLog>): Promise<AuditLog> {
-        const log = this.auditLogRepository.create(data);
-        return await this.auditLogRepository.save(log);
-    }
+  // UZ: Yangi audit yozuvini saqlash
+  async createLog(data: Partial<AuditLog>): Promise<AuditLog> {
+    const log = this.auditLogRepository.create(data);
+    return await this.auditLogRepository.save(log);
+  }
 
-    // UZ: Tizimdagi barcha amallarni olish (Admin uchun)
-    async findAll(): Promise<AuditLog[]> {
-        return await this.auditLogRepository.find({
-            relations: ["user"],
-            order: { createdAt: "DESC" },
-        });
-    }
+  // UZ: Tizimdagi barcha amallarni olish (Admin uchun)
+  async findAll(): Promise<AuditLog[]> {
+    return await this.auditLogRepository.find({
+      relations: ["user"],
+      order: { createdAt: "DESC" },
+    });
+  }
 }

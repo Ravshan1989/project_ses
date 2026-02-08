@@ -4,14 +4,18 @@ import { Permission } from "./permission.entity";
 
 @Entity("department_permissions")
 export class DepartmentPermission {
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
-    @ManyToOne(() => Department, (dept) => dept.permissions, { onDelete: "CASCADE" })
-    @JoinColumn({ name: "department_id" })
-    department: Department;
+  @ManyToOne(() => Department, (dept) => dept.permissions, {
+    onDelete: "CASCADE",
+  })
+  @JoinColumn({ name: "department_id" })
+  department: Department;
 
-    @ManyToOne(() => Permission, (perm) => perm.departmentPermissions, { onDelete: "CASCADE" })
-    @JoinColumn({ name: "permission_id" })
-    permission: Permission;
+  @ManyToOne(() => Permission, (perm) => perm.departmentPermissions, {
+    onDelete: "CASCADE",
+  })
+  @JoinColumn({ name: "permission_id" })
+  permission: Permission;
 }
