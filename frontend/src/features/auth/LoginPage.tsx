@@ -122,236 +122,257 @@ const LoginPage: React.FC = () => {
 
                 {/* Left Side - Modern Gradient Panel with Animation */}
                 <div className="login-left-panel" style={{
-                    flex: '0 0 45%',
-                    background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%)',
+                    flex: '0 0 50%',
+                    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
                     position: 'relative',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    padding: '60px',
-                    boxShadow: '20px 0 60px rgba(0,0,0,0.3)'
+                    padding: '80px',
+                    boxShadow: '20px 0 60px rgba(0,0,0,0.5)',
+                    borderRight: '1px solid rgba(255,255,255,0.1)'
                 }}>
-                    {/* Animated Background Shapes */}
+                    {/* Animated Background Shapes - More Dynamic */}
                     <div style={{
                         position: 'absolute',
-                        top: '-10%', left: '-10%',
-                        width: '120%', height: '120%',
-                        background: 'radial-gradient(circle at 30% 50%, rgba(139, 92, 246, 0.3) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.3) 0%, transparent 50%)',
-                        animation: 'float 20s ease-in-out infinite',
-                        zIndex: 0
+                        top: '-20%', left: '-20%',
+                        width: '140%', height: '140%',
+                        background: 'radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.4) 0%, transparent 40%), radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.4) 0%, transparent 40%), radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.2) 0%, transparent 60%)',
+                        animation: 'float 25s ease-in-out infinite alternate',
+                        zIndex: 0,
+                        filter: 'blur(60px)'
                     }} />
 
-                    {/* Floating Particles */}
+                    {/* Tech Grid Overlay */}
                     <div style={{
                         position: 'absolute',
                         top: 0, left: 0, right: 0, bottom: 0,
-                        background: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-                        opacity: 0.4,
+                        backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)`,
+                        backgroundSize: '40px 40px',
                         zIndex: 0
                     }} />
 
                     <style>{`
                         @keyframes float {
-                            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-                            33% { transform: translate(30px, -30px) rotate(120deg); }
-                            66% { transform: translate(-20px, 20px) rotate(240deg); }
+                            0% { transform: translate(0, 0) scale(1); }
+                            50% { transform: translate(40px, -40px) scale(1.1); }
+                            100% { transform: translate(-20px, 20px) scale(1); }
                         }
-                        @keyframes pulse {
-                            0%, 100% { opacity: 1; transform: scale(1); }
-                            50% { opacity: 0.8; transform: scale(1.05); }
+                        @keyframes glow {
+                            0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.4); }
+                            50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.7); }
                         }
-                        @keyframes slideInLeft {
-                            from { opacity: 0; transform: translateX(-30px); }
-                            to { opacity: 1; transform: translateX(0); }
+                        @keyframes slideUp {
+                            from { opacity: 0; transform: translateY(30px); }
+                            to { opacity: 1; transform: translateY(0); }
                         }
                         .login-left-panel > * {
-                            animation: slideInLeft 0.6s ease-out;
+                            animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
                         }
                     `}</style>
 
-                    <div style={{ zIndex: 1, display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <div style={{ zIndex: 1, display: 'flex', alignItems: 'center', gap: '20px' }}>
                         <div style={{
-                            width: '50px', height: '50px',
-                            background: 'linear-gradient(135deg, #fff 0%, #e0e7ff 100%)',
-                            borderRadius: '12px',
+                            width: '64px', height: '64px',
+                            background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+                            borderRadius: '16px',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: '#1e3c72', fontSize: '24px',
-                            boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
-                            animation: 'pulse 3s ease-in-out infinite'
+                            color: '#fff', fontSize: '32px',
+                            boxShadow: '0 0 30px rgba(99, 102, 241, 0.5)',
+                            animation: 'glow 4s ease-in-out infinite'
                         }}>
                             <MedicineBoxOutlined />
                         </div>
-                        <Text style={{ color: '#fff', fontSize: '20px', fontWeight: 600, letterSpacing: '1.5px' }}>
-                            SMART <span style={{ fontWeight: 800, background: 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>SES</span>
-                        </Text>
+                        <div>
+                            <Text style={{
+                                color: '#fff',
+                                fontSize: '24px',
+                                fontWeight: 300,
+                                letterSpacing: '4px',
+                                display: 'block',
+                                marginBottom: '-5px'
+                            }}>
+                                SMART
+                            </Text>
+                            <Text style={{
+                                color: '#fff',
+                                fontSize: '32px',
+                                fontWeight: 900,
+                                background: 'linear-gradient(135deg, #818cf8 0%, #c084fc 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent'
+                            }}>
+                                SES
+                            </Text>
+                        </div>
                     </div>
 
-                    <div style={{ zIndex: 1, maxWidth: '500px', margin: '40px 0' }}>
+                    <div style={{ zIndex: 1, maxWidth: '600px', margin: '60px 0' }}>
                         <Title level={1} style={{
                             color: '#fff',
-                            fontSize: '42px',
-                            lineHeight: '1.2',
-                            fontWeight: 800,
-                            marginBottom: '24px',
-                            margin: 0,
-                            textShadow: '0 2px 10px rgba(0,0,0,0.3)'
+                            fontSize: '52px',
+                            lineHeight: '1.1',
+                            fontWeight: 900,
+                            marginBottom: '32px',
+                            letterSpacing: '-1px'
                         }}>
                             {t('auth.slogan_part1', 'Aholining salomatligi')} — <br />
                             <span style={{
-                                background: 'linear-gradient(135deg, #60a5fa 0%, #c084fc 100%)',
+                                background: 'linear-gradient(to right, #6366f1, #a855f7, #ec4899)',
                                 WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent'
+                                WebkitTextFillColor: 'transparent',
+                                animation: 'hue 10s infinite linear'
                             }}>{t('auth.slogan_part2', 'bizning ustuvor vazifamiz')}</span>
                         </Title>
                         <Text style={{
-                            color: 'rgba(255,255,255,0.85)',
-                            fontSize: '17px',
-                            lineHeight: '1.7',
+                            color: 'rgba(255,255,255,0.7)',
+                            fontSize: '20px',
+                            lineHeight: '1.6',
                             display: 'block',
-                            maxWidth: '450px',
-                            marginTop: '24px',
-                            textShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                            maxWidth: '480px',
+                            fontWeight: 300
                         }}>
                             {t('auth.description', 'Toshkent viloyati Sanitariya-epidemiologik osoyishtalik va jamoat salomatligi boshqarmasi yagona monitoring tizimi.')}
                         </Text>
 
-                        {/* Feature Pills */}
-                        <div style={{ display: 'flex', gap: '12px', marginTop: '32px', flexWrap: 'wrap' }}>
-                            {['🔒 Xavfsiz', '⚡ Tez', '📊 Samarali'].map((feature, i) => (
+                        {/* Feature Cards Instead of Pills */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginTop: '48px' }}>
+                            {[
+                                { text: '🔒 Xavfsiz', desc: 'Secure Data' },
+                                { text: '⚡ Tez', desc: 'Real-time' },
+                                { text: '📊 Samarali', desc: 'Insightful' }
+                            ].map((feature, i) => (
                                 <div key={i} style={{
-                                    padding: '8px 16px',
-                                    background: 'rgba(255,255,255,0.15)',
+                                    padding: '20px',
+                                    background: 'rgba(255,255,255,0.05)',
                                     backdropFilter: 'blur(10px)',
-                                    borderRadius: '20px',
-                                    color: '#fff',
-                                    fontSize: '14px',
-                                    fontWeight: 500,
-                                    border: '1px solid rgba(255,255,255,0.2)',
-                                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                                    borderRadius: '16px',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    transition: 'all 0.3s ease'
+                                }} onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                                    e.currentTarget.style.transform = 'translateY(-5px)';
+                                }} onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                                    e.currentTarget.style.transform = 'translateY(0)';
                                 }}>
-                                    {feature}
+                                    <div style={{ color: '#fff', fontSize: '16px', fontWeight: 700, marginBottom: '4px' }}>{feature.text}</div>
+                                    <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>{feature.desc}</div>
                                 </div>
                             ))}
                         </div>
                     </div>
 
                     <div style={{ zIndex: 1 }}>
-                        <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>
-                            © {new Date().getFullYear()} {t('common.app_name')}. {t('auth.footer_text', 'Barcha huquqlar himoyalangan.')}
+                        <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', letterSpacing: '1px' }}>
+                            DEVELOPED BY <span style={{ color: '#fff', fontWeight: 600 }}>ADVANCED ANALYTICS</span> © {new Date().getFullYear()}
                         </Text>
                     </div>
                 </div>
 
-                {/* Right Side - Modern Glassmorphism Login Form */}
+                {/* Right Side - Premium Hybrid Panel */}
                 <div className="login-right-panel" style={{
                     flex: 1,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: 'rgba(255,255,255,0.95)',
-                    backdropFilter: 'blur(20px)',
-                    position: 'relative'
+                    background: '#0f172a',
+                    backgroundImage: 'radial-gradient(at 50% 50%, rgba(30, 41, 59, 1) 0%, rgba(15, 23, 42, 1) 100%)',
+                    position: 'relative',
+                    padding: '40px'
                 }}>
-                    {/* Decorative Gradient Orbs */}
+                    {/* Floating Glows */}
                     <div style={{
                         position: 'absolute',
-                        top: '10%', right: '10%',
-                        width: '200px', height: '200px',
-                        background: 'radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%)',
-                        borderRadius: '50%',
-                        filter: 'blur(40px)',
-                        animation: 'pulse 4s ease-in-out infinite'
-                    }} />
-                    <div style={{
-                        position: 'absolute',
-                        bottom: '15%', left: '15%',
-                        width: '150px', height: '150px',
-                        background: 'radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%)',
-                        borderRadius: '50%',
-                        filter: 'blur(40px)',
-                        animation: 'pulse 5s ease-in-out infinite reverse'
+                        top: '20%', right: '10%',
+                        width: '400px', height: '400px',
+                        background: 'radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%)',
+                        filter: 'blur(60px)',
                     }} />
 
                     <div style={{
                         width: '100%',
-                        maxWidth: '440px',
-                        padding: '50px',
-                        background: 'rgba(255,255,255,0.9)',
-                        backdropFilter: 'blur(10px)',
-                        borderRadius: '24px',
-                        boxShadow: '0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.5)',
+                        maxWidth: '480px',
+                        padding: '60px',
+                        background: 'rgba(30, 41, 59, 0.7)',
+                        backdropFilter: 'blur(40px) saturate(180%)',
+                        borderRadius: '32px',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        boxShadow: '0 40px 100px rgba(0,0,0,0.5)',
                         position: 'relative',
                         zIndex: 1
                     }}>
-                        <div style={{ marginBottom: '40px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
+                        <div style={{ marginBottom: '48px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                                <Badge status="processing" text={<span style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>System Online</span>} />
                                 <LanguageSwitcher />
                             </div>
                             <Title level={2} style={{
-                                color: '#1f1f1f',
-                                marginBottom: '8px',
+                                color: '#fff',
+                                marginBottom: '12px',
                                 fontWeight: 800,
-                                fontSize: '32px'
+                                fontSize: '36px',
+                                letterSpacing: '-0.5px'
                             }}>
-                                {t('auth.welcome_title', 'Xush kelibsiz')} 👋
+                                {t('auth.welcome_title', 'Xush kelibsiz')}
                             </Title>
-                            <Text type="secondary" style={{ fontSize: '16px', color: '#666' }}>{t('auth.welcome_subtitle', 'Hisobingizga kiring')}</Text>
+                            <Text style={{ fontSize: '18px', color: '#94a3b8', fontWeight: 400 }}>{t('auth.welcome_subtitle', 'Hisobingizga kiring')}</Text>
                         </div>
 
                         <Form
-                            name="login_v2"
+                            name="login_premium"
                             onFinish={onFinish}
                             layout="vertical"
                             size="large"
                             requiredMark={false}
                         >
                             <Form.Item
-                                label={<span style={{ fontWeight: 600, color: '#333', fontSize: '15px' }}>{t('user.username')}</span>}
+                                label={<span style={{ fontWeight: 600, color: '#e2e8f0', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('user.username')}</span>}
                                 name="username"
                                 rules={[{ required: true, message: t('auth.username_required', 'Iltimos, loginingizni kiriting') }]}
                             >
                                 <Input
                                     placeholder="admin"
-                                    prefix={<UserOutlined style={{ color: '#9ca3af' }} />}
+                                    prefix={<UserOutlined style={{ color: '#6366f1' }} />}
                                     style={{
-                                        background: '#f9fafb',
-                                        border: '2px solid #e5e7eb',
-                                        borderRadius: '12px',
-                                        fontSize: '15px',
+                                        background: 'rgba(15, 23, 42, 0.6)',
+                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                        borderRadius: '16px',
+                                        fontSize: '16px',
+                                        color: '#fff',
+                                        height: '60px',
                                         transition: 'all 0.3s ease'
                                     }}
-                                    onFocus={(e) => e.target.style.borderColor = '#8b5cf6'}
-                                    onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
                                 />
                             </Form.Item>
 
                             <Form.Item
-                                label={<span style={{ fontWeight: 600, color: '#333', fontSize: '15px' }}>{t('user.password')}</span>}
+                                label={<span style={{ fontWeight: 600, color: '#e2e8f0', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('user.password')}</span>}
                                 name="password"
                                 rules={[{ required: true, message: t('auth.password_required', 'Iltimos, parolingizni kiriting') }]}
                             >
                                 <Input.Password
                                     placeholder="••••••••"
-                                    prefix={<LockOutlined style={{ color: '#9ca3af' }} />}
+                                    prefix={<LockOutlined style={{ color: '#6366f1' }} />}
                                     style={{
-                                        background: '#f9fafb',
-                                        border: '2px solid #e5e7eb',
-                                        borderRadius: '12px',
-                                        fontSize: '15px',
+                                        background: 'rgba(15, 23, 42, 0.6)',
+                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                        borderRadius: '16px',
+                                        fontSize: '16px',
+                                        color: '#fff',
+                                        height: '60px',
                                         transition: 'all 0.3s ease'
                                     }}
-                                    onFocus={(e) => e.target.style.borderColor = '#8b5cf6'}
-                                    onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
                                 />
                             </Form.Item>
 
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '28px', marginTop: '-12px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '32px', marginTop: '-8px' }}>
                                 <Link href="#" style={{
-                                    color: '#8b5cf6',
+                                    color: '#818cf8',
                                     fontWeight: 600,
                                     fontSize: '14px',
-                                    transition: 'color 0.3s ease'
+                                    transition: 'all 0.3s ease'
                                 }}>
                                     {t('auth.forgot_password', 'Parolni unutdingizmi?')}
                                 </Link>
@@ -366,28 +387,26 @@ const LoginPage: React.FC = () => {
                                     icon={<RightOutlined />}
                                     iconPosition="end"
                                     style={{
-                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
                                         border: 'none',
-                                        height: '54px',
-                                        borderRadius: '12px',
-                                        fontSize: '16px',
-                                        fontWeight: 700,
-                                        boxShadow: '0 10px 25px rgba(102, 126, 234, 0.4)',
+                                        height: '64px',
+                                        borderRadius: '16px',
+                                        fontSize: '18px',
+                                        fontWeight: 800,
+                                        boxShadow: '0 20px 40px rgba(99, 102, 241, 0.3)',
                                         transition: 'all 0.3s ease'
                                     }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.transform = 'translateY(-2px)';
-                                        e.currentTarget.style.boxShadow = '0 15px 35px rgba(102, 126, 234, 0.5)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.transform = 'translateY(0)';
-                                        e.currentTarget.style.boxShadow = '0 10px 25px rgba(102, 126, 234, 0.4)';
-                                    }}
                                 >
-                                    {t('auth.login_btn', 'Kirish')}
+                                    {t('auth.login_btn', 'Tizimga kirish')}
                                 </Button>
                             </Form.Item>
                         </Form>
+
+                        <div style={{ textAlign: 'center', marginTop: '40px' }}>
+                            <Text style={{ color: '#64748b', fontSize: '14px' }}>
+                                Technical Support: <Link style={{ color: '#94a3b8' }}>+998 (71) 276-XX-XX</Link>
+                            </Text>
+                        </div>
                     </div>
                 </div>
             </div>
