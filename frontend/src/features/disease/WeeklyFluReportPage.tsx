@@ -4,6 +4,7 @@ import { ReloadOutlined, DownloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { dailyReportsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
+import { exportWeeklyReport } from '../../services/excelExportService';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -61,7 +62,8 @@ const WeeklyFluReportPage: React.FC = () => {
             const startStr = dates[0].format('YYYY-MM-DD');
             const endStr = dates[1].format('YYYY-MM-DD');
             const res = await dailyReportsApi.getWeeklySummary(startStr, endStr);
-            const apiData = (res.data || []).filter((item: any) => item.organization?.parent !== null);
+            console.log('WEEKLY SUMMARY API DATA:', res.data);
+            const apiData = res.data || []; // Removed .filter() to include all organizations for debugging
 
             const tableData = apiData.map((item: any, idx: number) => ({
                 key: String(idx + 1),
@@ -79,6 +81,14 @@ const WeeklyFluReportPage: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleExcelExport = () => {
+        const fileName = `Haftalik_Gripp_${dates[0].format('DD.MM.YYYY')}_${dates[1].format('DD.MM.YYYY')}`;
+        const title = t('daily_reports.weekly_title');
+        const period = `${dates[0].format('DD.MM.YYYY')} - ${dates[1].format('DD.MM.YYYY')}`;
+        exportWeeklyReport(data, fileName, title, period, columns);
+        notification.success({ message: t('common.success_export') });
     };
 
     const columns: any = [
@@ -164,7 +174,7 @@ const WeeklyFluReportPage: React.FC = () => {
                             allowClear={false}
                         />
                         <Button icon={<ReloadOutlined />} onClick={fetchSummary}>{t('daily_reports.actions.refresh')}</Button>
-                        <Button type="primary" icon={<DownloadOutlined />} disabled>{t('common.export')} (Excel)</Button>
+                        <Button type="primary" icon={<DownloadOutlined />} onClick={handleExcelExport}>{t('common.export')} (Excel)</Button>
                     </Space>
                 </div>
 

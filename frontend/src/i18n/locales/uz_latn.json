@@ -58,7 +58,7 @@
         "welcome": "Xush kelibsiz",
         "language": "Til",
         "vaccination_entry": "Emlashni Ro'yxatga Olish",
-        "export": "Eksport (Excel)",
+        "export": "Eksport",
         "import": "Import (Excel)",
         "diseases": "Kasalliklar",
         "departments": "Bo'limlar",
@@ -136,7 +136,8 @@
         "weekly_flu": "Haftalik Gripp/O'RVI",
         "covid": "Koronavirus (Kunlik)",
         "unified": "Yagona Oyna (Test)",
-        "form1_monitoring": "Shakl 1 Monitoring"
+        "form1_monitoring": "Shakl 1 Monitoring",
+        "pneumonia": "Pnevmoniya"
     },
     "analysis": {
         "regional": "Hududiy Tahlil",

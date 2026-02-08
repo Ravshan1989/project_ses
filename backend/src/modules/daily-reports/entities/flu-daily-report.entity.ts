@@ -21,7 +21,7 @@ export class FluDailyReport {
   @Column({ type: "date" })
   reportDate: string;
 
-  @ManyToOne(() => Organization)
+  @ManyToOne(() => Organization, (org) => org.flu_reports)
   @JoinColumn({ name: "organization_id" })
   organization: Organization;
 

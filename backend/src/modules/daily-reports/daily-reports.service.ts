@@ -11,6 +11,7 @@ import { EpidemiologyDailyReport } from "./entities/epidemiology-daily-report.en
 import { CreateEpidemiologyReportDto } from "./dto/create-epidemiology-report.dto";
 import { CovidDailyReport } from "./entities/covid-daily-report.entity";
 import { CreateCovidReportDto } from "./dto/create-covid-report.dto";
+import { Organization } from "../organizations/entities/organization.entity";
 import { User } from "../users/entities/user.entity";
 import { getRoleLevel } from "../../common/utils/role.util";
 import { FindOptionsWhere } from "typeorm";
@@ -30,6 +31,8 @@ export class DailyReportsService {
     private epiRepo: Repository<EpidemiologyDailyReport>,
     @InjectRepository(CovidDailyReport)
     private covidRepo: Repository<CovidDailyReport>,
+    @InjectRepository(Organization)
+    private orgRepo: Repository<Organization>,
     @Inject(forwardRef(() => TelegramService))
     private telegramService: TelegramService,
   ) { }
@@ -290,67 +293,67 @@ export class DailyReportsService {
     }
     */
 
-  // YANGI YECHIM (Viloyat darajasini bazadan olishdayoq filtrlaymiz):
+  // YANGI YECHIM (Barcha tumanlarni chiqarish uchun Organization dan boshlaymiz):
   async getWeeklySummary(startDate: string, endDate: string, user: User, includeTest = false) {
-    const qb = this.fluRepo
-      .createQueryBuilder("report")
-      .leftJoin("report.organization", "organization")
+    const qb = this.orgRepo
+      .createQueryBuilder("organization")
+      .leftJoin("organization.parent", "parent")
+      .leftJoin("organization.flu_reports", "report", "report.reportDate BETWEEN :startDate AND :endDate AND report.isTest = :includeTest", {
+        startDate,
+        endDate,
+        includeTest
+      })
       .select([
         "organization.id AS organization_id",
         "organization.name AS organization_name",
         "organization.parent_id AS parent_id",
       ])
-      .addSelect("SUM(report.ari_total)", "ari_total")
-      .addSelect("SUM(report.ari_0_1)", "ari_0_1")
-      .addSelect("SUM(report.ari_1_2)", "ari_1_2")
-      .addSelect("SUM(report.ari_3_6)", "ari_3_6")
-      .addSelect("SUM(report.ari_7_14)", "ari_7_14")
-      .addSelect("SUM(report.ari_adult)", "ari_adult")
-      .addSelect("SUM(report.ari_students)", "ari_students")
-      .addSelect("SUM(report.ari_nursery)", "ari_nursery")
-      .addSelect("SUM(report.pneu_total)", "pneu_total")
-      .addSelect("SUM(report.pneu_0_2)", "pneu_0_2")
-      .addSelect("SUM(report.pneu_3_6)", "pneu_3_6")
-      .addSelect("SUM(report.pneu_7_14)", "pneu_7_14")
-      .addSelect("SUM(report.pneu_adult)", "pneu_adult")
-      .addSelect("SUM(report.pneu_students)", "pneu_students")
-      .addSelect("SUM(report.pneu_nursery)", "pneu_nursery")
-      .addSelect("SUM(report.flu_total)", "flu_total")
-      .addSelect("SUM(report.flu_0_1)", "flu_0_1")
-      .addSelect("SUM(report.flu_1_2)", "flu_1_2")
-      .addSelect("SUM(report.flu_3_6)", "flu_3_6")
-      .addSelect("SUM(report.flu_7_14)", "flu_7_14")
-      .addSelect("SUM(report.flu_adult)", "flu_adult")
-      .addSelect("SUM(report.flu_students)", "flu_students")
-      .addSelect("SUM(report.flu_nursery)", "flu_nursery")
-      .addSelect("SUM(report.sari_total)", "sari_total")
-      .addSelect("SUM(report.sari_0_2)", "sari_0_2")
-      .addSelect("SUM(report.sari_3_6)", "sari_3_6")
-      .addSelect("SUM(report.sari_7_14)", "sari_7_14")
-      .addSelect("SUM(report.sari_adult)", "sari_adult")
-      .addSelect("SUM(report.death_total)", "death_total")
-      .addSelect("SUM(report.death_pregnant)", "death_pregnant")
-      .where("report.reportDate BETWEEN :startDate AND :endDate", {
-        startDate,
-        endDate,
-      })
-      .andWhere("report.isTest = :includeTest", { includeTest })
-      // QAT'IY FILTR: Faqat ota-onasi bor (tuman) tashkilotlarni olamiz
-      .andWhere("organization.parent_id IS NOT NULL");
+      .addSelect("SUM(COALESCE(report.ari_total, 0))", "ari_total")
+      .addSelect("SUM(COALESCE(report.ari_0_1, 0))", "ari_0_1")
+      .addSelect("SUM(COALESCE(report.ari_1_2, 0))", "ari_1_2")
+      .addSelect("SUM(COALESCE(report.ari_3_6, 0))", "ari_3_6")
+      .addSelect("SUM(COALESCE(report.ari_7_14, 0))", "ari_7_14")
+      .addSelect("SUM(COALESCE(report.ari_adult, 0))", "ari_adult")
+      .addSelect("SUM(COALESCE(report.ari_students, 0))", "ari_students")
+      .addSelect("SUM(COALESCE(report.ari_nursery, 0))", "ari_nursery")
+      .addSelect("SUM(COALESCE(report.pneu_total, 0))", "pneu_total")
+      .addSelect("SUM(COALESCE(report.pneu_0_2, 0))", "pneu_0_2")
+      .addSelect("SUM(COALESCE(report.pneu_3_6, 0))", "pneu_3_6")
+      .addSelect("SUM(COALESCE(report.pneu_7_14, 0))", "pneu_7_14")
+      .addSelect("SUM(COALESCE(report.pneu_adult, 0))", "pneu_adult")
+      .addSelect("SUM(COALESCE(report.pneu_students, 0))", "pneu_students")
+      .addSelect("SUM(COALESCE(report.pneu_nursery, 0))", "pneu_nursery")
+      .addSelect("SUM(COALESCE(report.flu_total, 0))", "flu_total")
+      .addSelect("SUM(COALESCE(report.flu_0_1, 0))", "flu_0_1")
+      .addSelect("SUM(COALESCE(report.flu_1_2, 0))", "flu_1_2")
+      .addSelect("SUM(COALESCE(report.flu_3_6, 0))", "flu_3_6")
+      .addSelect("SUM(COALESCE(report.flu_7_14, 0))", "flu_7_14")
+      .addSelect("SUM(COALESCE(report.flu_adult, 0))", "flu_adult")
+      .addSelect("SUM(COALESCE(report.flu_students, 0))", "flu_students")
+      .addSelect("SUM(COALESCE(report.flu_nursery, 0))", "flu_nursery")
+      .addSelect("SUM(COALESCE(report.sari_total, 0))", "sari_total")
+      .addSelect("SUM(COALESCE(report.sari_0_2, 0))", "sari_0_2")
+      .addSelect("SUM(COALESCE(report.sari_3_6, 0))", "sari_3_6")
+      .addSelect("SUM(COALESCE(report.sari_7_14, 0))", "sari_7_14")
+      .addSelect("SUM(COALESCE(report.sari_adult, 0))", "sari_adult")
+      .addSelect("SUM(COALESCE(report.death_total, 0))", "death_total")
+      .addSelect("SUM(COALESCE(report.death_pregnant, 0))", "death_pregnant");
 
     // UZ: Role Level bo'yicha filtr
     const level = getRoleLevel(user.role);
     if (level === 2 && user.organization) {
-      // Viloyat: Faqat o'ziga tegishli tumanlar
       qb.andWhere("organization.parent_id = :orgId", { orgId: user.organization.id });
     } else if (level === 3 && user.organization) {
-      // Tuman: Faqat o'zi
       qb.andWhere("organization.id = :orgId", { orgId: user.organization.id });
+    } else {
+      // ADMIN or others: skip the top-level 'Toshkent viloyati'
+      qb.andWhere("organization.name NOT ILIKE '%Toshkent viloyati%'");
     }
 
     qb.groupBy("organization.id")
       .addGroupBy("organization.name")
-      .addGroupBy("organization.parent_id");
+      .addGroupBy("organization.parent_id")
+      .orderBy("organization.name", "ASC");
 
     const rawResults = await qb.getRawMany();
 

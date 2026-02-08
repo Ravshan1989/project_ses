@@ -9,6 +9,7 @@ import { AriDailyReport } from "./entities/ari-daily-report.entity";
 import { EpidemiologyDailyReport } from "./entities/epidemiology-daily-report.entity";
 import { CovidDailyReport } from "./entities/covid-daily-report.entity";
 import { VerificationService } from "./verification.service";
+import { Organization } from "../organizations/entities/organization.entity";
 
 import { ApprovalController } from "./approval.controller";
 
@@ -20,6 +21,7 @@ import { ApprovalController } from "./approval.controller";
       AriDailyReport,
       EpidemiologyDailyReport,
       CovidDailyReport,
+      Organization,
     ]),
   ],
   providers: [DailyReportsService, VerificationService],
