@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Typography, Card, DatePicker, Button, notification, Space } from 'antd';
+import { Table, Typography, DatePicker, Button, notification, Space } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { dailyReportsApi } from '../../services/api';
@@ -147,31 +147,97 @@ const WeeklyFluReportPage: React.FC = () => {
 
     const calculateGrandTotal = (field: keyof WeeklySummaryData) => data.reduce((sum, item) => sum + (Number(item[field]) || 0), 0);
 
+    // --- PREMIUM UI STYLES ---
+    const glassStyle: React.CSSProperties = {
+        background: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderRadius: '30px',
+        border: '1px solid rgba(255, 255, 255, 0.4)',
+        boxShadow: '0 20px 50px rgba(0, 0, 0, 0.05)',
+        padding: '32px'
+    };
+
+    const headerStyle: React.CSSProperties = {
+        background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+        padding: '32px 40px',
+        borderRadius: '24px',
+        marginBottom: '28px',
+        color: '#fff',
+        boxShadow: '0 10px 30px rgba(30, 58, 138, 0.2)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '24px'
+    };
+
     return (
-        <Card>
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                <div style={{ textAlign: 'center' }}>
-                    <Title level={4} style={{ margin: 0 }}>
-                        {t('daily_reports.weekly_title')}
-                    </Title>
-                    <Text type="secondary">
-                        {t('daily_reports.period', { start: dates[0].format('DD.MM.YYYY'), end: dates[1].format('DD.MM.YYYY') })}
-                    </Text>
+        <div style={{ padding: '24px', minHeight: '100vh', background: '#f1f5f9' }}>
+            <style>{`
+                .premium-table .ant-table { background: transparent !important; }
+                .premium-table .ant-table-thead > tr > th {
+                    background: rgba(255, 255, 255, 0.6) !important;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    font-size: 11px;
+                    letter-spacing: 0.5px;
+                    color: #1e3a8a !important;
+                    border-bottom: 2px solid #e2e8f0 !important;
+                }
+                .premium-table .ant-table-tbody > tr > td { padding: 10px 8px !important; }
+                .premium-table .ant-table-row:hover > td { background: rgba(59, 130, 246, 0.05) !important; }
+                .period-picker { 
+                    border-radius: 12px !important; 
+                    height: 44px !important; 
+                    background: rgba(255,255,255,0.1) !important;
+                    border: 1px solid rgba(255,255,255,0.2) !important;
+                }
+                .period-picker .ant-picker-input > input { color: #fff !important; font-weight: 600 !important; }
+                .period-picker .ant-picker-suffix, .period-picker .ant-picker-range-separator { color: rgba(255,255,255,0.8) !important; }
+            `}</style>
+
+            <div style={headerStyle}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.2)', padding: '12px', borderRadius: '16px' }}>
+                        <ReloadOutlined style={{ fontSize: '28px', color: '#fff' }} />
+                    </div>
+                    <div>
+                        <Title level={3} style={{ margin: 0, color: '#fff', fontWeight: 800 }}>
+                            {t('daily_reports.weekly_title')}
+                        </Title>
+                        <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px' }}>
+                            {t('daily_reports.period', { start: dates[0].format('DD.MM.YYYY'), end: dates[1].format('DD.MM.YYYY') })}
+                        </Text>
+                    </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Space>
-                        <RangePicker
-                            value={dates}
-                            onChange={(vals) => vals && setDates([vals[0]!, vals[1]!])}
-                            format="DD.MM.YYYY"
-                            allowClear={false}
-                        />
-                        <Button icon={<ReloadOutlined />} onClick={fetchSummary}>{t('daily_reports.actions.refresh')}</Button>
+                <Space size="middle" wrap>
+                    <RangePicker
+                        value={dates}
+                        onChange={(vals) => vals && setDates([vals[0]!, vals[1]!])}
+                        format="DD.MM.YYYY"
+                        allowClear={false}
+                        className="period-picker"
+                    />
+                    <Button
+                        icon={<ReloadOutlined />}
+                        onClick={fetchSummary}
+                        style={{
+                            borderRadius: '12px',
+                            height: '44px',
+                            background: 'rgba(255,255,255,0.2)',
+                            border: 'none',
+                            color: '#fff',
+                            fontWeight: 600
+                        }}
+                    >
+                        {t('daily_reports.actions.refresh')}
+                    </Button>
+                </Space>
+            </div>
 
-                    </Space>
-                </div>
-
+            <div style={glassStyle}>
                 <Table
                     columns={columns}
                     dataSource={data}
@@ -180,9 +246,10 @@ const WeeklyFluReportPage: React.FC = () => {
                     size="small"
                     pagination={false}
                     scroll={{ x: 1800, y: 600 }}
+                    className="premium-table"
                     summary={() => (
                         <Table.Summary fixed>
-                            <Table.Summary.Row style={{ backgroundColor: '#fafafa', fontWeight: 'bold' }}>
+                            <Table.Summary.Row style={{ backgroundColor: 'rgba(30, 58, 138, 0.05)', fontWeight: 'bold' }}>
                                 <Table.Summary.Cell index={0} />
                                 <Table.Summary.Cell index={1}>{t('daily_reports.table.total')}</Table.Summary.Cell>
                                 {columns.slice(2).flatMap((c: any) => c.children ? c.children : [c]).map((col: any, idx: number) => (
@@ -194,8 +261,8 @@ const WeeklyFluReportPage: React.FC = () => {
                         </Table.Summary>
                     )}
                 />
-            </Space>
-        </Card>
+            </div>
+        </div>
     );
 };
 

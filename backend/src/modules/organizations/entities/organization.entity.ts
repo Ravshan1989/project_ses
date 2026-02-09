@@ -25,6 +25,9 @@ export class Organization {
   @Column({ type: "int", default: 0 })
   population: number;
 
+  @Column({ type: "int", default: 0 })
+  child_population: number;
+
   // HIERARCHY: Region -> District
   // If parent is null, it is top level (i.e., Viloyat)
   @ManyToOne(() => Organization, (org) => org.children, { nullable: true })

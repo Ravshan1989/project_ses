@@ -349,5 +349,26 @@
         "equal": "teng",
         "increased": "marta o'sdi",
         "decreased": "marta kamaydi"
+    },
+    "import": {
+        "title": "Ma'lumotlarni Yuklash (Import)",
+        "subtitle": "Real ma'lumotlarni tizimga tezkor yuklash va yangilash",
+        "alert_title": "DIQQAT VA QOIDA",
+        "alert_desc": "Yuklanayotgan faylda 'Tuman' va 'Sanasi' ustunlari bo'lishi shart. Aholi soni uchun 'Aholi soni' va 'Bolalar soni' ustunlari kutiladi.",
+        "select_type": "Hisobot turini tanlang",
+        "placeholder": "Hisobot turini tanlang",
+        "upload_file": "Excel faylni yuklang",
+        "drag_text": "Faylni shu yerga tashlang yoki tanlash uchun bosing",
+        "drag_hint": "Faqat .xlsx formatidagi bitta fayl yuklanishi mumkin",
+        "submit_btn": "Tizimga Yuklash",
+        "result_title": "Yuklash Natijasi",
+        "imported_rows": "Muvaffaqiyatli yuklangan qatorlar",
+        "error_list": "Xato bo'lgan qatorlar",
+        "no_access": "Kechirasiz, bu sahifaga kirish huquqingiz yo'q. Faqat viloyat darajasida ruxsat berilgan.",
+        "error_no_file": "Iltimos, fayl tanlang!",
+        "error_no_type": "Iltimos, hisobot turini tanlang!",
+        "success": "Muvaffaqiyatli yuklandi!",
+        "error_failed": "Yuklashda xatolik yuz berdi",
+        "error_format": "noto'g'ri fayl formati. Faqat .xlsx fayllar qabul qilinadi."
     }
 }

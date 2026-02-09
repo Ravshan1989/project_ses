@@ -31,6 +31,7 @@ const Form1EntryPage: React.FC = () => {
     const [period, setPeriod] = useState(dayjs().subtract(1, 'month'));
     const [templateId, setTemplateId] = useState<string>('');
     const [population, setPopulation] = useState<number>(100000); // Default or fetch
+    const [childPopulation, setChildPopulation] = useState<number>(30000); // 14 yoshgacha
 
 
     useEffect(() => {
@@ -44,6 +45,9 @@ const Form1EntryPage: React.FC = () => {
             const res = await api.get('/auth/profile');
             if (res.data?.organization?.population) {
                 setPopulation(res.data.organization.population);
+            }
+            if (res.data?.organization?.child_population) {
+                setChildPopulation(res.data.organization.child_population);
             }
         } catch (e) {
             console.error("Failed to fetch org info", e);
@@ -79,9 +83,10 @@ const Form1EntryPage: React.FC = () => {
         }
     };
 
-    const calculateIntensive = (abs: number) => {
-        if (!population || population === 0) return 0;
-        return parseFloat(((abs / population) * 100000).toFixed(2));
+    const calculateIntensive = (abs: number, popValue?: number) => {
+        const p = popValue || population;
+        if (!p || p === 0) return 0;
+        return parseFloat(((abs / p) * 100000).toFixed(2));
     };
 
     const calculateGrowthAbs = (curr: number, prev: number) => {
@@ -122,11 +127,14 @@ const Form1EntryPage: React.FC = () => {
             // Auto-update calculations for the group
             const updateGroup = (p: string) => {
                 // p is prefix like 'm_t', 'm_u', etc.
+                const isUnder14 = p.includes('_u');
+                const popValue = isUnder14 ? childPopulation : population;
+
                 const prev = Number(row[`${p}_p_a` as keyof Form1Record]) || 0;
                 const curr = Number(row[`${p}_c_a` as keyof Form1Record]) || 0;
 
-                (row as any)[`${p}_p_i`] = calculateIntensive(prev);
-                (row as any)[`${p}_c_i`] = calculateIntensive(curr);
+                (row as any)[`${p}_p_i`] = calculateIntensive(prev, popValue);
+                (row as any)[`${p}_c_i`] = calculateIntensive(curr, popValue);
                 (row as any)[`${p}_g_a`] = calculateGrowthAbs(curr, prev);
                 (row as any)[`${p}_g_p`] = calculateGrowthPer(curr, prev);
             };
@@ -358,8 +366,15 @@ const Form1EntryPage: React.FC = () => {
                     if (agg) {
                         const newItem = { ...item, ...agg };
                         const update = (p: string) => {
+                            const isUnder14 = p.includes('_u');
+                            const popValue = isUnder14 ? childPopulation : population;
+
                             const prev = Number(newItem[`${p}_p_a`]) || 0;
                             const curr = Number(newItem[`${p}_c_a`]) || 0;
+
+                            newItem[`${p}_p_i`] = calculateIntensive(prev, popValue);
+                            newItem[`${p}_c_i`] = calculateIntensive(curr, popValue);
+
                             newItem[`${p}_g_a`] = calculateGrowthAbs(curr, prev);
                             newItem[`${p}_g_p`] = calculateGrowthPer(curr, prev);
                         };
@@ -432,10 +447,16 @@ const Form1EntryPage: React.FC = () => {
 
         const p = ['m_t', 'm_u', 'y_t', 'y_u'];
         p.forEach(prefix => {
+            const isUnder14 = prefix.includes('_u');
+            const totalPop = allSubmissions.reduce((acc, sub) => {
+                const val = isUnder14 ? sub.organization.child_population : sub.organization.population;
+                return acc + (Number(val) || 0);
+            }, 0);
+
             const prev = totals[`${prefix}_p_a`] || 0;
             const curr = totals[`${prefix}_c_a`] || 0;
-            totals[`${prefix}_p_i`] = calculateIntensive(prev);
-            totals[`${prefix}_c_i`] = calculateIntensive(curr);
+            totals[`${prefix}_p_i`] = calculateIntensive(prev, totalPop);
+            totals[`${prefix}_c_i`] = calculateIntensive(curr, totalPop);
             totals[`${prefix}_g_a`] = calculateGrowthAbs(curr, prev);
             totals[`${prefix}_g_p`] = calculateGrowthPer(curr, prev);
         });

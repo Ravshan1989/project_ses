@@ -138,6 +138,7 @@ const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, onChange }) => {
             size="small"
             pagination={false}
             scroll={{ x: 1800, y: 550 }}
+            className="premium-table"
             summary={() => (
                 <Table.Summary fixed>
                     <Table.Summary.Row style={{ backgroundColor: '#fafafa', fontWeight: 'bold' }}>

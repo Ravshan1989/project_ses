@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Tag, Button, Space, message, Card, Row, Col, Statistic, Select, Input, Typography, Badge, Tooltip, Collapse } from 'antd';
+import { Table, Tag, Button, Space, message, Card, Row, Col, Statistic, Select, Input, Typography, Badge, Tooltip } from 'antd';
 import {
     CheckCircleOutlined,
     ClockCircleOutlined,
@@ -8,17 +8,11 @@ import {
     SearchOutlined,
     EyeOutlined,
     CheckOutlined,
-    CloseOutlined,
-    FilterOutlined,
-    DownloadOutlined,
-    UploadOutlined
+    CloseOutlined
 } from '@ant-design/icons';
-import { Column, Pie, Line } from '@ant-design/plots'; // UZ: Line grafik ham qo'shildi
+import { Column, Line } from '@ant-design/plots'; // UZ: Line grafik ham qo'shildi
 import { api } from '../../services/api'; // UZ: API bilan ishlash uchun
-// import { submissionApi } from '../../services/api';
 import { Submission, SubmissionStatus } from '../../types';
-import * as XLSX from 'xlsx';
-import { Upload, UploadProps } from 'antd';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -149,57 +143,6 @@ const DashboardPage: React.FC = () => {
         // fetchSubmissions(); // Refresh
     };
 
-    // Excel Export
-    const handleExport = () => {
-        // Flatten data for Excel
-        const dataToExport = submissions.map(s => ({
-            [t('dashboard_page.table.region')]: s.organization.name,
-            [t('dashboard_page.table.report_type')]: s.template.name,
-            [t('dashboard_page.table.period')]: s.reportingPeriod,
-            [t('dashboard_page.table.status')]: s.status,
-            [t('user.created_at')]: s.createdAt,
-            [t('common.analysis')]: JSON.stringify(s.data)
-        }));
-
-        const ws = XLSX.utils.json_to_sheet(dataToExport);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, t('dashboard_page.incoming_reports'));
-        XLSX.writeFile(wb, `RegionStat_${t('dashboard_page.incoming_reports')}.xlsx`);
-        message.success(t('common.success_export'));
-    };
-
-    // Excel Import
-    const uploadProps: UploadProps = {
-        name: 'file',
-        accept: '.xlsx, .xls',
-        showUploadList: false,
-        beforeUpload: (file) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const data = e.target?.result;
-                    const workbook = XLSX.read(data, { type: 'binary' });
-                    const sheetName = workbook.SheetNames[0];
-                    const sheet = workbook.Sheets[sheetName];
-                    const jsonData = XLSX.utils.sheet_to_json(sheet);
-
-                    console.log('Imported Data:', jsonData);
-
-                    if (jsonData.length > 0) {
-                        message.success(t('common.import_success', { count: jsonData.length }));
-                        // Logic to merge imported data would go here
-                        // For demo, we just notify
-                    } else {
-                        message.warning(t('common.import_empty'));
-                    }
-                } catch (error) {
-                    message.error(t('common.import_error'));
-                }
-            };
-            reader.readAsBinaryString(file);
-            return false; // Prevent default upload behavior
-        },
-    };
 
     // Derived Statistics
     const totalSubmissions = submissions.length;
@@ -285,35 +228,35 @@ const DashboardPage: React.FC = () => {
         },
     ];
 
-    // UZ: Grafiklar uchun ma'lumotlarni tayyorlash (Append)
-    const statusChartData = [
-        { type: t('dashboard_page.statuses.APPROVED'), value: approvedSubmissions },
-        { type: t('dashboard_page.statuses.SUBMITTED'), value: pendingSubmissions },
-        { type: t('dashboard_page.statuses.REJECTED'), value: rejectedSubmissions },
-        { type: t('dashboard_page.statuses.DRAFT'), value: submissions.filter(s => s.status === SubmissionStatus.DRAFT).length },
-    ];
-
     const regionChartData = REGION_DATA.slice(0, 10).map(r => ({
         name: r.name,
         population: r.population
     }));
 
-    const statusPieConfig = {
-        appendPadding: 10,
-        data: statusChartData,
-        angleField: 'value',
-        colorField: 'type',
-        radius: 0.8,
-        label: { type: 'outer', content: '{name} {percentage}' },
-        interactions: [{ type: 'element-active' }],
+    // UZ: Trend Analizi uchun Line chart ma'lumotlari (Tanlangan yoki eng xavfli kasallik bo'yicha)
+    const trendChartData = (allForecasts.find(f => f.diseaseType === selectedDiseaseType) || allForecasts[0])?.historicalData.map((val: number, idx: number) => ({
+        month: `${idx + 1}-oy`,
+        value: val
+    })) || [];
+
+    const trendLineConfig = {
+        data: trendChartData,
+        xField: 'month',
+        yField: 'value',
+        point: { shapeField: 'dot', sizeField: 4 },
+        interaction: { tooltip: { marker: true } },
+        style: { lineWidth: 3, stroke: '#6366f1' },
     };
 
     const regionColumnConfig = {
         data: regionChartData,
         xField: 'name',
         yField: 'population',
-        label: { position: 'middle', style: { fill: '#FFFFFF', opacity: 0.6 } },
-        xAxis: { label: { autoRotate: true, autoHide: true } },
+        label: {
+            text: (d: any) => d.population.toLocaleString(),
+            position: 'middle',
+            style: { fill: '#FFFFFF', opacity: 0.8 }
+        },
         meta: { name: { alias: t('dashboard_page.analysis.region_alias') }, population: { alias: t('dashboard_page.analysis.population_alias') } },
     };
 
@@ -393,12 +336,6 @@ const DashboardPage: React.FC = () => {
                     <Title level={2} className="dashboard-title">{t('dashboard_page.title')}</Title>
                     <Text type="secondary" style={{ fontSize: '16px' }}>Tizimdagi joriy holat va tahlillar</Text>
                 </div>
-                <Space size="middle">
-                    <Button icon={<DownloadOutlined />} size="large" onClick={handleExport} style={{ borderRadius: '12px' }}>{t('dashboard_page.export_btn')}</Button>
-                    <Upload {...uploadProps}>
-                        <Button type="primary" icon={<UploadOutlined />} size="large" style={{ borderRadius: '12px' }}>{t('dashboard_page.upload_btn')}</Button>
-                    </Upload>
-                </Space>
             </div>
 
             <Row gutter={[24, 24]} style={{ marginBottom: '32px' }}>
@@ -485,8 +422,21 @@ const DashboardPage: React.FC = () => {
 
                     <Row gutter={[24, 24]}>
                         <Col span={11}>
-                            <Card style={glassStyle} title="Trend Analizi" bordered={false}>
-                                <Pie {...statusPieConfig} height={220} />
+                            <Card style={glassStyle} title={
+                                <Space>
+                                    <span>Trend Analizi</span>
+                                    {allForecasts.length > 0 && (
+                                        <Badge status="processing" text={(allForecasts.find(f => f.diseaseType === selectedDiseaseType) || allForecasts[0])?.diseaseName} />
+                                    )}
+                                </Space>
+                            } bordered={false}>
+                                {trendChartData.length > 0 ? (
+                                    <Line {...trendLineConfig} height={220} />
+                                ) : (
+                                    <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Text type="secondary">Ma'lumotlar yuklanmoqda...</Text>
+                                    </div>
+                                )}
                             </Card>
                         </Col>
                         <Col span={13}>

@@ -27,7 +27,7 @@ const covidFunc = `
 
 covidContent = covidContent.slice(0, covidInsertPos) + covidFunc + covidContent.slice(covidInsertPos);
 fs.writeFileSync('d:/323/project_ses/frontend/src/features/disease/CovidDailyReportPage.tsx', covidContent, 'utf8');
-console.log('✅ CovidDailyReportPage - Excel export funksiyasi qo'shildi');
+console.log('✅ CovidDailyReportPage - Excel export funksiyasi qo\'shildi');
 
 // UZ: AriDailyReportPage
 let ariContent = fs.readFileSync('d:/323/project_ses/frontend/src/features/disease/AriDailyReportPage.tsx', 'utf8');

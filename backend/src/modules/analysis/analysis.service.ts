@@ -248,6 +248,7 @@ export class AnalysisService {
       const org = await this.orgRepo.findOne({ where: { name: data.name } });
       if (org) {
         org.population = data.population;
+        org.child_population = Math.round(data.population * 0.3); // UZ: 30% bolalar (taxminiy)
         org.parent = region;
         await this.orgRepo.save(org);
       }

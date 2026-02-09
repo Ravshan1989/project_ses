@@ -331,5 +331,26 @@
         "lab_positive_detailed": "Positive results",
         "decimal_positive_detailed": "Positive results (%)",
         "disinfection_detailed": "Foci with disinfection performed"
+    },
+    "import": {
+        "title": "Data Upload (Import)",
+        "subtitle": "Fast upload and update of real data into the system",
+        "alert_title": "ATTENTION AND RULES",
+        "alert_desc": "The uploaded file must contain 'Tuman' and 'Sanasi' columns. For population data, 'Aholi soni' and 'Bolalar soni' columns are expected.",
+        "select_type": "Select report type",
+        "placeholder": "Select report type",
+        "upload_file": "Upload Excel file",
+        "drag_text": "Drag file here or click to select",
+        "drag_hint": "Only one .xlsx file can be uploaded at a time",
+        "submit_btn": "Upload to System",
+        "result_title": "Upload Result",
+        "imported_rows": "Successfully imported rows",
+        "error_list": "Rows with errors",
+        "no_access": "Sorry, you do not have access to this page. Access is allowed only at the regional level.",
+        "error_no_file": "Please select a file!",
+        "error_no_type": "Please select a report type!",
+        "success": "Uploaded successfully!",
+        "error_failed": "An error occurred during upload",
+        "error_format": "invalid file format. Only .xlsx files are accepted."
     }
 }

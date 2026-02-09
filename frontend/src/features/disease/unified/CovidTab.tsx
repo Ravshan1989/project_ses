@@ -107,6 +107,7 @@ const CovidTab: React.FC<CovidTabProps> = ({ data, loading, onChange }) => {
             size="small"
             pagination={false}
             scroll={{ x: 2000, y: 550 }}
+            className="premium-table"
             summary={() => (
                 <Table.Summary fixed>
                     <Table.Summary.Row style={{ backgroundColor: '#fafafa', fontWeight: 'bold' }}>

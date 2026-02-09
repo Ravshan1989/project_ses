@@ -26,7 +26,7 @@ export class ImportsService {
 
     @InjectRepository(Template)
     private readonly templateRepo: Repository<Template>,
-  ) {}
+  ) { }
 
   async processImport(file: Express.Multer.File, type: string) {
     try {
@@ -90,6 +90,8 @@ export class ImportsService {
             await this.upsertFlu(row, organization, reportDate);
           } else if (type === "form1") {
             await this.upsertForm1(row, organization, reportDate);
+          } else if (type === "population") {
+            await this.upsertPopulation(row, organization);
           }
           savedCount++;
         } catch (e) {
@@ -222,5 +224,25 @@ export class ImportsService {
       });
     }
     await this.submissionRepo.save(submission);
+  }
+
+  private async upsertPopulation(row: any, organization: Organization) {
+    // UZ: Aholi sonini yangilash
+    // Ustunlar: 'Aholi soni', 'Bolalar soni', '14 yoshgacha'
+    const population =
+      Number(row["Aholi soni"] || row["population"] || row["Aholi"]) ||
+      organization.population;
+    const child_population =
+      Number(
+        row["Bolalar soni"] ||
+        row["14 yoshgacha"] ||
+        row["child_population"] ||
+        row["Bolalar"],
+      ) || organization.child_population;
+
+    organization.population = population;
+    organization.child_population = child_population;
+
+    await this.organizationRepo.save(organization);
   }
 }

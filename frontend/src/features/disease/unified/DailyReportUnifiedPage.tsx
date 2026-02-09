@@ -205,33 +205,65 @@ const DailyReportUnifiedPage: React.FC = () => {
         <div style={{ padding: '20px', minHeight: '100vh', background: '#f0f2f5' }}>
             <style>{`
                 .premium-tabs .ant-tabs-nav {
-                    background: rgba(255, 255, 255, 0.5);
-                    border-radius: 12px;
+                    background: rgba(255, 255, 255, 0.6) !important;
+                    border-radius: 16px;
                     padding: 8px;
                     margin-bottom: 24px !important;
+                    border: 1px solid rgba(255, 255, 255, 0.4);
                 }
                 .premium-tabs .ant-tabs-tab {
-                    border-radius: 8px !important;
+                    border-radius: 12px !important;
                     transition: all 0.3s ease !important;
-                    margin: 0 4px !important;
+                    margin: 0 5px !important;
                     border: none !important;
-                    background: transparent !important;
+                    padding: 10px 20px !important;
                 }
                 .premium-tabs .ant-tabs-tab-active {
                     background: #fff !important;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+                    box-shadow: 0 8px 20px rgba(0,0,0,0.08) !important;
                 }
                 .premium-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
-                    color: #1677ff !important;
-                    font-weight: 700 !important;
+                    color: #764ba2 !important;
+                    font-weight: 800 !important;
                 }
                 .action-btn {
-                    height: 45px;
-                    border-radius: 10px;
-                    font-weight: 600;
+                    height: 48px;
+                    border-radius: 14px;
+                    font-weight: 700;
                     display: flex;
                     align-items: center;
-                    gap: 8px;
+                    gap: 10px;
+                    padding: 0 24px;
+                    transition: all 0.3s ease;
+                }
+                .period-picker { 
+                    border-radius: 14px !important; 
+                    height: 48px !important; 
+                    background: rgba(255,255,255,0.15) !important;
+                    border: 1px solid rgba(255,255,255,0.2) !important;
+                    width: 180px !important;
+                }
+                .period-picker .ant-picker-input > input { color: #fff !important; font-weight: 700 !important; }
+                .period-picker .ant-picker-suffix { color: rgba(255,255,255,0.8) !important; }
+
+                /* Global Table Refinement for child tabs */
+                .premium-table .ant-table {
+                    background: transparent !important;
+                    border-radius: 20px !important;
+                }
+                .premium-table .ant-table-thead > tr > th {
+                    background: rgba(255, 255, 255, 0.5) !important;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    font-size: 11px;
+                    letter-spacing: 0.5px;
+                    color: #4c51bf !important;
+                }
+                .premium-table .ant-table-tbody > tr > td {
+                    padding: 12px 8px !important;
+                }
+                .premium-table .ant-table-row:hover > td {
+                    background: rgba(118, 75, 162, 0.04) !important;
                 }
             `}</style>
 

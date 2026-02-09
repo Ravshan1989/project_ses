@@ -96,6 +96,7 @@ const EpiTab: React.FC<EpiTabProps> = ({ data, loading, onChange }) => {
             size="small"
             pagination={false}
             scroll={{ x: 1400, y: 550 }}
+            className="premium-table"
             summary={() => (
                 <Table.Summary fixed>
                     <Table.Summary.Row style={{ backgroundColor: '#fafafa', fontWeight: 'bold' }}>
