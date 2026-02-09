@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, Checkbox, message, Typography, Space, Tag } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, SettingOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import type { ColumnsType } from 'antd/es/table';
 import { diseasesApi } from '../../services/api';
 
@@ -15,6 +16,7 @@ interface Disease {
 }
 
 const DiseaseManagerPage: React.FC = () => {
+    const { t } = useTranslation();
     const [diseases, setDiseases] = useState<Disease[]>([]);
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,9 +50,8 @@ const DiseaseManagerPage: React.FC = () => {
         },
         {
             title: 'Kasallik Nomi',
-            dataIndex: 'name',
             key: 'name',
-            render: (text) => <Text strong>{text}</Text>
+            render: (_, record) => <Text strong>{t(`diseases.${record.code}`, { defaultValue: record.name })}</Text>
         },
         {
             title: 'Hisobot Turi',

@@ -1,5 +1,5 @@
-import React from 'react';
 import { Table, InputNumber } from 'antd';
+import { useTranslation } from 'react-i18next';
 
 interface FluReportData {
     key: string;
@@ -46,6 +46,7 @@ interface FluAriTabProps {
 }
 
 const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, onChange }) => {
+    const { t } = useTranslation();
     const isSubmitted = (row: FluReportData) => !!row.is_submitted || (row.ari_total + row.flu_total + row.pneu_total + row.sari_total + row.death_total) > 0;
 
     const renderInput = (record: FluReportData, field: keyof FluReportData, readOnly = false) => (
@@ -67,7 +68,11 @@ const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, onChange }) => {
             onCell: (r: FluReportData) => ({ style: { backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff' } })
         },
         {
-            title: 'Hududlar', dataIndex: 'district_name', width: 140, fixed: 'left',
+            title: t('daily_reports.table.district') || 'Hududlar',
+            dataIndex: 'district_name',
+            width: 140,
+            fixed: 'left',
+            render: (text: string) => t(`orgs.${text}`, { defaultValue: text }),
             onCell: (r: FluReportData) => ({
                 style: {
                     backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff1f0',
@@ -77,9 +82,9 @@ const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, onChange }) => {
             })
         },
         {
-            title: 'O\'RI',
+            title: t('reports.ari') || 'O\'RI',
             children: [
-                { title: 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'ari_total', true) },
+                { title: t('dashboard_page.total_reports') || 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'ari_total', true) },
                 { title: '0-1y', width: 50, render: (_: any, r: any) => renderInput(r, 'ari_0_1') },
                 { title: '1-2y', width: 50, render: (_: any, r: any) => renderInput(r, 'ari_1_2') },
                 { title: '3-6y', width: 50, render: (_: any, r: any) => renderInput(r, 'ari_3_6') },
@@ -88,9 +93,9 @@ const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, onChange }) => {
             ]
         },
         {
-            title: 'O\'P (Zotiljam)',
+            title: t('daily_reports.flu_pneu') || 'O\'P (Zotiljam)',
             children: [
-                { title: 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'pneu_total', true) },
+                { title: t('dashboard_page.total_reports') || 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'pneu_total', true) },
                 { title: '0-2y', width: 50, render: (_: any, r: any) => renderInput(r, 'pneu_0_2') },
                 { title: '3-6y', width: 50, render: (_: any, r: any) => renderInput(r, 'pneu_3_6') },
                 { title: '7-14y', width: 55, render: (_: any, r: any) => renderInput(r, 'pneu_7_14') },
@@ -98,9 +103,9 @@ const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, onChange }) => {
             ]
         },
         {
-            title: 'GK (Grippga o\'xshash)',
+            title: t('reports.flu') || 'GK (Grippga o\'xshash)',
             children: [
-                { title: 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'flu_total', true) },
+                { title: t('dashboard_page.total_reports') || 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'flu_total', true) },
                 { title: '0-1y', width: 50, render: (_: any, r: any) => renderInput(r, 'flu_0_1') },
                 { title: '1-2y', width: 50, render: (_: any, r: any) => renderInput(r, 'flu_1_2') },
                 { title: '3-6y', width: 50, render: (_: any, r: any) => renderInput(r, 'flu_3_6') },
@@ -109,9 +114,9 @@ const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, onChange }) => {
             ]
         },
         {
-            title: 'SARI (Og\'ir o\'tkir)',
+            title: t('daily_reports.flu_sari') || 'SARI (Og\'ir o\'tkir)',
             children: [
-                { title: 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'sari_total', true) },
+                { title: t('dashboard_page.total_reports') || 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'sari_total', true) },
                 { title: '0-2y', width: 50, render: (_: any, r: any) => renderInput(r, 'sari_0_2') },
                 { title: '3-6y', width: 50, render: (_: any, r: any) => renderInput(r, 'sari_3_6') },
                 { title: '7-14y', width: 55, render: (_: any, r: any) => renderInput(r, 'sari_7_14') },
@@ -119,9 +124,9 @@ const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, onChange }) => {
             ]
         },
         {
-            title: 'Vafot',
+            title: t('daily_reports.flu_death') || 'Vafot',
             children: [
-                { title: 'Jami', width: 50, render: (_: any, r: any) => renderInput(r, 'death_total') },
+                { title: t('dashboard_page.total_reports') || 'Jami', width: 50, render: (_: any, r: any) => renderInput(r, 'death_total') },
                 { title: 'Homil.', width: 60, render: (_: any, r: any) => renderInput(r, 'death_pregnant') },
             ]
         }
@@ -143,7 +148,7 @@ const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, onChange }) => {
                 <Table.Summary fixed>
                     <Table.Summary.Row style={{ backgroundColor: '#fafafa', fontWeight: 'bold' }}>
                         <Table.Summary.Cell index={0} />
-                        <Table.Summary.Cell index={1}>Jami</Table.Summary.Cell>
+                        <Table.Summary.Cell index={1}>{t('dashboard_page.total_reports') || 'Jami'}</Table.Summary.Cell>
                         {columns.slice(2).flatMap((c: any) => c.children ? c.children : [c]).map((col: any, idx: number) => (
                             <Table.Summary.Cell key={idx} index={idx + 2} align="center">
                                 {calculateTotal(col.dataIndex || (col.render ? 'ari_total' : 'ari_total') as any)}

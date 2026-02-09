@@ -145,7 +145,7 @@ const Form1StatusPage: React.FC = () => {
                                             >
                                                 <div style={{ marginBottom: '16px' }}>
                                                     <Text strong style={{ fontSize: '17px', display: 'block', color: '#1f1f1f' }}>
-                                                        {s.organizationName}
+                                                        {t(`orgs.${s.organizationName}`, { defaultValue: s.organizationName })}
                                                     </Text>
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

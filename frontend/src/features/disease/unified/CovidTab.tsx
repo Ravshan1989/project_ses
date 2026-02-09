@@ -1,5 +1,5 @@
-import React from 'react';
 import { Table, InputNumber } from 'antd';
+import { useTranslation } from 'react-i18next';
 
 interface CovidReportData {
     key: string;
@@ -35,6 +35,7 @@ interface CovidTabProps {
 }
 
 const CovidTab: React.FC<CovidTabProps> = ({ data, loading, onChange }) => {
+    const { t } = useTranslation();
     const isSubmitted = (row: CovidReportData) => !!row.is_submitted || row.total_cases > 0 || row.hospitalized_count > 0;
 
     const renderInput = (record: CovidReportData, field: keyof CovidReportData) => (
@@ -55,7 +56,11 @@ const CovidTab: React.FC<CovidTabProps> = ({ data, loading, onChange }) => {
             onCell: (r: CovidReportData) => ({ style: { backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff' } })
         },
         {
-            title: 'Hududlar', dataIndex: 'district_name', width: 140, fixed: 'left',
+            title: t('daily_reports.table.district') || 'Hududlar',
+            dataIndex: 'district_name',
+            width: 140,
+            fixed: 'left',
+            render: (text: string) => t(`orgs.${text}`, { defaultValue: text }),
             onCell: (r: CovidReportData) => ({
                 style: {
                     backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff1f0',
@@ -64,11 +69,11 @@ const CovidTab: React.FC<CovidTabProps> = ({ data, loading, onChange }) => {
                 }
             })
         },
-        { title: 'Jami', width: 70, render: (_: any, r: any) => renderInput(r, 'total_cases') },
+        { title: t('dashboard_page.total_reports') || 'Jami', width: 70, render: (_: any, r: any) => renderInput(r, 'total_cases') },
         { title: 'Qayta', width: 60, render: (_: any, r: any) => renderInput(r, 'reinfected') },
         { title: 'Emlan.', width: 60, render: (_: any, r: any) => renderInput(r, 'vaccinated_infected') },
         {
-            title: 'Yosh toifalari',
+            title: t('daily_reports.hepatitis_age_groups') || 'Yosh toifalari',
             children: [
                 { title: '1y.', width: 45, render: (_: any, r: any) => renderInput(r, 'age_0_1') },
                 { title: '1-3', width: 45, render: (_: any, r: any) => renderInput(r, 'age_1_3') },
@@ -112,7 +117,7 @@ const CovidTab: React.FC<CovidTabProps> = ({ data, loading, onChange }) => {
                 <Table.Summary fixed>
                     <Table.Summary.Row style={{ backgroundColor: '#fafafa', fontWeight: 'bold' }}>
                         <Table.Summary.Cell index={0} />
-                        <Table.Summary.Cell index={1}>Jami</Table.Summary.Cell>
+                        <Table.Summary.Cell index={1}>{t('dashboard_page.total_reports') || 'Jami'}</Table.Summary.Cell>
                         {columns.slice(2).flatMap((c: any) => c.children ? c.children : [c]).map((col: any, idx: number) => (
                             <Table.Summary.Cell key={idx} index={idx + 2} align="center">
                                 {calculateTotal(col.dataIndex || (col.render ? 'total_cases' : 'total_cases') as any)}

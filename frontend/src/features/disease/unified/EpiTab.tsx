@@ -1,5 +1,5 @@
-import React from 'react';
 import { Table, InputNumber } from 'antd';
+import { useTranslation } from 'react-i18next';
 
 interface EpiReportData {
     key: string;
@@ -27,6 +27,7 @@ interface EpiTabProps {
 }
 
 const EpiTab: React.FC<EpiTabProps> = ({ data, loading, onChange }) => {
+    const { t } = useTranslation();
     const isSubmitted = (row: EpiReportData) => !!row.is_submitted || row.objects_inspected > 0 || row.violations_found > 0;
 
     const renderInput = (record: EpiReportData, field: keyof EpiReportData) => (
@@ -47,7 +48,11 @@ const EpiTab: React.FC<EpiTabProps> = ({ data, loading, onChange }) => {
             onCell: (r: EpiReportData) => ({ style: { backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff' } })
         },
         {
-            title: 'Hududlar', dataIndex: 'district_name', width: 140, fixed: 'left',
+            title: t('daily_reports.table.district') || 'Hududlar',
+            dataIndex: 'district_name',
+            width: 140,
+            fixed: 'left',
+            render: (text: string) => t(`orgs.${text}`, { defaultValue: text }),
             onCell: (r: EpiReportData) => ({
                 style: {
                     backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff1f0',
@@ -101,7 +106,7 @@ const EpiTab: React.FC<EpiTabProps> = ({ data, loading, onChange }) => {
                 <Table.Summary fixed>
                     <Table.Summary.Row style={{ backgroundColor: '#fafafa', fontWeight: 'bold' }}>
                         <Table.Summary.Cell index={0} />
-                        <Table.Summary.Cell index={1}>Jami</Table.Summary.Cell>
+                        <Table.Summary.Cell index={1}>{t('dashboard_page.total_reports') || 'Jami'}</Table.Summary.Cell>
                         {columns.slice(2).flatMap((c: any) => c.children ? c.children : [c]).map((col: any, idx: number) => (
                             <Table.Summary.Cell key={idx} index={idx + 2} align="center">
                                 {calculateTotal(col.dataIndex || (col.render ? 'objects_inspected' : 'objects_inspected') as any)}

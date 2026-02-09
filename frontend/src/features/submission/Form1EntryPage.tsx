@@ -319,7 +319,13 @@ const Form1EntryPage: React.FC = () => {
     };
 
     const columns: ColumnsType<Form1Record> = [
-        { title: t('form1.table.indicator'), dataIndex: 'name', key: 'name', width: 250, fixed: 'left', render: (t) => <Text strong>{t}</Text> },
+        {
+            title: t('form1.table.indicator'),
+            key: 'name',
+            width: 250,
+            fixed: 'left',
+            render: (_, record) => <Text strong>{t(`diseases.${record.code}`, { defaultValue: record.name })}</Text>
+        },
         { title: t('form1.table.code'), dataIndex: 'code', key: 'code', width: 60, align: 'center', fixed: 'left' },
         {
             title: t('form1.table.current_month'),
@@ -485,9 +491,16 @@ const Form1EntryPage: React.FC = () => {
     };
 
     const globalMatrixColumns: ColumnsType<any> = [
-        { title: t('form1.table.district_city'), dataIndex: 'orgName', key: 'orgName', width: 180, fixed: 'left' },
+        {
+            title: t('form1.table.district_city'),
+            dataIndex: 'orgName',
+            key: 'orgName',
+            width: 180,
+            fixed: 'left',
+            render: (text) => t(`orgs.${text}`, { defaultValue: text })
+        },
         ...['101', '106', '108', '136', '140', '145', '148', '162'].map(code => ({
-            title: data.find(d => d.code === code)?.name || `Kod ${code}`,
+            title: t(`diseases.${code}`, { defaultValue: data.find(d => d.code === code)?.name || `Kod ${code}` }),
             children: [
                 { title: t('form1.table.abs'), dataIndex: `abs_${code}`, key: `abs_${code}`, width: 60, align: 'center' as const },
                 { title: t('form1.table.int'), dataIndex: `int_${code}`, key: `int_${code}`, width: 60, align: 'center' as const },
@@ -745,7 +758,7 @@ const Form1EntryPage: React.FC = () => {
                                                 placeholder={t('form1.table.search')}
                                                 optionFilterProp="label"
                                                 size="large"
-                                                options={data.map(d => ({ label: `${d.code} - ${d.name}`, value: d.code }))}
+                                                options={data.map(d => ({ label: `${d.code} - ${t(`diseases.${d.code}`, { defaultValue: d.name })}`, value: d.code }))}
                                                 onChange={setSelectedDisease}
                                             />
                                             <Button

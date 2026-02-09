@@ -1,5 +1,5 @@
-import React from 'react';
 import { Table, InputNumber } from 'antd';
+import { useTranslation } from 'react-i18next';
 
 interface ReportData {
     key: string;
@@ -35,6 +35,7 @@ interface HepatitisTabProps {
 }
 
 const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, onChange }) => {
+    const { t } = useTranslation();
     const isSubmitted = (record: ReportData) => !!record.is_submitted;
 
     const renderInput = (record: ReportData, field: keyof ReportData, readOnly = false) => (
@@ -56,7 +57,11 @@ const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, onChange }) 
             onCell: (record: ReportData) => ({ style: { backgroundColor: isSubmitted(record) ? '#f6ffed' : '#fff1f0' } })
         },
         {
-            title: 'Hududlar', dataIndex: 'district_name', width: 150, fixed: 'left',
+            title: t('daily_reports.table.district') || 'Hududlar',
+            dataIndex: 'district_name',
+            width: 150,
+            fixed: 'left',
+            render: (text: string) => t(`orgs.${text}`, { defaultValue: text }),
             onCell: (record: ReportData) => ({
                 style: {
                     backgroundColor: isSubmitted(record) ? '#f6ffed' : '#fff1f0',
@@ -65,9 +70,9 @@ const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, onChange }) 
                 }
             })
         },
-        { title: 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'total_cases', true) },
+        { title: t('dashboard_page.total_reports') || 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'total_cases', true) },
         {
-            title: 'Yoshlari bo\'yicha',
+            title: t('daily_reports.hepatitis_age_groups') || 'Yoshlari bo\'yicha',
             children: [
                 { title: '1y.', width: 50, render: (_: any, r: any) => renderInput(r, 'age_under_1') },
                 { title: '1-3', width: 50, render: (_: any, r: any) => renderInput(r, 'age_1_3') },
@@ -78,7 +83,7 @@ const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, onChange }) 
             ]
         },
         {
-            title: 'Kasbi bo\'yicha',
+            title: t('daily_reports.hepatitis_occupation') || 'Kasbi bo\'yicha',
             children: [
                 { title: 'U-1 uyush.', width: 70, render: (_: any, r: any) => renderInput(r, 'occ_unorganized') },
                 { title: '1-6 uyush.', width: 70, render: (_: any, r: any) => renderInput(r, 'occ_unorganized_1_6') },
@@ -90,7 +95,7 @@ const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, onChange }) 
             ]
         },
         {
-            title: 'Omillar',
+            title: t('daily_reports.hepatitis_factors') || 'Omillar',
             children: [
                 { title: 'Suv', width: 50, render: (_: any, r: any) => renderInput(r, 'factor_water') },
                 { title: 'Ovaqt', width: 50, render: (_: any, r: any) => renderInput(r, 'factor_food') },
@@ -98,13 +103,13 @@ const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, onChange }) 
             ]
         },
         {
-            title: 'Laboratoriya',
+            title: t('daily_reports.hepatitis_lab') || 'Laboratoriya',
             children: [
-                { title: 'Jami', width: 50, render: (_: any, r: any) => renderInput(r, 'lab_samples') },
-                { title: 'Musbat', width: 55, render: (_: any, r: any) => renderInput(r, 'lab_positive') },
+                { title: t('dashboard_page.total_reports') || 'Jami', width: 50, render: (_: any, r: any) => renderInput(r, 'lab_samples') },
+                { title: t('daily_reports.lab_positive') || 'Musbat', width: 55, render: (_: any, r: any) => renderInput(r, 'lab_positive') },
             ]
         },
-        { title: 'Dez.', dataIndex: 'disinfection_done', width: 50, render: (_: any, r: any) => renderInput(r, 'disinfection_done') },
+        { title: t('daily_reports.disinfection') || 'Dez.', dataIndex: 'disinfection_done', width: 50, render: (_: any, r: any) => renderInput(r, 'disinfection_done') },
     ];
 
     const calculateTotal = (field: keyof ReportData) => data.reduce((sum, item) => sum + (Number(item[field]) || 0), 0);
@@ -123,7 +128,7 @@ const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, onChange }) 
                 <Table.Summary fixed>
                     <Table.Summary.Row style={{ backgroundColor: '#fafafa', fontWeight: 'bold' }}>
                         <Table.Summary.Cell index={0} />
-                        <Table.Summary.Cell index={1}>Jami</Table.Summary.Cell>
+                        <Table.Summary.Cell index={1}>{t('dashboard_page.total_reports') || 'Jami'}</Table.Summary.Cell>
                         {columns.slice(2).flatMap((c: any) => c.children ? c.children : [c]).map((col: any, idx: number) => (
                             <Table.Summary.Cell key={idx} index={idx + 2} align="center">
                                 {calculateTotal(col.dataIndex || (col.render ? 'total_cases' : 'total_cases') as any)}
