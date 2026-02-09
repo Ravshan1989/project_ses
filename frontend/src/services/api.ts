@@ -55,6 +55,7 @@ export const dailyReportsApi = {
     // UZ: Tasdiqlash va Tekshirish (Verification/Approval)
     verify: (type: string, id: string) => api.patch(`/daily-reports/${type}/${id}/verify`),
     approve: (type: string, id: string) => api.patch(`/daily-reports/${type}/${id}/approve`),
+    bulkUpsertBatch: (payload: any) => api.post('/daily-reports/bulk-batch', payload),
 };
 
 export const organizationsApi = {

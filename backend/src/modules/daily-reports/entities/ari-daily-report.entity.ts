@@ -7,6 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Unique,
+  Index,
 } from "typeorm";
 import { Organization } from "../../organizations/entities/organization.entity";
 import { User } from "../../users/entities/user.entity";
@@ -18,9 +19,11 @@ export class AriDailyReport {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
+  @Index()
   @Column({ type: "date" })
   reportDate: string;
 
+  @Index()
   @ManyToOne(() => Organization)
   @JoinColumn({ name: "organization_id" })
   organization: Organization;

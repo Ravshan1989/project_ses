@@ -35,7 +35,7 @@ export class DailyReportsService {
     private orgRepo: Repository<Organization>,
     @Inject(forwardRef(() => TelegramService))
     private telegramService: TelegramService,
-  ) {}
+  ) { }
 
   private validateIsolation(user: User, organizationId: string) {
     if (!user || !user.organization) return; // Should not happen with JwtGuard
@@ -583,5 +583,122 @@ export class DailyReportsService {
         under14: 0, // Covid report doesn't have age breakdown in current entity
       },
     };
+  }
+
+  /**
+   * UZ: Barcha turdagi hisobotlarni ommaviy saqlash (Bulk Upsert)
+   */
+  async bulkUpsertBatch(
+    payload: {
+      hepatitis?: any[];
+      flu?: any[];
+      ari?: any[];
+      epi?: any[];
+      covid?: any[];
+      reportDate: string;
+      isTest: boolean;
+    },
+    user: User,
+  ) {
+    const { reportDate, isTest } = payload;
+
+    return await this.reportRepo.manager.transaction(async (manager) => {
+      // 1. Hepatitis
+      if (payload.hepatitis?.length) {
+        for (const data of payload.hepatitis) {
+          this.validateIsolation(user, data.organizationId);
+          let report = await manager.findOne(HepatitisDailyReport, {
+            where: { reportDate, organization: { id: data.organizationId }, isTest },
+          });
+          if (report) Object.assign(report, data);
+          else
+            report = manager.create(HepatitisDailyReport, {
+              ...data,
+              reportDate,
+              isTest,
+              organization: { id: data.organizationId },
+            });
+          await manager.save(report);
+        }
+      }
+
+      // 2. Flu
+      if (payload.flu?.length) {
+        for (const data of payload.flu) {
+          this.validateIsolation(user, data.organizationId);
+          let report = await manager.findOne(FluDailyReport, {
+            where: { reportDate, organization: { id: data.organizationId }, isTest },
+          });
+          if (report) Object.assign(report, data);
+          else
+            report = manager.create(FluDailyReport, {
+              ...data,
+              reportDate,
+              isTest,
+              organization: { id: data.organizationId },
+            });
+          await manager.save(report);
+        }
+      }
+
+      // 3. Ari
+      if (payload.ari?.length) {
+        for (const data of payload.ari) {
+          this.validateIsolation(user, data.organizationId);
+          let report = await manager.findOne(AriDailyReport, {
+            where: { reportDate, organization: { id: data.organizationId }, isTest },
+          });
+          if (report) Object.assign(report, data);
+          else
+            report = manager.create(AriDailyReport, {
+              ...data,
+              reportDate,
+              isTest,
+              organization: { id: data.organizationId },
+            });
+          await manager.save(report);
+        }
+      }
+
+      // 4. Epi
+      if (payload.epi?.length) {
+        for (const data of payload.epi) {
+          this.validateIsolation(user, data.organizationId);
+          let report = await manager.findOne(EpidemiologyDailyReport, {
+            where: { reportDate, organization: { id: data.organizationId }, isTest },
+          });
+          if (report) Object.assign(report, data);
+          else
+            report = manager.create(EpidemiologyDailyReport, {
+              ...data,
+              reportDate,
+              isTest,
+              organization: { id: data.organizationId },
+            });
+          await manager.save(report);
+        }
+      }
+
+      // 5. Covid
+      if (payload.covid?.length) {
+        for (const data of payload.covid) {
+          this.validateIsolation(user, data.organizationId);
+          let report = await manager.findOne(CovidDailyReport, {
+            where: { reportDate, organization: { id: data.organizationId }, isTest },
+          });
+          if (report) Object.assign(report, data);
+          else
+            report = manager.create(CovidDailyReport, {
+              ...data,
+              reportDate,
+              isTest,
+              organization: { id: data.organizationId },
+            });
+          await manager.save(report);
+        }
+      }
+
+      return { success: true };
+    });
   }
 }

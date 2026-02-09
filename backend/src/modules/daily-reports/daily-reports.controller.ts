@@ -21,7 +21,7 @@ import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 @Controller("daily-reports")
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 export class DailyReportsController {
-  constructor(private readonly reportsService: DailyReportsService) {}
+  constructor(private readonly reportsService: DailyReportsService) { }
 
   @Post()
   async createOrUpdate(@Body() dto: CreateHepatitisReportDto, @Request() req) {
@@ -128,5 +128,10 @@ export class DailyReportsController {
   @RequirePermission("MANAGE_DEPARTMENTS") // Republic or higher
   async cleanupTest() {
     return this.reportsService.cleanupTest();
+  }
+
+  @Post("bulk-batch")
+  async bulkUpsertBatch(@Body() payload: any, @Request() req) {
+    return this.reportsService.bulkUpsertBatch(payload, req.user);
   }
 }
