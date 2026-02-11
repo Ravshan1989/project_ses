@@ -45,9 +45,10 @@ export class BackupBotService implements OnModuleInit {
       });
   }
 
-  // UZ: Avtomatik zaxira (Har kuni 9:00 va 18:00 da)
+  // UZ: Avtomatik zaxira (Har kuni Toshkent vaqti bilan 9:00 va 18:00 da)
   // Cron format: seconds minutes hours dayOfMonth month dayOfWeek
-  @Cron("0 0 9,18 * * *")
+  // ORIGINAL: @Cron("0 0 9,18 * * *")
+  @Cron("0 0 9,18 * * *", { timeZone: "Asia/Tashkent" })
   async handleScheduledBackup() {
     this.logger.log("⏳ Avtomatik zaxira (Scheduled) boshlandi...");
 
@@ -71,7 +72,7 @@ export class BackupBotService implements OnModuleInit {
         this.chatId,
         { source: buffer, filename },
         {
-          caption: `💾 *AVTOMATIK ZAXIRA*\n📅 Sana: ${new Date().toLocaleString("uz-UZ")}\n\nStatus: Muvaffaqiyatli saqlandi.`,
+          caption: `💾 *AVTOMATIK ZAXIRA (Toshkent vaqti)*\n📅 Sana: ${new Date().toLocaleString("uz-UZ")}\n\nStatus: Muvaffaqiyatli saqlandi.`,
           parse_mode: "Markdown",
         },
       );
