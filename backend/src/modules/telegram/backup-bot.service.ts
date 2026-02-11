@@ -14,33 +14,52 @@ export class BackupBotService implements OnModuleInit {
     private configService: ConfigService,
     private dataExportService: DataExportService,
   ) {
-    const token = this.configService.get<string>("BACKUP_BOT_TOKEN");
-    this.chatId = this.configService.get<string>("BACKUP_CHAT_ID");
+    this.initializeBot();
+  }
+
+  private initializeBot() {
+    const token = this.configService.get<string>("BACKUP_BOT_TOKEN") || process.env.BACKUP_BOT_TOKEN;
+    this.chatId = this.configService.get<string>("BACKUP_CHAT_ID") || process.env.BACKUP_CHAT_ID;
 
     if (token) {
       this.bot = new Telegraf(token);
+      this.logger.log("Zaxira boti obyekti yaratildi.");
     } else {
       this.logger.warn(
-        "BACKUP_BOT_TOKEN topilmadi, Zaxira boti ishga tushmadi.",
+        "BACKUP_BOT_TOKEN topilmadi, Zaxira boti ishga tushmadi. .env faylini yoki environment variablesni tekshiring.",
       );
     }
   }
 
   onModuleInit() {
-    if (!this.bot) return;
+    if (!this.bot) {
+      this.logger.warn("Bot ishga tushmadi: Token mavjud emas.");
+      return;
+    }
 
     this.setupHandlers();
-    this.bot.launch().catch((err) => {
-      this.logger.error("Zaxira boti ishga tushirishda xatolik:", err);
-    });
-    this.logger.log("Zaxira boti ishga tushdi.");
+    this.bot.launch()
+      .then(() => this.logger.log("Zaxira boti Telegram bilan bog'landi."))
+      .catch((err) => {
+        this.logger.error("Zaxira botini launch qilishda xatolik:", err.message);
+      });
   }
 
   // UZ: Avtomatik zaxira (Har kuni 9:00 va 18:00 da)
+  // Cron format: seconds minutes hours dayOfMonth month dayOfWeek
   @Cron("0 0 9,18 * * *")
   async handleScheduledBackup() {
-    this.logger.log("Avtomatik zaxira yaratish boshlandi...");
-    if (!this.bot || !this.chatId) return;
+    this.logger.log("⏳ Avtomatik zaxira (Scheduled) boshlandi...");
+
+    if (!this.bot) {
+      this.logger.warn("⚠️ Zaxira boti ishga tushmagan (bot instance null). Qayta urinib ko'rilmoqda...");
+      this.initializeBot();
+    }
+
+    if (!this.bot || !this.chatId) {
+      this.logger.error("❌ Zaxira boti yoki Chat ID mavjud emas. Bekor qilindi.");
+      return;
+    }
 
     try {
       const jsonData = await this.dataExportService.exportAllData();
@@ -52,20 +71,21 @@ export class BackupBotService implements OnModuleInit {
         this.chatId,
         { source: buffer, filename },
         {
-          caption: `💾 *AVTOMATIK ZAXIRA*\n📅 Sana: ${new Date().toLocaleString("uz-UZ")}\n\nKeyingi zaxira soat 09:00 yoki 18:00 da amalga oshiriladi.`,
+          caption: `💾 *AVTOMATIK ZAXIRA*\n📅 Sana: ${new Date().toLocaleString("uz-UZ")}\n\nStatus: Muvaffaqiyatli saqlandi.`,
           parse_mode: "Markdown",
         },
       );
-      this.logger.log("Avtomatik zaxira muvaffaqiyatli yuborildi.");
+      this.logger.log("✅ Avtomatik zaxira muvaffaqiyatli yuborildi.");
     } catch (error) {
-      this.logger.error("Avtomatik zaxiralashda xatolik:", error);
+      this.logger.error(`❌ Avtomatik zaxiralashda xatolik: ${error.message}`);
     }
   }
 
   private setupHandlers() {
+    // ... existing handlers ...
     this.bot.command("backup", async (ctx) => {
-      this.logger.log(`Zaxira buyrug'i olindi: ${ctx.from.username}`);
-      await ctx.reply("Zaxira yaratish boshlandi, iltimos kuting...");
+      this.logger.log(`Zaxira buyrug'i olindi (Manual): ${ctx.from.username}`);
+      await ctx.reply("⏳ Zaxira yaratish boshlandi, iltimos kuting...");
 
       try {
         const jsonData = await this.dataExportService.exportAllData();
@@ -79,8 +99,9 @@ export class BackupBotService implements OnModuleInit {
             caption: `✅ Baza zaxirasi muvaffaqiyatli yaratildi.\n📅 Sana: ${new Date().toLocaleString("uz-UZ")}`,
           },
         );
+        this.logger.log("✅ Manual zaxira yuborildi.");
       } catch (error) {
-        this.logger.error("Zaxira yaratishda xatolik:", error);
+        this.logger.error(`❌ Manual zaxirada xatolik: ${error.message}`);
         await ctx.reply(`❌ Xatolik yuz berdi: ${error.message}`);
       }
     });
@@ -90,5 +111,7 @@ export class BackupBotService implements OnModuleInit {
         "Assalomu alaykum! Men ma'lumotlarni zaxiralash botiman. /backup buyrug'i orqali bazangizni saqlab qo'yishingiz mumkin.",
       );
     });
+
+    this.bot.help((ctx) => ctx.reply("Ma'lumotlarni zaxira qilish uchun /backup buyrug'idan foydalaning."));
   }
 }
