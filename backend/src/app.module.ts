@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { AppController } from "./app.controller";
 import { ConfigModule } from "@nestjs/config";
 import { DatabaseModule } from "./database/database.module";
 import { SubmissionsModule } from "./modules/submissions/submissions.module";
@@ -52,10 +53,10 @@ import { ScheduleModule } from "@nestjs/schedule";
     NotificationsModule, // UZ: Bildirishnomalar moduli qo'shildi
     EventEmitterModule.forRoot(), // UZ: Eventlar tizimini yoqish
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: AuditInterceptor }, // UZ: Global audit loglarini yozish uchun
     { provide: APP_INTERCEPTOR, useClass: NotificationInterceptor }, // UZ: Bildirishnomalar uchun interceptor
   ],
 })
-export class AppModule {}
+export class AppModule { }
