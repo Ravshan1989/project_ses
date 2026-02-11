@@ -19,7 +19,7 @@ export class Organization {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   @Column({ type: "int", default: 0 })
@@ -58,3 +58,29 @@ export class Organization {
   @OneToMany(() => CovidDailyReport, (report) => report.organization)
   covid_reports: CovidDailyReport[];
 }
+
+/**
+ * ORIGINAL CODE (APPEND-ONLY RULE)
+ * 
+ * @Entity("organizations")
+ * export class Organization {
+ *   @PrimaryGeneratedColumn("uuid")
+ *   id: string;
+ * 
+ *   @Column()
+ *   name: string;
+ * 
+ *   @Column({ type: "int", default: 0 })
+ *   population: number;
+ * 
+ *   @Column({ type: "int", default: 0 })
+ *   child_population: number;
+ * 
+ *   @ManyToOne(() => Organization, (org) => org.children, { nullable: true })
+ *   @JoinColumn({ name: "parent_id" })
+ *   parent: Organization;
+ * 
+ *   @OneToMany(() => Organization, (org) => org.parent)
+ *   children: Organization[];
+ * }
+ */
