@@ -412,3 +412,180 @@ export class AnalysisService {
     };
   }
 }
+
+/**
+ * ORIGINAL CODE (APPEND-ONLY RULE)
+ * 
+ *   async getGlobalSummary(startDate: string, endDate: string) {
+ *     const organizations = await this.orgRepo.find({
+ *       where: { parent: Not(IsNull()) }, // Districts only
+ *       relations: ["parent"],
+ *     });
+ * 
+ *     const diseases = await this.diseaseRepo.find({ where: { isActive: true } });
+ * 
+ *     const getAggregatedData = async (
+ *       repo: Repository<any>,
+ *       sumField: string,
+ *     ) => {
+ *       return repo
+ *         .createQueryBuilder("report")
+ *         .select("report.organization_id", "organization_id")
+ *         .addSelect(`SUM(report.${sumField})`, "total")
+ *         .where("report.reportDate BETWEEN :startDate AND :endDate", {
+ *           startDate,
+ *           endDate,
+ *         })
+ *         .groupBy("report.organization_id")
+ *         .getRawMany();
+ *     };
+ * 
+ *     const [hepAgg, fluAgg, ariAgg, covidAgg] = await Promise.all([
+ *       getAggregatedData(this.hepatitisRepo, "total_cases"),
+ *       getAggregatedData(this.fluRepo, "flu_total"),
+ *       getAggregatedData(this.ariRepo, "ari"),
+ *       getAggregatedData(this.covidRepo, "total_cases"),
+ *     ]);
+ * 
+ *     const form1Agg = await this.submissionRepo
+ *       .createQueryBuilder("sub")
+ *       .leftJoin("sub.template", "template")
+ *       .select("sub.organization_id", "organization_id")
+ *       .addSelect("sub.data", "data")
+ *       .where("template.code = :code", { code: "form_1" })
+ *       .andWhere("sub.reportingPeriod BETWEEN :startDate AND :endDate", {
+ *         startDate,
+ *         endDate,
+ *       })
+ *       .getRawMany();
+ * 
+ *     const globalMatrix: any[] = [];
+ * 
+ *     for (const org of organizations) {
+ *       const orgDiseases: any[] = [];
+ * 
+ *       const addSpecialized = (agg: any[], name: string) => {
+ *         const found = agg.find((a) => a.organization_id === org.id);
+ *         const cases = found ? parseInt(found.total) : 0;
+ *         if (cases > 0) orgDiseases.push({ disease: name, cases });
+ *       };
+ * 
+ *       addSpecialized(hepAgg, "Gepatit");
+ *       addSpecialized(fluAgg, "Gripp");
+ *       addSpecialized(ariAgg, "O'RVI");
+ *       addSpecialized(covidAgg, "Koronavirus (COVID-19)");
+ * 
+ *       const orgSubmissions = form1Agg.filter(
+ *         (a) => a.organization_id === org.id,
+ *       );
+ *       for (const sub of orgSubmissions) {
+ *         if (!sub.data) continue;
+ *         for (const [key, value] of Object.entries(sub.data)) {
+ *           if (typeof value === "number" && value > 0) {
+ *             const diseaseMatch = diseases.find(
+ *               (d) =>
+ *                 d.name.toLowerCase().includes(key.toLowerCase()) ||
+ *                 key.toLowerCase().includes(d.name.toLowerCase()),
+ *             );
+ * 
+ *             if (diseaseMatch) {
+ *               const existing = orgDiseases.find(
+ *                 (od) => od.disease === diseaseMatch.name,
+ *               );
+ *               if (existing) {
+ *                 existing.cases += value;
+ *               } else {
+ *                 orgDiseases.push({ disease: diseaseMatch.name, cases: value });
+ *               }
+ *             }
+ *           }
+ *         }
+ *       }
+ * 
+ *       const analyzedDiseases = orgDiseases.map((od) => ({
+ *         ...od,
+ *         rate:
+ *           org.population > 0
+ *             ? parseFloat(((od.cases / org.population) * 100000).toFixed(2))
+ *             : 0,
+ *       }));
+ * 
+ *       globalMatrix.push({
+ *         organizationId: org.id,
+ *         organizationName: org.name,
+ *         population: org.population,
+ *         diseases: analyzedDiseases.sort((a, b) => b.rate - a.rate),
+ *       });
+ *     }
+ * 
+ *     return globalMatrix;
+ *   }
+ * 
+ *   async getIncidenceRates(query: AnalysisQueryDto) {
+ *     const { diseaseType, startDate, endDate, organizationId } = query;
+ * 
+ *     const queryBuilder = this.orgRepo
+ *       .createQueryBuilder("org")
+ *       .leftJoinAndSelect("org.parent", "parent");
+ * 
+ *     if (organizationId) {
+ *       queryBuilder.where("org.id = :organizationId", { organizationId });
+ *     } else {
+ *       queryBuilder.where("org.parent IS NOT NULL");
+ *     }
+ * 
+ *     const organizations = await queryBuilder.getMany();
+ * 
+ *     let repo: Repository<any>;
+ *     let sumField: string;
+ * 
+ *     switch (diseaseType) {
+ *       case "hepatitis":
+ *         repo = this.hepatitisRepo;
+ *         sumField = "total_cases";
+ *         break;
+ *       case "flu":
+ *         repo = this.fluRepo;
+ *         sumField = "flu_total";
+ *         break;
+ *       case "ari":
+ *         repo = this.ariRepo;
+ *         sumField = "ari";
+ *         break;
+ *       case "covid":
+ *         repo = this.covidRepo;
+ *         sumField = "total_cases";
+ *         break;
+ *       default:
+ *         return [];
+ *     }
+ * 
+ *     const caseAggregation = await repo
+ *       .createQueryBuilder("report")
+ *       .select("report.organization_id", "organization_id")
+ *       .addSelect(`SUM(report.${sumField})`, "total")
+ *       .where("report.reportDate BETWEEN :startDate AND :endDate", {
+ *         startDate,
+ *         endDate,
+ *       })
+ *       .groupBy("report.organization_id")
+ *       .getRawMany();
+ * 
+ *     const results = organizations.map((org) => {
+ *       const agg = caseAggregation.find((a) => a.organization_id === org.id);
+ *       const totalCases = agg ? parseInt(agg.total) : 0;
+ *       const incidenceRate =
+ *         org.population > 0 ? (totalCases / org.population) * 100000 : 0;
+ * 
+ *       return {
+ *         organizationId: org.id,
+ *         organizationName: org.name,
+ *         population: org.population,
+ *         totalCases,
+ *         incidenceRate: parseFloat(incidenceRate.toFixed(2)),
+ *       };
+ *     });
+ * 
+ *     return results.sort((a, b) => b.incidenceRate - a.incidenceRate);
+ *   }
+ */
