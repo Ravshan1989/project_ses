@@ -11,6 +11,8 @@ import { EpidemiologyDailyReport } from "./entities/epidemiology-daily-report.en
 import { CreateEpidemiologyReportDto } from "./dto/create-epidemiology-report.dto";
 import { CovidDailyReport } from "./entities/covid-daily-report.entity";
 import { CreateCovidReportDto } from "./dto/create-covid-report.dto";
+import { DiarrheaDailyReport } from "./entities/diarrhea-daily-report.entity";
+import { CreateDiarrheaReportDto } from "./dto/create-diarrhea-report.dto";
 import { Organization } from "../organizations/entities/organization.entity";
 import { User } from "../users/entities/user.entity";
 import { getRoleLevel } from "../../common/utils/role.util";
@@ -31,6 +33,8 @@ export class DailyReportsService {
     private epiRepo: Repository<EpidemiologyDailyReport>,
     @InjectRepository(CovidDailyReport)
     private covidRepo: Repository<CovidDailyReport>,
+    @InjectRepository(DiarrheaDailyReport)
+    private diarrheaRepo: Repository<DiarrheaDailyReport>,
     @InjectRepository(Organization)
     private orgRepo: Repository<Organization>,
     @Inject(forwardRef(() => TelegramService))
@@ -431,45 +435,28 @@ export class DailyReportsService {
   }
 
   async upsertCovid(dto: CreateCovidReportDto, user: User) {
-    this.validateIsolation(user, dto.organizationId);
-    let report = await this.covidRepo.findOne({
-      where: {
-        reportDate: dto.reportDate,
-        organization: { id: dto.organizationId },
-        isTest: dto.isTest || false,
-      },
+    const report = await this.covidRepo.findOne({
+      where: { reportDate: dto.reportDate, organization: { id: dto.organizationId }, isTest: !!dto.isTest }
     });
-
     if (report) {
       Object.assign(report, dto);
-    } else {
-      report = this.covidRepo.create({
-        ...dto,
-        organization: { id: dto.organizationId },
-        isTest: dto.isTest || false,
-      });
+      return this.covidRepo.save(report);
     }
-    const saved = await this.covidRepo.save(report);
-    if (!dto.isTest) {
-      const details = `Jami: ${saved.total_cases}\nHospital: ${saved.hospitalized_count}\nQayta: ${saved.reinfected}`;
-      this.telegramService.sendReportNotification(
-        "Covid",
-        user.organization?.name || "Tuman",
-        saved.reportDate,
-        details,
-      );
-    }
-    return saved;
+    const newReport = this.covidRepo.create({ ...dto, organization: { id: dto.organizationId }, isTest: !!dto.isTest });
+    return this.covidRepo.save(newReport);
   }
 
-  /*
-  async getCovidByDate(date: string) {
-    return this.covidRepo.find({
-      where: { reportDate: date },
-      relations: ["organization", "organization.parent"],
+  async upsertDiarrhea(dto: CreateDiarrheaReportDto, user: User) {
+    const report = await this.diarrheaRepo.findOne({
+      where: { reportDate: dto.reportDate, organization: { id: dto.organizationId }, isTest: !!dto.isTest }
     });
+    if (report) {
+      Object.assign(report, dto);
+      return this.diarrheaRepo.save(report);
+    }
+    const newReport = this.diarrheaRepo.create({ ...dto, organization: { id: dto.organizationId }, isTest: !!dto.isTest });
+    return this.diarrheaRepo.save(newReport);
   }
-  */
 
   async getCovidByDate(date: string, user: User, includeTest = false) {
     const level = getRoleLevel(user.role);
@@ -490,21 +477,38 @@ export class DailyReportsService {
     });
   }
 
+  async getDiarrheaByDate(date: string, user: User, includeTest = false) {
+    const level = getRoleLevel(user.role);
+    const where: FindOptionsWhere<DiarrheaDailyReport> = {
+      reportDate: date,
+      isTest: includeTest,
+    };
+
+    if (level === 2 && user.organization) {
+      where.organization = { parent: { id: user.organization.id } };
+    } else if (level === 3 && user.organization) {
+      where.organization = { id: user.organization.id };
+    }
+
+    return this.diarrheaRepo.find({
+      where,
+      relations: ["organization", "organization.parent"],
+    });
+  }
+
   async cleanupTest() {
     await this.reportRepo.delete({ isTest: true });
     await this.fluRepo.delete({ isTest: true });
     await this.ariRepo.delete({ isTest: true });
     await this.epiRepo.delete({ isTest: true });
     await this.covidRepo.delete({ isTest: true });
+    await this.diarrheaRepo.delete({ isTest: true });
     return {
       success: true,
       message: "Test ma'lumotlari muvaffaqiyatli o'chirildi",
     };
   }
 
-  /**
-   * UZ: Bir oylik kunlik hisobotlarni jamlash (Forma-1 uchun)
-   */
   async getMonthlyAggregation(
     month: string,
     organizationId: string,
@@ -516,7 +520,6 @@ export class DailyReportsService {
     const startDate = start.toISOString().split("T")[0];
     const endDate = end.toISOString().split("T")[0];
 
-    // 1. Gepatit
     const hepatitis = await this.reportRepo
       .createQueryBuilder("r")
       .select("SUM(r.total_cases)", "total")
@@ -532,7 +535,6 @@ export class DailyReportsService {
       .andWhere("r.isTest = :isTest", { isTest })
       .getRawOne();
 
-    // 2. Gripp va O'RVI
     const flu = await this.fluRepo
       .createQueryBuilder("r")
       .select("SUM(r.flu_total)", "flu")
@@ -553,7 +555,6 @@ export class DailyReportsService {
       .andWhere("r.isTest = :isTest", { isTest })
       .getRawOne();
 
-    // 3. Koronavirus
     const covid = await this.covidRepo
       .createQueryBuilder("r")
       .select("SUM(r.total_cases)", "total")
@@ -580,14 +581,11 @@ export class DailyReportsService {
       },
       covid: {
         total: Number(covid?.total || 0),
-        under14: 0, // Covid report doesn't have age breakdown in current entity
+        under14: 0,
       },
     };
   }
 
-  /**
-   * UZ: Barcha turdagi hisobotlarni ommaviy saqlash (Bulk Upsert)
-   */
   async bulkUpsertBatch(
     payload: {
       hepatitis?: any[];
@@ -595,6 +593,7 @@ export class DailyReportsService {
       ari?: any[];
       epi?: any[];
       covid?: any[];
+      diarrhea?: any[];
       reportDate: string;
       isTest: boolean;
     },
@@ -689,6 +688,25 @@ export class DailyReportsService {
           if (report) Object.assign(report, data);
           else
             report = manager.create(CovidDailyReport, {
+              ...data,
+              reportDate,
+              isTest,
+              organization: { id: data.organizationId },
+            });
+          await manager.save(report);
+        }
+      }
+
+      // 6. Diarrhea
+      if (payload.diarrhea?.length) {
+        for (const data of payload.diarrhea) {
+          this.validateIsolation(user, data.organizationId);
+          let report = await manager.findOne(DiarrheaDailyReport, {
+            where: { reportDate, organization: { id: data.organizationId }, isTest },
+          });
+          if (report) Object.assign(report, data);
+          else
+            report = manager.create(DiarrheaDailyReport, {
               ...data,
               reportDate,
               isTest,

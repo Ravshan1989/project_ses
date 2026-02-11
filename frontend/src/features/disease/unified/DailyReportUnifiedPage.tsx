@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Typography, DatePicker, Button, Space, Tabs, notification } from 'antd';
-import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
+import { SaveOutlined, ReloadOutlined, DownloadOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { dailyReportsApi, organizationsApi } from '../../../services/api';
+import { exportUnifiedDailyReport } from '../../../services/excelExportService';
 
 import HepatitisTab from './HepatitisTab';
 import FluAriTab from './FluAriTab';
 import CovidTab from './CovidTab';
 import EpiTab from './EpiTab';
+import DiarrheaTab from './DiarrheaTab';
 
 const { Title, Text } = Typography;
 
@@ -23,10 +25,52 @@ const DailyReportUnifiedPage: React.FC = () => {
     const [fluAriData, setFluAriData] = useState<any[]>([]);
     const [covidData, setCovidData] = useState<any[]>([]);
     const [epiData, setEpiData] = useState<any[]>([]);
+    const [diarrheaData, setDiarrheaData] = useState<any[]>([]);
 
-    const userRole = localStorage.getItem('user_role') || 'REGION_HEAD';
-    const isAdmin = userRole === 'REGION_HEAD';
-    const userOrgName = localStorage.getItem('user_org_name') || "";
+    const userRole = localStorage.getItem('user_role') || 'STAFF';
+    const isAdmin = ['ADMIN', 'REGION_HEAD', 'REPUBLIC_HEAD'].includes(userRole);
+    const userOrgId = localStorage.getItem('user_org_id');
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            const active = document.activeElement as HTMLElement;
+            const isInput = active?.tagName === 'INPUT';
+            const isReportField = active?.closest('.report-input');
+
+            // 1. Jadval ichida harakatlanish (Agar inputda bo'lsa)
+            if (isInput && isReportField) {
+                const inputs = Array.from(document.querySelectorAll('.report-input input')) as HTMLInputElement[];
+                const index = inputs.indexOf(active as HTMLInputElement);
+
+                if (e.key === 'ArrowRight' || e.key === 'Enter') {
+                    if (index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                        inputs[index + 1].select();
+                        e.preventDefault();
+                    }
+                } else if (e.key === 'ArrowLeft') {
+                    if (index > 0) {
+                        inputs[index - 1].focus();
+                        inputs[index - 1].select();
+                        e.preventDefault();
+                    }
+                }
+                return;
+            }
+
+            // 2. Sana navigatsiyasi (Inputda bo'lmasa)
+            if (active?.tagName !== 'INPUT' && active?.tagName !== 'TEXTAREA') {
+                if (e.key === 'ArrowLeft') {
+                    setDate(prev => prev.subtract(1, 'day'));
+                } else if (e.key === 'ArrowRight') {
+                    setDate(prev => prev.add(1, 'day'));
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     useEffect(() => {
         fetchAllData();
@@ -46,12 +90,13 @@ const DailyReportUnifiedPage: React.FC = () => {
                 setOrganizations(currentOrgs);
             }
 
-            // Fetch all 4 reports in parallel
-            const [hepRes, fluRes, covidRes, epiRes] = await Promise.all([
+            // Fetch all 5 reports in parallel
+            const [hepRes, fluRes, covidRes, epiRes, diarrheaRes] = await Promise.all([
                 dailyReportsApi.getByDate(formattedDate),
                 dailyReportsApi.getFluByDate(formattedDate),
                 dailyReportsApi.getCovidByDate(formattedDate),
-                dailyReportsApi.getEpidemiologyByDate(formattedDate)
+                dailyReportsApi.getEpidemiologyByDate(formattedDate),
+                dailyReportsApi.getDiarrheaByDate(formattedDate)
             ]);
 
             // Helper to map orgs to data
@@ -67,8 +112,8 @@ const DailyReportUnifiedPage: React.FC = () => {
                         ...(existing || {})
                     };
                 });
-                if (!isAdmin) {
-                    tableData = tableData.filter(d => d.district_name === userOrgName);
+                if (!isAdmin && userOrgId) {
+                    tableData = tableData.filter(d => d.organizationId === userOrgId);
                 }
                 return tableData;
             };
@@ -77,6 +122,7 @@ const DailyReportUnifiedPage: React.FC = () => {
             setFluAriData(mapper(fluRes.data || [], currentOrgs, { ari_total: 0, flu_total: 0, pneu_total: 0, sari_total: 0, death_total: 0 }));
             setCovidData(mapper(covidRes.data || [], currentOrgs, { total_cases: 0, hospitalized_count: 0 }));
             setEpiData(mapper(epiRes.data || [], currentOrgs, { objects_inspected: 0, violations_found: 0 }));
+            setDiarrheaData(mapper(diarrheaRes.data || [], currentOrgs, { total_2025: 0, total_2026: 0 }));
 
         } catch (error) {
             notification.error({ message: 'Xatolik', description: 'Ma\'lumotlarni yuklashda xatolik' });
@@ -98,17 +144,101 @@ const DailyReportUnifiedPage: React.FC = () => {
                 flu: fluAriData,
                 covid: covidData,
                 epi: epiData,
+                diarrhea: diarrheaData,
             };
 
             await dailyReportsApi.bulkUpsertBatch(payload);
 
-            notification.success({ message: 'Saqlandi', description: 'Barcha bo\'limlar muvaffaqiyatli saqlandi.' });
+            notification.success({ message: t('common.approved'), description: t('daily_reports.actions.all_saved') });
             fetchAllData();
         } catch (error) {
-            notification.error({ message: 'Xatolik', description: 'Saqlashda xatolik yuz berdi.' });
+            notification.error({ message: t('common.error_load_data'), description: t('daily_reports.actions.save_error') });
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleVerify = async (type: string, id: string) => {
+        try {
+            await dailyReportsApi.verify(type, id);
+            notification.success({ message: t('common.approved'), description: t('daily_reports.actions.verified') });
+            fetchAllData();
+        } catch (error) {
+            notification.error({ message: t('common.error_load_data'), description: t('daily_reports.actions.verify_error_unified') });
+        }
+    };
+
+    const handleApprove = async (type: string, id: string) => {
+        try {
+            await dailyReportsApi.approve(type, id);
+            notification.success({ message: t('common.approved'), description: t('daily_reports.actions.approved') });
+            fetchAllData();
+        } catch (error) {
+            notification.error({ message: t('common.error_load_data'), description: t('daily_reports.actions.approve_error_unified') });
+        }
+    };
+
+    const handleExcelExport = () => {
+        const sections = [
+            {
+                title: 'Gepatit A Kunlik Hisoboti',
+                sheetName: 'Gepatit',
+                data: hepatitisData,
+                columns: [
+                    { header: 'Hudud', key: 'district_name', width: 25 },
+                    { header: 'Jami', key: 'total_cases', width: 10 },
+                    { header: '0-1y', key: 'age_under_1', width: 10 },
+                    { header: '1-3y', key: 'age_1_3', width: 10 },
+                    { header: '4-6y', key: 'age_4_6', width: 10 },
+                    { header: '7-14y', key: 'age_7_14', width: 10 },
+                    { header: '15-19y', key: 'age_15_19', width: 10 },
+                    { header: '20+y', key: 'age_20_plus', width: 10 },
+                    { header: 'Musbat', key: 'lab_positive', width: 10 },
+                    { header: 'Holat', key: 'status', width: 15 },
+                ]
+            },
+            {
+                title: 'Gripp va O\'RVI Kunlik Hisoboti',
+                sheetName: 'Gripp_ORVI',
+                data: fluAriData,
+                columns: [
+                    { header: 'Hudud', key: 'district_name', width: 25 },
+                    { header: 'O\'RI Jami', key: 'ari_total', width: 12 },
+                    { header: 'GK Jami', key: 'flu_total', width: 12 },
+                    { header: 'O\'P Jami', key: 'pneu_total', width: 12 },
+                    { header: 'SARI Jami', key: 'sari_total', width: 12 },
+                    { header: 'Vafot Jami', key: 'death_total', width: 12 },
+                    { header: 'Holat', key: 'status', width: 15 },
+                ]
+            },
+            {
+                title: 'COVID-19 Kunlik Hisoboti',
+                sheetName: 'COVID',
+                data: covidData,
+                columns: [
+                    { header: 'Hudud', key: 'district_name', width: 25 },
+                    { header: 'Jami', key: 'total_cases', width: 12 },
+                    { header: 'Shifoxona', key: 'hospitalized_count', width: 12 },
+                    { header: 'Qayta', key: 'reinfected', width: 12 },
+                    { header: 'Holat', key: 'status', width: 15 },
+                ]
+            },
+            {
+                title: 'Sanitariya Nazorati (Epidemiologiya)',
+                sheetName: 'EPI',
+                data: epiData,
+                columns: [
+                    { header: 'Hudud', key: 'district_name', width: 25 },
+                    { header: 'Ob\'ektlar', key: 'objects_inspected', width: 12 },
+                    { header: 'Qoida b.', key: 'violations_found', width: 12 },
+                    { header: 'Jarima(son)', key: 'fines_count', width: 12 },
+                    { header: 'Yopilgan', key: 'objects_closed', width: 12 },
+                    { header: 'Holat', key: 'status', width: 15 },
+                ]
+            }
+        ];
+
+        exportUnifiedDailyReport(sections, `Yagona_Hisobot_${date.format('DD_MM_YYYY')}`, date.format('DD.MM.YYYY'));
     };
 
     const handleCellChange = (setter: any, data: any[], value: number | null, rowKey: string, field: string) => {
@@ -149,23 +279,63 @@ const DailyReportUnifiedPage: React.FC = () => {
     const items = [
         {
             key: 'hepatitis',
-            label: 'Gepatit A',
-            children: <HepatitisTab data={hepatitisData} loading={loading} onChange={(v, k, f) => handleCellChange(setHepatitisData, hepatitisData, v, k, f)} />,
+            label: t('reports.daily_hepatitis'),
+            children: <HepatitisTab
+                data={hepatitisData}
+                loading={loading}
+                onChange={(v, k, f) => handleCellChange(setHepatitisData, hepatitisData, v, k, f)}
+                isAdmin={isAdmin}
+                onVerify={(id) => handleVerify('hepatitis', id)}
+                onApprove={(id) => handleApprove('hepatitis', id)}
+            />,
         },
         {
             key: 'flu',
-            label: 'Gripp va O\'RVI',
-            children: <FluAriTab data={fluAriData} loading={loading} onChange={(v, k, f) => handleCellChange(setFluAriData, fluAriData, v, k, f)} />,
+            label: "O'RI, Gripp va Pnevmoniya",
+            children: <FluAriTab
+                data={fluAriData}
+                loading={loading}
+                onChange={(v, k, f) => handleCellChange(setFluAriData, fluAriData, v, k, f)}
+                isAdmin={isAdmin}
+                onVerify={(id) => handleVerify('flu', id)}
+                onApprove={(id) => handleApprove('flu', id)}
+            />,
         },
         {
             key: 'covid',
-            label: 'Koronavirus',
-            children: <CovidTab data={covidData} loading={loading} onChange={(v, k, f) => handleCellChange(setCovidData, covidData, v, k, f)} />,
+            label: t('reports.covid'),
+            children: <CovidTab
+                data={covidData}
+                loading={loading}
+                onChange={(v, k, f) => handleCellChange(setCovidData, covidData, v, k, f)}
+                isAdmin={isAdmin}
+                onVerify={(id) => handleVerify('covid', id)}
+                onApprove={(id) => handleApprove('covid', id)}
+            />,
         },
         {
             key: 'epi',
-            label: 'Epidemiologiya',
-            children: <EpiTab data={epiData} loading={loading} onChange={(v, k, f) => handleCellChange(setEpiData, epiData, v, k, f)} />,
+            label: t('reports.epidemiology'),
+            children: <EpiTab
+                data={epiData}
+                loading={loading}
+                onChange={(v, k, f) => handleCellChange(setEpiData, epiData, v, k, f)}
+                isAdmin={isAdmin}
+                onVerify={(id) => handleVerify('epidemiology', id)}
+                onApprove={(id) => handleApprove('epidemiology', id)}
+            />,
+        },
+        {
+            key: 'diarrhea',
+            label: t('reports.diarrhea'),
+            children: <DiarrheaTab
+                data={diarrheaData}
+                loading={loading}
+                onChange={(v, k, f) => handleCellChange(setDiarrheaData, diarrheaData, v, k, f)}
+                isAdmin={isAdmin}
+                onVerify={(id) => handleVerify('diarrhea', id)}
+                onApprove={(id) => handleApprove('diarrhea', id)}
+            />,
         },
     ];
 
@@ -263,27 +433,47 @@ const DailyReportUnifiedPage: React.FC = () => {
             <div style={gradientHeader}>
                 <div>
                     <Title level={3} style={{ margin: 0, color: '#fff', fontWeight: 800 }}>
-                        {t('reports.unified_title') || 'Yagona Kunlik Hisobotlar'}
+                        {t('reports.unified') || 'Yagona Kunlik Hisobotlar'}
                     </Title>
                     <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: '15px' }}>
-                        {date.format('DD MMMM YYYY')} kungi barcha bo'limlar bo'yicha ma'lumotlar
+                        {t('daily_reports.actions.all_sections_data', { date: date.format('DD MMMM YYYY') })}
                     </Text>
                 </div>
                 <Space size="middle">
-                    <DatePicker
-                        value={date}
-                        onChange={(d) => d && setDate(d)}
-                        format="DD.MM.YYYY"
-                        size="large"
-                        style={{ borderRadius: '10px', width: '160px' }}
-                    />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Button
+                            icon={<LeftOutlined />}
+                            onClick={() => setDate(date.subtract(1, 'day'))}
+                            style={{ borderRadius: '10px', height: '40px' }}
+                        />
+                        <DatePicker
+                            value={date}
+                            onChange={(d) => d && setDate(d)}
+                            format="DD.MM.YYYY"
+                            size="large"
+                            style={{ borderRadius: '10px', width: '160px' }}
+                        />
+                        <Button
+                            icon={<RightOutlined />}
+                            onClick={() => setDate(date.add(1, 'day'))}
+                            style={{ borderRadius: '10px', height: '40px' }}
+                        />
+                    </div>
                     <Button
                         icon={<ReloadOutlined />}
                         onClick={fetchAllData}
                         className="action-btn"
                         style={{ background: 'rgba(255, 255, 255, 0.2)', border: 'none', color: '#fff' }}
                     >
-                        Yangilash
+                        {t('daily_reports.actions.refresh')}
+                    </Button>
+                    <Button
+                        icon={<DownloadOutlined />}
+                        onClick={handleExcelExport}
+                        className="action-btn"
+                        style={{ background: 'rgba(255, 255, 255, 0.2)', border: 'none', color: '#fff' }}
+                    >
+                        {t('daily_reports.actions.excel')}
                     </Button>
                     <Button
                         type="primary"
@@ -292,7 +482,7 @@ const DailyReportUnifiedPage: React.FC = () => {
                         className="action-btn"
                         style={{ background: '#fff', color: '#764ba2' }}
                     >
-                        Barchasini Saqlash
+                        {t('daily_reports.actions.save_all')}
                     </Button>
                 </Space>
             </div>
@@ -334,7 +524,7 @@ const DailyReportUnifiedPage: React.FC = () => {
 export default DailyReportUnifiedPage;
 
 
-// /* 
+// /*
 // ORIGINAL CODE (Append-only rule):
 // import React, { useState, useEffect } from 'react';
 // import { Typography, DatePicker, Button, Space, Tabs, notification } from 'antd';
@@ -342,39 +532,39 @@ export default DailyReportUnifiedPage;
 // import dayjs from 'dayjs';
 // import { useTranslation } from 'react-i18next';
 // import { dailyReportsApi, organizationsApi } from '../../../services/api';
-// 
+//
 // import HepatitisTab from './HepatitisTab';
 // import FluAriTab from './FluAriTab';
 // import CovidTab from './CovidTab';
 // import EpiTab from './EpiTab';
-// 
+//
 // const { Title, Text } = Typography;
-// 
+//
 // const DailyReportUnifiedPage: React.FC = () => {
 //     const { t } = useTranslation();
 //     const [date, setDate] = useState(dayjs());
 //     const [loading, setLoading] = useState(false);
 //     const [organizations, setOrganizations] = useState<any[]>([]);
-// 
+//
 //     // State for each tab
 //     const [hepatitisData, setHepatitisData] = useState<any[]>([]);
 //     const [fluAriData, setFluAriData] = useState<any[]>([]);
 //     const [covidData, setCovidData] = useState<any[]>([]);
 //     const [epiData, setEpiData] = useState<any[]>([]);
-// 
+//
 //     const userRole = localStorage.getItem('user_role') || 'REGION_HEAD';
 //     const isAdmin = userRole === 'REGION_HEAD';
 //     const userOrgName = localStorage.getItem('user_org_name') || "";
-// 
+//
 //     useEffect(() => {
 //         fetchAllData();
 //     }, [date]);
-// 
+//
 //     const fetchAllData = async () => {
 //         setLoading(true);
 //         try {
 //             const formattedDate = date.format('YYYY-MM-DD');
-// 
+//
 //             // Fetch Orgs if needed
 //             let currentOrgs = organizations;
 //             if (currentOrgs.length === 0) {
@@ -383,7 +573,7 @@ export default DailyReportUnifiedPage;
 //                 currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent);
 //                 setOrganizations(currentOrgs);
 //             }
-// 
+//
 //             // Fetch all 4 reports in parallel
 //             const [hepRes, fluRes, covidRes, epiRes] = await Promise.all([
 //                 dailyReportsApi.getByDate(formattedDate),
@@ -391,7 +581,7 @@ export default DailyReportUnifiedPage;
 //                 dailyReportsApi.getCovidByDate(formattedDate),
 //                 dailyReportsApi.getEpidemiologyByDate(formattedDate)
 //             ]);
-// 
+//
 //             // Helper to map orgs to data
 //             const mapper = (apiData: any[], orgs: any[], defaultFields: any) => {
 //                 let tableData = orgs.map((org, idx) => {
@@ -410,25 +600,25 @@ export default DailyReportUnifiedPage;
 //                 }
 //                 return tableData;
 //             };
-// 
+//
 //             setHepatitisData(mapper(hepRes.data || [], currentOrgs, { total_cases: 0, age_under_1: 0, age_1_3: 0, age_4_6: 0, age_7_14: 0, age_15_19: 0, age_20_plus: 0 }));
 //             setFluAriData(mapper(fluRes.data || [], currentOrgs, { ari_total: 0, flu_total: 0, pneu_total: 0, sari_total: 0, death_total: 0 }));
 //             setCovidData(mapper(covidRes.data || [], currentOrgs, { total_cases: 0, hospitalized_count: 0 }));
 //             setEpiData(mapper(epiRes.data || [], currentOrgs, { objects_inspected: 0, violations_found: 0 }));
-// 
+//
 //         } catch (error) {
 //             notification.error({ message: 'Xatolik', description: 'Ma\'lumotlarni yuklashda xatolik' });
 //         } finally {
 //             setLoading(false);
 //         }
 //     };
-// 
+//
 //     const handleSave = async () => {
 //         setLoading(true);
 //         try {
 //             const formattedDate = date.format('YYYY-MM-DD');
 //             const promises: Promise<any>[] = [];
-// 
+//
 //             // Hepatitis
 //             hepatitisData.forEach(row => {
 //                 promises.push(dailyReportsApi.upsert({ ...row, reportDate: formattedDate, organizationId: row.organizationId }));
@@ -445,7 +635,7 @@ export default DailyReportUnifiedPage;
 //             epiData.forEach(row => {
 //                 promises.push(dailyReportsApi.upsertEpidemiology({ ...row, reportDate: formattedDate, organizationId: row.organizationId }));
 //             });
-// 
+//
 //             await Promise.all(promises);
 //             notification.success({ message: 'Saqlandi', description: 'Barcha bo\'limlar muvaffaqiyatli saqlandi.' });
 //             fetchAllData();
@@ -455,13 +645,13 @@ export default DailyReportUnifiedPage;
 //             setLoading(false);
 //         }
 //     };
-// 
+//
 //     const handleCellChange = (setter: any, data: any[], value: number | null, rowKey: string, field: string) => {
 //         const newData = [...data];
 //         const index = newData.findIndex(item => item.key === rowKey);
 //         if (index > -1) {
 //             const updatedRow = { ...newData[index], [field]: value || 0 };
-// 
+//
 //             // Auto-calc logic for Hepatitis
 //             if (setter === setHepatitisData) {
 //                 const ageFields = ['age_under_1', 'age_1_3', 'age_4_6', 'age_7_14', 'age_15_19', 'age_20_plus'];
@@ -469,7 +659,7 @@ export default DailyReportUnifiedPage;
 //                     updatedRow.total_cases = ageFields.reduce((sum, f) => sum + (updatedRow[f] || 0), 0);
 //                 }
 //             }
-// 
+//
 //             // Auto-calc logic for Flu/ARI
 //             if (setter === setFluAriData) {
 //                 if (field.startsWith('ari_') && field !== 'ari_total') {
@@ -485,12 +675,12 @@ export default DailyReportUnifiedPage;
 //                     updatedRow.sari_total = (updatedRow.sari_0_2 || 0) + (updatedRow.sari_3_6 || 0) + (updatedRow.sari_7_14 || 0) + (updatedRow.sari_adult || 0);
 //                 }
 //             }
-// 
+//
 //             newData[index] = updatedRow;
 //             setter(newData);
 //         }
 //     };
-// 
+//
 //     const items = [
 //         {
 //             key: 'hepatitis',
@@ -513,10 +703,10 @@ export default DailyReportUnifiedPage;
 //             children: <EpiTab data={epiData} loading={loading} onChange={(v, k, f) => handleCellChange(setEpiData, epiData, v, k, f)} />,
 //         },
 //     ];
-// 
+//
 //     // --- PREMIUM UI UPDATE ---
 //     // UZ: Kunlik hisobotlar uchun "Wow" dizayn: Glassmorphism + Vibrant Tabs
-// 
+//
 //     const glassStyle: React.CSSProperties = {
 //         background: 'rgba(255, 255, 255, 0.7)',
 //         backdropFilter: 'blur(15px)',
@@ -526,7 +716,7 @@ export default DailyReportUnifiedPage;
 //         boxShadow: '0 12px 40px rgba(31, 38, 135, 0.1)',
 //         padding: '32px'
 //     };
-// 
+//
 //     const gradientHeader: React.CSSProperties = {
 //         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
 //         padding: '24px',
@@ -538,7 +728,7 @@ export default DailyReportUnifiedPage;
 //         color: '#fff',
 //         boxShadow: '0 8px 20px rgba(102, 126, 234, 0.3)'
 //     };
-// 
+//
 //     return (
 //         <div style={{ padding: '20px', minHeight: '100vh', background: '#f0f2f5' }}>
 //             <style>{`
@@ -572,7 +762,7 @@ export default DailyReportUnifiedPage;
 //                     gap: 8px;
 //                 }
 //             `}</style>
-// 
+//
 //             <div style={gradientHeader}>
 //                 <div>
 //                     <Title level={3} style={{ margin: 0, color: '#fff', fontWeight: 800 }}>
@@ -609,7 +799,7 @@ export default DailyReportUnifiedPage;
 //                     </Button>
 //                 </Space>
 //             </div>
-// 
+//
 //             <div style={glassStyle}>
 //                 <Tabs
 //                     defaultActiveKey="hepatitis"
@@ -620,7 +810,7 @@ export default DailyReportUnifiedPage;
 //             </div>
 //         </div>
 //     );
-// 
+//
 //     /* --- ESKI DIZAYN (O'zgarmas Qoidalar asosida saqlab qolindi) ---
 //     return (
 //         <Card>
@@ -636,16 +826,16 @@ export default DailyReportUnifiedPage;
 //                         <Button type="primary" size="large" icon={<SaveOutlined />} onClick={handleSave}>Hammasini Saqlash</Button>
 //                     </Space>
 //                 </div>
-// 
+//
 //                 <Tabs defaultActiveKey="hepatitis" items={items} type="card" />
 //             </Space>
 //         </Card>
 //     );
 //     */
 // };
-// 
+//
 // export default DailyReportUnifiedPage;
-// 
-//  
+//
+//
 // */
 

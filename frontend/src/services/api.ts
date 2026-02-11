@@ -51,6 +51,8 @@ export const dailyReportsApi = {
         api.get(`/daily-reports/weekly-summary?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}`),
     getCovidByDate: (date: string, isTest = false) => api.get(`/daily-reports/covid?date=${date}&isTest=${isTest}`),
     upsertCovid: (data: any) => api.post('/daily-reports/covid', data),
+    getDiarrheaByDate: (date: string, isTest = false) => api.get(`/daily-reports/diarrhea?date=${date}&isTest=${isTest}`),
+    upsertDiarrhea: (data: any) => api.post('/daily-reports/diarrhea', data),
     cleanupTest: () => api.post('/daily-reports/cleanup-test'),
     // UZ: Tasdiqlash va Tekshirish (Verification/Approval)
     verify: (type: string, id: string) => api.patch(`/daily-reports/${type}/${id}/verify`),

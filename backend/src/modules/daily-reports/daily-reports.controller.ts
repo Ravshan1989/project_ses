@@ -13,6 +13,7 @@ import { CreateFluReportDto } from "./dto/create-flu-report.dto";
 import { CreateAriReportDto } from "./dto/create-ari-report.dto";
 import { CreateEpidemiologyReportDto } from "./dto/create-epidemiology-report.dto";
 import { CreateCovidReportDto } from "./dto/create-covid-report.dto";
+import { CreateDiarrheaReportDto } from "./dto/create-diarrhea-report.dto";
 
 import { RequirePermission } from "../../common/decorators/permissions.decorator";
 import { PermissionsGuard } from "../auth/guards/permissions.guard";
@@ -123,6 +124,25 @@ export class DailyReportsController {
       req.user,
       isTest === "true",
     );
+  }
+
+  @Get("diarrhea")
+  @RequirePermission("VIEW_HEPATITIS") // O'tkir diareya ham gepatitga o'xshash bo'limga tegishli bo'lishi mumkin
+  async getDiarrheaByDate(
+    @Query("date") date: string,
+    @Query("isTest") isTest: string,
+    @Request() req,
+  ) {
+    return this.reportsService.getDiarrheaByDate(
+      date,
+      req.user,
+      isTest === "true",
+    );
+  }
+
+  @Post("diarrhea")
+  async createOrUpdateDiarrhea(@Body() dto: CreateDiarrheaReportDto, @Request() req) {
+    return this.reportsService.upsertDiarrhea(dto, req.user);
   }
   @Post("cleanup-test")
   @RequirePermission("MANAGE_DEPARTMENTS") // Republic or higher

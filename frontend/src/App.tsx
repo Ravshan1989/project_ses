@@ -29,6 +29,7 @@ import EpidemiologyDailyReportPage from './features/disease/EpidemiologyDailyRep
 import WeeklyFluReportPage from './features/disease/WeeklyFluReportPage';
 import CovidDailyReportPage from './features/disease/CovidDailyReportPage';
 import DailyReportUnifiedPage from './features/disease/unified/DailyReportUnifiedPage';
+import DailyDiarrheaPage from './features/disease/DailyDiarrheaPage';
 import AnalysisDashboard from './features/analysis/AnalysisDashboard';
 import GlobalMonitoringPage from './features/analysis/GlobalMonitoringPage';
 import LoginPage from './features/auth/LoginPage';
@@ -95,6 +96,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         { key: '/daily-flu', label: t('reports.flu'), onClick: () => navigate('/daily-flu') },
                         { key: '/daily-ari', label: t('reports.ari'), onClick: () => navigate('/daily-ari') },
                         { key: '/daily-covid', label: t('reports.covid'), onClick: () => navigate('/daily-covid') },
+                        { key: '/daily-diarrhea', label: t('reports.diarrhea'), onClick: () => navigate('/daily-diarrhea') },
                         { key: '/daily-epidemiology', label: t('reports.epidemiology'), onClick: () => navigate('/daily-epidemiology') },
                         {
                             key: '/daily-unified',
@@ -248,6 +250,7 @@ function App() {
                     <Route path="/daily-epidemiology" element={<ProtectedRoute><EpidemiologyDailyReportPage /></ProtectedRoute>} />
                     <Route path="/weekly-flu" element={<ProtectedRoute><WeeklyFluReportPage /></ProtectedRoute>} />
                     <Route path="/daily-covid" element={<ProtectedRoute><CovidDailyReportPage /></ProtectedRoute>} />
+                    <Route path="/daily-diarrhea" element={<ProtectedRoute><DailyDiarrheaPage /></ProtectedRoute>} />
                     <Route path="/daily-unified" element={<ProtectedRoute><DailyReportUnifiedPage /></ProtectedRoute>} />
                     <Route path="/form1-monitoring" element={<ProtectedRoute><Form1StatusPage /></ProtectedRoute>} />
                     <Route path="/export" element={<ProtectedRoute><ExportPage /></ProtectedRoute>} />
