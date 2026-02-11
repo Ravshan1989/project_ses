@@ -52,19 +52,25 @@ const EpiTab: React.FC<EpiTabProps> = ({ data, loading, isAdmin, onChange, onVer
     const columns: any = [
         {
             title: '№', dataIndex: 'key', width: 40, align: 'center', fixed: 'left',
-            onCell: (r: EpiReportData) => ({ style: { backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff' } })
+            render: (text: string, r: EpiReportData) => (
+                <div style={{ backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff1f0', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {text}
+                </div>
+            )
         },
         {
             title: t('daily_reports.table.district') || 'Hududlar',
             dataIndex: 'district_name',
             width: 140,
             fixed: 'left',
-            render: (text: string) => t(`orgs.${text.toLowerCase()}`, { defaultValue: text }),
+            render: (text: string, r: EpiReportData) => (
+                <span style={{ color: isSubmitted(r) ? '#389e0d' : '#cf1322', fontWeight: 'bold' }}>
+                    {t(`orgs.${text.toLowerCase()}`, { defaultValue: text })}
+                </span>
+            ),
             onCell: (r: EpiReportData) => ({
                 style: {
                     backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff1f0',
-                    color: isSubmitted(r) ? '#389e0d' : '#cf1322',
-                    fontWeight: 500
                 }
             })
         },

@@ -173,13 +173,26 @@ const EpidemiologyDailyReportPage: React.FC = () => {
     );
 
     const columns: any = [
-        { title: '№', dataIndex: 'key', width: 40, align: 'center', fixed: 'left' },
+        {
+            title: '№',
+            dataIndex: 'key',
+            width: 40, align: 'center', fixed: 'left',
+            render: (text: string, r: EpiReportData) => (
+                <div style={{ backgroundColor: r.is_submitted ? '#f6ffed' : '#fff1f0', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {text}
+                </div>
+            )
+        },
         {
             title: t('daily_reports.table.district'),
             dataIndex: 'district_name',
             width: 140,
             fixed: 'left',
-            render: (text: string) => t(`orgs.${text.toLowerCase()}`, { defaultValue: text })
+            render: (text: string, r: EpiReportData) => (
+                <span style={{ color: r.is_submitted ? '#52c41a' : '#ff4d4f', fontWeight: 'bold' }}>
+                    {t(`orgs.${text.toLowerCase()}`, { defaultValue: text })}
+                </span>
+            )
         },
         {
             title: t('daily_reports.table.inspected_objects'),

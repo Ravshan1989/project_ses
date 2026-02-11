@@ -61,19 +61,25 @@ const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, isAdmin, onC
     const columns: any = [
         {
             title: '№', dataIndex: 'key', width: 40, align: 'center', fixed: 'left',
-            onCell: (record: ReportData) => ({ style: { backgroundColor: isSubmitted(record) ? '#f6ffed' : '#fff1f0' } })
+            render: (text: string, r: ReportData) => (
+                <div style={{ backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff1f0', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {text}
+                </div>
+            )
         },
         {
             title: t('daily_reports.table.district') || 'Hududlar',
             dataIndex: 'district_name',
             width: 150,
             fixed: 'left',
-            render: (text: string) => t(`orgs.${text.toLowerCase()}`, { defaultValue: text }),
+            render: (text: string, r: ReportData) => (
+                <span style={{ color: isSubmitted(r) ? '#389e0d' : '#cf1322', fontWeight: 'bold' }}>
+                    {t(`orgs.${text.toLowerCase()}`, { defaultValue: text })}
+                </span>
+            ),
             onCell: (record: ReportData) => ({
                 style: {
                     backgroundColor: isSubmitted(record) ? '#f6ffed' : '#fff1f0',
-                    color: isSubmitted(record) ? '#389e0d' : '#cf1322',
-                    fontWeight: '500'
                 }
             })
         },

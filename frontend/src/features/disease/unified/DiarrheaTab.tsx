@@ -32,6 +32,7 @@ interface DiarrheaReportData {
     open_water_isolated: number;
     tap_water_samples: number;
     tap_water_isolated: number;
+    is_submitted?: boolean;
 }
 
 interface DiarrheaTabProps {
@@ -64,14 +65,22 @@ const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, onChange, isAd
             dataIndex: 'no',
             width: 50,
             fixed: 'left',
-            render: (_: any, __: any, index: number) => index + 1,
+            render: (_: any, r: DiarrheaReportData, index: number) => (
+                <div style={{ backgroundColor: r.is_submitted ? '#f6ffed' : '#fff1f0', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {index + 1}
+                </div>
+            ),
         },
         {
             title: t('daily_reports.table.district'),
             dataIndex: 'district',
             width: 150,
             fixed: 'left',
-            render: (text: string) => t(`orgs.${text.toLowerCase()}`, { defaultValue: text }),
+            render: (text: string, r: DiarrheaReportData) => (
+                <span style={{ color: r.is_submitted ? '#52c41a' : '#ff4d4f', fontWeight: 'bold' }}>
+                    {t(`orgs.${text.toLowerCase()}`, { defaultValue: text })}
+                </span>
+            ),
         },
         {
             title: "Jami ro'yxatga olingan bemorlar",
