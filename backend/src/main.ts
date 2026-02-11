@@ -12,7 +12,11 @@ async function bootstrap() {
   app.use(urlencoded({ limit: "50mb", extended: true }));
 
   // Enable CORS for Frontend
-  app.enableCors();
+  app.enableCors({
+    origin: ["https://projectses.vercel.app", "http://localhost:3000", "http://localhost:5173"],
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+    credentials: true,
+  });
 
   // Enable Global Validation
   app.useGlobalPipes(
@@ -30,3 +34,34 @@ async function bootstrap() {
   console.log(`RegionStat Backend running on port ${port} (0.0.0.0)`);
 }
 bootstrap();
+
+/**
+ * ORIGINAL CODE (APPEND-ONLY RULE)
+ * 
+ * async function bootstrap() {
+ *   const app = await NestFactory.create(AppModule, {
+ *     logger: ["log", "error", "warn", "debug", "verbose"],
+ *   });
+ * 
+ *   app.use(json({ limit: "50mb" }));
+ *   app.use(urlencoded({ limit: "50mb", extended: true }));
+ * 
+ *   // Enable CORS for Frontend
+ *   app.enableCors();
+ * 
+ *   // Enable Global Validation
+ *   app.useGlobalPipes(
+ *     new ValidationPipe({
+ *       whitelist: true,
+ *       transform: true,
+ *     }),
+ *   );
+ * 
+ *   // Global Prefix
+ *   app.setGlobalPrefix("api/v1");
+ * 
+ *   const port = process.env.PORT || 3007;
+ *   await app.listen(port, "0.0.0.0");
+ *   console.log(`RegionStat Backend running on port ${port} (0.0.0.0)`);
+ * }
+ */
