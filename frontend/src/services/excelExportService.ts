@@ -234,3 +234,55 @@ export const exportWeeklyReport = (
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Haftalik Hisobot');
     XLSX.writeFile(workbook, `${fileName}.xlsx`);
 };
+
+// UZ: Yagona kunlik hisobot uchun ko'p varaqli Excel export
+export const exportUnifiedDailyReport = (
+    sections: {
+        data: any[];
+        columns: { header: string; key: string; width?: number }[];
+        title: string;
+        sheetName: string;
+    }[],
+    fileName: string,
+    date: string
+) => {
+    const workbook = XLSX.utils.book_new();
+
+    sections.forEach(section => {
+        const worksheetData: any[][] = [];
+        worksheetData.push([section.title]);
+        worksheetData.push([`Sana: ${date}`]);
+        worksheetData.push([]);
+
+        const headers = section.columns.map(col => col.header);
+        worksheetData.push(headers);
+
+        section.data.forEach(row => {
+            const rowData = section.columns.map(col => row[col.key] ?? 0);
+            worksheetData.push(rowData);
+        });
+
+        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+        worksheet['!cols'] = section.columns.map(col => ({ wch: col.width || 15 }));
+
+        // Simple styling for headers
+        headers.forEach((_, idx) => {
+            const cellAddress = XLSX.utils.encode_cell({ r: 3, c: idx });
+            if (worksheet[cellAddress]) {
+                worksheet[cellAddress].s = {
+                    font: { bold: true },
+                    fill: { fgColor: { rgb: 'D3D3D3' } },
+                    alignment: { horizontal: 'center' },
+                    border: {
+                        top: { style: 'thin' }, bottom: { style: 'thin' },
+                        left: { style: 'thin' }, right: { style: 'thin' }
+                    }
+                };
+            }
+        });
+
+        XLSX.utils.book_append_sheet(workbook, worksheet, section.sheetName);
+    });
+
+    XLSX.writeFile(workbook, `${fileName}.xlsx`);
+};

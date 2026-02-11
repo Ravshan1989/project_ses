@@ -51,7 +51,7 @@
     },
     "common": {
         "dashboard": "Дашборд",
-        "reports": "Ввод данных",
+        "reports": "Отчеты",
         "analysis": "Анализ",
         "settings": "Настройки",
         "logout": "Выйти",
@@ -133,7 +133,7 @@
     "reports": {
         "daily": "Ежедневный ввод данных",
         "monthly": "Ежемесячный ввод данных",
-        "daily_menu": "Ежедневный ввод данных",
+        "daily_menu": "Ежедневные отчеты",
         "monthly_menu": "Ежемесячный ввод данных (Форма-1)",
         "form1": "Форма 1 (Ежемесячно)",
         "hepatitis": "Гепатит",
@@ -143,7 +143,7 @@
         "epidemiology": "Эпидемиологические Меры",
         "weekly_flu": "Еженедельный Грипп/ОРВИ",
         "covid": "Коронавирус (Ежедневно)",
-        "unified": "Единое Окно (Тест)",
+        "unified": "Единый отчет (Unified)",
         "form1_monitoring": "Мониторинг Формы 1",
         "pneumonia": "Пневмония"
     },
@@ -253,6 +253,10 @@
             "students_short": "Уч.",
             "nursery_short": "Восп."
         },
+        "hepatitis_age_groups": "По возрастным группам",
+        "hepatitis_occupation": "По роду занятий",
+        "hepatitis_factors": "Факторы заражения",
+        "hepatitis_lab": "Лабораторный анализ",
         "actions": {
             "refresh": "Обновить",
             "save": "Сохранить",

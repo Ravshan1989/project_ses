@@ -142,7 +142,7 @@
         "epidemiology": "Epidemiology Measures",
         "weekly_flu": "Weekly Flu/ARI",
         "covid": "Coronavirus (Daily)",
-        "unified": "Unified Window (Test)",
+        "unified": "Unified Daily Report",
         "form1_monitoring": "Form 1 Monitoring"
     },
     "analysis": {
@@ -250,6 +250,10 @@
             "students_short": "Stud.",
             "nursery_short": "Nurs."
         },
+        "hepatitis_age_groups": "By Age Groups",
+        "hepatitis_occupation": "By Occupation",
+        "hepatitis_factors": "Transmission Factors",
+        "hepatitis_lab": "Laboratory Analysis",
         "actions": {
             "refresh": "Refresh",
             "save": "Save",

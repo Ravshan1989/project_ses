@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Typography, DatePicker, Select, Button, message, Row, Col, Badge, Space } from 'antd';
+// import { Card, Typography, DatePicker, Select, Button, message, Row, Col, Badge, Space } from 'antd';
+// UZ: 'Card' komponenti import qilingan lekin ishlatilmagani uchun ESLint warning (ogohlantirish) berayotgan edi.
+// UZ: O'zgarmas qoidalarga muvofiq, eski kod saqlab qolindi va yangi blok sifatida to'g'ri variant qo'shildi.
+import { Typography, DatePicker, Select, Button, message, Row, Col, Badge, Space } from 'antd';
 import { FilePdfOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { exportsApi, dailyReportsApi, api, organizationsApi, API_BASE_URL } from '../../services/api';
 import { exportDailyReport, exportWeeklyReport } from '../../services/excelExportService';
