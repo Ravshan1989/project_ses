@@ -4,3 +4,5 @@ const isLocalhost = typeof window !== 'undefined' && (window.location.hostname =
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||
     (isLocalhost ? 'http://localhost:3007/api/v1' : 'https://projectses-production.up.railway.app/api/v1');
+
+console.log('Using API_BASE_URL:', API_BASE_URL);
