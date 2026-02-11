@@ -4,6 +4,6 @@ import { Controller, Get } from "@nestjs/common";
 export class AppController {
     @Get()
     getHello(): string {
-        return "SES Backend is Online! Version: 1.0.1 (CORS FIX)";
+        return "SES Backend is Online! Version: 1.0.2 (MANUAL CORS MIDDLWARE)";
     }
 }
