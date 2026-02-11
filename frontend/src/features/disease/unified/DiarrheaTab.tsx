@@ -71,6 +71,7 @@ const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, onChange, isAd
             dataIndex: 'district',
             width: 150,
             fixed: 'left',
+            render: (text: string) => t(`orgs.${text.toLowerCase()}`, { defaultValue: text }),
         },
         {
             title: "Jami ro'yxatga olingan bemorlar",

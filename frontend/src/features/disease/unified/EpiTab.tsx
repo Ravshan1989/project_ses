@@ -1,4 +1,4 @@
-import { Table, InputNumber } from 'antd';
+import { Table, InputNumber, Space, Badge, Button } from 'antd';
 import { useTranslation } from 'react-i18next';
 
 interface EpiReportData {
@@ -18,15 +18,21 @@ interface EpiReportData {
     media_tv: number;
     media_radio: number;
     seminars: number;
+    id?: string;
+    status?: string;
+    verificationToken?: string;
 }
 
 interface EpiTabProps {
     data: EpiReportData[];
     loading: boolean;
+    isAdmin: boolean;
     onChange: (value: number | null, rowKey: string, field: keyof EpiReportData) => void;
+    onVerify: (id: string) => void;
+    onApprove: (id: string) => void;
 }
 
-const EpiTab: React.FC<EpiTabProps> = ({ data, loading, onChange }) => {
+const EpiTab: React.FC<EpiTabProps> = ({ data, loading, isAdmin, onChange, onVerify, onApprove }) => {
     const { t } = useTranslation();
     const isSubmitted = (row: EpiReportData) => !!row.is_submitted || row.objects_inspected > 0 || row.violations_found > 0;
 
@@ -37,6 +43,7 @@ const EpiTab: React.FC<EpiTabProps> = ({ data, loading, onChange }) => {
             value={record[field] as number}
             onChange={(val) => onChange(val || 0, record.key, field)}
             variant="borderless"
+            className="report-input"
             style={{ width: '100%', textAlign: 'center' }}
             controls={false}
         />
@@ -52,7 +59,7 @@ const EpiTab: React.FC<EpiTabProps> = ({ data, loading, onChange }) => {
             dataIndex: 'district_name',
             width: 140,
             fixed: 'left',
-            render: (text: string) => t(`orgs.${text}`, { defaultValue: text }),
+            render: (text: string) => t(`orgs.${text.toLowerCase()}`, { defaultValue: text }),
             onCell: (r: EpiReportData) => ({
                 style: {
                     backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff1f0',
@@ -62,31 +69,59 @@ const EpiTab: React.FC<EpiTabProps> = ({ data, loading, onChange }) => {
             })
         },
         {
-            title: 'Tekshiruvlar',
+            title: 'Tekshiruvlar natijasi',
             children: [
-                { title: 'Ob\'ekt', width: 70, render: (_: any, r: any) => renderInput(r, 'objects_inspected') },
-                { title: 'Qoida b.', width: 70, render: (_: any, r: any) => renderInput(r, 'violations_found') },
+                { title: 'Tekshirilgan ob\'ektlar soni', width: 120, render: (_: any, r: any) => renderInput(r, 'objects_inspected') },
+                { title: 'Aniqlangan qoida buzilishlar', width: 120, render: (_: any, r: any) => renderInput(r, 'violations_found') },
             ]
         },
         {
-            title: 'Choralar',
+            title: 'Ko\'rilgan choralar',
             children: [
-                { title: 'Jarima(son)', width: 80, render: (_: any, r: any) => renderInput(r, 'fines_count') },
-                { title: 'Jarima(sum)', width: 100, render: (_: any, r: any) => renderInput(r, 'fines_amount') },
-                { title: 'Yopish', width: 70, render: (_: any, r: any) => renderInput(r, 'objects_closed') },
-                { title: 'Sudga', width: 70, render: (_: any, r: any) => renderInput(r, 'cases_to_court') },
-                { title: 'Prok.', width: 70, render: (_: any, r: any) => renderInput(r, 'cases_to_prosecutor') },
+                { title: 'Solingan jarimalar (soni)', width: 110, render: (_: any, r: any) => renderInput(r, 'fines_count') },
+                { title: 'Solingan jarimalar (summasi)', width: 130, render: (_: any, r: any) => renderInput(r, 'fines_amount') },
+                { title: 'Ish faoliyati to\'xtatilganlar', width: 120, render: (_: any, r: any) => renderInput(r, 'objects_closed') },
+                { title: 'Sudga yuborilganlar', width: 110, render: (_: any, r: any) => renderInput(r, 'cases_to_court') },
+                { title: 'Prokuraturaga yuborilganlar', width: 130, render: (_: any, r: any) => renderInput(r, 'cases_to_prosecutor') },
             ]
         },
         {
-            title: 'Targ\'ibot',
+            title: 'Targ\'ibot va tashviqot ishlari',
             children: [
-                { title: 'Ogohl.', width: 70, render: (_: any, r: any) => renderInput(r, 'health_warnings') },
-                { title: 'Gazeta', width: 70, render: (_: any, r: any) => renderInput(r, 'media_articles') },
-                { title: 'TV', width: 60, render: (_: any, r: any) => renderInput(r, 'media_tv') },
-                { title: 'Radio', width: 60, render: (_: any, r: any) => renderInput(r, 'media_radio') },
-                { title: 'Semin.', width: 70, render: (_: any, r: any) => renderInput(r, 'seminars') },
+                { title: 'Sog\'lomlashtirish ogohlantirishlari', width: 130, render: (_: any, r: any) => renderInput(r, 'health_warnings') },
+                { title: 'Gazeta va jurnallar', width: 100, render: (_: any, r: any) => renderInput(r, 'media_articles') },
+                { title: 'Televideniye', width: 100, render: (_: any, r: any) => renderInput(r, 'media_tv') },
+                { title: 'Radioeshittirishlar', width: 110, render: (_: any, r: any) => renderInput(r, 'media_radio') },
+                { title: 'Seminar va yig\'ilishlar', width: 110, render: (_: any, r: any) => renderInput(r, 'seminars') },
             ]
+        },
+        {
+            title: t('daily_reports.table.status') || 'Holat',
+            key: 'status',
+            width: 120,
+            fixed: 'right',
+            render: (_: any, r: EpiReportData) => (
+                <Space direction="vertical" size={2}>
+                    <Badge
+                        status={r.status === 'APPROVED' ? 'success' : r.status === 'VERIFIED' ? 'processing' : 'default'}
+                        text={r.status || 'DRAFT'}
+                    />
+                    {isAdmin && r.id && (
+                        <Space>
+                            {r.status === 'DRAFT' && (
+                                <Button size="small" type="link" onClick={() => onVerify(r.id!)} style={{ padding: 0, fontSize: '11px' }}>
+                                    Tekshirish
+                                </Button>
+                            )}
+                            {r.status === 'VERIFIED' && (
+                                <Button size="small" type="link" onClick={() => onApprove(r.id!)} style={{ padding: 0, fontSize: '11px', color: '#52c41a' }}>
+                                    Tasdiqlash
+                                </Button>
+                            )}
+                        </Space>
+                    )}
+                </Space>
+            )
         }
     ];
 

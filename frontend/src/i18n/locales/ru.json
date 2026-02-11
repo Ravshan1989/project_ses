@@ -147,6 +147,9 @@
         "form1_monitoring": "Мониторинг Формы 1",
         "pneumonia": "Пневмония"
     },
+    "monitoring": {
+        "title": "Форма 1: Мониторинг"
+    },
     "analysis": {
         "regional": "Региональный Анализ",
         "global": "Глобальный Мониторинг"
@@ -460,27 +463,27 @@
         "210": "Выявленная коронавирусная инфекция"
     },
     "orgs": {
-        "Angren sh": "г. Ангрен",
-        "Bekobod sh": "г. Бекабад",
-        "Bekobod t": "Бекабадский р-н",
-        "Bo'ka t": "Букинский р-н",
-        "Bo'stonliq t": "Бостанлыкский р-н",
-        "Chinoz t": "Чиназский р-н",
-        "Chirchiq sh": "г. Чирчик",
-        "Nurafshon sh": "г. Нурафшан",
-        "Ohangaron sh": "г. Ахангаран",
-        "Ohangaron t": "Ахангаранский р-н",
-        "Olmaliq sh": "г. Алмалык",
-        "Oqqo'rg'on t": "Аккурганский р-н",
-        "O'rta Chirchiq t": "Среднечирчикский р-н",
-        "Parkent t": "Паркентский р-н",
-        "Piskent t": "Пскентский р-н",
-        "Qibray t": "Кибрайский р-н",
-        "Quyi chirchiq t": "Нижнечирчикский р-н",
-        "Toshkent t": "Ташкентский р-н",
-        "Yangiyo'l sh": "г. Янгиюль",
-        "Yangiyo'l t": "Янгиюльский р-н",
-        "Yuqori Chirchiq t": "Верхнечирчикский р-н",
-        "Zangiota t": "Зангиатинский р-н"
+        "angren sh": "г. Ангрен",
+        "bekobod sh": "г. Бекабад",
+        "bekobod t": "Бекабадский р-н",
+        "bo'ka t": "Букинский р-н",
+        "bo'stonliq t": "Бостанлыкский р-н",
+        "chinoz t": "Чиназский р-н",
+        "chirchiq sh": "г. Чирчик",
+        "nurafshon sh": "г. Нурафшан",
+        "ohangaron sh": "г. Ахангаран",
+        "ohangaron t": "Ахангаранский р-н",
+        "olmaliq sh": "г. Алмалык",
+        "oqqo'rg'on t": "Аккурганский р-н",
+        "o'rta chirchiq t": "Среднечирчикский р-н",
+        "parkent t": "Паркентский р-н",
+        "piskent t": "Пскентский р-н",
+        "qibray t": "Кибрайский р-н",
+        "quyi chirchiq t": "Нижнечирчикский р-н",
+        "toshkent t": "Ташкентский р-н",
+        "yangiyo'l sh": "г. Янгиюль",
+        "yangiyo'l t": "Янгиюльский р-н",
+        "yuqori chirchiq t": "Верхнечирчикский р-н",
+        "zangiota t": "Зангиатинский р-н"
     }
 }

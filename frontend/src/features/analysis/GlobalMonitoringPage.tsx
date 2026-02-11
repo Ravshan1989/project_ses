@@ -38,6 +38,8 @@ const GlobalMonitoringPage: React.FC = () => {
         }
     };
 
+    const { t } = useTranslation();
+
     useEffect(() => {
         fetchData();
     }, [dateRange]);
@@ -102,7 +104,7 @@ const GlobalMonitoringPage: React.FC = () => {
             sorter: (a: any, b: any) => a.disease.localeCompare(b.disease),
         },
         ...districtNames.map(dn => ({
-            title: dn as any,
+            title: t(`orgs.${dn.toLowerCase()}`, { defaultValue: dn }) as any,
             dataIndex: dn,
             key: dn,
             width: 120,
@@ -225,7 +227,9 @@ const GlobalMonitoringPage: React.FC = () => {
                             {alerts.map((alert, i) => (
                                 <Col span={4} key={i}>
                                     <div className="alert-item" style={{ padding: '16px', background: '#fff1f0', borderRadius: '16px', borderLeft: '6px solid #ff4d4f' }}>
-                                        <Text type="secondary" style={{ fontSize: '10px', display: 'block', letterSpacing: '1px' }}>{alert.district.toUpperCase()}</Text>
+                                        <Text type="secondary" style={{ fontSize: '10px', display: 'block', letterSpacing: '1px' }}>
+                                            {t(`orgs.${alert.district.toLowerCase()}`, { defaultValue: alert.district }).toUpperCase()}
+                                        </Text>
                                         <Text strong style={{ display: 'block', fontSize: '14px', margin: '4px 0' }}>{alert.disease}</Text>
                                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
                                             <Text style={{ fontSize: '24px', fontWeight: 900, color: '#cf1322' }}>{alert.rate.toFixed(1)}</Text>

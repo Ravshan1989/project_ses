@@ -162,7 +162,7 @@ const DashboardPage: React.FC = () => {
             title: t('dashboard_page.table.region'),
             dataIndex: ['organization', 'name'],
             key: 'org',
-            render: (text: string) => <Text strong>{t(`orgs.${text}`, { defaultValue: text })}</Text>
+            render: (text: string) => <Text strong>{t(`orgs.${text.toLowerCase()}`, { defaultValue: text })}</Text>
         },
         {
             title: t('dashboard_page.table.report_type'),

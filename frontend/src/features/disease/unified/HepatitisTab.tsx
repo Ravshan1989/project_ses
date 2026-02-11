@@ -1,4 +1,4 @@
-import { Table, InputNumber } from 'antd';
+import { Table, InputNumber, Space, Badge, Button } from 'antd';
 import { useTranslation } from 'react-i18next';
 
 interface ReportData {
@@ -26,15 +26,21 @@ interface ReportData {
     lab_samples: number;
     lab_positive: number;
     disinfection_done: number;
+    id?: string;
+    status?: string;
+    verificationToken?: string;
 }
 
 interface HepatitisTabProps {
     data: ReportData[];
     loading: boolean;
+    isAdmin: boolean;
     onChange: (value: number | null, rowKey: string, field: keyof ReportData) => void;
+    onVerify: (id: string) => void;
+    onApprove: (id: string) => void;
 }
 
-const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, onChange }) => {
+const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, isAdmin, onChange, onVerify, onApprove }) => {
     const { t } = useTranslation();
     const isSubmitted = (record: ReportData) => !!record.is_submitted;
 
@@ -46,6 +52,7 @@ const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, onChange }) 
             onChange={(val) => !readOnly && onChange(val || 0, record.key, field)}
             variant="borderless"
             readOnly={readOnly}
+            className="report-input"
             style={{ width: '100%', padding: 0, fontWeight: readOnly ? 'bold' : 'normal' }}
             controls={false}
         />
@@ -61,7 +68,7 @@ const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, onChange }) 
             dataIndex: 'district_name',
             width: 150,
             fixed: 'left',
-            render: (text: string) => t(`orgs.${text}`, { defaultValue: text }),
+            render: (text: string) => t(`orgs.${text.toLowerCase()}`, { defaultValue: text }),
             onCell: (record: ReportData) => ({
                 style: {
                     backgroundColor: isSubmitted(record) ? '#f6ffed' : '#fff1f0',
@@ -74,32 +81,32 @@ const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, onChange }) 
         {
             title: t('daily_reports.hepatitis_age_groups') || 'Yoshlari bo\'yicha',
             children: [
-                { title: '1y.', width: 50, render: (_: any, r: any) => renderInput(r, 'age_under_1') },
-                { title: '1-3', width: 50, render: (_: any, r: any) => renderInput(r, 'age_1_3') },
-                { title: '4-6', width: 50, render: (_: any, r: any) => renderInput(r, 'age_4_6') },
-                { title: '7-14', width: 55, render: (_: any, r: any) => renderInput(r, 'age_7_14') },
-                { title: '15-19', width: 55, render: (_: any, r: any) => renderInput(r, 'age_15_19') },
-                { title: '20+', width: 55, render: (_: any, r: any) => renderInput(r, 'age_20_plus') },
+                { title: '1 yoshgacha', width: 60, render: (_: any, r: any) => renderInput(r, 'age_under_1') },
+                { title: '1-3 yosh', width: 60, render: (_: any, r: any) => renderInput(r, 'age_1_3') },
+                { title: '4-6 yosh', width: 60, render: (_: any, r: any) => renderInput(r, 'age_4_6') },
+                { title: '7-14 yosh', width: 65, render: (_: any, r: any) => renderInput(r, 'age_7_14') },
+                { title: '15-19 yosh', width: 65, render: (_: any, r: any) => renderInput(r, 'age_15_19') },
+                { title: '20+ yosh', width: 65, render: (_: any, r: any) => renderInput(r, 'age_20_plus') },
             ]
         },
         {
             title: t('daily_reports.hepatitis_occupation') || 'Kasbi bo\'yicha',
             children: [
-                { title: 'U-1 uyush.', width: 70, render: (_: any, r: any) => renderInput(r, 'occ_unorganized') },
-                { title: '1-6 uyush.', width: 70, render: (_: any, r: any) => renderInput(r, 'occ_unorganized_1_6') },
-                { title: '1-6 bog\'cha', width: 70, render: (_: any, r: any) => renderInput(r, 'occ_organized_1_6') },
-                { title: 'Maktab uyush.', width: 70, render: (_: any, r: any) => renderInput(r, 'occ_unorganized_school_age') },
-                { title: 'O\'quvchi', width: 70, render: (_: any, r: any) => renderInput(r, 'occ_students') },
-                { title: 'Talaba', width: 70, render: (_: any, r: any) => renderInput(r, 'occ_college_students') },
-                { title: 'Kattalar', width: 70, render: (_: any, r: any) => renderInput(r, 'occ_workers') },
+                { title: '1 yoshgacha uyushmagan', width: 100, render: (_: any, r: any) => renderInput(r, 'occ_unorganized') },
+                { title: '1-6 yosh uyushmagan', width: 100, render: (_: any, r: any) => renderInput(r, 'occ_unorganized_1_6') },
+                { title: '1-6 yosh bog\'cha', width: 100, render: (_: any, r: any) => renderInput(r, 'occ_organized_1_6') },
+                { title: 'Maktab yoshidagi uyushmagan', width: 110, render: (_: any, r: any) => renderInput(r, 'occ_unorganized_school_age') },
+                { title: 'Maktab o\'quvchilari', width: 100, render: (_: any, r: any) => renderInput(r, 'occ_students') },
+                { title: 'Litsey/Koll./Olimlar', width: 100, render: (_: any, r: any) => renderInput(r, 'occ_college_students') },
+                { title: 'Boshqa muassasa ishchilari', width: 100, render: (_: any, r: any) => renderInput(r, 'occ_workers') },
             ]
         },
         {
             title: t('daily_reports.hepatitis_factors') || 'Omillar',
             children: [
-                { title: 'Suv', width: 50, render: (_: any, r: any) => renderInput(r, 'factor_water') },
-                { title: 'Ovaqt', width: 50, render: (_: any, r: any) => renderInput(r, 'factor_food') },
-                { title: 'Muloq.', width: 50, render: (_: any, r: any) => renderInput(r, 'factor_contact') },
+                { title: 'Ichimlik suvi', width: 80, render: (_: any, r: any) => renderInput(r, 'factor_water') },
+                { title: 'Oziq-ovqat', width: 80, render: (_: any, r: any) => renderInput(r, 'factor_food') },
+                { title: 'Maishiy muloqot', width: 85, render: (_: any, r: any) => renderInput(r, 'factor_contact') },
             ]
         },
         {
@@ -109,7 +116,35 @@ const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, onChange }) 
                 { title: t('daily_reports.lab_positive') || 'Musbat', width: 55, render: (_: any, r: any) => renderInput(r, 'lab_positive') },
             ]
         },
-        { title: t('daily_reports.disinfection') || 'Dez.', dataIndex: 'disinfection_done', width: 50, render: (_: any, r: any) => renderInput(r, 'disinfection_done') },
+        { title: 'Dezinfeksiya', dataIndex: 'disinfection_done', width: 80, render: (_: any, r: any) => renderInput(r, 'disinfection_done') },
+        {
+            title: t('daily_reports.table.status') || 'Holat',
+            key: 'status',
+            width: 120,
+            fixed: 'right',
+            render: (_: any, r: ReportData) => (
+                <Space direction="vertical" size={2}>
+                    <Badge
+                        status={r.status === 'APPROVED' ? 'success' : r.status === 'VERIFIED' ? 'processing' : 'default'}
+                        text={r.status || 'DRAFT'}
+                    />
+                    {isAdmin && r.id && (
+                        <Space>
+                            {r.status === 'DRAFT' && (
+                                <Button size="small" type="link" onClick={() => onVerify(r.id!)} style={{ padding: 0, fontSize: '11px' }}>
+                                    Tekshirish
+                                </Button>
+                            )}
+                            {r.status === 'VERIFIED' && (
+                                <Button size="small" type="link" onClick={() => onApprove(r.id!)} style={{ padding: 0, fontSize: '11px', color: '#52c41a' }}>
+                                    Tasdiqlash
+                                </Button>
+                            )}
+                        </Space>
+                    )}
+                </Space>
+            )
+        }
     ];
 
     const calculateTotal = (field: keyof ReportData) => data.reduce((sum, item) => sum + (Number(item[field]) || 0), 0);

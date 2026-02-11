@@ -1,4 +1,4 @@
-import { Table, InputNumber } from 'antd';
+import { Table, InputNumber, Space, Badge, Button } from 'antd';
 import { useTranslation } from 'react-i18next';
 
 interface FluReportData {
@@ -37,15 +37,21 @@ interface FluReportData {
     sari_adult: number;
     death_total: number;
     death_pregnant: number;
+    id?: string;
+    status?: string;
+    verificationToken?: string;
 }
 
 interface FluAriTabProps {
     data: FluReportData[];
     loading: boolean;
+    isAdmin: boolean;
     onChange: (value: number | null, rowKey: string, field: keyof FluReportData) => void;
+    onVerify: (id: string) => void;
+    onApprove: (id: string) => void;
 }
 
-const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, onChange }) => {
+const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, isAdmin, onChange, onVerify, onApprove }) => {
     const { t } = useTranslation();
     const isSubmitted = (row: FluReportData) => !!row.is_submitted || (row.ari_total + row.flu_total + row.pneu_total + row.sari_total + row.death_total) > 0;
 
@@ -57,6 +63,7 @@ const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, onChange }) => {
             onChange={(val) => !readOnly && onChange(val || 0, record.key, field)}
             variant="borderless"
             readOnly={readOnly}
+            className="report-input"
             style={{ width: '100%', textAlign: 'center', fontWeight: readOnly ? 'bold' : 'normal' }}
             controls={false}
         />
@@ -70,9 +77,9 @@ const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, onChange }) => {
         {
             title: t('daily_reports.table.district') || 'Hududlar',
             dataIndex: 'district_name',
-            width: 140,
+            width: 150,
             fixed: 'left',
-            render: (text: string) => t(`orgs.${text}`, { defaultValue: text }),
+            render: (text: string) => t(`orgs.${text.toLowerCase()}`, { defaultValue: text }),
             onCell: (r: FluReportData) => ({
                 style: {
                     backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff1f0',
@@ -82,53 +89,81 @@ const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, onChange }) => {
             })
         },
         {
-            title: t('reports.ari') || 'O\'RI',
+            title: "O'tkir respirator infeksiyalar (O'RI)",
             children: [
-                { title: t('dashboard_page.total_reports') || 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'ari_total', true) },
-                { title: '0-1y', width: 50, render: (_: any, r: any) => renderInput(r, 'ari_0_1') },
-                { title: '1-2y', width: 50, render: (_: any, r: any) => renderInput(r, 'ari_1_2') },
-                { title: '3-6y', width: 50, render: (_: any, r: any) => renderInput(r, 'ari_3_6') },
-                { title: '7-14y', width: 55, render: (_: any, r: any) => renderInput(r, 'ari_7_14') },
-                { title: 'kattalar', width: 65, render: (_: any, r: any) => renderInput(r, 'ari_adult') },
+                { title: 'Jami', width: 65, render: (_: any, r: any) => renderInput(r, 'ari_total', true) },
+                { title: '0-1 yosh', width: 60, render: (_: any, r: any) => renderInput(r, 'ari_0_1') },
+                { title: '1-2 yosh', width: 60, render: (_: any, r: any) => renderInput(r, 'ari_1_2') },
+                { title: '3-6 yosh', width: 60, render: (_: any, r: any) => renderInput(r, 'ari_3_6') },
+                { title: '7-14 yosh', width: 65, render: (_: any, r: any) => renderInput(r, 'ari_7_14') },
+                { title: 'Kattalar', width: 70, render: (_: any, r: any) => renderInput(r, 'ari_adult') },
             ]
         },
         {
-            title: t('daily_reports.flu_pneu') || 'O\'P (Zotiljam)',
+            title: "O'tkir pnevmoniya (Zotiljam)",
             children: [
-                { title: t('dashboard_page.total_reports') || 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'pneu_total', true) },
-                { title: '0-2y', width: 50, render: (_: any, r: any) => renderInput(r, 'pneu_0_2') },
-                { title: '3-6y', width: 50, render: (_: any, r: any) => renderInput(r, 'pneu_3_6') },
-                { title: '7-14y', width: 55, render: (_: any, r: any) => renderInput(r, 'pneu_7_14') },
-                { title: 'kattalar', width: 65, render: (_: any, r: any) => renderInput(r, 'pneu_adult') },
+                { title: 'Jami', width: 65, render: (_: any, r: any) => renderInput(r, 'pneu_total', true) },
+                { title: '0-2 yosh', width: 60, render: (_: any, r: any) => renderInput(r, 'pneu_0_2') },
+                { title: '3-6 yosh', width: 60, render: (_: any, r: any) => renderInput(r, 'pneu_3_6') },
+                { title: '7-14 yosh', width: 65, render: (_: any, r: any) => renderInput(r, 'pneu_7_14') },
+                { title: 'Kattalar', width: 70, render: (_: any, r: any) => renderInput(r, 'pneu_adult') },
             ]
         },
         {
-            title: t('reports.flu') || 'GK (Grippga o\'xshash)',
+            title: "Grippga o'xshash kasalliklar (GK)",
             children: [
-                { title: t('dashboard_page.total_reports') || 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'flu_total', true) },
-                { title: '0-1y', width: 50, render: (_: any, r: any) => renderInput(r, 'flu_0_1') },
-                { title: '1-2y', width: 50, render: (_: any, r: any) => renderInput(r, 'flu_1_2') },
-                { title: '3-6y', width: 50, render: (_: any, r: any) => renderInput(r, 'flu_3_6') },
-                { title: '7-14y', width: 55, render: (_: any, r: any) => renderInput(r, 'flu_7_14') },
-                { title: 'kattalar', width: 65, render: (_: any, r: any) => renderInput(r, 'flu_adult') },
+                { title: 'Jami', width: 65, render: (_: any, r: any) => renderInput(r, 'flu_total', true) },
+                { title: '0-1 yosh', width: 60, render: (_: any, r: any) => renderInput(r, 'flu_0_1') },
+                { title: '1-2 yosh', width: 60, render: (_: any, r: any) => renderInput(r, 'flu_1_2') },
+                { title: '3-6 yosh', width: 60, render: (_: any, r: any) => renderInput(r, 'flu_3_6') },
+                { title: '7-14 yosh', width: 65, render: (_: any, r: any) => renderInput(r, 'flu_7_14') },
+                { title: 'Kattalar', width: 70, render: (_: any, r: any) => renderInput(r, 'flu_adult') },
             ]
         },
         {
-            title: t('daily_reports.flu_sari') || 'SARI (Og\'ir o\'tkir)',
+            title: "Og'ir o'tkir respirator infeksiya (SARI)",
             children: [
-                { title: t('dashboard_page.total_reports') || 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'sari_total', true) },
-                { title: '0-2y', width: 50, render: (_: any, r: any) => renderInput(r, 'sari_0_2') },
-                { title: '3-6y', width: 50, render: (_: any, r: any) => renderInput(r, 'sari_3_6') },
-                { title: '7-14y', width: 55, render: (_: any, r: any) => renderInput(r, 'sari_7_14') },
-                { title: 'Kattalar', width: 60, render: (_: any, r: any) => renderInput(r, 'sari_adult') },
+                { title: 'Jami', width: 65, render: (_: any, r: any) => renderInput(r, 'sari_total', true) },
+                { title: '0-2 yosh', width: 60, render: (_: any, r: any) => renderInput(r, 'sari_0_2') },
+                { title: '3-6 yosh', width: 60, render: (_: any, r: any) => renderInput(r, 'sari_3_6') },
+                { title: '7-14 yosh', width: 65, render: (_: any, r: any) => renderInput(r, 'sari_7_14') },
+                { title: 'Kattalar', width: 70, render: (_: any, r: any) => renderInput(r, 'sari_adult') },
             ]
         },
         {
-            title: t('daily_reports.flu_death') || 'Vafot',
+            title: "Vafot etganlar soni",
             children: [
-                { title: t('dashboard_page.total_reports') || 'Jami', width: 50, render: (_: any, r: any) => renderInput(r, 'death_total') },
-                { title: 'Homil.', width: 60, render: (_: any, r: any) => renderInput(r, 'death_pregnant') },
+                { title: 'Jami', width: 65, render: (_: any, r: any) => renderInput(r, 'death_total') },
+                { title: 'Homiladorlar', width: 90, render: (_: any, r: any) => renderInput(r, 'death_pregnant') },
             ]
+        },
+        {
+            title: t('daily_reports.table.status') || 'Holat',
+            key: 'status',
+            width: 120,
+            fixed: 'right',
+            render: (_: any, r: FluReportData) => (
+                <Space direction="vertical" size={2}>
+                    <Badge
+                        status={r.status === 'APPROVED' ? 'success' : r.status === 'VERIFIED' ? 'processing' : 'default'}
+                        text={r.status || 'DRAFT'}
+                    />
+                    {isAdmin && r.id && (
+                        <Space>
+                            {r.status === 'DRAFT' && (
+                                <Button size="small" type="link" onClick={() => onVerify(r.id!)} style={{ padding: 0, fontSize: '11px' }}>
+                                    Tekshirish
+                                </Button>
+                            )}
+                            {r.status === 'VERIFIED' && (
+                                <Button size="small" type="link" onClick={() => onApprove(r.id!)} style={{ padding: 0, fontSize: '11px', color: '#52c41a' }}>
+                                    Tasdiqlash
+                                </Button>
+                            )}
+                        </Space>
+                    )}
+                </Space>
+            )
         }
     ];
 
