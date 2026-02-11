@@ -63,6 +63,12 @@ export class AnalysisService {
       getAggregatedData(this.covidRepo, "total_cases"),
     ]);
 
+    // UZ: O(1) qidiruv uchun lug'at (Map) yaratamiz
+    const hepMap = new Map(hepAgg.map(a => [a.organization_id, a]));
+    const fluMap = new Map(fluAgg.map(a => [a.organization_id, a]));
+    const ariMap = new Map(ariAgg.map(a => [a.organization_id, a]));
+    const covidMap = new Map(covidAgg.map(a => [a.organization_id, a]));
+
     const form1Agg = await this.submissionRepo
       .createQueryBuilder("sub")
       .leftJoin("sub.template", "template")
@@ -75,38 +81,55 @@ export class AnalysisService {
       })
       .getRawMany();
 
+    // UZ: Form1 ma'lumotlarini tumanlar bo'yicha guruhlaymiz (Hash Map) - O(N)
+    const form1Map = new Map<string, any[]>();
+    for (const sub of form1Agg) {
+      const list = form1Map.get(sub.organization_id) || [];
+      list.push(sub);
+      form1Map.set(sub.organization_id, list);
+    }
+
+    // UZ: Kasalliklarni nomi boyicha tezkor qidirish uchun Map - O(D)
+    const diseaseNameMap = new Map(diseases.map(d => [d.name.toLowerCase(), d]));
+
     const globalMatrix: any[] = [];
 
     for (const org of organizations) {
       const orgDiseases: any[] = [];
 
-      const addSpecialized = (agg: any[], name: string) => {
-        const found = agg.find((a) => a.organization_id === org.id);
+      const addSpecialized = (map: Map<string, any>, name: string) => {
+        const found = map.get(org.id); // UZ: O(1) - lahzada topish!
         const cases = found ? parseInt(found.total) : 0;
         if (cases > 0) orgDiseases.push({ disease: name, cases });
       };
 
-      addSpecialized(hepAgg, "Gepatit");
-      addSpecialized(fluAgg, "Gripp");
-      addSpecialized(ariAgg, "O'RVI");
-      addSpecialized(covidAgg, "Koronavirus (COVID-19)");
+      addSpecialized(hepMap, "Gepatit");
+      addSpecialized(fluMap, "Gripp");
+      addSpecialized(ariMap, "O'RVI");
+      addSpecialized(covidMap, "Koronavirus (COVID-19)");
 
-      const orgSubmissions = form1Agg.filter(
-        (a) => a.organization_id === org.id,
-      );
+      const orgSubmissions = form1Map.get(org.id) || []; // UZ: O(1) - filterni o'rniga!
+
       for (const sub of orgSubmissions) {
         if (!sub.data) continue;
         for (const [key, value] of Object.entries(sub.data)) {
           if (typeof value === "number" && value > 0) {
-            const diseaseMatch = diseases.find(
-              (d) =>
-                d.name.toLowerCase().includes(key.toLowerCase()) ||
-                key.toLowerCase().includes(d.name.toLowerCase()),
-            );
+            const lowerKey = key.toLowerCase();
+            // UZ: Avval aniq moslikni tekshiramiz (eng tezkor - O(1))
+            let diseaseMatch = diseaseNameMap.get(lowerKey);
+
+            // Agar aniq moslik topilmasa, o'xshashlikni qidiramiz (sekinroq - O(D))
+            if (!diseaseMatch) {
+              diseaseMatch = diseases.find(
+                (d) =>
+                  d.name.toLowerCase().includes(lowerKey) ||
+                  lowerKey.includes(d.name.toLowerCase()),
+              );
+            }
 
             if (diseaseMatch) {
               const existing = orgDiseases.find(
-                (od) => od.disease === diseaseMatch.name,
+                (od) => od.disease === diseaseMatch!.name,
               );
               if (existing) {
                 existing.cases += value;
@@ -187,8 +210,10 @@ export class AnalysisService {
       .groupBy("report.organization_id")
       .getRawMany();
 
+    const caseAggMap = new Map(caseAggregation.map(a => [a.organization_id, a]));
+
     const results = organizations.map((org) => {
-      const agg = caseAggregation.find((a) => a.organization_id === org.id);
+      const agg = caseAggMap.get(org.id); // UZ: O(1) - tezkor qidiruv
       const totalCases = agg ? parseInt(agg.total) : 0;
       const incidenceRate =
         org.population > 0 ? (totalCases / org.population) * 100000 : 0;

@@ -109,10 +109,11 @@
             "view_details_tooltip": "View Details"
         },
         "statuses": {
-            "DRAFT": "Draft",
-            "SUBMITTED": "Submitted",
-            "APPROVED": "Approved",
-            "REJECTED": "Rejected"
+            "draft": "Draft",
+            "submitted": "Submitted",
+            "verified": "Verified",
+            "approved": "Approved",
+            "rejected": "Rejected"
         },
         "analysis": {
             "chart_submissions_title": "Statistics",

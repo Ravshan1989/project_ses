@@ -110,10 +110,11 @@
             "view_details_tooltip": "Batafsil ko'rish"
         },
         "statuses": {
-            "DRAFT": "Qoralama",
-            "SUBMITTED": "Yuborilgan",
-            "APPROVED": "Tasdiqlangan",
-            "REJECTED": "Rad etilgan"
+            "draft": "Qoralama",
+            "submitted": "Yuborilgan",
+            "verified": "Tekshirilgan",
+            "approved": "Tasdiqlangan",
+            "rejected": "Rad etilgan"
         },
         "analysis": {
             "chart_submissions_title": "Statistikasi",

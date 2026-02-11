@@ -110,10 +110,11 @@
             "view_details_tooltip": "Батафсил кўриш"
         },
         "statuses": {
-            "DRAFT": "Қоралама",
-            "SUBMITTED": "Юборилган",
-            "APPROVED": "Тасдиқланган",
-            "REJECTED": "Рад этилган"
+            "draft": "Қоралама",
+            "submitted": "Юборилган",
+            "verified": "Текширилган",
+            "approved": "Тасдиқланган",
+            "rejected": "Рад этилган"
         },
         "analysis": {
             "chart_submissions_title": "Статистикаси",

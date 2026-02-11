@@ -31,9 +31,10 @@ files.forEach(fileInfo => {
 
     // UZ: 1. Import qo'shish - DownloadOutlined icon
     if (!content.includes('DownloadOutlined')) {
+        // UZ: Eski importni izohga olamiz va yangisini qo'shamiz (Append-only)
         content = content.replace(
-            /from '@ant-design\/icons';/,
-            (match) => match.replace("';", ", DownloadOutlined';")
+            /import { (.*) } from '@ant-design\/icons';/g,
+            "// $& // ESKI\nimport { $1, DownloadOutlined } from '@ant-design/icons';"
         );
     }
 
@@ -41,16 +42,16 @@ files.forEach(fileInfo => {
     if (!content.includes('excelExportService')) {
         content = content.replace(
             /import PermissionGate from/,
-            `import { exportDailyReport } from '../../services/excelExportService'; // UZ: Excel eksport service\nimport PermissionGate from`
+            `// import PermissionGate from // ESKI\nimport { exportDailyReport } from '../../services/excelExportService'; // UZ: Excel eksport service\nimport PermissionGate from`
         );
     }
 
     // UZ: 3. Excel tugmasi qo'shish
     if (!content.includes('handleExcelExport')) {
-        // UZ: Tugma qo'shish - ReloadOutlined dan oldin
+        // UZ: Tugma qo'shish - ReloadOutlined dan oldin (Append-only)
         content = content.replace(
-            /<Button icon={<ReloadOutlined \/\>} onClick={fetchReports}>/,
-            `<Button icon={<DownloadOutlined />} onClick={handleExcelExport}>Excel</Button>\n                            <Button icon={<ReloadOutlined />} onClick={fetchReports}>`
+            /<Button icon={<ReloadOutlined \/>}(.*?)<\/Button>/s,
+            (match) => `// ${match} // ESKI\n                            <Button icon={<DownloadOutlined />} onClick={handleExcelExport}>Excel</Button>\n                            ${match}`
         );
 
         // UZ: handleSave funksiyasidan keyin handleExcelExport qo'shish
@@ -72,8 +73,8 @@ files.forEach(fileInfo => {
             })) : [];
 
         // UZ: Fayl nomi va sarlavha
-        const fileName = \`${fileInfo.prefix}_\${date.format('DD-MM-YYYY')}\`;
-        const title = t('${fileInfo.title}');
+        const fileName = \`\${fileInfo.prefix}_\${date.format('DD-MM-YYYY')}\`;
+        const title = t('\${fileInfo.title}');
         const dateStr = date.format('DD.MM.YYYY');
 
         // UZ: Excel ga eksport qilish
@@ -90,4 +91,4 @@ files.forEach(fileInfo => {
     console.log(`✅ Excel export qo'shildi: ${path.basename(fileInfo.path)}`);
 });
 
-console.log('\n🎉 Barcha sahifalarga Excel export qo'shildi!');
+console.log(`\n🎉 Barcha sahifalarga Excel export qo'shildi!`);

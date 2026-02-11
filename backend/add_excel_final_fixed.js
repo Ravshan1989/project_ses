@@ -1,4 +1,4 @@
-// UZ: Qolgan 3 ta sahifaga Excel export qo'shish - to'g'ri versiya
+// UZ: Qolgan 3 ta sahifaga Excel export qo'shish - to'g'ri versiya (Idempotent)
 const fs = require('fs');
 
 const pages = [
@@ -23,33 +23,42 @@ pages.forEach(page => {
     let content = fs.readFileSync(page.file, 'utf8');
 
     // UZ: 1. DownloadOutlined import qo'shish
-    content = content.replace(
-        "} from '@ant-design/icons';",
-        ", DownloadOutlined } from '@ant-design/icons';"
-    );
+    if (!content.includes('DownloadOutlined')) {
+        content = content.replace(
+            "} from '@ant-design/icons';",
+            ", DownloadOutlined } from '@ant-design/icons';"
+        );
+    }
 
     // UZ: 2. Excel service import qo'shish
-    const importIndex = content.indexOf("import { useTranslation } from 'react-i18next';");
-    if (importIndex > 0) {
-        content = content.slice(0, importIndex) +
-            "import { exportDailyReport } from '../../services/excelExportService'; // UZ: Excel eksport service\n" +
-            content.slice(importIndex);
+    if (!content.includes('excelExportService')) {
+        const importIndex = content.indexOf("import { useTranslation } from 'react-i18next';");
+        if (importIndex > 0) {
+            content = content.slice(0, importIndex) +
+                "import { exportDailyReport } from '../../services/excelExportService'; // UZ: Excel eksport service\n" +
+                content.slice(importIndex);
+        }
     }
 
     // UZ: 3. Excel tugmasi qo'shish
-    content = content.replace(
-        '<Button icon={<ReloadOutlined />} onClick={fetchReports}>',
-        '<Button icon={<DownloadOutlined />} onClick={handleExcelExport}>Excel</Button>\n                            <Button icon={<ReloadOutlined />} onClick={fetchReports}>'
-    );
+    if (!content.includes('handleExcelExport') || !content.includes('Excel')) {
+        if (content.includes('<Button icon={<ReloadOutlined />} onClick={fetchReports}>')) {
+            content = content.replace(
+                '<Button icon={<ReloadOutlined />} onClick={fetchReports}>',
+                '<Button icon={<DownloadOutlined />} onClick={handleExcelExport}>Excel</Button>\n                            <Button icon={<ReloadOutlined />} onClick={fetchReports}>'
+            );
+        }
+    }
 
     // UZ: 4. handleExcelExport funksiyasini qo'shish
-    const handleSavePattern = /const handleSave = async \(\) => \{[\s\S]*?\n    \};/;
-    const match = content.match(handleSavePattern);
+    if (!content.includes('const handleExcelExport =')) {
+        const handleSavePattern = /const handleSave = async \(\) => \{[\s\S]*?\n    \};/;
+        const match = content.match(handleSavePattern);
 
-    if (match) {
-        const insertPos = content.indexOf(match[0]) + match[0].length;
+        if (match) {
+            const insertPos = content.indexOf(match[0]) + match[0].length;
 
-        const excelFunc = `
+            const excelFunc = `
 
     // UZ: Excel ga eksport qilish funksiyasi
     const handleExcelExport = () => {
@@ -72,11 +81,12 @@ pages.forEach(page => {
         notification.success({ message: 'Excel fayl yuklab olindi!' });
     };`;
 
-        content = content.slice(0, insertPos) + excelFunc + content.slice(insertPos);
+            content = content.slice(0, insertPos) + excelFunc + content.slice(insertPos);
+        }
     }
 
     fs.writeFileSync(page.file, content, 'utf8');
-    console.log(`✅ ${page.prefix} - Excel export qo'shildi`);
+    console.log(`✅ ${page.prefix} - Excel export tekshirildi/qo'shildi`);
 });
 
-console.log('\n🎉 Barcha sahifalarga Excel export qo'shildi!');
+console.log(`\n🎉 Barcha sahifalarga Excel export qo'shildi!`);

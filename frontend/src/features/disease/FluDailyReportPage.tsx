@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { SaveOutlined, ReloadOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined } from '@ant-design/icons';
+import { SaveOutlined, ReloadOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined, DownloadOutlined } from '@ant-design/icons';
 import { Table, Typography, DatePicker, Button, InputNumber, notification, Space, Badge, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
+import { exportDailyReport } from '../../services/excelExportService'; // UZ: Excel eksport service
 import PermissionGate from '../../components/PermissionGate';
 
 
@@ -214,6 +215,34 @@ const FluDailyReportPage: React.FC = () => {
         }
     };
 
+    // UZ: Excel ga eksport qilish funksiyasi
+    const handleExcelExport = () => {
+        // UZ: Ustunlar ro'yxati (har bir sahifa uchun mos)
+        const columns = data.length > 0 ? Object.keys(data[0])
+            .filter(key => key !== 'is_submitted' && key !== 'id' && key !== 'organizationId' && key !== 'status' && key !== 'verificationToken')
+            .map(key => ({
+                header: key === 'key' ? '№' : key === 'district_name' ? t('daily_reports.table.district') : key,
+                key: key,
+                width: key === 'key' ? 5 : key === 'district_name' ? 20 : 12
+            })) : [];
+
+        // UZ: Fayl nomi va sarlavha
+        const fileName = `Gripp_Kunlik_${date.format('DD-MM-YYYY')} `;
+        const title = t('daily_reports.flu_title');
+        const dateStr = date.format('DD.MM.YYYY');
+
+        // UZ: Ma'lumotlarni tarjima qilish
+        const translatedData = data.map(item => ({
+            ...item,
+            district_name: t(`orgs.${item.district_name.toLowerCase()}`, { defaultValue: item.district_name })
+        }));
+
+        // UZ: Excel ga eksport qilish
+        exportDailyReport(translatedData, fileName, title, dateStr, columns);
+        notification.success({ message: 'Excel fayl yuklab olindi!' });
+    };
+
+
 
 
     const handleVerify = async (id: string) => {
@@ -261,13 +290,7 @@ const FluDailyReportPage: React.FC = () => {
         },
         {
             title: t('daily_reports.table.district'), dataIndex: 'district_name', width: 140, fixed: 'left',
-            onCell: (r: FluReportData) => ({
-                style: {
-                    backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff1f0',
-                    color: isSubmitted(r) ? '#389e0d' : '#cf1322',
-                    fontWeight: 500
-                }
-            })
+            render: (text: string) => t(`orgs.${text.toLowerCase()}`, { defaultValue: text }),
         },
         {
             title: t('reports.ari'),
@@ -339,7 +362,7 @@ const FluDailyReportPage: React.FC = () => {
                             <Button
                                 size="small"
                                 icon={<QrcodeOutlined />}
-                                onClick={() => window.open(`/verify/${r.verificationToken}`, '_blank')}
+                                onClick={() => window.open(`/ verify / ${r.verificationToken} `, '_blank')}
                             />
                         </Tooltip>
                     )}
@@ -413,19 +436,19 @@ const FluDailyReportPage: React.FC = () => {
         <PermissionGate permission="VIEW_FLU">
             <div style={{ padding: '24px', minHeight: '100vh', background: '#f0f2f5' }}>
                 <style>{`
-                    .clinical-table .ant-table { background: transparent !important; }
-                    .clinical-table .ant-table-thead > tr > th {
-                        background: rgba(255, 255, 255, 0.5) !important;
-                        font-weight: 700;
-                        text-transform: uppercase;
-                        font-size: 10px;
-                        letter-spacing: 0.5px;
-                        color: #1e3c72;
-                    }
-                    .clinical-table .ant-table-tbody > tr > td {
-                        padding: 6px 2px !important;
-                    }
-                `}</style>
+    .clinical - table.ant - table { background: transparent!important; }
+                    .clinical - table.ant - table - thead > tr > th {
+    background: rgba(255, 255, 255, 0.5)!important;
+    font - weight: 700;
+    text - transform: uppercase;
+    font - size: 10px;
+    letter - spacing: 0.5px;
+    color: #1e3c72;
+}
+                    .clinical - table.ant - table - tbody > tr > td {
+    padding: 6px 2px!important;
+}
+`}</style>
 
                 <div style={headerStyle}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -458,6 +481,19 @@ const FluDailyReportPage: React.FC = () => {
                                 color: '#fff'
                             }}
                         />
+                        <Button
+                            icon={<DownloadOutlined />}
+                            onClick={handleExcelExport}
+                            style={{
+                                borderRadius: '12px',
+                                height: '40px',
+                                background: 'rgba(255,255,255,0.1)',
+                                border: 'none',
+                                color: '#fff'
+                            }}
+                        >
+                            Excel
+                        </Button>
                         <Button
                             icon={<ReloadOutlined />}
                             onClick={fetchReports}

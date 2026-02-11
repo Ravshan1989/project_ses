@@ -4,18 +4,21 @@ const token = '8304666738:AAG-3fK2-SVzIwexP67iuu8Oh8Q3-gS0p5k';
 const chatId = '-1003731709006';
 
 const message = `
-📑 *LOYIHA REJASI (ARXIV/KANAL)* 📑
+📑 *LOYIHA YANGILANISHI VA REJA* 📑
 
-Ushbu reja loyihaning kelajakdagi rivojlanish bosqichlarini belgilaydi:
+✅ *AMALGA OSHIRILDI:*
+- Tuman nomlari barcha hisobotlarda tarjima qilindi (Kirill alifbosi).
+- Hisobot sahifalari dizayni va funksionalligi (Status/Verify) unifikatsiya qilindi.
+- Avtomatik zaxiralash boti (Snapshot) Toshkent vaqtiga sozlandi.
 
-📍 *1. GIS & Xaritalar:* Hududiy tahlil va interaktiv xaritalar.
-📍 *2. Bashoratlash:* AI orqali kasallanish trendlarini aniqlash.
-📍 *3. Mobil & Bot:* Shifokorlar uchun ilova va Telegram xizmatlari.
-📍 *4. Nazorat:* Ma'lumotlar auditi va qat'iy tekshiruv.
-📍 *5. Hisobotlar:* Avtomatlashtirilgan PDF va Email tizimi.
+📍 *KELAJAKDAGI REJALAR:*
+- 💬 *Chat:* Tizim ichida xodimlar uchun jonli muloqot xonasi.
+- 📹 *Videoselektor:* Masofaviy yig'ilishlar va video-aloqa (Jitsi Meet).
+- 📊 *AI Bashoratlash:* Kasallikka moyillikni oldindan aniqlash.
+- 📱 *Mobil Ilova:* Shifokorlar uchun maxsus mobil interfeys.
 
 📅 Sana: ${new Date().toLocaleString('uz-UZ')}
-✅ Holat: Tasdiqlandi
+🚀 Holat: Yangilanish kanalga yuborildi.
 `;
 
 const postData = JSON.stringify({

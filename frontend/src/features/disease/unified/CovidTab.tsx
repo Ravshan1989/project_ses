@@ -115,7 +115,7 @@ const CovidTab: React.FC<CovidTabProps> = ({ data, loading, isAdmin, onChange, o
                 <Space direction="vertical" size={2}>
                     <Badge
                         status={r.status === 'APPROVED' ? 'success' : r.status === 'VERIFIED' ? 'processing' : 'default'}
-                        text={r.status || 'DRAFT'}
+                        text={r.status ? t(`dashboard_page.statuses.${r.status.toLowerCase()}`, { defaultValue: r.status }) : t('dashboard_page.statuses.draft', { defaultValue: 'DRAFT' })}
                     />
                     {isAdmin && r.id && (
                         <Space>

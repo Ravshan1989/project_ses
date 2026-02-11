@@ -1,0 +1,390 @@
+[
+  {
+    "code": "101",
+    "name": "Ichterlama"
+  },
+  {
+    "code": "102",
+    "name": "Paratiflar A, B, C (Barchasi)"
+  },
+  {
+    "code": "103",
+    "name": "shu jumladan: paratif A"
+  },
+  {
+    "code": "104",
+    "name": "paratif B"
+  },
+  {
+    "code": "105",
+    "name": "Ichterlama va paratif bakteriyalarini tashuvchilari"
+  },
+  {
+    "code": "106",
+    "name": "Boshqa salmonellez infeksiyalari"
+  },
+  {
+    "code": "107",
+    "name": "shu jumladan bakteriologik tasdiqlanganlar"
+  },
+  {
+    "code": "108",
+    "name": "Bakterial ichburug' (shigellez)"
+  },
+  {
+    "code": "109",
+    "name": "shu jumladan bakteriologik tasdiqlanganlar"
+  },
+  {
+    "code": "110",
+    "name": "Fleksner, Nyukasl shigellasi keltirib chiqargan"
+  },
+  {
+    "code": "111",
+    "name": "Zonne shigellasi keltirib chiqargan"
+  },
+  {
+    "code": "112",
+    "name": "Grigoryev-Shiga shigellasi keltirib chiqargan"
+  },
+  {
+    "code": "113",
+    "name": "Ichburug' bakteriya tashuvchilari"
+  },
+  {
+    "code": "114",
+    "name": "Ierseniya enterokoliti keltirib chiqargan enteritlar"
+  },
+  {
+    "code": "115",
+    "name": "Aniqlangan qo'zg'atuvchilar sabab bo'lgan enterit, kolit, gastroenteritlar, ovqat toksikoinfeksiyalari"
+  },
+  {
+    "code": "116",
+    "name": "shu jumladan rotavirus infeksiyalar"
+  },
+  {
+    "code": "117",
+    "name": "Qo'zg'atuvchilari aniqlanmagan va aniq belgilanmagan o'tkir ichak infeksiyalari va ovqat toksikoinfeksiyalari"
+  },
+  {
+    "code": "118",
+    "name": "Tulyaremiya"
+  },
+  {
+    "code": "119",
+    "name": "Kuydirgi"
+  },
+  {
+    "code": "120",
+    "name": "Birinchi marta tashhisi aniqlangan brutsellez"
+  },
+  {
+    "code": "121",
+    "name": "Bo'g'ma"
+  },
+  {
+    "code": "122",
+    "name": "Bo'g'ma qo'zg'atuvchi toksigen shtammlari tashuvchilari"
+  },
+  {
+    "code": "123",
+    "name": "Ko'kyutal"
+  },
+  {
+    "code": "124",
+    "name": "Meningokokkli infeksiya"
+  },
+  {
+    "code": "125",
+    "name": "shu jumladan tarqoq turi"
+  },
+  {
+    "code": "126",
+    "name": "Qoqshol"
+  },
+  {
+    "code": "127",
+    "name": "O'tkir poliomielit"
+  },
+  {
+    "code": "128",
+    "name": "Suvchechak"
+  },
+  {
+    "code": "129",
+    "name": "Qizamiq"
+  },
+  {
+    "code": "130",
+    "name": "Bahor-yozgi kana entsefality"
+  },
+  {
+    "code": "131",
+    "name": "Skarlatina"
+  },
+  {
+    "code": "132",
+    "name": "Gemorragik isitma"
+  },
+  {
+    "code": "133",
+    "name": "Qizilcha"
+  },
+  {
+    "code": "134",
+    "name": "Tug'ma qizilcha"
+  },
+  {
+    "code": "135",
+    "name": "O'tkir virusli gepatit (jami)"
+  },
+  {
+    "code": "136",
+    "name": "shu jumladan gepatit A"
+  },
+  {
+    "code": "137",
+    "name": "gepatit B"
+  },
+  {
+    "code": "138",
+    "name": "gepatit C"
+  },
+  {
+    "code": "139",
+    "name": "gepatit E"
+  },
+  {
+    "code": "140",
+    "name": "gepatit D"
+  },
+  {
+    "code": "141",
+    "name": "Gepatit virusini tashuvchilar – birinchi marta aniqlanganlar – jami"
+  },
+  {
+    "code": "142",
+    "name": "ulardan Gepatit B (HBAg)"
+  },
+  {
+    "code": "143",
+    "name": "Gepatit C"
+  },
+  {
+    "code": "144",
+    "name": "Surunkali gepatitlar (birinchi marta aniqlanganlar)"
+  },
+  {
+    "code": "145",
+    "name": "Quturish"
+  },
+  {
+    "code": "146",
+    "name": "Ornitoz"
+  },
+  {
+    "code": "147",
+    "name": "Infeksion mononukleoz"
+  },
+  {
+    "code": "148",
+    "name": "Epidemik parotit"
+  },
+  {
+    "code": "149",
+    "name": "Rikketsiozlar"
+  },
+  {
+    "code": "150",
+    "name": "shu jumladan, epidemiya toshmali terlama"
+  },
+  {
+    "code": "151",
+    "name": "Brill kasalligi"
+  },
+  {
+    "code": "152",
+    "name": "Kanali toshma terlama"
+  },
+  {
+    "code": "153",
+    "name": "Qu isitmasi"
+  },
+  {
+    "code": "154",
+    "name": "Birinchi marta tashhisi aniqlangan bezgak"
+  },
+  {
+    "code": "155",
+    "name": "Bezgak parazitlarini tashuvchilar"
+  },
+  {
+    "code": "156",
+    "name": "Leptospiroz"
+  },
+  {
+    "code": "157",
+    "name": "Yuqori va quyi nafas olish yo'llari o'tkir infeksiyalari (O'RI)"
+  },
+  {
+    "code": "158",
+    "name": "Legionellez"
+  },
+  {
+    "code": "159",
+    "name": "Grippga o'xshash kasalliklar"
+  },
+  {
+    "code": "160",
+    "name": "O'tkir o'pka yallig'lanishi (Zotiljam)"
+  },
+  {
+    "code": "161",
+    "name": "Og'ir o'tkir respirator infeksiyalar (O'RI)"
+  },
+  {
+    "code": "162",
+    "name": "Sil (birinchi marta aniqlangan, barcha formasi)"
+  },
+  {
+    "code": "163",
+    "name": "shu jumladan bakteriya ajratish bilan (BK+)"
+  },
+  {
+    "code": "164",
+    "name": "162-satrdan nafas olish a'zolari sili"
+  },
+  {
+    "code": "165",
+    "name": "shu jumladan bakteriya ajratish bilan (BK+)"
+  },
+  {
+    "code": "166",
+    "name": "Zahm (birinchi marta aniqlangan, barcha formasi)"
+  },
+  {
+    "code": "167",
+    "name": "O'tkir va surunkali suzak"
+  },
+  {
+    "code": "168",
+    "name": "Qotir"
+  },
+  {
+    "code": "169",
+    "name": "Pedikulez"
+  },
+  {
+    "code": "170",
+    "name": "Kanali qaytalama terlama"
+  },
+  {
+    "code": "171",
+    "name": "Askaridoz"
+  },
+  {
+    "code": "172",
+    "name": "Trikhotsefalloz (trikhuroz)"
+  },
+  {
+    "code": "173",
+    "name": "Enterobioz"
+  },
+  {
+    "code": "174",
+    "name": "Geminolipedoz"
+  },
+  {
+    "code": "175",
+    "name": "Tremadozlar"
+  },
+  {
+    "code": "176",
+    "name": "Exinokokkoz"
+  },
+  {
+    "code": "177",
+    "name": "Teniarinxoz (tenioz)"
+  },
+  {
+    "code": "178",
+    "name": "Trixofitiya"
+  },
+  {
+    "code": "179",
+    "name": "Mikrosporiya"
+  },
+  {
+    "code": "180",
+    "name": "Leyshmanioz"
+  },
+  {
+    "code": "181",
+    "name": "shu jumladan teri leyshmaniozi"
+  },
+  {
+    "code": "182",
+    "name": "Aniqlangan koronavirus infeksiyasi"
+  },
+  {
+    "code": "183",
+    "name": "Amiobioz"
+  },
+  {
+    "code": "184",
+    "name": "Balantidiaz"
+  },
+  {
+    "code": "185",
+    "name": "Jiardiaz (lyamblioz)"
+  },
+  {
+    "code": "186",
+    "name": "Kriptosporidioz"
+  },
+  {
+    "code": "187",
+    "name": "Izosporoz"
+  },
+  {
+    "code": "201",
+    "name": "Kasalxona ichki infeksiyalari – jami"
+  },
+  {
+    "code": "202",
+    "name": "shu jumladan – v tom chisle: Chaqaloqlardagi yiringli septik infeksiyalar: omfalit, mastit, konyuktivit, sepsis, piodermiya, impetigo, po'rsildoq yara, osteomielit"
+  },
+  {
+    "code": "203",
+    "name": "Tuqqan ayollardagi yiringli septik kasalliklar: sepsis, mastit, akusherlik yarasining jarrohlik amaliyotidan keyingi infeksiyasi, tug'ruqdan keyingi yoyilgan infeksiya va boshqalar"
+  },
+  {
+    "code": "204",
+    "name": "Operatsiyadan keyingi infeksiyalar: sepsis, abstsess, flegmona, inyeksiyadan keyingi sepsis, infuziyalar, perfuziyalar, transfuziyalar oqibatida yuz beradigan sepsis"
+  },
+  {
+    "code": "205",
+    "name": "Yuqori nafas olish yo'llarining o'tkir infeksiyalari"
+  },
+  {
+    "code": "206",
+    "name": "Siydik chiqarish yo'llari infeksiyalari"
+  },
+  {
+    "code": "207",
+    "name": "Aniqlangan va aniqlanmagan qo'zg'atuvchilar sabab bo'lgan o'tkir ichak infeksiyalari: enteritlar, kolitlar, gastroenteritlar, enterokolitlar"
+  },
+  {
+    "code": "208",
+    "name": "106-satrdan boshqa salmonellez infeksiyalari"
+  },
+  {
+    "code": "209",
+    "name": "137-satrdan virusli gepatit B"
+  },
+  {
+    "code": "210",
+    "name": "Aniqlangan koronavirus infeksiyasi"
+  }
+]

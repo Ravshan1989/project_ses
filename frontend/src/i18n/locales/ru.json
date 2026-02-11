@@ -110,10 +110,11 @@
             "view_details_tooltip": "Подробнее"
         },
         "statuses": {
-            "DRAFT": "Черновик",
-            "SUBMITTED": "Отправлен",
-            "APPROVED": "Одобрен",
-            "REJECTED": "Отклонен"
+            "draft": "Черновик",
+            "submitted": "Отправлен",
+            "verified": "Проверено",
+            "approved": "Одобрен",
+            "rejected": "Отклонен"
         },
         "analysis": {
             "chart_submissions_title": "Статистика",

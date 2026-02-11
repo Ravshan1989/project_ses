@@ -139,11 +139,13 @@ const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, onChange, isAd
                 if (status === 'VERIFIED') {
                     color = 'blue';
                     icon = <CheckCircleOutlined />;
-                    label = 'Tekshirildi';
+                    label = t('dashboard_page.statuses.verified', { defaultValue: 'Tekshirildi' });
                 } else if (status === 'APPROVED') {
                     color = 'green';
                     icon = <CheckCircleOutlined />;
-                    label = 'Tasdiqlandi';
+                    label = t('dashboard_page.statuses.approved', { defaultValue: 'Tasdiqlandi' });
+                } else {
+                    label = t('dashboard_page.statuses.draft', { defaultValue: 'Qoralama' });
                 }
 
                 return (

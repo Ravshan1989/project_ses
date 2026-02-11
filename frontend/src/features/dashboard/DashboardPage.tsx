@@ -202,7 +202,7 @@ const DashboardPage: React.FC = () => {
                         break;
                 }
 
-                return <Tag icon={icon} color={color} style={{ fontSize: '13px', padding: '4px 8px' }}>{t(`dashboard_page.statuses.${status}`)}</Tag>;
+                return <Tag icon={icon} color={color} style={{ fontSize: '13px', padding: '4px 8px' }}>{t(`dashboard_page.statuses.${status.toLowerCase()}`, { defaultValue: status })}</Tag>;
             }
         },
         {
@@ -243,7 +243,7 @@ const DashboardPage: React.FC = () => {
         data: trendChartData,
         xField: 'month',
         yField: 'value',
-        point: { shapeField: 'dot', sizeField: 4 },
+        point: { shape: 'circle', size: 4 },
         interaction: { tooltip: { marker: true } },
         style: { lineWidth: 3, stroke: '#6366f1' },
     };
@@ -254,7 +254,7 @@ const DashboardPage: React.FC = () => {
         yField: 'population',
         label: {
             text: (d: any) => d.population.toLocaleString(),
-            position: 'middle',
+            position: 'inside',
             style: { fill: '#FFFFFF', opacity: 0.8 }
         },
         meta: { name: { alias: t('dashboard_page.analysis.region_alias') }, population: { alias: t('dashboard_page.analysis.population_alias') } },

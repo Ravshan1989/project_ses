@@ -29,11 +29,12 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
         synchronize: true,
         ssl:
           configService.get<string>("NODE_ENV") === "production" ||
-          configService.get<string>("DATABASE_URL")
+            configService.get<string>("DATABASE_URL") ||
+            configService.get<string>("DB_SSL") === "true"
             ? { rejectUnauthorized: false }
             : false,
       }),
     }),
   ],
 })
-export class DatabaseModule {}
+export class DatabaseModule { }

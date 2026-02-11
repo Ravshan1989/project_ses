@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { SaveOutlined, ReloadOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined } from '@ant-design/icons';
 import { Table, Typography, DatePicker, Button, InputNumber, notification, Space, Badge, Tooltip } from 'antd';
-import PermissionGate from '../../components/PermissionGate';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
-
+import PermissionGate from '../../components/PermissionGate';
 
 const { Title, Text } = Typography;
 
@@ -13,12 +12,9 @@ interface CovidReportData {
     key: string;
     district_name: string;
     organizationId: string;
-
     total_cases: number;
     reinfected: number;
     vaccinated_infected: number;
-
-    // Age groups
     age_0_1: number;
     age_1_3: number;
     age_4_6: number;
@@ -29,27 +25,17 @@ interface CovidReportData {
     age_40_49: number;
     age_50_59: number;
     age_60_plus: number;
-
-    // Pre-school
     pre_school_organized: number;
     pre_school_unorganized: number;
-
-    // Categories
     students: number;
     medical_workers: number;
     teachers: number;
     others: number;
-
     hospitalized_count: number;
     is_submitted?: boolean;
     id?: string;
     status?: string;
     verificationToken?: string;
-}
-
-// TUZATISH: CovidReportData ni kengaytirish (declaration merging)
-interface CovidReportData {
-    is_submitted?: boolean; // Hisobot topshirilganligini bildiruvchi yangi maydon
 }
 
 const CovidDailyReportPage: React.FC = () => {
@@ -59,20 +45,13 @@ const CovidDailyReportPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [organizations, setOrganizations] = useState<any[]>([]);
 
-    // Auth context (simulated)
     const userRole = localStorage.getItem('user_role') || 'REGION_HEAD';
-    // const isAdmin = userRole === 'REGION_HEAD'; <- ESKI
-    // YANGI: Admin yoki Region Head hammasini ko'radi
     const isAdmin = ['ADMIN', 'REGION_HEAD', 'REPUBLIC_HEAD'].includes(userRole);
-
-    // User Org Name ni local storage dan olish kerak aslida
-    // Hozircha hardcode qilingan "Olmaliq sh" ni olib tashlaymiz va dynamic qilamiz
-    // const userOrgName = localStorage.getItem('user_org_name') || "";
-    const connectedOrgId = localStorage.getItem('user_org_id'); // Agar bor bo'lsa
+    const connectedOrgId = localStorage.getItem('user_org_id');
 
     useEffect(() => {
         fetchReports();
-    }, [date]); // UZ: Test rejimi o'zgarganda ham qayta yuklanadi
+    }, [date]);
 
     const fetchReports = async () => {
         setLoading(true);
@@ -81,13 +60,7 @@ const CovidDailyReportPage: React.FC = () => {
             let currentOrgs = organizations;
             if (currentOrgs.length === 0) {
                 const orgRes = await organizationsApi.getAll();
-                // Viloyatni (parent darajasi) hisobotdan olib tashlaymiz
-                // currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent); <- ESKI
-
-                // YANGI: Faqat tumanlarni (ota-onasi bor tashkilotlarni) olamiz
-                const allOrgs = orgRes.data || [];
-                currentOrgs = allOrgs.filter((org: any) => !!org.parent);
-
+                currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent);
                 setOrganizations(currentOrgs);
             }
 
@@ -100,7 +73,7 @@ const CovidDailyReportPage: React.FC = () => {
                     key: String(idx + 1),
                     district_name: org.name,
                     organizationId: org.id,
-                    is_submitted: !!existing, // Agar baza'da yozuv bo'lsa - true
+                    is_submitted: !!existing,
                     total_cases: existing?.total_cases || 0,
                     reinfected: existing?.reinfected || 0,
                     vaccinated_infected: existing?.vaccinated_infected || 0,
@@ -127,23 +100,17 @@ const CovidDailyReportPage: React.FC = () => {
                 };
             });
 
-            if (!isAdmin) {
-                // const filteredData = tableData.filter(d => d.district_name === userOrgName); <- ESKI
-
-                // YANGI: Agar user admin bo'lmasa, faqat o'zini tashkilotini ko'radi
-                if (connectedOrgId) {
-                    const filteredData = tableData.filter(d => d.organizationId === connectedOrgId);
-                    setData(filteredData);
-                } else {
-                    // Fallback
-                    // UZ: Xavfsizlik uchun
-                    setData([]);
-                }
+            if (!isAdmin && connectedOrgId) {
+                setData(tableData.filter(d => d.organizationId === connectedOrgId));
             } else {
                 setData(tableData);
             }
         } catch (error) {
-            notification.error({ message: t('auth.error_system'), description: t('daily_reports.actions.error_load') });
+            console.error(error);
+            notification.error({
+                message: t('daily_reports.actions.error_load'),
+                description: t('daily_reports.actions.error_load')
+            });
         } finally {
             setLoading(false);
         }
@@ -167,19 +134,19 @@ const CovidDailyReportPage: React.FC = () => {
                     ...row,
                     reportDate: formattedDate,
                     organizationId: row.organizationId,
-                    isTest: false // UZ: Test bayrog'i yuboriladi
                 });
             }
-            notification.success({ message: t('daily_reports.actions.success_save') });
+            notification.success({ message: t('user.save') });
             fetchReports();
         } catch (error) {
-            notification.error({ message: t('auth.error_system'), description: t('daily_reports.actions.error_save') });
+            notification.error({
+                message: t('auth.error_system'),
+                description: t('daily_reports.actions.error_save')
+            });
         } finally {
             setLoading(false);
         }
     };
-
-
 
     const handleVerify = async (id: string) => {
         try {
@@ -213,250 +180,104 @@ const CovidDailyReportPage: React.FC = () => {
         />
     );
 
-    // TUZATISH: 'is_submitted' flagi orqali aniq tekshirish
-    const isSubmitted = (row: CovidReportData) => {
-        return !!row.is_submitted;
-    };
-
     const columns: any = [
+        { title: t('daily_reports.table.no'), dataIndex: 'key', width: 50, align: 'center', fixed: 'left' },
         {
-            title: t('daily_reports.table.no'), dataIndex: 'key', width: 40, align: 'center', fixed: 'left',
-            onCell: (r: CovidReportData) => ({ style: { backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff' } })
+            title: t('daily_reports.table.district'),
+            dataIndex: 'district_name',
+            width: 150,
+            fixed: 'left',
+            render: (text: string, r: CovidReportData) => (
+                <span style={{ color: r.is_submitted ? '#52c41a' : '#ff4d4f', fontWeight: 'bold' }}>
+                    {t(`orgs.${text.toLowerCase()}`, { defaultValue: text })}
+                </span>
+            )
         },
+        { title: t('daily_reports.table.total_cases'), width: 80, render: (_: any, r: any) => renderInput(r, 'total_cases'), align: 'center' },
+        { title: t('daily_reports.table.reinfected'), width: 80, render: (_: any, r: any) => renderInput(r, 'reinfected'), align: 'center' },
+        { title: t('daily_reports.table.vaccinated_infected'), width: 100, render: (_: any, r: any) => renderInput(r, 'vaccinated_infected'), align: 'center' },
         {
-            title: t('daily_reports.table.district'), dataIndex: 'district_name', width: 140, fixed: 'left',
-            onCell: (r: CovidReportData) => ({
-                style: {
-                    backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff1f0',
-                    color: isSubmitted(r) ? '#389e0d' : '#cf1322',
-                    fontWeight: 500
-                }
-            })
-        },
-        { title: t('daily_reports.table.total_cases'), width: 80, render: (_: any, r: any) => renderInput(r, 'total_cases') },
-        { title: t('daily_reports.table.reinfected'), width: 80, render: (_: any, r: any) => renderInput(r, 'reinfected') },
-        { title: t('daily_reports.table.vaccinated_infected'), width: 80, render: (_: any, r: any) => renderInput(r, 'vaccinated_infected') },
-        {
-            title: t('daily_reports.table.including'),
+            title: t('daily_reports.table.by_age'),
             children: [
-                { title: t('daily_reports.table.age_0_1'), width: 50, render: (_: any, r: any) => renderInput(r, 'age_0_1') },
-                { title: t('daily_reports.table.age_1_3'), width: 50, render: (_: any, r: any) => renderInput(r, 'age_1_3') },
-                { title: t('daily_reports.table.age_4_6'), width: 50, render: (_: any, r: any) => renderInput(r, 'age_4_6') },
-                { title: t('daily_reports.table.age_7_14'), width: 55, render: (_: any, r: any) => renderInput(r, 'age_7_14') },
-                { title: t('daily_reports.table.age_15_19'), width: 55, render: (_: any, r: any) => renderInput(r, 'age_15_19') },
-                { title: t('daily_reports.table.age_20_29'), width: 55, render: (_: any, r: any) => renderInput(r, 'age_20_29') },
-                { title: t('daily_reports.table.age_30_39'), width: 55, render: (_: any, r: any) => renderInput(r, 'age_30_39') },
-                { title: t('daily_reports.table.age_40_49'), width: 55, render: (_: any, r: any) => renderInput(r, 'age_40_49') },
-                { title: t('daily_reports.table.age_50_59'), width: 55, render: (_: any, r: any) => renderInput(r, 'age_50_59') },
-                { title: t('daily_reports.table.age_60_plus'), width: 65, render: (_: any, r: any) => renderInput(r, 'age_60_plus') },
-                { title: t('daily_reports.table.pre_school_unorganized'), width: 80, render: (_: any, r: any) => renderInput(r, 'pre_school_organized') },
-                { title: t('daily_reports.table.pre_school_organized'), width: 80, render: (_: any, r: any) => renderInput(r, 'pre_school_unorganized') },
-                { title: t('daily_reports.table.students'), width: 65, render: (_: any, r: any) => renderInput(r, 'students') },
-                { title: t('daily_reports.table.medical_workers'), width: 65, render: (_: any, r: any) => renderInput(r, 'medical_workers') },
-                { title: t('daily_reports.table.teachers'), width: 65, render: (_: any, r: any) => renderInput(r, 'teachers') },
-                { title: t('daily_reports.table.others'), width: 65, render: (_: any, r: any) => renderInput(r, 'others') },
+                { title: t('daily_reports.table.age_0_1'), width: 60, render: (_: any, r: any) => renderInput(r, 'age_0_1') },
+                { title: t('daily_reports.table.age_1_3'), width: 60, render: (_: any, r: any) => renderInput(r, 'age_1_3') },
+                { title: t('daily_reports.table.age_4_6'), width: 60, render: (_: any, r: any) => renderInput(r, 'age_4_6') },
+                { title: t('daily_reports.table.age_7_14'), width: 60, render: (_: any, r: any) => renderInput(r, 'age_7_14') },
+                { title: t('daily_reports.table.age_15_19'), width: 60, render: (_: any, r: any) => renderInput(r, 'age_15_19') },
+                { title: t('daily_reports.table.age_20_29'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_20_29') },
+                { title: t('daily_reports.table.age_30_39'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_30_39') },
+                { title: t('daily_reports.table.age_40_49'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_40_49') },
+                { title: t('daily_reports.table.age_50_59'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_50_59') },
+                { title: t('daily_reports.table.age_60_plus'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_60_plus') },
             ]
         },
-        { title: t('daily_reports.table.hospitalized'), width: 95, render: (_: any, r: any) => renderInput(r, 'hospitalized_count') },
         {
-            title: t('daily_reports.table.status') || 'Holat',
+            title: t('daily_reports.table.hospitalized'),
+            width: 100,
+            render: (_: any, r: any) => renderInput(r, 'hospitalized_count'),
+            align: 'center'
+        },
+        {
+            title: t('daily_reports.table.status'),
             key: 'status',
-            width: 120, fixed: 'right',
+            width: 140,
+            fixed: 'right',
             render: (_: any, r: CovidReportData) => (
                 <Space>
-                    <Badge
-                        status={r.status === 'APPROVED' ? 'success' : r.status === 'VERIFIED' ? 'processing' : 'default'}
-                        text={r.status}
-                    />
+                    <Badge status={r.status === 'APPROVED' ? 'success' : r.status === 'VERIFIED' ? 'processing' : 'default'} text={r.status} />
                     {r.verificationToken && (
                         <Tooltip title="QR orqali tekshirish">
-                            <Button
-                                size="small"
-                                icon={<QrcodeOutlined />}
-                                onClick={() => window.open(`/verify/${r.verificationToken}`, '_blank')}
-                            />
+                            <Button size="small" icon={<QrcodeOutlined />} onClick={() => window.open(`/verify/${r.verificationToken}`, '_blank')} />
                         </Tooltip>
                     )}
                 </Space>
             )
         },
         {
-            title: t('common.actions') || 'Amallar',
+            title: t('common.actions'),
             key: 'actions',
-            width: 160, fixed: 'right',
+            width: 180,
+            fixed: 'right',
             render: (_: any, r: CovidReportData) => {
                 const canVerify = (userRole === 'DEPARTMENT_HEAD' || userRole === 'ADMIN') && r.is_submitted && r.status === 'DRAFT';
                 const canApprove = (userRole === 'DISTRICT_HEAD' || userRole === 'ADMIN') && r.status === 'VERIFIED';
-
                 return (
                     <Space>
-                        {canVerify && (
-                            <Button
-                                size="small"
-                                type="primary"
-                                icon={<AuditOutlined />}
-                                onClick={() => r.id && handleVerify(r.id)}
-                            >
-                                {t('daily_reports.actions.verify')}
-                            </Button>
-                        )}
-                        {canApprove && (
-                            <Button
-                                size="small"
-                                type="primary"
-                                style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
-                                icon={<CheckCircleOutlined />}
-                                onClick={() => r.id && handleApprove(r.id)}
-                            >
-                                {t('daily_reports.actions.approve')}
-                            </Button>
-                        )}
+                        {canVerify && <Button size="small" type="primary" icon={<AuditOutlined />} onClick={() => r.id && handleVerify(r.id)}>{t('daily_reports.actions.verify')}</Button>}
+                        {canApprove && <Button size="small" type="primary" style={{ background: '#52c41a', borderColor: '#52c41a' }} icon={<CheckCircleOutlined />} onClick={() => r.id && handleApprove(r.id)}>{t('daily_reports.actions.approve')}</Button>}
                     </Space>
                 );
             }
         }
     ];
 
-    const calculateTotal = (field: keyof CovidReportData) => data.reduce((sum, item) => sum + (Number(item[field]) || 0), 0);
-
-
-
-    // --- PREMIUM UI STYLES ---
-    const glassStyle: React.CSSProperties = {
-        background: 'rgba(255, 255, 255, 0.8)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderRadius: '24px',
-        border: '1px solid rgba(255, 255, 255, 0.4)',
-        boxShadow: '0 15px 35px rgba(0, 0, 0, 0.05)',
-        padding: '24px'
-    };
-
     const headerStyle: React.CSSProperties = {
-        background: 'linear-gradient(135deg, #2c3e50 0%, #000000 100%)',
-        padding: '32px',
-        borderRadius: '24px',
+        background: 'linear-gradient(135deg, #13547a 0%, #80d0c7 100%)',
+        padding: '24px',
+        borderRadius: '16px',
         marginBottom: '24px',
         color: '#fff',
-        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '20px'
+        alignItems: 'center'
     };
 
     return (
         <PermissionGate permission="VIEW_COVID">
             <div style={{ padding: '24px', minHeight: '100vh', background: '#f0f2f5' }}>
-                <style>{`
-                    .clinical-table .ant-table { background: transparent !important; }
-                    .clinical-table .ant-table-thead > tr > th {
-                        background: rgba(255, 255, 255, 0.5) !important;
-                        font-weight: 700;
-                        text-transform: uppercase;
-                        font-size: 10px;
-                        letter-spacing: 0.5px;
-                        color: #1e3c72;
-                    }
-                    .clinical-table .ant-table-tbody > tr > td {
-                        padding: 6px 4px !important;
-                    }
-                `}</style>
-
                 <div style={headerStyle}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                        <div style={{ background: 'rgba(255,255,255,0.15)', padding: '12px', borderRadius: '16px' }}>
-                            <AuditOutlined style={{ fontSize: '28px', color: '#fff' }} />
-                        </div>
-                        <div>
-                            <Title level={2} style={{ margin: 0, color: '#fff', fontWeight: 800 }}>
-                                {t('daily_reports.covid_title')}
-                            </Title>
-                            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
-                                {t('daily_reports.date_status', { date: date.format('DD.MM.YYYY') })}
-                            </Text>
-                        </div>
-                    </div>
-
-                    <Space wrap>
-                        <DatePicker
-                            value={date}
-                            onChange={(d) => d && setDate(d)}
-                            format="DD.MM.YYYY"
-                            allowClear={false}
-                            inputReadOnly
-                            style={{
-                                borderRadius: '12px',
-                                height: '40px',
-                                width: 140,
-                                background: 'rgba(255,255,255,0.1)',
-                                border: '1px solid rgba(255,255,255,0.2)',
-                                color: '#fff'
-                            }}
-                        />
-                        <Button
-                            icon={<ReloadOutlined />}
-                            onClick={fetchReports}
-                            style={{
-                                borderRadius: '12px',
-                                height: '40px',
-                                background: 'rgba(255,255,255,0.1)',
-                                border: 'none',
-                                color: '#fff'
-                            }}
-                        >
-                            {t('daily_reports.actions.refresh')}
-                        </Button>
-                        <Button
-                            type="primary"
-                            icon={<SaveOutlined />}
-                            onClick={handleSave}
-                            style={{
-                                borderRadius: '12px',
-                                height: '40px',
-                                padding: '0 24px',
-                                fontWeight: 700,
-                                background: '#1890ff',
-                                border: 'none',
-                                boxShadow: '0 4px 15px rgba(24, 144, 255, 0.3)'
-                            }}
-                        >
-                            {t('daily_reports.actions.save')}
-                        </Button>
+                    <Space direction="vertical" size={0}>
+                        <Title level={3} style={{ margin: 0, color: '#fff' }}>{t('daily_reports.covid_title')}</Title>
+                        <Text style={{ color: 'rgba(255,255,255,0.8)' }}>{date.format('DD.MM.YYYY')} kungi holat</Text>
+                    </Space>
+                    <Space>
+                        <DatePicker value={date} onChange={(d) => d && setDate(d)} format="DD.MM.YYYY" allowClear={false} />
+                        <Button icon={<ReloadOutlined />} onClick={fetchReports}>Yangilash</Button>
+                        <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>Saqlash</Button>
                     </Space>
                 </div>
-
-                {!isAdmin && !connectedOrgId && (
-                    <div style={{ marginBottom: 24 }}>
-                        <Badge status="warning" text={t('daily_reports.errors.no_org_context') || "Tashkilot ma'mulotlari topilmadi."} />
-                    </div>
-                )}
-
-                <div style={glassStyle}>
-                    <Table
-                        columns={columns}
-                        dataSource={data}
-                        loading={loading}
-                        bordered
-                        size="small"
-                        pagination={false}
-                        scroll={{ x: 2200, y: 600 }}
-                        className="clinical-table"
-                        summary={() => (
-                            <Table.Summary fixed>
-                                <Table.Summary.Row style={{ background: 'rgba(24, 144, 255, 0.05)', fontWeight: 'bold' }}>
-                                    <Table.Summary.Cell index={0} />
-                                    <Table.Summary.Cell index={1}>{t('daily_reports.table.total')}</Table.Summary.Cell>
-                                    {columns.slice(2).flatMap((c: any) => c.children ? c.children : [c]).map((col: any, idx: number) => (
-                                        <Table.Summary.Cell key={idx} index={idx + 2} align="center">
-                                            {calculateTotal(col.dataIndex || (col.render ? 'total_cases' : 'total_cases') as any)}
-                                        </Table.Summary.Cell>
-                                    ))}
-                                </Table.Summary.Row>
-                            </Table.Summary>
-                        )}
-                    />
+                <div style={{ background: '#fff', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                    <Table columns={columns} dataSource={data} loading={loading} bordered size="small" pagination={false} scroll={{ x: 1500 }} />
                 </div>
             </div>
         </PermissionGate>

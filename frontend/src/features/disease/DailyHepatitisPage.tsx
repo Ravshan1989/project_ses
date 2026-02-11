@@ -207,13 +207,7 @@ const DailyHepatitisPage: React.FC = () => {
             title: t('daily_reports.table.district'),
             dataIndex: 'district_name',
             width: 150, fixed: 'left',
-            onCell: (record: ReportData) => ({
-                style: {
-                    backgroundColor: isSubmitted(record) ? '#f6ffed' : '#fff1f0',
-                    color: isSubmitted(record) ? '#389e0d' : '#cf1322',
-                    fontWeight: '500'
-                }
-            })
+            render: (text: string) => t(`orgs.${text.toLowerCase()}`, { defaultValue: text }),
         },
         {
             title: t('daily_reports.table.total_cases'),
@@ -281,13 +275,7 @@ const DailyHepatitisPage: React.FC = () => {
             title: t('daily_reports.table.district'),
             dataIndex: 'district_name',
             width: 150, fixed: 'left',
-            onCell: (record: ReportData) => ({
-                style: {
-                    backgroundColor: isSubmitted(record) ? '#f6ffed' : '#fff1f0',
-                    color: isSubmitted(record) ? '#389e0d' : '#cf1322',
-                    fontWeight: '500'
-                }
-            })
+            render: (text: string) => t(`orgs.${text.toLowerCase()}`, { defaultValue: text }),
         },
         {
             title: t('daily_reports.table_v2.total_hepatitis'),

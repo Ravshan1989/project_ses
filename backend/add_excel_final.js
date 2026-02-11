@@ -67,4 +67,7 @@ files.forEach(fileName => {
     console.log(`✅ ${fileName} - Excel export qo'shildi`);
 });
 
-console.log('\n🎉 Barcha sahifalarga Excel export qo'shildi!');
+// console.log('\n🎉 Barcha sahifalarga Excel export qo'shildi!');
+// UZ: Yuqoridagi qatorda xatolik bor: 'qo'shildi' so'zidagi yakka qo'shtirnoq (') stringni kutilmaganda tugatib qo'ygan.
+// UZ: Eski kod saqlab qolindi, to'g'ri variant pastda yozildi.
+console.log('\n🎉 Barcha sahifalarga Excel export qo\'shildi!');

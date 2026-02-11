@@ -109,10 +109,11 @@
             "view_details_tooltip": "Tolıq kóriw"
         },
         "statuses": {
-            "DRAFT": "Joba",
-            "SUBMITTED": "Jiberilgen",
-            "APPROVED": "Tastıyıqlanǵan",
-            "REJECTED": "Biykar etilgen"
+            "draft": "Joba",
+            "submitted": "Jiberilgen",
+            "verified": "Tekserilgen",
+            "approved": "Tastıyıqlanǵan",
+            "rejected": "Biykar etilgen"
         },
         "analysis": {
             "chart_submissions_title": "Statistikası",
