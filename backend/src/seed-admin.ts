@@ -2,63 +2,59 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { UsersService } from "./modules/users/users.service";
 import { UserRole } from "./common/enums/role.enum";
+import { Organization } from "./modules/organizations/entities/organization.entity";
+import { Department } from "./modules/departments/entities/department.entity";
+import { getRepositoryToken } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
 import * as bcrypt from "bcrypt";
 
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);
   const usersService = app.get(UsersService);
+  const orgRepo: Repository<Organization> = app.get(getRepositoryToken(Organization));
+  const deptRepo: Repository<Department> = app.get(getRepositoryToken(Department));
 
-  const username = "admin";
-  const password = "admin123";
-
-  // Check if admin exists
-  const admin = await usersService.findOneByUsername(username);
-
-  const salt = await bcrypt.genSalt();
-  const passwordHash = await bcrypt.hash(password, salt);
-
-  if (admin) {
-    console.log("Admin user already exists. Updating password...");
-    // We would need an update method, but for now let's just log
-    // If we want to force update, we can use repository directly if service exposes it or adds update
-    // For simplicity in this quick script, we will just inform.
-
-    // Actually, let's force update the password hash directly using the repository if accessible,
-    // or just assume the user knows the old one.
-    // BUT the user ASKED for the password, so I must ensure it is 'admin123'.
-
-    // Since UsersService doesn't have update, I'll allow the script to finish and tell user
-    // "If it exists, use previous password, otherwise here is new one".
-    // Better: Creating a specialized update/create logic here.
-  } else {
-    console.log("Creating Admin user...");
-    await usersService.create({
-      username,
-      passwordHash,
-      role: UserRole.ADMIN,
+  // 1. Get/Create Department
+  let dept = await deptRepo.findOne({ where: { name: "Boshqaruv (Admin)" } });
+  if (!dept) {
+    dept = deptRepo.create({
+      name: "Boshqaruv (Admin)",
+      description: "Sistem Administrator",
+      level: 1,
+      isActive: true
     });
-    console.log("Admin user created successfully.");
+    dept = await deptRepo.save(dept);
   }
 
-  // FORCE UPDATE for certainty (re-querying to get entity found by repo if needed, or just creating new object)
-  // Since I can't easily access repo without exporting it, I will rely on 'create' if it doesn't exist.
-  // Wait, if I want to be sure, I should probably drop the user first or handle update.
+  // 2. Get/Create Viloyat Organization
+  let viloyat = await orgRepo.findOne({ where: { name: "Toshkent viloyati" } });
+  if (!viloyat) {
+    viloyat = orgRepo.create({
+      name: "Toshkent viloyati",
+      population: 3000000
+    });
+    viloyat = await orgRepo.save(viloyat);
+  }
 
-  // Let's restart with a simpler approach: Just create if not found.
-  // If the user forgot the password, they might be stuck.
-  // I will add a temporary 'updatePassword' method to UsersService or just direct SQL if needed.
-  // Let's try creating a "updatePassword" method in UsersService quick? No, that modifies code.
+  // 3. Create Admin User
+  const adminUsername = "admin";
+  const existingAdmin = await usersService.findOneByUsername(adminUsername);
 
-  // Direct Repository access via module ref?
-  // const repo = app.get(getRepositoryToken(User)); -- requires importing typeorm constants.
+  if (!existingAdmin) {
+    const salt = await bcrypt.genSalt();
+    const passwordHash = await bcrypt.hash("admin1234", salt);
 
-  console.log(`
-  ================================================
-  ADMIN CREDENTIALS:
-  Username: ${username}
-  Password: ${password}
-  ================================================
-  `);
+    await usersService.create({
+      username: adminUsername,
+      passwordHash,
+      role: UserRole.ADMIN,
+      organizationId: viloyat.id,
+      departmentId: dept.id,
+    });
+    console.log(`Admin user created: ${adminUsername} / admin1234`);
+  } else {
+    console.log("Admin user already exists.");
+  }
 
   await app.close();
 }
