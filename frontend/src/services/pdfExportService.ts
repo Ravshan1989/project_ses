@@ -45,16 +45,21 @@ export const exportDailyReportPDF = (
         head: tableHead,
         body: tableBody,
         startY: 30,
+        margin: { horizontal: 10 },
         styles: {
-            fontSize: 8,
-            cellPadding: 1,
+            fontSize: tableHead[0].length > 10 ? 7 : 8,
+            cellPadding: 2,
             valign: 'middle',
-            halign: 'center',
+            halign: 'left',
             lineWidth: 0.1,
-            lineColor: [200, 200, 200]
+            lineColor: [200, 200, 200],
+            overflow: 'linebreak'
+        },
+        columnStyles: {
+            0: { halign: 'center', cellWidth: 10 }, // Index column
         },
         headStyles: {
-            fillColor: [22, 119, 255], // Ant Design Blue
+            fillColor: [22, 119, 255],
             textColor: 255,
             fontStyle: 'bold',
             halign: 'center'
@@ -62,8 +67,6 @@ export const exportDailyReportPDF = (
         alternateRowStyles: {
             fillColor: [245, 245, 245]
         },
-        // Kirill yozuvlarini qo'llab-quvvatlash uchun fontni tekshirish kerak
-        // Agar chiqmasa, 'Roboto' yoki shunga o'xshash font kerak bo'ladi
         theme: 'grid'
     });
 

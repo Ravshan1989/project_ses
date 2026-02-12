@@ -17,6 +17,12 @@ export const exportSimpleTable = (data: any[], fileName: string, sheetName: stri
     XLSX.writeFile(workbook, `${fileName}.xlsx`);
 };
 
+// UZ: Nested keylardan qiymat olish uchun yordamchi funksiya
+const getNestedValue = (obj: any, path: string) => {
+    if (!path) return '';
+    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+};
+
 // UZ: Kunlik hisobotlar uchun Excel export (formatlash bilan)
 export const exportDailyReport = (
     data: any[],
@@ -42,22 +48,24 @@ export const exportDailyReport = (
 
     // UZ: Ma'lumotlar qatorlari
     data.forEach(row => {
-        const rowData = columns.map(col => row[col.key] ?? 0);
+        const rowData = columns.map(col => getNestedValue(row, col.key) ?? '');
         worksheetData.push(rowData);
     });
 
     // UZ: Worksheet yaratish
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
 
-    // UZ: Ustun kengliklarini sozlash
-    const colWidths = columns.map(col => ({ wch: col.width || 15 }));
+    // UZ: Ustun kengliklarini sozlash (Hudud ustunini kengaytirish)
+    const colWidths = columns.map((col, idx) => ({
+        wch: idx === 1 ? Math.max(col.width || 15, 30) : (col.width || 15)
+    }));
     worksheet['!cols'] = colWidths;
 
-    // UZ: Sarlavha uchun formatlash
+    // UZ: Sarlavha uchun formatlash (1-qatordan 10-ustungacha birlashtirish)
     if (worksheet['A1']) {
         worksheet['A1'].s = {
-            font: { bold: true, sz: 14 },
-            alignment: { horizontal: 'center', vertical: 'center' }
+            font: { bold: true, sz: 14, color: { rgb: '1677FF' } },
+            alignment: { horizontal: 'left', vertical: 'center' }
         };
     }
 

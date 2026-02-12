@@ -6,7 +6,19 @@ import { Typography, DatePicker, Select, Button, message, Row, Col, Badge, Space
 import { FilePdfOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { exportsApi, dailyReportsApi, api, organizationsApi, API_BASE_URL } from '../../services/api';
 import { exportDailyReport, exportWeeklyReport } from '../../services/excelExportService';
+import {
+    exportHepatitisProfessional,
+    exportFluProfessional,
+    exportEpidemiologyProfessional,
+    exportAriQuickProfessional
+} from '../../services/dailyExcelExportService';
 import { exportDailyReportPDF } from '../../services/pdfExportService';
+import {
+    exportHepatitisProfessionalPDF,
+    exportFluProfessionalPDF,
+    exportEpidemiologyProfessionalPDF,
+    exportAriQuickProfessionalPDF
+} from '../../services/dailyPdfExportService';
 import { useTranslation } from 'react-i18next';
 
 const { Title, Text } = Typography;
@@ -96,7 +108,7 @@ const ExportPage: React.FC = () => {
                 data = res.data;
                 title = t('export_page.report_titles.hepatitis');
                 columns = [
-                    { header: t('export_page.table_headers.index'), key: "index", width: 5 },
+                    { header: "№", key: "index", width: 5 },
                     { header: t('export_page.table_headers.region'), key: "organization.name", width: 20 },
                     { header: t('export_page.table_headers.date'), key: "reportDate", width: 12 },
                     { header: t('export_page.table_headers.status'), key: "status", width: 10 },
@@ -114,7 +126,7 @@ const ExportPage: React.FC = () => {
                 data = res.data;
                 title = t('export_page.report_titles.flu');
                 columns = [
-                    { header: t('export_page.table_headers.index'), key: "index", width: 5 },
+                    { header: "№", key: "index", width: 5 },
                     { header: t('export_page.table_headers.region'), key: "organization.name", width: 20 },
                     { header: t('export_page.table_headers.date'), key: "reportDate", width: 12 },
                     { header: t('export_page.table_headers.status'), key: "status", width: 10 },
@@ -130,7 +142,7 @@ const ExportPage: React.FC = () => {
                 data = res.data;
                 title = t('export_page.report_titles.ari');
                 columns = [
-                    { header: t('export_page.table_headers.index'), key: "index", width: 5 },
+                    { header: "№", key: "index", width: 5 },
                     { header: t('export_page.table_headers.region'), key: "organization.name", width: 20 },
                     { header: t('export_page.table_headers.date'), key: "reportDate", width: 12 },
                     { header: t('export_page.table_headers.status'), key: "status", width: 10 },
@@ -143,7 +155,7 @@ const ExportPage: React.FC = () => {
                 data = res.data;
                 title = t('export_page.report_titles.covid');
                 columns = [
-                    { header: t('export_page.table_headers.index'), key: "index", width: 5 },
+                    { header: "№", key: "index", width: 5 },
                     { header: t('export_page.table_headers.region'), key: "organization.name", width: 20 },
                     { header: t('export_page.table_headers.date'), key: "reportDate", width: 12 },
                     { header: t('export_page.table_headers.status'), key: "status", width: 10 },
@@ -156,7 +168,7 @@ const ExportPage: React.FC = () => {
                 data = res.data;
                 title = t('export_page.report_titles.epidemiology');
                 columns = [
-                    { header: t('export_page.table_headers.index'), key: "index", width: 5 },
+                    { header: "№", key: "index", width: 5 },
                     { header: t('export_page.table_headers.region'), key: "organization.name", width: 20 },
                     { header: t('export_page.table_headers.date'), key: "reportDate", width: 12 },
                     { header: t('export_page.table_headers.status'), key: "status", width: 10 },
@@ -198,10 +210,34 @@ const ExportPage: React.FC = () => {
 
             data = data.map((item, index) => ({ ...item, index: index + 1 }));
 
+            const orgLabel = selectedDistrict
+                ? (districts.find(d => d.id === selectedDistrict)?.name || t('common.tashkent_region'))
+                : t('common.tashkent_region');
+
             if (format === 'excel') {
-                await exportDailyReport(data, fileName, title, `${startDate} - ${endDate}`, columns);
+                if (reportType === 'hepatitis') {
+                    exportHepatitisProfessional(data, startDate, orgLabel);
+                } else if (reportType === 'flu') {
+                    exportFluProfessional(data, startDate, orgLabel);
+                } else if (reportType === 'epidemiology') {
+                    exportEpidemiologyProfessional(data, startDate, orgLabel);
+                } else if (reportType === 'ari') {
+                    exportAriQuickProfessional(data, startDate, orgLabel);
+                } else {
+                    await exportDailyReport(data, fileName, title, `${startDate} - ${endDate}`, columns);
+                }
             } else {
-                await exportDailyReportPDF(data, columns, title, `${startDate} - ${endDate}`);
+                if (reportType === 'hepatitis') {
+                    exportHepatitisProfessionalPDF(data, startDate, orgLabel);
+                } else if (reportType === 'flu') {
+                    exportFluProfessionalPDF(data, startDate, orgLabel);
+                } else if (reportType === 'epidemiology') {
+                    exportEpidemiologyProfessionalPDF(data, startDate, orgLabel);
+                } else if (reportType === 'ari') {
+                    exportAriQuickProfessionalPDF(data, startDate, orgLabel);
+                } else {
+                    await exportDailyReportPDF(data, columns, title, `${startDate} - ${endDate}`);
+                }
             }
 
             message.success(t('common.success_export'));
