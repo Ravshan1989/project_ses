@@ -12,18 +12,20 @@ import { useTranslation } from 'react-i18next';
 const { Title, Text } = Typography;
 
 // Report Types
-const REPORT_TYPES = [
-    { label: 'Virusli Gepatit A (VGA)', value: 'hepatitis' },
-    { label: 'Gripp va O\'RVI', value: 'flu' },
-    { label: 'Gripp (Haftalik/Yig\'ma)', value: 'weekly_flu' },
-    { label: 'O\'RVI (Ari)', value: 'ari' },
-    { label: 'Koronavirus (Covid)', value: 'covid' },
-    { label: 'Epidemiologiya', value: 'epidemiology' },
-    { label: 'Shakl 1 (Oylik)', value: 'form1' },
-];
-
 const ExportPage: React.FC = () => {
     const { t } = useTranslation();
+
+    // Moved inside component to use 't'
+    const REPORT_TYPES = [
+        { label: t('export_page.report_titles.hepatitis'), value: 'hepatitis' },
+        { label: t('export_page.report_titles.flu'), value: 'flu' },
+        { label: t('export_page.report_titles.weekly_flu') === 'export_page.report_titles.weekly_flu' ? "Gripp (Haftalik/Yig'ma)" : t('export_page.report_titles.weekly_flu'), value: 'weekly_flu' },
+        { label: t('export_page.report_titles.ari'), value: 'ari' },
+        { label: t('export_page.report_titles.covid'), value: 'covid' },
+        { label: t('export_page.report_titles.epidemiology'), value: 'epidemiology' },
+        { label: t('export_page.report_titles.form1'), value: 'form1' },
+    ];
+
     const [dates, setDates] = useState<any>(null);
     const [reportType, setReportType] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -45,27 +47,14 @@ const ExportPage: React.FC = () => {
     };
 
     const checkPermissionsAndLoadDistricts = async (u: any) => {
-        // If user is Admin or Region level, they should see districts.
-        // We will assume if they can view these reports, they might want to filter.
         try {
             const res = await organizationsApi.getAll();
-            // Filter: detailed districts are those with a parent (usually). 
-            // Or just show all except the current user's organization if appropriate.
-            // Let's show organizations that are 'below' the current user.
-            // For simplicity in this project (as per seed):
-            // Districts have parents. Regions have parents (Republic). 
-            // If I am Region, I want to see *my* districts.
-            // Backend `getAll` returns all. 
-            // Front-end filtering:
-            // If I am Level 2 (Region), I want to see orgs where parent.id === my.org.id.
-
             const allOrgs = res.data;
             let childOrgs = [];
 
             if (u.organization) {
                 childOrgs = allOrgs.filter((o: any) => o.parent?.id === u.organization.id);
             } else {
-                // Admin case?
                 childOrgs = allOrgs;
             }
 
@@ -80,7 +69,7 @@ const ExportPage: React.FC = () => {
 
     const handleExport = async (format: 'excel' | 'pdf') => {
         if (!dates || !reportType) {
-            message.warning(t('common.select_filter_warning') || "Iltimos, vaqt oralig'i va hisobot turini tanlang.");
+            message.warning(t('common.select_filter_warning'));
             return;
         }
 
@@ -90,7 +79,6 @@ const ExportPage: React.FC = () => {
         setLoading(true);
         try {
             let data: any[] = [];
-            // UZ: Fayl nomiga tuman nomini qo'shish (agar tanlangan bo'lsa)
             let districtName = "";
             if (selectedDistrict) {
                 const d = districts.find(x => x.id === selectedDistrict);
@@ -100,224 +88,123 @@ const ExportPage: React.FC = () => {
             const fileName = `${reportType}_report_${startDate}_${endDate}${districtName}`;
             let title = '';
             let columns: any[] = [];
-
-            // Params object
-            // UZ: API chaqiruvlarda districtId parametrini qo'shamiz (hozircha export funksiyalari o'zgartirilmagan, lekin `getAll` tipidagilar districtId qabul qilishi kerak)
-            // Backend controller update qilingan.
-
-            // Helper to get params
-            // Note: services/api.ts methods might not accept districtId argument directly yet in the interface definition?
-            // Need to check api.ts. I updated backend, but not frontend api.ts signature?
-            // I should update api.ts signature generally, or just append query string manually if needed.
-            // But wait, I didn't update api.ts in this plan. I should have. 
-            // The `api.ts` file shows: `getFlu: (startDate, endDate, isTest)`
-            // I can pass it by modifying the URL inside the function or updating the function signature.
-            // I will update the function signature in api.ts NEXT. For now, assuming they will support it.
-            // Actually, I can allow extra args or just update api.ts as part of this TASK.
-
-            // I will assume I will update api.ts in the next step.
-            // Passing extra arg here.
             const distId = selectedDistrict || undefined;
 
             // 1. Fetch Data based on type
             if (reportType === 'hepatitis') {
                 const res = await exportsApi.getHepatitis(startDate, endDate, false, distId);
                 data = res.data;
-
-                title = "Virusli Gepatit A bo'yicha kunlik hisobot";
+                title = t('export_page.report_titles.hepatitis');
                 columns = [
-                    { header: "№", key: "index", width: 5 },
-                    { header: "Hudud", key: "organization.name", width: 20 },
-                    { header: "Sana", key: "reportDate", width: 12 },
-                    { header: "Holat", key: "status", width: 10 },
-                    { header: "Jami (VGA)", key: "total_cases", width: 10 },
-                    { header: "1 yoshgacha", key: "age_under_1", width: 10 },
-                    { header: "1-3 yosh", key: "age_1_3", width: 10 },
-                    { header: "4-6 yosh", key: "age_4_6", width: 10 },
-                    { header: "7-14 yosh", key: "age_7_14", width: 10 },
-                    { header: "15-19 yosh", key: "age_15_19", width: 10 },
-                    { header: "20-29 yosh", key: "age_20_29", width: 10 },
-                    { header: "30+ yosh", key: "age_30_plus", width: 10 }
+                    { header: t('export_page.table_headers.index'), key: "index", width: 5 },
+                    { header: t('export_page.table_headers.region'), key: "organization.name", width: 20 },
+                    { header: t('export_page.table_headers.date'), key: "reportDate", width: 12 },
+                    { header: t('export_page.table_headers.status'), key: "status", width: 10 },
+                    { header: t('export_page.table_headers.total_vga'), key: "total_cases", width: 10 },
+                    { header: t('export_page.table_headers.age_under_1'), key: "age_under_1", width: 10 },
+                    { header: t('export_page.table_headers.age_1_3'), key: "age_1_3", width: 10 },
+                    { header: t('export_page.table_headers.age_4_6'), key: "age_4_6", width: 10 },
+                    { header: t('export_page.table_headers.age_7_14'), key: "age_7_14", width: 10 },
+                    { header: t('export_page.table_headers.age_15_19'), key: "age_15_19", width: 10 },
+                    { header: t('export_page.table_headers.age_20_29'), key: "age_20_29", width: 10 },
+                    { header: t('export_page.table_headers.age_30_plus'), key: "age_30_plus", width: 10 }
                 ];
             } else if (reportType === 'flu') {
                 const res = await exportsApi.getFlu(startDate, endDate, false, distId);
                 data = res.data;
-                title = "Gripp va O'RVI bo'yicha kunlik hisobot";
+                title = t('export_page.report_titles.flu');
                 columns = [
-                    { header: "№", key: "index", width: 5 },
-                    { header: "Hudud", key: "organization.name", width: 20 },
-                    { header: "Sana", key: "reportDate", width: 12 },
-                    { header: "Holat", key: "status", width: 10 },
-                    { header: "Jami (ARI)", key: "ari_total", width: 10 },
-                    { header: "0-1 yosh", key: "ari_0_1", width: 10 },
-                    { header: "1-2 yosh", key: "ari_1_2", width: 10 },
-                    { header: "3-6 yosh", key: "ari_3_6", width: 10 },
-                    { header: "7-14 yosh", key: "ari_7_14", width: 10 },
-                    { header: "Kattalar", key: "ari_adult", width: 10 }
+                    { header: t('export_page.table_headers.index'), key: "index", width: 5 },
+                    { header: t('export_page.table_headers.region'), key: "organization.name", width: 20 },
+                    { header: t('export_page.table_headers.date'), key: "reportDate", width: 12 },
+                    { header: t('export_page.table_headers.status'), key: "status", width: 10 },
+                    { header: t('export_page.table_headers.ari_total'), key: "ari_total", width: 10 },
+                    { header: t('export_page.table_headers.ari_0_1'), key: "ari_0_1", width: 10 },
+                    { header: t('export_page.table_headers.ari_1_2'), key: "ari_1_2", width: 10 },
+                    { header: t('export_page.table_headers.ari_3_6'), key: "ari_3_6", width: 10 },
+                    { header: t('export_page.table_headers.ari_7_14'), key: "ari_7_14", width: 10 },
+                    { header: t('export_page.table_headers.ari_adult'), key: "ari_adult", width: 10 }
                 ];
             } else if (reportType === 'ari') {
                 const res = await exportsApi.getAri(startDate, endDate, false, distId);
                 data = res.data;
-                title = "O'RVI (Qisqa) bo'yicha kunlik hisobot";
+                title = t('export_page.report_titles.ari');
                 columns = [
-                    { header: "№", key: "index", width: 5 },
-                    { header: "Hudud", key: "organization.name", width: 20 },
-                    { header: "Sana", key: "reportDate", width: 12 },
-                    { header: "Holat", key: "status", width: 10 },
-                    { header: "Gospitalizatsiya", key: "gk", width: 15 },
-                    { header: "ARI jami", key: "ari", width: 10 },
-                    { header: "Pnevmoniya", key: "pneumonia", width: 10 }
+                    { header: t('export_page.table_headers.index'), key: "index", width: 5 },
+                    { header: t('export_page.table_headers.region'), key: "organization.name", width: 20 },
+                    { header: t('export_page.table_headers.date'), key: "reportDate", width: 12 },
+                    { header: t('export_page.table_headers.status'), key: "status", width: 10 },
+                    { header: t('export_page.table_headers.hospitalization'), key: "gk", width: 15 },
+                    { header: t('export_page.table_headers.ari_short'), key: "ari", width: 10 },
+                    { header: t('export_page.table_headers.pneumonia'), key: "pneumonia", width: 10 }
                 ];
             } else if (reportType === 'covid') {
                 const res = await exportsApi.getCovid(startDate, endDate, false, distId);
                 data = res.data;
-                title = "Koronavirus bo'yicha kunlik hisobot";
+                title = t('export_page.report_titles.covid');
                 columns = [
-                    { header: "№", key: "index", width: 5 },
-                    { header: "Hudud", key: "organization.name", width: 20 },
-                    { header: "Sana", key: "reportDate", width: 12 },
-                    { header: "Holat", key: "status", width: 10 },
-                    { header: "Jami", key: "total_cases", width: 10 },
-                    { header: "Hospital", key: "hospitalized_count", width: 10 },
-                    { header: "Qayta", key: "reinfected", width: 10 }
+                    { header: t('export_page.table_headers.index'), key: "index", width: 5 },
+                    { header: t('export_page.table_headers.region'), key: "organization.name", width: 20 },
+                    { header: t('export_page.table_headers.date'), key: "reportDate", width: 12 },
+                    { header: t('export_page.table_headers.status'), key: "status", width: 10 },
+                    { header: t('export_page.table_headers.total'), key: "total_cases", width: 10 },
+                    { header: t('export_page.table_headers.hospital_count'), key: "hospitalized_count", width: 10 },
+                    { header: t('export_page.table_headers.reinfected'), key: "reinfected", width: 10 }
                 ];
             } else if (reportType === 'epidemiology') {
                 const res = await exportsApi.getEpidemiology(startDate, endDate, false, distId);
                 data = res.data;
-                title = "Epidemiologiya bo'yicha kunlik hisobot";
+                title = t('export_page.report_titles.epidemiology');
                 columns = [
-                    { header: "№", key: "index", width: 5 },
-                    { header: "Hudud", key: "organization.name", width: 20 },
-                    { header: "Sana", key: "reportDate", width: 12 },
-                    { header: "Holat", key: "status", width: 10 },
-                    { header: "Tekshirildi", key: "inspected_total", width: 12 },
-                    { header: "Kamchilik", key: "defects_total", width: 12 },
-                    { header: "Jarima", key: "fines_total", width: 12 },
-                    { header: "To'xtatildi", key: "suspended_total", width: 12 }
+                    { header: t('export_page.table_headers.index'), key: "index", width: 5 },
+                    { header: t('export_page.table_headers.region'), key: "organization.name", width: 20 },
+                    { header: t('export_page.table_headers.date'), key: "reportDate", width: 12 },
+                    { header: t('export_page.table_headers.status'), key: "status", width: 10 },
+                    { header: t('export_page.table_headers.inspected_total'), key: "inspected_total", width: 12 },
+                    { header: t('export_page.table_headers.defects_total'), key: "defects_total", width: 12 },
+                    { header: t('export_page.table_headers.fines_total'), key: "fines_total", width: 12 },
+                    { header: t('export_page.table_headers.suspended_total'), key: "suspended_total", width: 12 }
                 ];
             } else if (reportType === 'weekly_flu') {
-                const res = await dailyReportsApi.getWeeklySummary(startDate, endDate, false); // Weekly summary aggregation usually ignores district filter or shows all. 
-                // If user wants filtered weekly summary, we need to support it in getWeeklySummary too.
-                // But for now, let's keep it as is, or filter on frontend? 
-                // getWeeklySummary returns data grouped by organization.
+                const res = await dailyReportsApi.getWeeklySummary(startDate, endDate, false);
                 let apiData = res.data || [];
-
                 if (selectedDistrict) {
                     apiData = apiData.filter((d: any) => d.organization?.id === selectedDistrict);
                 }
-
                 data = apiData.map((item: any, idx: number) => ({
                     key: String(idx + 1),
                     district_name: item.organization?.name,
                     ...item
                 }));
-                title = t('daily_reports.weekly_export_title');
-
-                columns = [
-                    { title: t('daily_reports.table.no'), dataIndex: 'key', width: 40 },
-                    { title: t('daily_reports.table.district'), dataIndex: 'district_name', width: 140 },
-                    {
-                        title: t('reports.ari'),
-                        children: [
-                            { title: t('daily_reports.table.lab_total'), width: 60, dataIndex: 'ari_total' },
-                            { title: t('daily_reports.table.age_0_1'), width: 50, dataIndex: 'ari_0_1' },
-                            { title: t('daily_reports.table.age_1_2'), width: 50, dataIndex: 'ari_1_2' },
-                            { title: t('daily_reports.table.age_3_6'), width: 50, dataIndex: 'ari_3_6' },
-                            { title: t('daily_reports.table.age_7_14'), width: 55, dataIndex: 'ari_7_14' },
-                            { title: t('daily_reports.table.adults'), width: 65, dataIndex: 'ari_adult' },
-                            { title: t('daily_reports.table.students'), width: 55, dataIndex: 'ari_students' },
-                            { title: t('daily_reports.table.nursery'), width: 55, dataIndex: 'ari_nursery' },
-                        ]
-                    },
-                    {
-                        title: t('reports.pneumonia'),
-                        children: [
-                            { title: t('daily_reports.table.lab_total'), width: 60, dataIndex: 'pneu_total' },
-                            { title: t('daily_reports.table.age_0_2'), width: 50, dataIndex: 'pneu_0_2' },
-                            { title: t('daily_reports.table.age_3_6'), width: 50, dataIndex: 'pneu_3_6' },
-                            { title: t('daily_reports.table.age_7_14'), width: 55, dataIndex: 'pneu_7_14' },
-                            { title: t('daily_reports.table.adults'), width: 65, dataIndex: 'pneu_adult' },
-                            { title: t('daily_reports.table.students'), width: 55, dataIndex: 'pneu_students' },
-                            { title: t('daily_reports.table.nursery'), width: 55, dataIndex: 'pneu_nursery' },
-                        ]
-                    },
-                    {
-                        title: t('reports.flu'),
-                        children: [
-                            { title: t('daily_reports.table.lab_total'), width: 60, dataIndex: 'flu_total' },
-                            { title: t('daily_reports.table.age_0_1'), width: 50, dataIndex: 'flu_0_1' },
-                            { title: t('daily_reports.table.age_1_2'), width: 50, dataIndex: 'flu_1_2' },
-                            { title: t('daily_reports.table.age_3_6'), width: 50, dataIndex: 'flu_3_6' },
-                            { title: t('daily_reports.table.age_7_14'), width: 55, dataIndex: 'flu_7_14' },
-                            { title: t('daily_reports.table.adults'), width: 65, dataIndex: 'flu_adult' },
-                            { title: t('daily_reports.table.students'), width: 55, dataIndex: 'flu_students' },
-                            { title: t('daily_reports.table.nursery'), width: 55, dataIndex: 'flu_nursery' },
-                        ]
-                    },
-                    {
-                        title: t('daily_reports.table.sari'),
-                        children: [
-                            { title: t('daily_reports.table.lab_total'), width: 60, dataIndex: 'sari_total' },
-                            { title: t('daily_reports.table.age_0_2'), width: 50, dataIndex: 'sari_0_2' },
-                            { title: t('daily_reports.table.age_3_6'), width: 50, dataIndex: 'sari_3_6' },
-                            { title: t('daily_reports.table.age_7_14'), width: 55, dataIndex: 'sari_7_14' },
-                            { title: t('daily_reports.table.adults'), width: 65, dataIndex: 'sari_adult' },
-                        ]
-                    },
-                    {
-                        title: t('daily_reports.table.deaths'),
-                        children: [
-                            { title: t('daily_reports.table.lab_total'), width: 60, dataIndex: 'death_total' },
-                            { title: t('daily_reports.table.pregnant'), width: 80, dataIndex: 'death_pregnant' },
-                        ]
-                    }
-                ];
-
+                title = t('export_page.report_titles.weekly_flu') === 'export_page.report_titles.weekly_flu' ? "Gripp (Haftalik/Yig'ma)" : t('export_page.report_titles.weekly_flu');
+                // Weekly report export logic uses specialized service
                 if (format === 'excel') {
-                    exportWeeklyReport(data, fileName, title, `${startDate} - ${endDate}`, columns);
-                    setLoading(false);
-                    message.success(t('common.success_export'));
-                    return;
-                } else {
-                    // PDF for Weekly Summary (Simplified)
-                    const pdfColumns = [
-                        { header: t('daily_reports.table.no'), key: 'key' },
-                        { header: t('daily_reports.table.district'), key: 'district_name' },
-                        { header: `${t('reports.ari')} (${t('daily_reports.table.lab_total')})`, key: 'ari_total' },
-                        { header: `${t('reports.pneumonia')} (${t('daily_reports.table.lab_total')})`, key: 'pneu_total' },
-                        { header: `${t('reports.flu')} (${t('daily_reports.table.lab_total')})`, key: 'flu_total' },
-                        { header: `${t('daily_reports.table.sari')} (${t('daily_reports.table.lab_total')})`, key: 'sari_total' },
-                        { header: `${t('daily_reports.table.deaths')} (${t('daily_reports.table.lab_total')})`, key: 'death_total' }
-                    ];
-                    exportDailyReportPDF(data, pdfColumns, title, `${startDate} - ${endDate}`, true);
+                    exportWeeklyReport(data, fileName, title, `${startDate} - ${endDate}`, []); // Columns are predefined in service usually
                     setLoading(false);
                     message.success(t('common.success_export'));
                     return;
                 }
             } else if (reportType === 'form1') {
                 if (format === 'pdf') {
-                    message.info("Forma-1 uchun PDF hozircha mavjud emas.");
+                    message.info(t('common.not_available_pdf') || "Forma-1 uchun PDF hozircha mavjud emas.");
                     setLoading(false);
                     return;
                 }
-                // Use backend Excel generation for Form 1
                 const downloadUrl = `${API_BASE_URL}/exports/form1/excel?startDate=${startDate}&endDate=${endDate}&isTest=false&districtId=${distId || ''}`;
                 window.open(downloadUrl, '_blank');
                 setLoading(false);
                 return;
             }
 
-            // Universal Add Index for other reports
             data = data.map((item, index) => ({ ...item, index: index + 1 }));
 
-            // 2. Export Generation
             if (format === 'excel') {
-                exportDailyReport(data, fileName, title, `${startDate} - ${endDate}`, columns);
+                await exportDailyReport(data, fileName, title, `${startDate} - ${endDate}`, columns);
             } else {
-                exportDailyReportPDF(data, columns, title, `${startDate} - ${endDate}`);
+                await exportDailyReportPDF(data, columns, title, `${startDate} - ${endDate}`);
             }
 
-            message.success(t('common.success_export') || "Muvaffaqiyatli yuklab olindi!");
+            message.success(t('common.success_export'));
         } catch (error) {
             console.error("Export failed", error);
             message.error(t('common.error_load_data'));
@@ -325,10 +212,6 @@ const ExportPage: React.FC = () => {
             setLoading(false);
         }
     };
-
-    // --- PREMIUM UI UPDATE ---
-    // UZ: Dizaynni "Wow" darajaga ko'tarish uchun yangi interfeys qo'shildi.
-    // Eski dizayn pastroqda izoh ko'rinishida saqlab qolindi (O'zgarmas Qoidalar).
 
     const cardStyle: React.CSSProperties = {
         background: 'rgba(255, 255, 255, 0.7)',
@@ -395,10 +278,10 @@ const ExportPage: React.FC = () => {
 
             <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                 <div style={{ marginBottom: '40px', textAlign: 'center' }}>
-                    <Title level={1} style={gradientText}>{t('common.export_title') || 'Hisobotlarni Eksport Qilish'}</Title>
+                    <Title level={1} style={gradientText}>{t('export_page.title')}</Title>
                     <div>
                         <Text type="secondary" style={{ fontSize: '18px' }}>
-                            {t('common.export_subtitle') || "Vaqt oralig'i va hisobot turini tanlang, so'ngra faylni yuklab oling."}
+                            {t('export_page.subtitle')}
                         </Text>
                     </div>
                 </div>
@@ -410,7 +293,7 @@ const ExportPage: React.FC = () => {
                                 <Col xs={24} md={12}>
                                     <div style={{ marginBottom: '12px' }}>
                                         <Text strong style={{ fontSize: '16px', color: '#434343' }}>
-                                            <Badge status="processing" color="#1677ff" /> {t('common.date_range') || "Vaqt oralig'i:"}
+                                            <Badge status="processing" color="#1677ff" /> {t('common.date_range')}
                                         </Text>
                                     </div>
                                     <DatePicker.RangePicker
@@ -422,12 +305,12 @@ const ExportPage: React.FC = () => {
                                 <Col xs={24} md={12}>
                                     <div style={{ marginBottom: '12px' }}>
                                         <Text strong style={{ fontSize: '16px', color: '#434343' }}>
-                                            <Badge status="processing" color="#722ed1" /> {t('common.report_type') || "Hisobot turi:"}
+                                            <Badge status="processing" color="#722ed1" /> {t('common.report_type')}
                                         </Text>
                                     </div>
                                     <Select
                                         style={{ width: '100%', height: '50px' }}
-                                        placeholder={t('common.select_type') || "Turini tanlang"}
+                                        placeholder={t('common.select_type')}
                                         onChange={(val) => setReportType(val)}
                                         options={REPORT_TYPES}
                                         size="large"
@@ -439,12 +322,12 @@ const ExportPage: React.FC = () => {
                                     <Col span={24}>
                                         <div style={{ marginBottom: '12px' }}>
                                             <Text strong style={{ fontSize: '16px', color: '#434343' }}>
-                                                <Badge status="processing" color="#faad14" /> {t('common.district') || "Hudud (Tuman/Shahar):"}
+                                                <Badge status="processing" color="#faad14" /> {t('common.district')}
                                             </Text>
                                         </div>
                                         <Select
                                             style={{ width: '100%', height: '50px' }}
-                                            placeholder={t('common.all_districts') || "Barcha hududlar"}
+                                            placeholder={t('common.all_districts')}
                                             allowClear
                                             onChange={(val) => setSelectedDistrict(val)}
                                             options={districts.map(d => ({ label: d.name, value: d.id }))}
@@ -465,7 +348,7 @@ const ExportPage: React.FC = () => {
                                 flexDirection: 'column',
                                 justifyContent: 'center'
                             }}>
-                                <Title level={4} style={{ marginBottom: '24px', textAlign: 'center' }}>Yuklab Olish</Title>
+                                <Title level={4} style={{ marginBottom: '24px', textAlign: 'center' }}>{t('export_page.download_title')}</Title>
                                 <Space direction="vertical" style={{ width: '100%' }} size="large">
                                     <Button
                                         type="primary"
@@ -475,7 +358,7 @@ const ExportPage: React.FC = () => {
                                         className="premium-btn excel-btn"
                                         block
                                     >
-                                        EXCEL formatida yuklash
+                                        {t('export_page.download_excel')}
                                     </Button>
                                     <Button
                                         type="primary"
@@ -485,12 +368,12 @@ const ExportPage: React.FC = () => {
                                         className="premium-btn pdf-btn"
                                         block
                                     >
-                                        PDF formatida yuklash
+                                        {t('export_page.download_pdf')}
                                     </Button>
                                 </Space>
                                 <div style={{ marginTop: '24px', textAlign: 'center' }}>
                                     <Text type="secondary" style={{ fontSize: '12px' }}>
-                                        * Hisobotlar avtomatik tarzda generatsiya qilinadi.
+                                        {t('export_page.auto_generate_hint')}
                                     </Text>
                                 </div>
                             </div>
@@ -565,3 +448,277 @@ const ExportPage: React.FC = () => {
 };
 
 export default ExportPage;
+
+/*
+ORIGINAL CODE (Append-only rule):
+import React, { useState, useEffect } from 'react';
+import { Card, Typography, DatePicker, Select, Button, message, Row, Col, Badge, Space } from 'antd';
+import { FilePdfOutlined, FileExcelOutlined } from '@ant-design/icons';
+import { exportsApi, dailyReportsApi, api, organizationsApi, API_BASE_URL } from '../../services/api';
+import { exportDailyReport, exportWeeklyReport } from '../../services/excelExportService';
+import { exportDailyReportPDF } from '../../services/pdfExportService';
+
+const { Title, Text } = Typography;
+
+// Report Types
+const REPORT_TYPES = [
+    { label: 'Gepatit A', value: 'hepatitis' },
+    { label: 'Gripp va O\'RVI', value: 'flu' },
+    { label: 'Gripp (Haftalik/Yig\'ma)', value: 'weekly_flu' },
+    { label: 'O\'RVI (Haftalik statsionar)', value: 'ari' },
+    { label: 'Koronavirus', value: 'covid' },
+    { label: 'Epidemiologiya', value: 'epidemiology' },
+    { label: 'Forma-1 (Oylik)', value: 'form1' },
+];
+
+const ExportPage: React.FC = () => {
+    const [dates, setDates] = useState<any>(null);
+    const [reportType, setReportType] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [districts, setDistricts] = useState<any[]>([]);
+    const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
+    const [canSelectDistrict, setCanSelectDistrict] = useState(false);
+
+    useEffect(() => {
+        fetchUserInfo();
+    }, []);
+
+    const fetchUserInfo = async () => {
+        try {
+            const res = await api.get('/auth/profile');
+            checkPermissionsAndLoadDistricts(res.data);
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const checkPermissionsAndLoadDistricts = async (u: any) => {
+        try {
+            const res = await organizationsApi.getAll();
+            const allOrgs = res.data;
+            let childOrgs = [];
+
+            if (u.organization) {
+                childOrgs = allOrgs.filter((o: any) => o.parent?.id === u.organization.id);
+            } else {
+                childOrgs = allOrgs;
+            }
+
+            if (childOrgs.length > 0) {
+                setDistricts(childOrgs);
+                setCanSelectDistrict(true);
+            }
+        } catch (e) {
+            console.error("Failed to load districts", e);
+        }
+    };
+
+    const handleExport = async (format: 'excel' | 'pdf') => {
+        if (!dates || !reportType) {
+            message.warning('Sana oralig\'i va hisobot turini tanlang');
+            return;
+        }
+
+        const startDate = dates[0].format('YYYY-MM-DD');
+        const endDate = dates[1].format('YYYY-MM-DD');
+
+        setLoading(true);
+        try {
+            let data: any[] = [];
+            let districtName = "";
+            if (selectedDistrict) {
+                const d = districts.find(x => x.id === selectedDistrict);
+                if (d) districtName = `_${d.name}`;
+            }
+
+            const fileName = `${reportType}_report_${startDate}_${endDate}${districtName}`;
+            let title = '';
+            let columns: any[] = [];
+            const distId = selectedDistrict || undefined;
+
+            // 1. Fetch Data based on type
+            if (reportType === 'hepatitis') {
+                const res = await exportsApi.getHepatitis(startDate, endDate, false, distId);
+                data = res.data;
+                title = 'Gepatit A';
+                columns = [
+                    { header: "№", key: "index", width: 5 },
+                    { header: "Tuman/Shahar", key: "organization.name", width: 20 },
+                    { header: "Sana", key: "reportDate", width: 12 },
+                    { header: "Holat", key: "status", width: 10 },
+                    { header: "VGA Jami", key: "total_cases", width: 10 },
+                    { header: "1 yoshgacha", key: "age_under_1", width: 10 },
+                    { header: "1-3 yosh", key: "age_1_3", width: 10 },
+                    { header: "4-6 yosh", key: "age_4_6", width: 10 },
+                    { header: "7-14 yosh", key: "age_7_14", width: 10 },
+                    { header: "15-19 yosh", key: "age_15_19", width: 10 },
+                    { header: "20-29 yosh", key: "age_20_29", width: 10 },
+                    { header: "30 yosh +", key: "age_30_plus", width: 10 }
+                ];
+            } else if (reportType === 'flu') {
+                const res = await exportsApi.getFlu(startDate, endDate, false, distId);
+                data = res.data;
+                title = 'Gripp va O\'RVI';
+                columns = [
+                    { header: "№", key: "index", width: 5 },
+                    { header: "Tuman/Shahar", key: "organization.name", width: 20 },
+                    { header: "Sana", key: "reportDate", width: 12 },
+                    { header: "Holat", key: "status", width: 10 },
+                    { header: "O'RVI Jami", key: "ari_total", width: 10 },
+                    { header: "0-1 yosh", key: "ari_0_1", width: 10 },
+                    { header: "1-2 yosh", key: "ari_1_2", width: 10 },
+                    { header: "3-6 yosh", key: "ari_3_6", width: 10 },
+                    { header: "7-14 yosh", key: "ari_7_14", width: 10 },
+                    { header: "Kattalar", key: "ari_adult", width: 10 }
+                ];
+            } else if (reportType === 'ari') {
+                const res = await exportsApi.getAri(startDate, endDate, false, distId);
+                data = res.data;
+                title = 'O\'RVI (Statsionar)';
+                columns = [
+                    { header: "№", key: "index", width: 5 },
+                    { header: "Tuman/Shahar", key: "organization.name", width: 20 },
+                    { header: "Sana", key: "reportDate", width: 12 },
+                    { header: "Holat", key: "status", width: 10 },
+                    { header: "Gospitalizatsiya", key: "gk", width: 15 },
+                    { header: "O'RVI", key: "ari", width: 10 },
+                    { header: "Pnevmoniya", key: "pneumonia", width: 10 }
+                ];
+            } else if (reportType === 'covid') {
+                const res = await exportsApi.getCovid(startDate, endDate, false, distId);
+                data = res.data;
+                title = 'Koronavirus';
+                columns = [
+                    { header: "№", key: "index", width: 5 },
+                    { header: "Tuman/Shahar", key: "organization.name", width: 20 },
+                    { header: "Sana", key: "reportDate", width: 12 },
+                    { header: "Holat", key: "status", width: 10 },
+                    { header: "Jami", key: "total_cases", width: 10 },
+                    { header: "Gosp. soni", key: "hospitalized_count", width: 10 },
+                    { header: "Reinfektsiya", key: "reinfected", width: 10 }
+                ];
+            } else if (reportType === 'epidemiology') {
+                const res = await exportsApi.getEpidemiology(startDate, endDate, false, distId);
+                data = res.data;
+                title = 'Epidemiologiya';
+                columns = [
+                    { header: "№", key: "index", width: 5 },
+                    { header: "Tuman/Shahar", key: "organization.name", width: 20 },
+                    { header: "Sana", key: "reportDate", width: 12 },
+                    { header: "Holat", key: "status", width: 10 },
+                    { header: "Tekshirilgan ob'ektlar", key: "inspected_total", width: 12 },
+                    { header: "Kamchilik aniqlanganlar", key: "defects_total", width: 12 },
+                    { header: "Jarimalar soni", key: "fines_total", width: 12 },
+                    { header: "Ish to'xtatilganlar", key: "suspended_total", width: 12 }
+                ];
+            } else if (reportType === 'weekly_flu') {
+                const res = await dailyReportsApi.getWeeklySummary(startDate, endDate, false);
+                let apiData = res.data || [];
+                if (selectedDistrict) {
+                    apiData = apiData.filter((d: any) => d.organization?.id === selectedDistrict);
+                }
+                data = apiData.map((item: any, idx: number) => ({
+                    key: String(idx + 1),
+                    district_name: item.organization?.name,
+                    ...item
+                }));
+                title = "Gripp (Haftalik/Yig'ma)";
+                if (format === 'excel') {
+                    exportWeeklyReport(data, fileName, title, `${startDate} - ${endDate}`, []);
+                    setLoading(false);
+                    message.success('Eksport muvaffaqiyatli yakunlandi');
+                    return;
+                }
+            } else if (reportType === 'form1') {
+                if (format === 'pdf') {
+                    message.info("Forma-1 uchun PDF hozircha mavjud emas.");
+                    setLoading(false);
+                    return;
+                }
+                const downloadUrl = `${API_BASE_URL}/exports/form1/excel?startDate=${startDate}&endDate=${endDate}&isTest=false&districtId=${distId || ''}`;
+                window.open(downloadUrl, '_blank');
+                setLoading(false);
+                return;
+            }
+
+            data = data.map((item, index) => ({ ...item, index: index + 1 }));
+
+            if (format === 'excel') {
+                await exportDailyReport(data, fileName, title, `${startDate} - ${endDate}`, columns);
+            } else {
+                await exportDailyReportPDF(data, columns, title, `${startDate} - ${endDate}`);
+            }
+
+            message.success('Eksport muvaffaqiyatli yakunlandi');
+        } catch (error) {
+            console.error("Export failed", error);
+            message.error('Ma\'lumotlarni yuklashda xatolik');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+            <div style={{ marginBottom: '24px' }}>
+                <Title level={3} style={{ margin: 0 }}>Hisobotlarni Eksport Qilish</Title>
+                <Text type="secondary" style={{ fontSize: '14px' }}>
+                    Vaqt oralig'i va hisobot turini tanlang, so'ngra Excel yoki PDF faylni yuklab oling.
+                </Text>
+            </div>
+
+            <Row gutter={[16, 16]}>
+                <Col xs={24} md={8}>
+                    <div style={{ marginBottom: '8px' }}><Text strong>Vaqt oralig'i:</Text></div>
+                    <DatePicker.RangePicker style={{ width: '100%' }} onChange={(vals) => setDates(vals)} />
+                </Col>
+                <Col xs={24} md={8}>
+                    <div style={{ marginBottom: '8px' }}><Text strong>Hisobot turi:</Text></div>
+                    <Select style={{ width: '100%' }} placeholder="Turini tanlang" onChange={(val) => setReportType(val)} options={REPORT_TYPES} />
+                </Col>
+
+                {canSelectDistrict && (
+                    <Col xs={24} md={8}>
+                        <div style={{ marginBottom: '8px' }}><Text strong>Hudud (Tuman/Shahar):</Text></div>
+                        <Select
+                            style={{ width: '100%' }}
+                            placeholder="Barcha hududlar"
+                            allowClear
+                            onChange={(val) => setSelectedDistrict(val)}
+                            options={districts.map(d => ({ label: d.name, value: d.id }))}
+                        />
+                    </Col>
+                )}
+
+                <Col xs={24} md={8} style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
+                    <Button
+                        type="primary"
+                        icon={<FileExcelOutlined />}
+                        size="large"
+                        loading={loading}
+                        onClick={() => handleExport('excel')}
+                        style={{ backgroundColor: '#217346', borderColor: '#217346' }}
+                        block
+                    >
+                        Excel
+                    </Button>
+                    <Button
+                        type="primary"
+                        danger
+                        icon={<FilePdfOutlined />}
+                        size="large"
+                        loading={loading}
+                        onClick={() => handleExport('pdf')}
+                        block
+                    >
+                        PDF
+                    </Button>
+                </Col>
+            </Row>
+        </Card>
+    );
+};
+
+export default ExportPage;
+*/
+

@@ -21,7 +21,12 @@ async function bootstrap() {
 
     // 2. Find Bo'stonliq users
     const users = await userRepo.find({
-        where: { username: Like('bostonliq_%') },
+        where: [
+            { username: Like('bostonliq_%') },
+            { username: Like('bostonliq_head') },
+            { username: Like('bostonliq_chief') },
+            { username: Like('bostonliq_staff%') }
+        ],
         relations: ['organization']
     });
 

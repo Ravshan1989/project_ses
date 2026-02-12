@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { SaveOutlined, ReloadOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined, DownloadOutlined } from '@ant-design/icons';
-import { Table, Typography, DatePicker, Button, InputNumber, notification, Space, Badge, Tooltip } from 'antd';
+import { Table, DatePicker, Button, InputNumber, notification, Space, Badge, Tooltip, Card } from 'antd';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
-import { exportDailyReport } from '../../services/excelExportService'; // UZ: Excel eksport service
+import { exportDailyReport } from '../../services/excelExportService';
 import PermissionGate from '../../components/PermissionGate';
-
-
-const { Title, Text } = Typography;
+import GlassLayout from '../../components/layout/GlassLayout';
 
 interface FluReportData {
     key: string;
@@ -51,11 +49,6 @@ interface FluReportData {
     verificationToken?: string;
 }
 
-// TUZATISH: FluReportData ni kengaytirish (declaration merging)
-interface FluReportData {
-    is_submitted?: boolean; // Hisobot topshirilganligini bildiruvchi yangi maydon
-}
-
 const FluDailyReportPage: React.FC = () => {
     const { t } = useTranslation();
     const [date, setDate] = useState(dayjs());
@@ -63,20 +56,13 @@ const FluDailyReportPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [organizations, setOrganizations] = useState<any[]>([]);
 
-    // Auth context (simulated)
     const userRole = localStorage.getItem('user_role') || 'REGION_HEAD';
-    // const isAdmin = userRole === 'REGION_HEAD'; <- ESKI
-    // YANGI: Admin yoki Region Head hammasini ko'radi
     const isAdmin = ['ADMIN', 'REGION_HEAD', 'REPUBLIC_HEAD'].includes(userRole);
-
-    // User Org Name ni local storage dan olish kerak aslida
-    // Hozircha hardcode qilingan "Olmaliq sh" ni olib tashlaymiz va dynamic qilamiz
-    // const userOrgName = localStorage.getItem('user_org_name') || "";
-    const connectedOrgId = localStorage.getItem('user_org_id'); // Agar bor bo'lsa
+    const connectedOrgId = localStorage.getItem('user_org_id');
 
     useEffect(() => {
         fetchReports();
-    }, [date]); // UZ: Test rejimi o'zgarganda ham qayta yuklanadi
+    }, [date]);
 
     const fetchReports = async () => {
         setLoading(true);
@@ -85,13 +71,8 @@ const FluDailyReportPage: React.FC = () => {
             let currentOrgs = organizations;
             if (currentOrgs.length === 0) {
                 const orgRes = await organizationsApi.getAll();
-                // Viloyatni (parent darajasi) hisobotdan olib tashlaymiz
-                // currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent); <- ESKI
-
-                // YANGI: Faqat tumanlarni (ota-onasi bor tashkilotlarni) olamiz
                 const allOrgs = orgRes.data || [];
                 currentOrgs = allOrgs.filter((org: any) => !!org.parent);
-
                 setOrganizations(currentOrgs);
             }
 
@@ -104,7 +85,7 @@ const FluDailyReportPage: React.FC = () => {
                     key: String(idx + 1),
                     district_name: org.name,
                     organizationId: org.id,
-                    is_submitted: !!existing, // Agar baza'da yozuv bo'lsa - true
+                    is_submitted: !!existing,
                     institution_count: existing?.institution_count || 0,
                     ari_total: existing?.ari_total || 0,
                     ari_0_1: existing?.ari_0_1 || 0,
@@ -142,18 +123,8 @@ const FluDailyReportPage: React.FC = () => {
                 };
             });
 
-            if (!isAdmin) {
-                // const filteredData = tableData.filter(d => d.district_name === userOrgName); <- ESKI
-
-                // YANGI: Agar user admin bo'lmasa, faqat o'zini tashkilotini ko'radi
-                if (connectedOrgId) {
-                    const filteredData = tableData.filter(d => d.organizationId === connectedOrgId);
-                    setData(filteredData);
-                } else {
-                    // Fallback
-                    // UZ: Xavfsizlik uchun
-                    setData([]);
-                }
+            if (!isAdmin && connectedOrgId) {
+                setData(tableData.filter(d => d.organizationId === connectedOrgId));
             } else {
                 setData(tableData);
             }
@@ -172,8 +143,8 @@ const FluDailyReportPage: React.FC = () => {
         const newData = [...data];
         const index = newData.findIndex(item => item.key === rowKey);
         if (index > -1) {
-            // UZ: O'zgaruvchi qayta qiymatlanmaydi, shuning uchun const ishlatildi - avvalgi kod: let updatedRow = { ...newData[index], [field]: value || 0 };
             const updatedRow = { ...newData[index], [field]: value || 0 };
+            // Auto-calculate totals
             if (field.startsWith('ari_') && field !== 'ari_total') {
                 updatedRow.ari_total = updatedRow.ari_0_1 + updatedRow.ari_1_2 + updatedRow.ari_3_6 + updatedRow.ari_7_14 + updatedRow.ari_adult;
             }
@@ -200,7 +171,7 @@ const FluDailyReportPage: React.FC = () => {
                     ...row,
                     reportDate: formattedDate,
                     organizationId: row.organizationId,
-                    isTest: false // UZ: Test bayrog'i yuboriladi
+                    isTest: false
                 });
             }
             notification.success({ message: t('user.save') });
@@ -215,9 +186,7 @@ const FluDailyReportPage: React.FC = () => {
         }
     };
 
-    // UZ: Excel ga eksport qilish funksiyasi
     const handleExcelExport = () => {
-        // UZ: Ustunlar ro'yxati (har bir sahifa uchun mos)
         const columns = data.length > 0 ? Object.keys(data[0])
             .filter(key => key !== 'is_submitted' && key !== 'id' && key !== 'organizationId' && key !== 'status' && key !== 'verificationToken')
             .map(key => ({
@@ -226,24 +195,18 @@ const FluDailyReportPage: React.FC = () => {
                 width: key === 'key' ? 5 : key === 'district_name' ? 20 : 12
             })) : [];
 
-        // UZ: Fayl nomi va sarlavha
         const fileName = `Gripp_Kunlik_${date.format('DD-MM-YYYY')} `;
         const title = t('daily_reports.flu_title');
         const dateStr = date.format('DD.MM.YYYY');
 
-        // UZ: Ma'lumotlarni tarjima qilish
         const translatedData = data.map(item => ({
             ...item,
             district_name: t(`orgs.${item.district_name.toLowerCase()}`, { defaultValue: item.district_name })
         }));
 
-        // UZ: Excel ga eksport qilish
         exportDailyReport(translatedData, fileName, title, dateStr, columns);
         notification.success({ message: 'Excel fayl yuklab olindi!' });
     };
-
-
-
 
     const handleVerify = async (id: string) => {
         try {
@@ -278,7 +241,6 @@ const FluDailyReportPage: React.FC = () => {
         />
     );
 
-    // TUZATISH: 'is_submitted' flagi orqali aniq tekshirish
     const isSubmitted = (row: FluReportData) => {
         return !!row.is_submitted;
     };
@@ -290,7 +252,11 @@ const FluDailyReportPage: React.FC = () => {
         },
         {
             title: t('daily_reports.table.district'), dataIndex: 'district_name', width: 140, fixed: 'left',
-            render: (text: string) => t(`orgs.${text.toLowerCase()}`, { defaultValue: text }),
+            render: (text: string, r: FluReportData) => (
+                <span style={{ color: r.is_submitted ? '#52c41a' : '#ff4d4f', fontWeight: 'bold' }}>
+                    {t(`orgs.${text.toLowerCase()}`, { defaultValue: text })}
+                </span>
+            )
         },
         {
             title: t('reports.ari'),
@@ -362,7 +328,7 @@ const FluDailyReportPage: React.FC = () => {
                             <Button
                                 size="small"
                                 icon={<QrcodeOutlined />}
-                                onClick={() => window.open(`/ verify / ${r.verificationToken} `, '_blank')}
+                                onClick={() => window.open(`/verify/${r.verificationToken}`, '_blank')}
                             />
                         </Tooltip>
                     )}
@@ -406,133 +372,52 @@ const FluDailyReportPage: React.FC = () => {
         }
     ];
 
-
-    // --- PREMIUM UI STYLES ---
-    const glassStyle: React.CSSProperties = {
-        background: 'rgba(255, 255, 255, 0.8)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderRadius: '24px',
-        border: '1px solid rgba(255, 255, 255, 0.4)',
-        boxShadow: '0 15px 35px rgba(0, 0, 0, 0.05)',
-        padding: '24px'
-    };
-
-    const headerStyle: React.CSSProperties = {
-        background: 'linear-gradient(135deg, #2c3e50 0%, #000000 100%)',
-        padding: '32px',
-        borderRadius: '24px',
-        marginBottom: '24px',
-        color: '#fff',
-        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '20px'
-    };
+    const headerControls = (
+        <Space wrap>
+            <DatePicker
+                value={date}
+                onChange={(d) => d && setDate(d)}
+                format="DD.MM.YYYY"
+                allowClear={false}
+                inputReadOnly
+                style={{ width: 140 }}
+            />
+            <Button
+                icon={<DownloadOutlined />}
+                onClick={handleExcelExport}
+            >
+                Excel
+            </Button>
+            <Button
+                icon={<ReloadOutlined />}
+                onClick={fetchReports}
+            >
+                {t('daily_reports.actions.refresh')}
+            </Button>
+            <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                onClick={handleSave}
+            >
+                {t('daily_reports.actions.save')}
+            </Button>
+        </Space>
+    );
 
     return (
         <PermissionGate permission="VIEW_FLU">
-            <div style={{ padding: '24px', minHeight: '100vh', background: '#f0f2f5' }}>
-                <style>{`
-    .clinical - table.ant - table { background: transparent!important; }
-                    .clinical - table.ant - table - thead > tr > th {
-    background: rgba(255, 255, 255, 0.5)!important;
-    font - weight: 700;
-    text - transform: uppercase;
-    font - size: 10px;
-    letter - spacing: 0.5px;
-    color: #1e3c72;
-}
-                    .clinical - table.ant - table - tbody > tr > td {
-    padding: 6px 2px!important;
-}
-`}</style>
-
-                <div style={headerStyle}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                        <div style={{ background: 'rgba(255,255,255,0.15)', padding: '12px', borderRadius: '16px' }}>
-                            <AuditOutlined style={{ fontSize: '28px', color: '#fff' }} />
-                        </div>
-                        <div>
-                            <Title level={2} style={{ margin: 0, color: '#fff', fontWeight: 800 }}>
-                                {t('daily_reports.flu_title')}
-                            </Title>
-                            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
-                                {t('daily_reports.date_status', { date: date.format('DD.MM.YYYY') })}
-                            </Text>
-                        </div>
-                    </div>
-
-                    <Space wrap>
-                        <DatePicker
-                            value={date}
-                            onChange={(d) => d && setDate(d)}
-                            format="DD.MM.YYYY"
-                            allowClear={false}
-                            inputReadOnly
-                            style={{
-                                borderRadius: '12px',
-                                height: '40px',
-                                width: 140,
-                                background: 'rgba(255,255,255,0.1)',
-                                border: '1px solid rgba(255,255,255,0.2)',
-                                color: '#fff'
-                            }}
-                        />
-                        <Button
-                            icon={<DownloadOutlined />}
-                            onClick={handleExcelExport}
-                            style={{
-                                borderRadius: '12px',
-                                height: '40px',
-                                background: 'rgba(255,255,255,0.1)',
-                                border: 'none',
-                                color: '#fff'
-                            }}
-                        >
-                            Excel
-                        </Button>
-                        <Button
-                            icon={<ReloadOutlined />}
-                            onClick={fetchReports}
-                            style={{
-                                borderRadius: '12px',
-                                height: '40px',
-                                background: 'rgba(255,255,255,0.1)',
-                                border: 'none',
-                                color: '#fff'
-                            }}
-                        >
-                            {t('daily_reports.actions.refresh')}
-                        </Button>
-                        <Button
-                            type="primary"
-                            icon={<SaveOutlined />}
-                            onClick={handleSave}
-                            style={{
-                                borderRadius: '12px',
-                                height: '40px',
-                                padding: '0 24px',
-                                fontWeight: 700,
-                                background: '#1890ff',
-                                border: 'none',
-                                boxShadow: '0 4px 15px rgba(24, 144, 255, 0.3)'
-                            }}
-                        >
-                            {t('daily_reports.actions.save')}
-                        </Button>
-                    </Space>
-                </div>
-
+            <GlassLayout
+                title={t('daily_reports.flu_title')}
+                subtitle={t('daily_reports.date_status', { date: date.format('DD.MM.YYYY') })}
+                headerButtons={headerControls}
+            >
                 {!isAdmin && !connectedOrgId && (
                     <div style={{ marginBottom: 24 }}>
                         <Badge status="warning" text={t('daily_reports.errors.no_org_context') || "Tashkilot ma'lumotlari topilmadi."} />
                     </div>
                 )}
 
-                <div style={glassStyle}>
+                <Card className="glass-card" bordered={false} bodyStyle={{ padding: 0 }}>
                     <Table
                         columns={columns}
                         dataSource={data}
@@ -541,10 +426,9 @@ const FluDailyReportPage: React.FC = () => {
                         size="small"
                         pagination={false}
                         scroll={{ x: 1800, y: 600 }}
-                        className="clinical-table"
                     />
-                </div>
-            </div>
+                </Card>
+            </GlassLayout>
         </PermissionGate>
     );
 };

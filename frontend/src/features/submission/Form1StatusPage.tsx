@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { organizationsApi, submissionApi } from '../../services/api';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface OrgStatus {
     organizationId: string;
@@ -13,6 +13,8 @@ interface OrgStatus {
     status?: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
     submissionId?: string;
 }
+
+import GlassLayout from '../../components/layout/GlassLayout';
 
 const Form1StatusPage: React.FC = () => {
     const { t } = useTranslation();
@@ -54,188 +56,119 @@ const Form1StatusPage: React.FC = () => {
 
     const getStatusInfo = (status?: string) => {
         switch (status) {
-            case 'APPROVED': return { color: '#52c41a', icon: <CheckCircleFilled />, text: 'Tasdiqlangan' };
-            case 'SUBMITTED': return { color: '#1890ff', icon: <ClockCircleFilled />, text: 'Topshirilgan' };
-            case 'REJECTED': return { color: '#f5222d', icon: <ExclamationCircleFilled />, text: 'Rad etilgan' };
-            case 'DRAFT': return { color: '#faad14', icon: <ClockCircleFilled />, text: 'Qoralama' };
-            default: return { color: '#bfbfbf', icon: <ExclamationCircleFilled />, text: 'Topshirilmagan' };
+            case 'APPROVED': return { color: '#389e0d', icon: <CheckCircleFilled />, text: 'Tasdiqlangan', bg: 'linear-gradient(135deg, #f6ffed 0%, #b7eb8f 100%)', border: '#b7eb8f' };
+            case 'SUBMITTED': return { color: '#096dd9', icon: <ClockCircleFilled />, text: 'Topshirilgan', bg: 'linear-gradient(135deg, #e6f7ff 0%, #91d5ff 100%)', border: '#91d5ff' };
+            case 'REJECTED': return { color: '#cf1322', icon: <ExclamationCircleFilled />, text: 'Rad etilgan', bg: 'linear-gradient(135deg, #fff1f0 0%, #ffccc7 100%)', border: '#ffccc7' };
+            case 'DRAFT': return { color: '#d48806', icon: <ClockCircleFilled />, text: 'Qoralama', bg: 'linear-gradient(135deg, #fffbe6 0%, #ffe58f 100%)', border: '#ffe58f' };
+            default: return { color: '#8c8c8c', icon: <ExclamationCircleFilled />, text: 'Topshirilmagan', bg: 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)', border: '#d9d9d9' };
         }
     };
 
-    // --- PREMIUM UI UPDATE ---
-    const glassStyle: React.CSSProperties = {
-        background: 'rgba(255, 255, 255, 0.75)',
-        backdropFilter: 'blur(15px)',
-        WebkitBackdropFilter: 'blur(15px)',
-        borderRadius: '24px',
-        border: '1px solid rgba(255, 255, 255, 0.4)',
-        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.08)',
-        padding: '32px'
-    };
-
-    const cardStyle = (submitted: boolean): React.CSSProperties => ({
-        borderRadius: '20px',
-        border: `1px solid ${submitted ? 'rgba(82, 196, 26, 0.2)' : 'rgba(191, 191, 191, 0.1)'}`,
-        background: submitted ? 'rgba(82, 196, 26, 0.03)' : 'rgba(255, 255, 255, 0.8)',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        overflow: 'hidden',
-        position: 'relative'
-    });
+    const headerControls = (
+        <DatePicker
+            picker="month"
+            value={date}
+            onChange={(d) => d && setDate(d)}
+            format="MMMM YYYY"
+            allowClear={false}
+            style={{ width: 220 }}
+            size="large"
+            className="glass-input"
+        />
+    );
 
     return (
-        <div style={{ padding: '24px', background: '#f8faff', minHeight: '100vh' }}>
+        <GlassLayout
+            title={t('monitoring.title') || 'Shakl 1: Monitoring'}
+            subtitle={`${date.format('MMMM YYYY')} oyi bo'yicha hisobotlar holati`}
+            headerButtons={headerControls}
+        >
             <style>{`
-                .monitoring-card:hover {
-                    transform: translateY(-8px);
-                    box-shadow: 0 12px 24px rgba(0,0,0,0.1) !important;
+                .monitoring-card {
+                    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                 }
-                .status-neon {
-                    width: 10px;
-                    height: 10px;
+                .monitoring-card:hover {
+                    transform: translateY(-8px) scale(1.02);
+                }
+                .status-dot {
+                    width: 12px;
+                    height: 12px;
                     border-radius: 50%;
                     display: inline-block;
-                    margin-right: 8px;
-                    box-shadow: 0 0 10px currentColor;
+                    position: relative;
                 }
-                .header-gradient {
-                    background: linear-gradient(135deg, #1677ff 0%, #722ed1 100%);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    font-weight: 800;
+                .status-dot::after {
+                    content: '';
+                    position: absolute;
+                    top: -4px; right: -4px; bottom: -4px; left: -4px;
+                    border-radius: 50%;
+                    border: 1px solid currentColor;
+                    opacity: 0.5;
+                    animation: ripple 1.5s infinite;
+                }
+                @keyframes ripple {
+                    0% { transform: scale(0.8); opacity: 1; }
+                    100% { transform: scale(2.4); opacity: 0; }
                 }
             `}</style>
 
-            <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                    <div>
-                        <Title level={2} className="header-gradient" style={{ margin: 0 }}>
-                            {t('monitoring.title') || 'Shakl 1: Monitoring'}
-                        </Title>
-                        <Text type="secondary" style={{ fontSize: '16px' }}>
-                            {date.format('MMMM YYYY')} oyi bo'yicha hisobotlar holati
-                        </Text>
-                    </div>
-                    <DatePicker
-                        picker="month"
-                        value={date}
-                        onChange={(d) => d && setDate(d)}
-                        format="MMMM YYYY"
-                        size="large"
-                        style={{ borderRadius: '12px', width: '200px' }}
-                    />
-                </div>
+            {loading ? (
+                <div style={{ textAlign: 'center', padding: '100px' }}><Spin size="large" /></div>
+            ) : statuses.length === 0 ? (
+                <Empty description="Ma'lumotlar topilmadi" />
+            ) : (
+                <Row gutter={[24, 24]}>
+                    {statuses.map((s, index) => {
+                        const info = getStatusInfo(s.status);
+                        const isSubmitted = !!s.status;
+                        return (
+                            <Col xs={24} sm={12} lg={6} key={s.organizationId} className={`animate-fade-in animate-delay-${(index % 4) + 1}`}>
+                                <Badge.Ribbon text={info.text} color={info.color} style={{ display: isSubmitted ? 'block' : 'none' }}>
+                                    <Card
+                                        className="glass-card monitoring-card"
+                                        bordered={false}
+                                        style={{
+                                            background: info.bg,
+                                            border: `1px solid ${info.border}`,
+                                            position: 'relative',
+                                            overflow: 'hidden',
+                                            minHeight: '160px',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'center'
+                                        }}
+                                    >
+                                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: info.color, opacity: isSubmitted ? 1 : 0 }} />
 
-                <div style={glassStyle}>
-                    {loading ? (
-                        <div style={{ textAlign: 'center', padding: '100px' }}><Spin size="large" /></div>
-                    ) : statuses.length === 0 ? (
-                        <Empty description="Ma'lumotlar topilmadi" />
-                    ) : (
-                        <Row gutter={[24, 24]}>
-                            {statuses.map(s => {
-                                const info = getStatusInfo(s.status);
-                                const isSubmitted = !!s.status;
-                                return (
-                                    <Col xs={24} sm={12} lg={6} key={s.organizationId}>
-                                        <Badge.Ribbon text={info.text} color={info.color}>
-                                            <Card
-                                                className="monitoring-card"
-                                                style={cardStyle(isSubmitted)}
-                                                bordered={false}
-                                            >
-                                                <div style={{ marginBottom: '16px' }}>
-                                                    <Text strong style={{ fontSize: '17px', display: 'block', color: '#1f1f1f' }}>
-                                                        {t(`orgs.${s.organizationName.toLowerCase()}`, { defaultValue: s.organizationName })}
-                                                    </Text>
-                                                </div>
-                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                    <Space>
-                                                        <span className="status-neon" style={{ color: info.color, background: info.color }} />
-                                                        <Text type="secondary" style={{ fontSize: '13px' }}>
-                                                            {isSubmitted ? 'Hisobot mavjud' : 'Topshirilmagan'}
-                                                        </Text>
-                                                    </Space>
-                                                    <div style={{ fontSize: '20px', color: info.color }}>
-                                                        {info.icon}
-                                                    </div>
-                                                </div>
-                                                <div style={{
-                                                    height: '4px',
-                                                    width: '100%',
-                                                    background: isSubmitted ? info.color : '#f0f0f0',
-                                                    position: 'absolute',
-                                                    bottom: 0,
-                                                    left: 0,
-                                                    opacity: 0.6
-                                                }} />
-                                            </Card>
-                                        </Badge.Ribbon>
-                                    </Col>
-                                );
-                            })}
-                        </Row>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-
-    /* --- ESKI DIZAYN (O'zgarmas Qoidalar asosida saqlab qolindi) ---
-    return (
-        <Card>
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                        <Title level={4}>Shakl 1: Hisobotlar topshirish holati</Title>
-                        <Text type="secondary">{date.format('MMMM YYYY')} oyi uchun</Text>
-                    </div>
-                    <DatePicker
-                        picker="month"
-                        value={date}
-                        onChange={(d) => d && setDate(d)}
-                        format="MMMM YYYY"
-                    />
-                </div>
-
-                {loading ? (
-                    <div style={{ textAlign: 'center', padding: '50px' }}><Spin size="large" /></div>
-                ) : statuses.length === 0 ? (
-                    <Empty />
-                ) : (
-                    <Row gutter={[16, 16]}>
-                        {statuses.map(s => {
-                            const info = getStatusInfo(s.status);
-                            return (
-                                <Col xs={24} sm={12} md={8} lg={6} key={s.organizationId}>
-                                    <Badge.Ribbon text={info.text} color={info.color}>
-                                        <Card
-                                            size="small"
-                                            hoverable
-                                            style={{
-                                                borderLeft: `4px solid ${info.color}`,
-                                                backgroundColor: s.status ? '#f6ffed' : '#fff1f0'
-                                            }}
-                                        >
-                                            <Space direction="vertical">
-                                                <Text strong style={{ fontSize: '16px' }}>{s.organizationName}</Text>
-                                                <Space>
-                                                    <span style={{ color: info.color, fontSize: '20px' }}>{info.icon}</span>
-                                                    <Text type="secondary">
-                                                        {s.status ? 'Hisobot mavjud' : 'Hisobot topilmadi'}
-                                                    </Text>
-                                                </Space>
+                                        <div style={{ textAlign: 'center', marginBottom: '16px', zIndex: 1 }}>
+                                            <div style={{
+                                                width: '60px', height: '60px', margin: '0 auto 12px',
+                                                borderRadius: '50%', background: isSubmitted ? '#fff' : 'rgba(0,0,0,0.05)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                fontSize: '28px', color: info.color,
+                                                boxShadow: isSubmitted ? `0 4px 12px ${info.color}40` : 'none'
+                                            }}>
+                                                {info.icon}
+                                            </div>
+                                            <Text strong style={{ fontSize: '18px', display: 'block', marginBottom: '4px' }}>
+                                                {t(`orgs.${s.organizationName.toLowerCase()}`, { defaultValue: s.organizationName })}
+                                            </Text>
+                                            <Space align="center" style={{ opacity: 0.8 }}>
+                                                <span className="status-dot" style={{ color: info.color, background: info.color, display: isSubmitted ? 'inline-block' : 'none' }} />
+                                                <Text type="secondary" style={{ fontSize: '13px' }}>
+                                                    {isSubmitted ? 'Hisobot mavjud' : 'Topshirilmagan'}
+                                                </Text>
                                             </Space>
-                                        </Card>
-                                    </Badge.Ribbon>
-                                </Col>
-                            );
-                        })}
-                    </Row>
-                )}
-            </Space>
-        </Card>
+                                        </div>
+                                    </Card>
+                                </Badge.Ribbon>
+                            </Col>
+                        );
+                    })}
+                </Row>
+            )}
+        </GlassLayout>
     );
-    */
 };
 
 export default Form1StatusPage;

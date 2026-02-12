@@ -8,6 +8,7 @@ import {
     SearchOutlined,
     FilterOutlined
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -29,10 +30,11 @@ const GlobalMonitoringPage: React.FC = () => {
                 startDate: dateRange[0].format('YYYY-MM-DD'),
                 endDate: dateRange[1].format('YYYY-MM-DD'),
             });
-            setData(res.data);
+            setData(res.data || []);
         } catch (error) {
             console.error('Error fetching global analysis data:', error);
             message.error('Global monitoring ma\'lumotlarini yuklashda xatolik');
+            setData([]);
         } finally {
             setLoading(false);
         }
@@ -47,13 +49,19 @@ const GlobalMonitoringPage: React.FC = () => {
     // Flatten data for matrix: rows = diseases, cols = districts
     const { districtNames, diseaseRows } = React.useMemo(() => {
         const diseasesMap: Record<string, Record<string, number>> = {};
-        const names = data.map(d => d.organizationName);
+        // Ensure data is an array and filter out nulls/invalid objects
+        const safeData = (Array.isArray(data) ? data : []).filter(d => d && d.organizationName);
+        const names = safeData.map(d => d.organizationName);
 
-        data.forEach(districtData => {
-            districtData.diseases.forEach((d: any) => {
-                if (!diseasesMap[d.disease]) diseasesMap[d.disease] = {};
-                diseasesMap[d.disease][districtData.organizationName] = d.rate;
-            });
+        safeData.forEach(districtData => {
+            if (Array.isArray(districtData?.diseases)) {
+                districtData.diseases.forEach((d: any) => {
+                    if (d?.disease && d?.rate !== undefined) {
+                        if (!diseasesMap[d.disease]) diseasesMap[d.disease] = {};
+                        diseasesMap[d.disease][districtData.organizationName] = d.rate;
+                    }
+                });
+            }
         });
 
         const rows = Object.keys(diseasesMap).map(name => {
@@ -69,25 +77,25 @@ const GlobalMonitoringPage: React.FC = () => {
 
     const filteredRows = React.useMemo(() => {
         let rows = diseaseRows.filter(row =>
-            row.disease.toLowerCase().includes(searchText.toLowerCase())
+            row.disease?.toLowerCase().includes(searchText.toLowerCase())
         );
 
         if (highRiskOnly) {
-            rows = rows.filter(row => districtNames.some(dn => row[dn] > 50));
+            rows = rows.filter(row => districtNames.some(dn => (row[dn] || 0) > 50));
         }
 
         return rows;
     }, [diseaseRows, searchText, highRiskOnly, districtNames]);
 
     const getCellColor = (rate: number) => {
-        if (rate === 0) return 'transparent';
+        if (!rate || rate === 0) return 'transparent';
         if (rate > 50) return '#fff1f0'; // Red background
         if (rate > 20) return '#fffbe6'; // Yellow background
         return '#f6ffed'; // Green background
     };
 
     const getTextColor = (rate: number) => {
-        if (rate === 0) return '#bfbfbf';
+        if (!rate || rate === 0) return '#bfbfbf';
         if (rate > 50) return '#cf1322';
         if (rate > 20) return '#d4b106';
         return '#389e0d';
@@ -100,8 +108,8 @@ const GlobalMonitoringPage: React.FC = () => {
             key: 'disease',
             fixed: 'left' as const,
             width: 200,
-            render: (text: string) => <Text strong>{text}</Text>,
-            sorter: (a: any, b: any) => a.disease.localeCompare(b.disease),
+            render: (text: string) => <Text strong>{text || 'Noma\'lum'}</Text>,
+            sorter: (a: any, b: any) => (a.disease || '').localeCompare(b.disease || ''),
         },
         ...districtNames.map(dn => ({
             title: t(`orgs.${dn.toLowerCase()}`, { defaultValue: dn }) as any,
@@ -109,22 +117,31 @@ const GlobalMonitoringPage: React.FC = () => {
             key: dn,
             width: 120,
             align: 'center' as const,
-            render: (val: number) => (
-                <div style={{
-                    backgroundColor: getCellColor(val),
-                    padding: '8px',
-                    borderRadius: '4px',
-                    color: getTextColor(val),
-                    fontWeight: val > 0 ? 'bold' : 'normal'
-                }}>
-                    {val > 0 ? val.toFixed(1) : '-'}
-                </div>
-            )
+            render: (val: any) => {
+                const rate = typeof val === 'number' ? val : 0;
+                return (
+                    <div style={{
+                        backgroundColor: getCellColor(rate),
+                        padding: '8px',
+                        borderRadius: '4px',
+                        color: getTextColor(rate),
+                        fontWeight: rate > 0 ? 'bold' : 'normal'
+                    }}>
+                        {rate > 0 ? rate.toFixed(1) : '-'}
+                    </div>
+                );
+            }
         }))
     ], [districtNames]);
 
     // Top Alerts: Diseases with highest rates anywhere
-    const alerts = data.flatMap(dist => dist.diseases.map((d: any) => ({ ...d, district: dist.organizationName })))
+    const alerts = (Array.isArray(data) ? data : [])
+        .filter(d => d && d.organizationName)
+        .flatMap(dist =>
+            (Array.isArray(dist.diseases) ? dist.diseases : [])
+                .filter((d: any) => d && typeof d.rate === 'number')
+                .map((d: any) => ({ ...d, district: dist.organizationName }))
+        )
         .sort((a, b) => b.rate - a.rate)
         .slice(0, 5);
 

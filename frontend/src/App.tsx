@@ -173,7 +173,10 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 width={250}
                 style={{ background: '#001529', boxShadow: '2px 0 8px rgba(0,0,0,0.15)', zIndex: 10 }}
             >
-                <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', margin: '16px', borderRadius: 6 }}>
+                <div
+                    style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', margin: '16px', borderRadius: 6, cursor: 'pointer' }}
+                    onClick={() => navigate('/dashboard')}
+                >
                     <MedicineBoxOutlined style={{ color: '#fff', fontSize: '24px', marginRight: collapsed ? 0 : 10 }} />
                     {!collapsed && (
                         <span style={{ color: '#fff', fontWeight: 700, fontSize: '18px', letterSpacing: '1px' }}>

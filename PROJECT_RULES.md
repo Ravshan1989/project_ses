@@ -13,10 +13,13 @@ Foydalanuvchi ruxsatisiz (kalit so'zlar: *"Yukla"*, *"Push"*, *"Jo'nat"*) GitHub
 ### ✅ 3. Backup Bot
 Kanalga ma'lumot yuborish so'ralganda, faqat **BACKKUB BOT** (Zaxira boti)dan foydalanish. (Masalan, `backend/send_security_to_backup.js` kabi skriptlar orqali).
 
-### ✅ 4. Consultation Mode
+### ✅ 4. Uzbek Language
+Muloqot va barcha xabarlar doim o'zbek tilida bo'lishi shart.
+
+### ✅ 5. Consultation Mode
 *"Gaplashamiza"* so'zi aytilganda, ruxsatsiz kod yozmaslik, faqat muloqot rejimiga o'tish.
 
-### ✅ 5. Daily Recap
+### ✅ 6. Daily Recap
 Har bir yangi seans boshida ushbu qoidalar eslatib o'tiladi.
 
 ---

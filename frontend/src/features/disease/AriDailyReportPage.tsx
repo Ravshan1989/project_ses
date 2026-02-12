@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { SaveOutlined, ReloadOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined, DownloadOutlined } from '@ant-design/icons';
-import { Table, Typography, DatePicker, Button, InputNumber, notification, Space, Badge, Tooltip } from 'antd';
+import { SaveOutlined, ReloadOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined } from '@ant-design/icons';
+import { Table, DatePicker, Button, InputNumber, notification, Space, Badge, Card } from 'antd';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
 import PermissionGate from '../../components/PermissionGate';
-
-const { Title, Text } = Typography;
+import GlassLayout from '../../components/layout/GlassLayout';
 
 interface AriReportData {
     key: string;
@@ -194,35 +193,33 @@ const AriDailyReportPage: React.FC = () => {
         }
     ];
 
-    const headerStyle: React.CSSProperties = {
-        background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-        padding: '24px',
-        borderRadius: '16px',
-        marginBottom: '24px',
-        color: '#fff',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-    };
+    const headerControls = (
+        <Space>
+            <DatePicker value={date} onChange={(d) => d && setDate(d)} format="DD.MM.YYYY" allowClear={false} style={{ width: 140 }} />
+            <Button icon={<ReloadOutlined />} onClick={fetchReports}>Yangilash</Button>
+            <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>Saqlash</Button>
+        </Space>
+    );
 
     return (
         <PermissionGate permission="VIEW_ARI">
-            <div style={{ padding: '24px', minHeight: '100vh', background: '#f0f2f5' }}>
-                <div style={headerStyle}>
-                    <Space direction="vertical" size={0}>
-                        <Title level={3} style={{ margin: 0, color: '#fff' }}>{t('daily_reports.ari_title')}</Title>
-                        <Text style={{ color: 'rgba(255,255,255,0.8)' }}>{date.format('DD.MM.YYYY')} kungi holat</Text>
-                    </Space>
-                    <Space>
-                        <DatePicker value={date} onChange={(d) => d && setDate(d)} format="DD.MM.YYYY" allowClear={false} />
-                        <Button icon={<ReloadOutlined />} onClick={fetchReports}>Yangilash</Button>
-                        <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>Saqlash</Button>
-                    </Space>
-                </div>
-                <div style={{ background: '#fff', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-                    <Table columns={columns} dataSource={data} loading={loading} bordered size="small" pagination={false} scroll={{ x: 1000 }} />
-                </div>
-            </div>
+            <GlassLayout
+                title={t('daily_reports.ari_title')}
+                subtitle={`${date.format('DD.MM.YYYY')} kungi holat`}
+                headerButtons={headerControls}
+            >
+                <Card className="glass-card" bordered={false} bodyStyle={{ padding: 0 }}>
+                    <Table
+                        columns={columns}
+                        dataSource={data}
+                        loading={loading}
+                        bordered
+                        size="small"
+                        pagination={false}
+                        scroll={{ x: 1000 }}
+                    />
+                </Card>
+            </GlassLayout>
         </PermissionGate>
     );
 };
