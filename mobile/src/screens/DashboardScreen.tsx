@@ -1,7 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import {
+    StyleSheet,
+    View,
+    Text,
+    ScrollView,
+    ActivityIndicator,
+    TouchableOpacity,
+    StatusBar,
+    Dimensions,
+    Alert
+} from 'react-native';
 import { authApi } from '../services/api';
-import { User, Activity, FileText, ChevronRight } from 'lucide-react-native';
+import {
+    User,
+    Activity,
+    FileText,
+    ChevronRight,
+    LogOut,
+    Shield,
+    Thermometer,
+    Stethoscope
+} from 'lucide-react-native';
+
+const { width } = Dimensions.get('window');
 
 const DashboardScreen = () => {
     const [user, setUser] = useState<any>(null);
@@ -17,6 +38,7 @@ const DashboardScreen = () => {
             setUser(response.data);
         } catch (error) {
             console.error('Profile fetch error:', error);
+            Alert.alert('Xatolik', 'Profil ma\'lumotlarini yuklashda xatolik');
         } finally {
             setLoading(false);
         }
@@ -25,180 +47,267 @@ const DashboardScreen = () => {
     if (loading) {
         return (
             <View style={styles.centered}>
-                <ActivityIndicator size="large" color="#1677ff" />
+                <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+                <ActivityIndicator size="large" color="#38bdf8" />
             </View>
         );
     }
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-            <View style={styles.header}>
-                <View style={styles.profileSection}>
-                    <View style={styles.avatar}>
-                        <User color="#fff" size={32} />
-                    </View>
-                    <View>
-                        <Text style={styles.welcomeText}>Xush kelibsiz,</Text>
-                        <Text style={styles.userName}>{user?.username || 'Foydalanuvchi'}</Text>
-                    </View>
-                </View>
-                <Text style={styles.orgName}>{user?.organization?.name || 'Tashkilot nomi'}</Text>
-            </View>
+        <View style={styles.container}>
+            <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
 
-            <View style={styles.statsContainer}>
-                <View style={styles.statCard}>
-                    <Activity color="#1677ff" size={24} />
-                    <Text style={styles.statValue}>---</Text>
-                    <Text style={styles.statLabel}>Bugungi hisobotlar</Text>
-                </View>
-                <View style={styles.statCard}>
-                    <FileText color="#52c41a" size={24} />
-                    <Text style={styles.statValue}>---</Text>
-                    <Text style={styles.statLabel}>Tasdiqlanganlar</Text>
-                </View>
-            </View>
+            {/* Background Decoration */}
+            <View style={styles.circle1} />
+            <View style={styles.circle2} />
 
-            <Text style={styles.sectionTitle}>Tezkor amallar</Text>
-            <TouchableOpacity style={styles.actionButton}>
-                <View style={styles.actionLeft}>
-                    <View style={[styles.actionIcon, { backgroundColor: '#e6f4ff' }]}>
-                        <FileText color="#1677ff" size={20} />
+            <ScrollView contentContainerStyle={styles.content}>
+                {/* Header Section */}
+                <View style={styles.header}>
+                    <View style={styles.profileRow}>
+                        <View style={styles.avatarContainer}>
+                            <User color="#fff" size={28} />
+                        </View>
+                        <View style={styles.userInfo}>
+                            <Text style={styles.welcomeText}>Xush kelibsiz,</Text>
+                            <Text style={styles.userName}>{user?.username || 'Foydalanuvchi'}</Text>
+                        </View>
+                        <TouchableOpacity style={styles.logoutBtn}>
+                            <LogOut color="#ef4444" size={20} />
+                        </TouchableOpacity>
                     </View>
-                    <Text style={styles.actionText}>SARI hisobotini yuborish</Text>
-                </View>
-                <ChevronRight color="#94a3b8" size={20} />
-            </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionButton}>
-                <View style={styles.actionLeft}>
-                    <View style={[styles.actionIcon, { backgroundColor: '#f6ffed' }]}>
-                        <Activity color="#52c41a" size={20} />
+                    <View style={styles.orgBadge}>
+                        <Shield size={14} color="#38bdf8" style={{ marginRight: 6 }} />
+                        <Text style={styles.orgName}>
+                            {user?.organization?.name || 'Tashkilot aniqlanmadi'}
+                        </Text>
                     </View>
-                    <Text style={styles.actionText}>O'RVI hisobotini yuborish</Text>
                 </View>
-                <ChevronRight color="#94a3b8" size={20} />
-            </TouchableOpacity>
-        </ScrollView>
+
+                {/* Stats Grid */}
+                <View style={styles.statsGrid}>
+                    <View style={styles.statCard}>
+                        <View style={[styles.iconBox, { backgroundColor: 'rgba(56, 189, 248, 0.2)' }]}>
+                            <Activity color="#38bdf8" size={24} />
+                        </View>
+                        <Text style={styles.statValue}>15</Text>
+                        <Text style={styles.statLabel}>Bugungi hisobot</Text>
+                    </View>
+                    <View style={styles.statCard}>
+                        <View style={[styles.iconBox, { backgroundColor: 'rgba(74, 222, 128, 0.2)' }]}>
+                            <FileText color="#4ade80" size={24} />
+                        </View>
+                        <Text style={styles.statValue}>12</Text>
+                        <Text style={styles.statLabel}>Tasdiqlangan</Text>
+                    </View>
+                </View>
+
+                {/* Quick Actions */}
+                <Text style={styles.sectionTitle}>Tezkor amallar</Text>
+
+                <TouchableOpacity style={styles.actionCard} activeOpacity={0.7}>
+                    <View style={[styles.actionIconBox, { backgroundColor: 'rgba(251, 146, 60, 0.2)' }]}>
+                        <Thermometer color="#fb923c" size={24} />
+                    </View>
+                    <View style={styles.actionInfo}>
+                        <Text style={styles.actionTitle}>SARI hisoboti</Text>
+                        <Text style={styles.actionDesc}>O'tkir respirator infeksiya</Text>
+                    </View>
+                    <View style={styles.actionArrow}>
+                        <ChevronRight color="#94a3b8" size={20} />
+                    </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.actionCard} activeOpacity={0.7}>
+                    <View style={[styles.actionIconBox, { backgroundColor: 'rgba(167, 139, 250, 0.2)' }]}>
+                        <Stethoscope color="#a78bfa" size={24} />
+                    </View>
+                    <View style={styles.actionInfo}>
+                        <Text style={styles.actionTitle}>O'RVI hisoboti</Text>
+                        <Text style={styles.actionDesc}>Virusli kasalliklar</Text>
+                    </View>
+                    <View style={styles.actionArrow}>
+                        <ChevronRight color="#94a3b8" size={20} />
+                    </View>
+                </TouchableOpacity>
+
+            </ScrollView>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f8fafc',
-    },
-    content: {
-        padding: 20,
+        backgroundColor: '#0f172a', // Slate-900
     },
     centered: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: '#0f172a',
+    },
+    // Background Circles
+    circle1: {
+        position: 'absolute',
+        top: -50,
+        right: -50,
+        width: 250,
+        height: 250,
+        borderRadius: 125,
+        backgroundColor: '#1e3a8a', // Blue-900
+        opacity: 0.3,
+    },
+    circle2: {
+        position: 'absolute',
+        top: 150,
+        left: -100,
+        width: 300,
+        height: 300,
+        borderRadius: 150,
+        backgroundColor: '#1e293b', // Slate-800
+        opacity: 0.4,
+    },
+    content: {
+        padding: 20,
+        paddingTop: 10,
     },
     header: {
-        backgroundColor: '#fff',
+        backgroundColor: 'rgba(30, 41, 59, 0.7)', // Glass effect
+        borderRadius: 24,
         padding: 20,
-        borderRadius: 16,
-        marginBottom: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-        elevation: 2,
+        marginBottom: 24,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.1)',
     },
-    profileSection: {
+    profileRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 12,
+        marginBottom: 16,
     },
-    avatar: {
-        width: 56,
-        height: 56,
-        borderRadius: 28,
-        backgroundColor: '#1677ff',
+    avatarContainer: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: '#38bdf8',
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 16,
+        marginRight: 12,
+        shadowColor: '#38bdf8',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 5,
+    },
+    userInfo: {
+        flex: 1,
     },
     welcomeText: {
-        fontSize: 14,
-        color: '#64748b',
+        fontSize: 12,
+        color: '#94a3b8',
     },
     userName: {
         fontSize: 18,
         fontWeight: '700',
-        color: '#1e293b',
+        color: '#f8fafc',
+    },
+    logoutBtn: {
+        padding: 8,
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        borderRadius: 12,
+    },
+    orgBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(15, 23, 42, 0.5)',
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 12,
+        alignSelf: 'flex-start',
     },
     orgName: {
-        fontSize: 14,
-        color: '#475569',
-        fontStyle: 'italic',
+        fontSize: 13,
+        color: '#bae6fd',
+        fontWeight: '500',
     },
-    statsContainer: {
+    statsGrid: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 24,
+        marginBottom: 30,
     },
     statCard: {
-        backgroundColor: '#fff',
         width: '48%',
+        backgroundColor: 'rgba(30, 41, 59, 0.7)',
+        borderRadius: 20,
         padding: 16,
-        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-        elevation: 2,
+    },
+    iconBox: {
+        width: 44,
+        height: 44,
+        borderRadius: 14,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 10,
     },
     statValue: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#1e293b',
-        marginTop: 8,
+        fontSize: 24,
+        fontWeight: '800',
+        color: '#f8fafc',
+        marginBottom: 4,
     },
     statLabel: {
         fontSize: 12,
-        color: '#64748b',
-        marginTop: 4,
-        textAlign: 'center',
+        color: '#94a3b8',
     },
     sectionTitle: {
         fontSize: 18,
         fontWeight: '700',
-        color: '#1e293b',
+        color: '#f8fafc',
         marginBottom: 16,
+        marginLeft: 4,
     },
-    actionButton: {
-        backgroundColor: '#fff',
+    actionCard: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        backgroundColor: 'rgba(30, 41, 59, 0.7)',
+        borderRadius: 20,
         padding: 16,
-        borderRadius: 12,
         marginBottom: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.03,
-        shadowRadius: 5,
-        elevation: 1,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
     },
-    actionLeft: {
-        flexDirection: 'row',
+    actionIconBox: {
+        width: 50,
+        height: 50,
+        borderRadius: 16,
+        justifyContent: 'center',
         alignItems: 'center',
+        marginRight: 16,
     },
-    actionIcon: {
-        width: 40,
-        height: 40,
+    actionInfo: {
+        flex: 1,
+    },
+    actionTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#f1f5f9',
+        marginBottom: 2,
+    },
+    actionDesc: {
+        fontSize: 12,
+        color: '#64748b',
+    },
+    actionArrow: {
+        width: 32,
+        height: 32,
+        backgroundColor: 'rgba(255, 255, 255, 0.03)',
         borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 12,
-    },
-    actionText: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#334155',
     },
 });
 

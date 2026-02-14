@@ -1,52 +1,64 @@
-import { NestFactory } from "@nestjs/core";
-import { AppModule } from "./app.module";
-import { AuthService } from "./modules/auth/auth.service";
+import axios from 'axios';
 
-async function verifyLogins() {
-  const app = await NestFactory.createApplicationContext(AppModule);
-  const authService = app.get(AuthService);
+const API_URL = 'http://localhost:3000/api/v1/auth/login';
 
-  const testAccounts = [
-    { username: "user_olmaliq_sh", password: "ses12345", org: "Olmaliq sh" },
-    { username: "user_angren_sh", password: "ses12345", org: "Angren sh" },
-    {
-      username: "user_nurafshon_sh",
-      password: "ses12345",
-      org: "Nurafshon sh",
-    },
-    { username: "user_bekobod_t", password: "ses12345", org: "Bekobod t" },
-    { username: "user_chinoz_t", password: "ses12345", org: "Chinoz t" },
-    { username: "user_qibray_t", password: "ses12345", org: "Qibray t" },
-  ];
+const USERS = [
+  { username: 'user_nurafshon_sh', password: 'ses12345' },
+  { username: 'user_angren_sh', password: 'ses12345' },
+  { username: 'user_bekobod_sh', password: 'ses12345' },
+  { username: 'user_chirchiq_sh', password: 'ses12345' },
+  { username: 'user_olmaliq_sh', password: 'ses12345' },
+  { username: 'user_ohangaron_sh', password: 'ses12345' },
+  { username: 'user_yangiyol_sh', password: 'ses12345' },
+  { username: 'user_oqqorgon_t', password: 'ses12345' },
+  { username: 'user_ohangaron_t', password: 'ses12345' },
+  { username: 'user_bekobod_t', password: 'ses12345' },
+  { username: 'user_bostonliq_t', password: 'ses12345' },
+  { username: 'user_boka_t', password: 'ses12345' },
+  { username: 'user_quyi_chirchiq_t', password: 'ses12345' },
+  { username: 'user_zangiota_t', password: 'ses12345' },
+  { username: 'user_yuqori_chirchiq_t', password: 'ses12345' },
+  { username: 'user_qibray_t', password: 'ses12345' },
+  { username: 'user_parkent_t', password: 'ses12345' },
+  { username: 'user_piskent_t', password: 'ses12345' },
+  { username: 'user_orta_chirchiq_t', password: 'ses12345' },
+  { username: 'user_chinoz_t', password: 'ses12345' },
+  { username: 'user_yangiyol_t', password: 'ses12345' },
+  { username: 'user_toshkent_t', password: 'ses12345' },
+  // Bostonliq maxsus
+  { username: 'bostonliq_head', password: 'Ses12345!' },
+  { username: 'bostonliq_chief', password: 'Ses12345!' },
+  { username: 'bostonliq_staff1', password: 'Ses12345!' },
+  { username: 'bostonliq_staff2', password: 'Ses12345!' },
+  { username: 'bostonliq_staff3', password: 'Ses12345!' },
+];
 
-  console.log("--- TESTING LOGIN CREDENTIALS ---\n");
+async function checkLogins() {
+  console.log(`Checking ${USERS.length} users...`);
+  let successCount = 0;
+  let failCount = 0;
 
-  for (const account of testAccounts) {
+  for (const user of USERS) {
     try {
-      const result = await authService.login({
-        username: account.username,
-        password: account.password,
+      const response = await axios.post(API_URL, {
+        username: user.username,
+        password: user.password
       });
 
-      if (result.access_token && result.user) {
-        console.log(
-          `✅ ${account.org.padEnd(20)} | Login: ${account.username.padEnd(25)} | Status: SUCCESS`,
-        );
-        console.log(
-          `   Organization: ${result.user.organization?.name || "N/A"}`,
-        );
-        console.log(`   Role: ${result.user.role}\n`);
+      if (response.status === 200 || response.status === 201) {
+        console.log(`✅ OK: ${user.username}`);
+        successCount++;
+      } else {
+        console.log(`❌ FAIL: ${user.username} (Status: ${response.status})`);
+        failCount++;
       }
-    } catch (error) {
-      console.log(
-        `❌ ${account.org.padEnd(20)} | Login: ${account.username.padEnd(25)} | Status: FAILED`,
-      );
-      console.log(`   Error: ${error.message}\n`);
+    } catch (error: any) {
+      console.log(`❌ FAIL: ${user.username} - ${error.message}`);
+      failCount++;
     }
   }
 
-  console.log("--- LOGIN VERIFICATION COMPLETE ---");
-  await app.close();
+  console.log(`\nResult: ${successCount} successful, ${failCount} failed.`);
 }
 
-verifyLogins();
+checkLogins();

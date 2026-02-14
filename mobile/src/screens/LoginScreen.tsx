@@ -6,10 +6,20 @@ import {
     TextInput,
     TouchableOpacity,
     ActivityIndicator,
-    Alert
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    TouchableWithoutFeedback,
+    Keyboard,
+    Dimensions,
+    StatusBar,
+    SafeAreaView
 } from 'react-native';
 import { authApi } from '../services/api';
 import { saveToken } from '../services/auth';
+import { User, Lock, ArrowRight, ShieldCheck } from 'lucide-react-native';
+
+const { width } = Dimensions.get('window');
 
 const LoginScreen = ({ onLoginSuccess }: { onLoginSuccess: () => void }) => {
     const [username, setUsername] = useState('');
@@ -18,30 +28,20 @@ const LoginScreen = ({ onLoginSuccess }: { onLoginSuccess: () => void }) => {
 
     const handleLogin = async () => {
         if (!username || !password) {
-            Alert.alert('Xato', 'Iltimos, barcha maydonlarni to\'ldiring');
+            Alert.alert('Diqqat', 'Login va parolni kiriting');
             return;
         }
 
         setLoading(true);
         try {
-            console.log('[DEBUG] LoginScreen: Attempting login for:', username);
             const response = await authApi.login({ username, password });
-            console.log('[DEBUG] LoginScreen: Response received:', response.status);
-
             const { access_token } = response.data;
-            if (!access_token) {
-                console.error('[DEBUG] LoginScreen: access_token missing in response');
-                throw new Error('Token topilmadi');
-            }
-
-            console.log('[DEBUG] LoginScreen: Saving token...');
+            if (!access_token) throw new Error('Token olinmadi');
             await saveToken(access_token);
-            console.log('[DEBUG] LoginScreen: Token saved, calling onLoginSuccess');
             onLoginSuccess();
         } catch (error: any) {
-            console.error('[DEBUG] LoginScreen: Error:', error);
-            const errorMsg = error.response?.data?.message || error.message || 'Tizimga kirishda xatolik yuz berdi';
-            Alert.alert('Kirishda xatolik', errorMsg);
+            const errorMsg = error.response?.data?.message || 'Tizimga kirishda xatolik';
+            Alert.alert('Xatolik', errorMsg);
         } finally {
             setLoading(false);
         }
@@ -49,48 +49,92 @@ const LoginScreen = ({ onLoginSuccess }: { onLoginSuccess: () => void }) => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.inner}>
-                <View style={styles.logoContainer}>
-                    <Text style={styles.logoText}>SMART SES</Text>
-                    <Text style={styles.subtitle}>Tizimga kirish (Mobil)</Text>
-                </View>
+            <StatusBar barStyle="light-content" />
 
-                <View style={styles.form}>
-                    <Text style={styles.label}>Foydalanuvchi nomi</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Loginingizni kiriting"
-                        value={username}
-                        onChangeText={setUsername}
-                        autoCapitalize="none"
-                    />
+            {/* Decorative Background Elements */}
+            <View style={styles.circle1} />
+            <View style={styles.circle2} />
 
-                    <Text style={styles.label}>Parol</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Parolingizni kiriting"
-                        value={password}
-                        onChangeText={setPassword}
-                        secureTextEntry={true}
-                    />
+            <SafeAreaView style={styles.safeArea}>
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={styles.keyboardView}
+                >
+                    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                        <View style={styles.content}>
 
-                    <TouchableOpacity
-                        style={styles.loginButton}
-                        onPress={handleLogin}
-                        disabled={loading}
-                    >
-                        {loading ? (
-                            <ActivityIndicator color="#fff" />
-                        ) : (
-                            <Text style={styles.loginButtonText}>KIRISH</Text>
-                        )}
-                    </TouchableOpacity>
-                </View>
+                            <View style={styles.header}>
+                                <View style={styles.iconContainer}>
+                                    <ShieldCheck size={40} color="#fff" />
+                                </View>
+                                <Text style={styles.title}>SMART SES</Text>
+                                <Text style={styles.subtitle}>Milliy Sanitariya Tizimi</Text>
+                            </View>
+
+                            <View style={styles.formCard}>
+                                <Text style={styles.welcome}>Tizimga kirish</Text>
+
+                                <View style={styles.inputGroup}>
+                                    <View style={styles.inputIconWrapper}>
+                                        <User size={20} color="#bae6fd" />
+                                    </View>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Login"
+                                        placeholderTextColor="#94a3b8"
+                                        value={username}
+                                        onChangeText={setUsername}
+                                        autoCapitalize="none"
+                                        autoCorrect={false}
+                                    />
+                                </View>
+
+                                <View style={styles.inputGroup}>
+                                    <View style={styles.inputIconWrapper}>
+                                        <Lock size={20} color="#bae6fd" />
+                                    </View>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Parol"
+                                        placeholderTextColor="#94a3b8"
+                                        value={password}
+                                        onChangeText={setPassword}
+                                        secureTextEntry
+                                    />
+                                </View>
+
+                                <TouchableOpacity
+                                    style={styles.forgotPass}
+                                    onPress={() => Alert.alert('Ma\'lumot', 'Adminstrator bilan bog\'laning')}
+                                >
+                                    <Text style={styles.forgotPassText}>Parolni unutdingizmi?</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    activeOpacity={0.8}
+                                    style={styles.loginBtn}
+                                    onPress={handleLogin}
+                                    disabled={loading}
+                                >
+                                    {loading ? (
+                                        <ActivityIndicator color="#0f172a" />
+                                    ) : (
+                                        <>
+                                            <Text style={styles.loginBtnText}>KIRISH</Text>
+                                            <ArrowRight size={20} color="#0f172a" style={{ marginLeft: 8 }} />
+                                        </>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+
+                        </View>
+                    </TouchableWithoutFeedback>
+                </KeyboardAvoidingView>
 
                 <View style={styles.footer}>
-                    <Text style={styles.footerText}>© 2026 Sanitariya-epidemiologik osoyishtalik xizmati</Text>
+                    <Text style={styles.footerText}>© 2026 Respublika SES Markazi</Text>
                 </View>
-            </View>
+            </SafeAreaView>
         </View>
     );
 };
@@ -98,75 +142,139 @@ const LoginScreen = ({ onLoginSuccess }: { onLoginSuccess: () => void }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f7fa',
+        backgroundColor: '#0f172a', // Slate-900 (Main Dark Background)
     },
-    inner: {
-        padding: 24,
+    safeArea: {
+        flex: 1,
+    },
+    keyboardView: {
         flex: 1,
         justifyContent: 'center',
     },
-    logoContainer: {
-        alignItems: 'center',
-        marginBottom: 48,
+    // Decorative Background Circles
+    circle1: {
+        position: 'absolute',
+        top: -100,
+        left: -50,
+        width: 300,
+        height: 300,
+        borderRadius: 150,
+        backgroundColor: '#1e3a8a', // Blue-900
+        opacity: 0.5,
     },
-    logoText: {
-        fontSize: 32,
-        fontWeight: '800',
-        color: '#1677ff',
+    circle2: {
+        position: 'absolute',
+        bottom: -50,
+        right: -50,
+        width: 200,
+        height: 200,
+        borderRadius: 100,
+        backgroundColor: '#1e293b', // Slate-800
+        opacity: 0.8,
+    },
+    content: {
+        paddingHorizontal: 30,
+    },
+    header: {
+        alignItems: 'center',
+        marginBottom: 40,
+    },
+    iconContainer: {
+        width: 70,
+        height: 70,
+        backgroundColor: 'rgba(56, 189, 248, 0.2)', // Sky-400 with opacity
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(56, 189, 248, 0.5)',
+    },
+    title: {
+        fontSize: 36,
+        fontWeight: '900',
+        color: '#f8fafc', // Slate-50
         letterSpacing: 2,
     },
     subtitle: {
-        fontSize: 16,
-        color: '#64748b',
-        marginTop: 8,
-    },
-    form: {
-        backgroundColor: '#fff',
-        padding: 24,
-        borderRadius: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
-        elevation: 5,
-    },
-    label: {
         fontSize: 14,
-        fontWeight: '600',
-        color: '#475569',
-        marginBottom: 8,
+        color: '#94a3b8', // Slate-400
+        marginTop: 5,
+        textTransform: 'uppercase',
+        letterSpacing: 1,
     },
-    input: {
-        height: 50,
+    formCard: {
+        backgroundColor: 'rgba(30, 41, 59, 0.8)', // Slate-800 low opacity (Glass-like)
+        borderRadius: 24,
+        padding: 24,
         borderWidth: 1,
-        borderColor: '#e2e8f0',
-        borderRadius: 8,
-        paddingHorizontal: 16,
-        marginBottom: 20,
-        fontSize: 16,
-        backgroundColor: '#f8fafc',
+        borderColor: 'rgba(255, 255, 255, 0.1)',
     },
-    loginButton: {
-        height: 50,
-        backgroundColor: '#1677ff',
-        borderRadius: 8,
+    welcome: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#fff',
+        marginBottom: 24,
+        textAlign: 'center',
+    },
+    inputGroup: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#020617', // Slate-950
+        borderRadius: 14,
+        marginBottom: 16,
+        height: 56,
+        borderWidth: 1,
+        borderColor: '#334155', // Slate-700
+    },
+    inputIconWrapper: {
+        width: 50,
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 10,
     },
-    loginButtonText: {
+    input: {
+        flex: 1,
         color: '#fff',
         fontSize: 16,
-        fontWeight: '700',
+        height: '100%',
+        paddingRight: 16,
+    },
+    forgotPass: {
+        alignSelf: 'flex-end',
+        marginBottom: 24,
+    },
+    forgotPassText: {
+        color: '#38bdf8', // Sky-400
+        fontSize: 13,
+    },
+    loginBtn: {
+        backgroundColor: '#38bdf8', // Sky-400 (Accent)
+        height: 56,
+        borderRadius: 14,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#38bdf8',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 10,
+        elevation: 10,
+    },
+    loginBtnText: {
+        color: '#0f172a', // Slate-900
+        fontSize: 18,
+        fontWeight: '800',
+        letterSpacing: 1,
     },
     footer: {
-        marginTop: 48,
+        position: 'absolute',
+        bottom: 30,
+        width: '100%',
         alignItems: 'center',
     },
     footerText: {
+        color: 'rgba(255,255,255,0.3)',
         fontSize: 12,
-        color: '#94a3b8',
-        textAlign: 'center',
     },
 });
 
