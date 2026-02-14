@@ -39,6 +39,7 @@ import DepartmentManagementPage from './features/admin/DepartmentManagementPage'
 import SosAlertPage from './features/sos/SosAlertPage';
 import SosModal from './features/sos/SosModal';
 import VerificationPage from './features/verify/VerificationPage';
+import DashboardExecutivePage from './features/dashboard/DashboardExecutivePage';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
@@ -77,6 +78,12 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             label: t('common.dashboard'),
             onClick: () => navigate('/dashboard')
         },
+        ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD']) ? [{
+            key: '/dashboard/executive',
+            icon: <BarChartOutlined />,
+            label: t('executive.title'),
+            onClick: () => navigate('/dashboard/executive')
+        }] : []),
         ...(hasRole(['DISTRICT_HEAD', 'STAFF']) ? [{
             key: '/disease-entry',
             icon: <MedicineBoxOutlined />,
@@ -244,6 +251,7 @@ function App() {
                     <Route path="/verify/:token" element={<VerificationPage />} />
                     <Route path="/" element={<Navigate to="/dashboard" />} />
                     <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+                    <Route path="/dashboard/executive" element={<ProtectedRoute><DashboardExecutivePage /></ProtectedRoute>} />
                     <Route path="/disease-entry" element={<ProtectedRoute><DiseaseEntryPage /></ProtectedRoute>} />
                     <Route path="/form-1" element={<ProtectedRoute><Form1EntryPage /></ProtectedRoute>} />
                     <Route path="/disease-manager" element={<ProtectedRoute><DiseaseManagerPage /></ProtectedRoute>} />

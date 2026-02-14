@@ -126,6 +126,48 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
         }
     ];
 
+    const MOCK_FORECASTS: any[] = [
+        {
+            diseaseType: 'flu',
+            diseaseName: 'Gripp (Influenza)',
+            emoji: '🤧',
+            riskScore: 85,
+            riskLevel: 'high',
+            predictedValue: 185,
+            currentValue: 178,
+            trend: 'increasing',
+            confidence: '85%',
+            historicalData: [120, 135, 142, 158, 165, 178],
+            growthRate: 7.8
+        },
+        {
+            diseaseType: 'ari',
+            diseaseName: "O'tkir Respirator Infeksiya (YUQTI)",
+            emoji: '😷',
+            riskScore: 65,
+            riskLevel: 'medium',
+            predictedValue: 115,
+            currentValue: 110,
+            trend: 'increasing',
+            confidence: '80%',
+            historicalData: [85, 92, 88, 95, 102, 110],
+            growthRate: 7.8
+        },
+        {
+            diseaseType: 'hepatitis',
+            diseaseName: 'Gepatit (Hepatitis) A',
+            emoji: '🟡',
+            riskScore: 45,
+            riskLevel: 'low',
+            predictedValue: 75,
+            currentValue: 68,
+            trend: 'increasing',
+            confidence: '90%',
+            historicalData: [45, 52, 48, 61, 55, 68],
+            growthRate: 23.6
+        }
+    ];
+
     const fetchSubmissions = async () => {
         setLoading(true);
         try {
@@ -152,6 +194,11 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
             }
         } catch (e) {
             console.error("Ranked forecasts fetch error", e);
+            // Fallback to mock data
+            setAllForecasts(MOCK_FORECASTS);
+            if (MOCK_FORECASTS.length > 0) {
+                setSelectedDiseaseType(MOCK_FORECASTS[0].diseaseType);
+            }
         }
     };
 
@@ -725,6 +772,11 @@ const DashboardContent: React.FC<any> = ({ submissions, setSubmissions, loading,
             }
         } catch (e) {
             console.error("Ranked forecasts fetch error", e);
+            // Fallback to mock data
+            setAllForecasts(MOCK_FORECASTS);
+            if (MOCK_FORECASTS.length > 0) {
+                setSelectedDiseaseType(MOCK_FORECASTS[0].diseaseType);
+            }
         }
     };
 

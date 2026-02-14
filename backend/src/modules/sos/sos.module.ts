@@ -10,6 +10,6 @@ import { TelegramModule } from "../telegram/telegram.module";
   imports: [TypeOrmModule.forFeature([SosDisease, SosAlert]), TelegramModule],
   providers: [SosService],
   controllers: [SosController],
-  exports: [SosService],
+  exports: [SosService, TypeOrmModule],
 })
-export class SosModule {}
+export class SosModule { }

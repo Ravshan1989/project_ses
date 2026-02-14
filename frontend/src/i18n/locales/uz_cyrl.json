@@ -1,4 +1,17 @@
 {
+    "executive": {
+        "title": "Раҳбар Панели",
+        "subtitle": "Вилоят бўйича тезкор сводка",
+        "total_cases_today": "Бугунги жами касаллар",
+        "epidemic_status": "Эпидемик вазият",
+        "status_safe": "Барқарор",
+        "status_warning": "Огоҳлантириш",
+        "status_critical": "Хавфли",
+        "top_hotspot": "Энг фаол ўчоқ",
+        "top_diseases": "Топ 5 касалликлар",
+        "district_status": "Ҳудудлар назорати",
+        "daily_trend": "КУНЛИК ЎЗГАРИШ"
+    },
     "auth": {
         "success_login": "Хуш келибсиз!",
         "error_login": "Логин ёки парол нотўғри",

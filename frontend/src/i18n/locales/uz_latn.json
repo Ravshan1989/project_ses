@@ -1,4 +1,17 @@
 {
+    "executive": {
+        "title": "Rahbar Paneli",
+        "subtitle": "Viloyat bo'yicha tezkor svodka",
+        "total_cases_today": "Bugungi jami kasallar",
+        "epidemic_status": "Epidemik vaziyat",
+        "status_safe": "Barqaror",
+        "status_warning": "Ogohlantirish",
+        "status_critical": "Xavfli",
+        "top_hotspot": "Eng faol o'choq",
+        "top_diseases": "Top 5 kasalliklar",
+        "district_status": "Hududlar nazorati",
+        "daily_trend": "KUNLIK O'ZGARISH"
+    },
     "auth": {
         "success_login": "Xush kelibsiz!",
         "error_login": "Login yoki parol noto'g'ri",

@@ -1,4 +1,17 @@
 {
+    "executive": {
+        "title": "Панель Руководителя",
+        "subtitle": "Оперативная сводка по области",
+        "total_cases_today": "Всего больных сегодня",
+        "epidemic_status": "Эпидемическая ситуация",
+        "status_safe": "Стабильная",
+        "status_warning": "Предупреждение",
+        "status_critical": "Опасная",
+        "top_hotspot": "Самый активный очаг",
+        "top_diseases": "Топ 5 заболеваний",
+        "district_status": "Контроль регионов",
+        "daily_trend": "ЕЖЕДНЕВНОЕ ИЗМЕНЕНИЕ"
+    },
     "auth": {
         "success_login": "Добро пожаловать!",
         "error_login": "Неверный логин или пароль",

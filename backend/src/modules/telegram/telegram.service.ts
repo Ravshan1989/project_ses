@@ -40,6 +40,13 @@ export class TelegramService implements OnModuleInit {
   onModuleInit() {
     if (!this.bot) return;
 
+    if (process.env.SKIP_BOT_LAUNCH === "true") {
+      this.logger.warn(
+        "SKIP_BOT_LAUNCH=true: Telegram bot ishga tushirilmadi (409 Conflict oldini olish uchun).",
+      );
+      return;
+    }
+
     this.setupHandlers();
     this.bot.launch().catch((err) => {
       this.logger.error("Telegram bot ishga tushirishda xatolik:", err);
@@ -96,7 +103,13 @@ export class TelegramService implements OnModuleInit {
   }
 
   private async handleReportRequest(ctx: any, type: string) {
-    const today = new Date().toISOString().split("T")[0];
+    // UZ: Toshkent vaqti bilan bugungi sanani olish (UTC+5)
+    const now = new Date();
+    const tashkentOffset = 5 * 60 * 60 * 1000;
+    const today = new Date(now.getTime() + tashkentOffset)
+      .toISOString()
+      .split("T")[0];
+
     let message = `📅 *${today}* holatiga ko'ra tumanlar statistikasi:\n\n`;
 
     try {
@@ -107,7 +120,8 @@ export class TelegramService implements OnModuleInit {
         );
         if (data.length === 0) message += "Ma'lumot topilmadi.";
         data.forEach((r) => {
-          message += `🏢 *${r.organization?.name}:* Jami: ${r.total_cases}, Musbat: ${r.lab_positive}\n`;
+          const orgName = this.escapeMarkdown(r.organization?.name || "");
+          message += `🏢 *${orgName}:* Jami: ${r.total_cases}, Musbat: ${r.lab_positive}\n`;
         });
       } else if (type === "covid") {
         const data = await this.dailyReportsService.getCovidByDate(
@@ -116,7 +130,8 @@ export class TelegramService implements OnModuleInit {
         );
         if (data.length === 0) message += "Ma'lumot topilmadi.";
         data.forEach((r) => {
-          message += `🏢 *${r.organization?.name}:* Jami: ${r.total_cases}, Hospital: ${r.hospitalized_count}\n`;
+          const orgName = this.escapeMarkdown(r.organization?.name || "");
+          message += `🏢 *${orgName}:* Jami: ${r.total_cases}, Hospital: ${r.hospitalized_count}\n`;
         });
       } else if (type === "flu") {
         const data = await this.dailyReportsService.getFluByDate(
@@ -125,7 +140,8 @@ export class TelegramService implements OnModuleInit {
         );
         if (data.length === 0) message += "Ma'lumot topilmadi.";
         data.forEach((r) => {
-          message += `🏢 *${r.organization?.name}:* O'RVI: ${r.ari_total}, Gripp: ${r.flu_total}\n`;
+          const orgName = this.escapeMarkdown(r.organization?.name || "");
+          message += `🏢 *${orgName}:* O'RVI: ${r.ari_total}, Gripp: ${r.flu_total}\n`;
         });
       } else if (type === "ari") {
         const data = await this.dailyReportsService.getAriByDate(
@@ -134,7 +150,8 @@ export class TelegramService implements OnModuleInit {
         );
         if (data.length === 0) message += "Ma'lumot topilmadi.";
         data.forEach((r) => {
-          message += `🏢 *${r.organization?.name}:* O'RVI: ${r.ari}\n`;
+          const orgName = this.escapeMarkdown(r.organization?.name || "");
+          message += `🏢 *${orgName}:* O'RVI: ${r.ari}\n`;
         });
       } else if (type === "epi") {
         const data = await this.dailyReportsService.getEpidemiologyByDate(
@@ -143,7 +160,8 @@ export class TelegramService implements OnModuleInit {
         );
         if (data.length === 0) message += "Ma'lumot topilmadi.";
         data.forEach((r) => {
-          message += `🏢 *${r.organization?.name}:* Tekshirildi: ${r.inspected_total}, Jarima: ${r.fines_total}\n`;
+          const orgName = this.escapeMarkdown(r.organization?.name || "");
+          message += `🏢 *${orgName}:* Tekshirildi: ${r.inspected_total}, Jarima: ${r.fines_total}\n`;
         });
       }
 
@@ -179,17 +197,20 @@ export class TelegramService implements OnModuleInit {
       return;
     }
 
-    const message = `
+    const escapedOrg = this.escapeMarkdown(organizationName);
+    const escapedType = this.escapeMarkdown(type);
+    const escapedDetails = this.escapeMarkdown(details);
+    try {
+      const message = `
 🔔 *Yangi kunlik hisobot*
-🏷 *Turi:* ${type}
-🏢 *Tashkilot:* ${organizationName}
+🏷 *Turi:* ${escapedType}
+🏢 *Tashkilot:* ${escapedOrg}
 📅 *Sana:* ${date}
 
 📊 *Ma'lumotlar:*
-${details}
+${escapedDetails}
     `;
 
-    try {
       await this.bot.telegram.sendMessage(this.chatId, message, {
         parse_mode: "Markdown",
       });
@@ -211,16 +232,19 @@ ${details}
   }) {
     if (!this.bot || !this.chatId) return;
 
+    const escapedOrg = this.escapeMarkdown(data.organizationName);
+    const escapedDisease = this.escapeMarkdown(data.diseaseName);
+    const escapedComment = this.escapeMarkdown(data.comment || "Yo'q");
     const message = `
 🚨🚨🚨 *SOS XABARNOMASI* 🚨🚨🚨
 🔴 *Daraja:* FAVQULODDA
-🏢 *Tuman/Shahar:* ${data.organizationName}
-🦠 *Kasallik:* ${data.diseaseName}
+🏢 *Tuman/Shahar:* ${escapedOrg}
+🦠 *Kasallik:* ${escapedDisease}
 📊 *Holat turi:* ${data.status}
 📅 *Sana va vaqt:* ${data.date}
 🆔 *SOS ID:* ${data.id}
 
-📝 *Izoh:* ${data.comment || "Yo'q"}
+📝 *Izoh:* ${escapedComment}
 
 ⚠️ *DIQQAT:* Ushbu xabar favqulodda epidemiologik vaziyat haqida ogohlantiradi.
     `;
@@ -238,5 +262,10 @@ ${details}
         error,
       );
     }
+  }
+
+  private escapeMarkdown(text: string): string {
+    if (!text) return "";
+    return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, "\\$&");
   }
 }

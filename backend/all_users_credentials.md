@@ -22,3 +22,12 @@
 | Chinoz t | `user_chinoz_t` | `ses12345` |
 | Yangiyo'l t | `user_yangiyol_t` | `ses12345` |
 | Toshkent t | `user_toshkent_t` | `ses12345` |
+
+### 🏔️ Bo'stonliq Maxsus Foydalanuvchilari
+| Lavozim | Login | Parol |
+| :--- | :--- | :--- |
+| **Tuman Boshlig'i** | `bostonliq_head` | `Ses12345!` |
+| **Bo'lim Mudiri** | `bostonliq_chief` | `Ses12345!` |
+| **Xodim 1** | `bostonliq_staff1` | `Ses12345!` |
+| **Xodim 2** | `bostonliq_staff2` | `Ses12345!` |
+| **Xodim 3** | `bostonliq_staff3` | `Ses12345!` |

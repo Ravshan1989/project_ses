@@ -37,6 +37,13 @@ export class BackupBotService implements OnModuleInit {
       return;
     }
 
+    if (process.env.SKIP_BOT_LAUNCH === "true") {
+      this.logger.warn(
+        "SKIP_BOT_LAUNCH=true: Zaxira boti ishga tushirilmadi (409 Conflict oldini olish uchun).",
+      );
+      return;
+    }
+
     this.setupHandlers();
     this.bot.launch()
       .then(() => this.logger.log("Zaxira boti Telegram bilan bog'landi."))

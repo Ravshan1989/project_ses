@@ -10,6 +10,7 @@ import { AriDailyReport } from "../daily-reports/entities/ari-daily-report.entit
 import { CovidDailyReport } from "../daily-reports/entities/covid-daily-report.entity";
 import { Submission } from "../submissions/entities/submission.entity";
 import { Disease } from "../diseases/entities/disease.entity";
+import { SosModule } from "../sos/sos.module"; // UZ: SosModule import qilindi
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { Disease } from "../diseases/entities/disease.entity";
       Submission,
       Disease,
     ]),
+    SosModule, // UZ: SosModule import qilindi
   ],
   controllers: [AnalysisController],
   providers: [
@@ -33,4 +35,4 @@ import { Disease } from "../diseases/entities/disease.entity";
     ForecastingService, // UZ: Tashqi modullar uchun export qilindi
   ],
 })
-export class AnalysisModule {}
+export class AnalysisModule { }

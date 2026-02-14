@@ -10,7 +10,8 @@ import { Submission } from "../submissions/entities/submission.entity";
 import { Disease } from "../diseases/entities/disease.entity";
 import { AnalysisQueryDto } from "./dto/analysis-query.dto";
 import { ForecastingService } from "./forecasting.service"; // UZ: Bashorat qilish xizmati
-import { startOfMonth, subMonths, format } from "date-fns"; // UZ: Davrlarni hisoblash uchun
+import { startOfMonth, subMonths, format, subDays } from "date-fns"; // UZ: Davrlarni hisoblash uchun
+import { SosAlert } from "../sos/entities/sos-alert.entity"; // UZ: SOS Ogohlantirishlar
 
 @Injectable()
 export class AnalysisService {
@@ -29,6 +30,8 @@ export class AnalysisService {
     private submissionRepo: Repository<Submission>,
     @InjectRepository(Disease)
     private diseaseRepo: Repository<Disease>,
+    @InjectRepository(SosAlert)
+    private sosRepo: Repository<SosAlert>,
     private forecastingService: ForecastingService, // UZ: ForecastingService ineksiya qilindi
   ) { }
 
@@ -411,6 +414,114 @@ export class AnalysisService {
       forecasts: forecasts.sort((a, b) => b.riskScore - a.riskScore),
     };
   }
+
+  async getExecutiveData() {
+    const today = new Date();
+    const todayStr = format(today, "yyyy-MM-dd");
+    const yesterday = subDays(today, 1);
+    const yesterdayStr = format(yesterday, "yyyy-MM-dd");
+
+    const [todayData, yesterdayData, recentAlerts] = await Promise.all([
+      this.getGlobalSummary(todayStr, todayStr),
+      this.getGlobalSummary(yesterdayStr, yesterdayStr),
+      this.sosRepo.find({
+        order: { createdAt: "DESC" },
+        take: 5,
+        relations: ["organization"],
+      }),
+    ]);
+
+    // Aggregate Today's Totals
+    let totalCasesToday = 0;
+    const diseaseCounts = new Map<string, number>();
+    const districtStats: any[] = [];
+
+    for (const district of todayData) {
+      let distCases = 0;
+      for (const d of district.diseases) {
+        distCases += d.cases;
+        const currentCount = diseaseCounts.get(d.disease) || 0;
+        diseaseCounts.set(d.disease, currentCount + d.cases);
+      }
+      totalCasesToday += distCases;
+
+      // Determine district status
+      let status = "safe";
+      if (distCases > 50) status = "critical";
+      else if (distCases > 20) status = "warning";
+
+      districtStats.push({
+        id: district.organizationId,
+        name: district.organizationName,
+        cases: distCases,
+        status,
+      });
+    }
+
+    // Previous Total
+    let totalCasesYesterday = 0;
+    for (const district of yesterdayData) {
+      for (const d of district.diseases) {
+        totalCasesYesterday += d.cases;
+      }
+    }
+
+    // Trend
+    const diff = totalCasesToday - totalCasesYesterday;
+    const percent =
+      totalCasesYesterday > 0 ? (diff / totalCasesYesterday) * 100 : 0;
+    const trend = diff >= 0 ? "increasing" : "decreasing"; // Simple trend
+
+    // Top Hotspot
+    districtStats.sort((a, b) => b.cases - a.cases);
+    const topHotspot = districtStats.length > 0 ? districtStats[0] : null;
+
+    // Top Diseases
+    const topDiseases = Array.from(diseaseCounts.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    // Epidemic Status
+    let epidemicStatus = "safe"; // Barqaror
+    if (totalCasesToday > 500) epidemicStatus = "critical"; // Xavfli
+    else if (totalCasesToday > 200) epidemicStatus = "warning"; // Ogohlantirish
+
+    return {
+      totalCasesToday,
+      totalCasesYesterday,
+      trend,
+      trendPercent: parseFloat(percent.toFixed(1)),
+      epidemicStatus,
+      topHotspot,
+      topDiseases,
+      districtStatuses: districtStats,
+      recentAlerts: recentAlerts.map((a) => ({
+        id: a.id,
+        diseaseName: a.diseaseName,
+        status: a.status,
+        district: a.organization?.name || "Noma'lum",
+        createdAt: a.createdAt,
+      })),
+    };
+  }
+
+  async getDistrictExecutiveDetails(districtId: string) {
+    const today = new Date();
+    const todayStr = format(today, "yyyy-MM-dd");
+
+    // Fetch data for specific district only by reusing getGlobalSummary logic but filtering later
+    // Note: optimization would be to filter in query, but for now we reuse logic
+    const allDistricts = await this.getGlobalSummary(todayStr, todayStr);
+    const districtData = allDistricts.find((d) => d.organizationId === districtId);
+
+    if (!districtData) return null;
+
+    return {
+      topDiseases: districtData.diseases.slice(0, 5),
+    };
+  }
+
 }
 
 /**
