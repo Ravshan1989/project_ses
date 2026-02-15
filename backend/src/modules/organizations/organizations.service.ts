@@ -24,7 +24,7 @@ export class OrganizationsService {
     const allOrgs = await this.orgRepo.find({ relations: ["parent"] });
 
     if (user) {
-      const level = getRoleLevel(user.role);
+      const level = getRoleLevel(user.role, user);
       if (level === 3 && user.organization) {
         return allOrgs.filter(o => o.id === user.organization.id);
       }

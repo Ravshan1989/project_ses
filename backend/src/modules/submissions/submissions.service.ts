@@ -31,7 +31,7 @@ export class SubmissionsService {
     private organizationsService: OrganizationsService,
     @InjectRepository(Template)
     private templateRepository: Repository<Template>,
-  ) {}
+  ) { }
 
   async create(createSubmissionDto: CreateSubmissionDto, user: User) {
     // Basic validation: User must belong to an organization
@@ -50,7 +50,7 @@ export class SubmissionsService {
   }
 
   async findAll(query: any, user: User) {
-    const level = getRoleLevel(user.role);
+    const level = getRoleLevel(user.role, user);
     const where: any = { ...query };
 
     // Fix: Map 'period' to 'reportingPeriod' to match Entity definition
@@ -76,7 +76,7 @@ export class SubmissionsService {
   }
 
   async findOne(id: string, user: User) {
-    const level = getRoleLevel(user.role);
+    const level = getRoleLevel(user.role, user);
     const where: any = { id };
 
     if (level === 3) {
@@ -156,7 +156,7 @@ export class SubmissionsService {
     includeTest = false,
     user: User,
   ) {
-    const level = getRoleLevel(user.role);
+    const level = getRoleLevel(user.role, user);
     const where: any = {
       template: { code: templateCode },
       reportingPeriod: period,

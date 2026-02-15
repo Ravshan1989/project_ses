@@ -41,7 +41,7 @@ export class ExportsService {
     private readonly orgRepo: Repository<Organization>,
     private readonly diseasesService: DiseasesService,
     private readonly verificationService: VerificationService,
-  ) {}
+  ) { }
 
   async getFluReports(
     startDate: string,
@@ -50,7 +50,7 @@ export class ExportsService {
     user: User,
     districtId?: string,
   ) {
-    const level = getRoleLevel(user.role);
+    const level = getRoleLevel(user.role, user);
     const where: any = {
       reportDate: Between(startDate, endDate),
       isTest: includeTest,
@@ -86,7 +86,7 @@ export class ExportsService {
     user: User,
     districtId?: string,
   ) {
-    const level = getRoleLevel(user.role);
+    const level = getRoleLevel(user.role, user);
     const where: any = {
       reportDate: Between(startDate, endDate),
       isTest: includeTest,
@@ -122,7 +122,7 @@ export class ExportsService {
     user: User,
     districtId?: string,
   ) {
-    const level = getRoleLevel(user.role);
+    const level = getRoleLevel(user.role, user);
     const where: any = {
       reportingPeriod: Between(startDate, endDate),
       isTest: includeTest,
@@ -158,7 +158,7 @@ export class ExportsService {
     user: User,
     districtId?: string,
   ) {
-    const level = getRoleLevel(user.role);
+    const level = getRoleLevel(user.role, user);
     const where: any = {
       reportDate: Between(startDate, endDate),
       isTest: includeTest,
@@ -194,7 +194,7 @@ export class ExportsService {
     user: User,
     districtId?: string,
   ) {
-    const level = getRoleLevel(user.role);
+    const level = getRoleLevel(user.role, user);
     const where: any = {
       reportDate: Between(startDate, endDate),
       isTest: includeTest,
@@ -230,7 +230,7 @@ export class ExportsService {
     user: User,
     districtId?: string,
   ) {
-    const level = getRoleLevel(user.role);
+    const level = getRoleLevel(user.role, user);
     const where: any = {
       reportDate: Between(startDate, endDate),
       isTest: includeTest,

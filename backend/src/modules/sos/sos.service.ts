@@ -86,7 +86,7 @@ export class SosService {
   }
 
   async getAlerts(user: User) {
-    const level = getRoleLevel(user.role);
+    const level = getRoleLevel(user.role, user);
 
     // Admin or Republic Head sees all
     if (level === 1) {
@@ -122,7 +122,7 @@ export class SosService {
   }
 
   async markAsReviewed(id: string, user: User) {
-    const level = getRoleLevel(user.role);
+    const level = getRoleLevel(user.role, user);
     if (level > 2) {
       throw new ForbiddenException(
         "Faqat Viloyat yoki Respublika darajasidagi xodimlar tasdiqlashi mumkin.",

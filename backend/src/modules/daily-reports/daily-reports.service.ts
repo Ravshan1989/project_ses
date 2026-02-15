@@ -45,7 +45,7 @@ export class DailyReportsService {
   private validateIsolation(user: User, organizationId: string) {
     if (!user || !user.organization) return; // Should not happen with JwtGuard
 
-    const level = getRoleLevel(user.role);
+    const level = getRoleLevel(user.role, user);
     if (level === 3) {
       if (user.organization.id !== organizationId) {
         throw new Error(
@@ -99,7 +99,7 @@ export class DailyReportsService {
   */
 
   async getByDate(date: string, user: User, includeTest = false) {
-    const level = getRoleLevel(user.role);
+    const level = getRoleLevel(user.role, user);
     const where: FindOptionsWhere<HepatitisDailyReport> = {
       reportDate: date,
       isTest: includeTest, // UZ: Test yoki Real ma'lumotni tanlash
@@ -164,7 +164,7 @@ export class DailyReportsService {
   */
 
   async getFluByDate(date: string, user: User, includeTest = false) {
-    const level = getRoleLevel(user.role);
+    const level = getRoleLevel(user.role, user);
     const where: FindOptionsWhere<FluDailyReport> = {
       reportDate: date,
       isTest: includeTest,
@@ -226,7 +226,7 @@ export class DailyReportsService {
   */
 
   async getAriByDate(date: string, user: User, includeTest = false) {
-    const level = getRoleLevel(user.role);
+    const level = getRoleLevel(user.role, user);
     const where: FindOptionsWhere<AriDailyReport> = {
       reportDate: date,
       isTest: includeTest,
@@ -288,7 +288,7 @@ export class DailyReportsService {
   */
 
   async getEpidemiologyByDate(date: string, user: User, includeTest = false) {
-    const level = getRoleLevel(user.role);
+    const level = getRoleLevel(user.role, user);
     const where: FindOptionsWhere<EpidemiologyDailyReport> = {
       reportDate: date,
       isTest: includeTest,
@@ -385,7 +385,7 @@ export class DailyReportsService {
       .addSelect("SUM(COALESCE(report.death_pregnant, 0))", "death_pregnant");
 
     // UZ: Role Level bo'yicha filtr (Qo'shimcha tekshiruv)
-    const level = getRoleLevel(user.role);
+    const level = getRoleLevel(user.role, user);
     if (level === 2) {
       if (!user.organization) return [];
       qb.andWhere("organization.parent_id = :orgId", {
@@ -471,7 +471,7 @@ export class DailyReportsService {
   }
 
   async getCovidByDate(date: string, user: User, includeTest = false) {
-    const level = getRoleLevel(user.role);
+    const level = getRoleLevel(user.role, user);
     const where: FindOptionsWhere<CovidDailyReport> = {
       reportDate: date,
       isTest: includeTest,
@@ -492,7 +492,7 @@ export class DailyReportsService {
   }
 
   async getDiarrheaByDate(date: string, user: User, includeTest = false) {
-    const level = getRoleLevel(user.role);
+    const level = getRoleLevel(user.role, user);
     const where: FindOptionsWhere<DiarrheaDailyReport> = {
       reportDate: date,
       isTest: includeTest,

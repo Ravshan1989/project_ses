@@ -71,6 +71,7 @@ export const exportsApi = {
     getCovid: (startDate: string, endDate: string, isTest = false, districtId?: string) => api.get(`/exports/covid?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}&districtId=${districtId || ''}`),
     getEpidemiology: (startDate: string, endDate: string, isTest = false, districtId?: string) => api.get(`/exports/epidemiology?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}&districtId=${districtId || ''}`),
     getForm1: (startDate: string, endDate: string, isTest = false, districtId?: string) => api.get(`/exports/form1?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}&districtId=${districtId || ''}`),
+    downloadForm1Excel: (startDate: string, endDate: string, isTest = false, districtId?: string) => api.get(`/exports/form1/excel?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}&districtId=${districtId || ''}`, { responseType: 'blob' }),
 };
 
 export const importsApi = {

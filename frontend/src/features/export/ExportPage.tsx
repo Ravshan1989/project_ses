@@ -196,14 +196,20 @@ const ExportPage: React.FC = () => {
                     message.success(t('common.success_export'));
                     return;
                 }
-            } else if (reportType === 'form1') {
                 if (format === 'pdf') {
                     message.info(t('common.not_available_pdf') || "Forma-1 uchun PDF hozircha mavjud emas.");
                     setLoading(false);
                     return;
                 }
-                const downloadUrl = `${API_BASE_URL}/exports/form1/excel?startDate=${startDate}&endDate=${endDate}&isTest=false&districtId=${distId || ''}`;
-                window.open(downloadUrl, '_blank');
+
+                const response = await exportsApi.downloadForm1Excel(startDate, endDate, false, distId);
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', `Form1_${startDate}_${endDate}.xlsx`);
+                document.body.appendChild(link);
+                link.click();
+                link.parentNode?.removeChild(link);
                 setLoading(false);
                 return;
             }
