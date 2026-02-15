@@ -14,6 +14,7 @@ import { AnalysisModule } from "./modules/analysis/analysis.module";
 import { TelegramModule } from "./modules/telegram/telegram.module";
 import { SosModule } from "./modules/sos/sos.module";
 import { UpdatesModule } from "./modules/updates/updates.module";
+import { SeedingModule } from "./modules/seeding/seeding.module";
 
 import { AuthModule } from "./modules/auth/auth.module";
 import { DepartmentsModule } from "./modules/departments/departments.module";
@@ -53,7 +54,10 @@ import { ScheduleModule } from "@nestjs/schedule";
     ValidationModule, // UZ: Mantiqiy validatsiya moduli qo'shildi
     NotificationsModule, // UZ: Bildirishnomalar moduli qo'shildi
     EventEmitterModule.forRoot(), // UZ: Eventlar tizimini yoqish
+    NotificationsModule, // UZ: Bildirishnomalar moduli qo'shildi
+    EventEmitterModule.forRoot(), // UZ: Eventlar tizimini yoqish
     UpdatesModule, // UZ: Yangilanishlar moduli
+    SeedingModule, // UZ: Avtomatik ma'lumotlarni to'ldirish (Auto-fix)
   ],
   controllers: [AppController],
   providers: [
