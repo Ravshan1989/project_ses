@@ -12,9 +12,16 @@ const REPORT_TYPES = [
 
 import { Activity } from 'lucide-react-native';
 
+import { useNavigation } from '@react-navigation/native';
+
 const ReportListScreen = () => {
+    const navigation = useNavigation<any>();
+
     const renderItem = ({ item }: { item: any }) => (
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity
+            style={styles.card}
+            onPress={() => navigation.navigate('ReportEntry', { type: item.id, title: item.title })}
+        >
             <View style={styles.cardLeft}>
                 <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
                     {item.icon}

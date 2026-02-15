@@ -4,9 +4,19 @@ import { LayoutDashboard, FileText, User } from 'lucide-react-native';
 
 import DashboardScreen from '../screens/DashboardScreen';
 import ReportListScreen from '../screens/ReportListScreen';
+import ReportEntryScreen from '../screens/ReportEntryScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
+
+const ReportsStack = () => (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="ReportList" component={ReportListScreen} />
+        <Stack.Screen name="ReportEntry" component={ReportEntryScreen} />
+    </Stack.Navigator>
+);
 
 const TabNavigator = ({ onLogout }: { onLogout: () => void }) => {
     return (
@@ -47,7 +57,7 @@ const TabNavigator = ({ onLogout }: { onLogout: () => void }) => {
             })}
         >
             <Tab.Screen name="Asosiy" component={DashboardScreen} options={{ title: 'Bosh sahifa' }} />
-            <Tab.Screen name="Hisobotlar" component={ReportListScreen} options={{ title: 'Hisobotlar' }} />
+            <Tab.Screen name="Hisobotlar" component={ReportsStack} options={{ title: 'Hisobotlar' }} />
             <Tab.Screen name="Profil" options={{ title: 'Profil' }}>
                 {(props) => <ProfileScreen {...props} onLogout={onLogout} />}
             </Tab.Screen>

@@ -11,6 +11,7 @@ import {
     Alert
 } from 'react-native';
 import { authApi } from '../services/api';
+import { useNavigation } from '@react-navigation/native';
 import {
     User,
     Activity,
@@ -25,6 +26,7 @@ import {
 const { width } = Dimensions.get('window');
 
 const DashboardScreen = () => {
+    const navigation = useNavigation<any>();
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
@@ -106,7 +108,11 @@ const DashboardScreen = () => {
                 {/* Quick Actions */}
                 <Text style={styles.sectionTitle}>Tezkor amallar</Text>
 
-                <TouchableOpacity style={styles.actionCard} activeOpacity={0.7}>
+                <TouchableOpacity
+                    style={styles.actionCard}
+                    activeOpacity={0.7}
+                    onPress={() => navigation.navigate('Hisobotlar', { screen: 'ReportEntry', params: { type: 'ari', title: "SARI hisoboti" } })}
+                >
                     <View style={[styles.actionIconBox, { backgroundColor: 'rgba(251, 146, 60, 0.2)' }]}>
                         <Thermometer color="#fb923c" size={24} />
                     </View>
@@ -119,7 +125,11 @@ const DashboardScreen = () => {
                     </View>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.actionCard} activeOpacity={0.7}>
+                <TouchableOpacity
+                    style={styles.actionCard}
+                    activeOpacity={0.7}
+                    onPress={() => navigation.navigate('Hisobotlar', { screen: 'ReportEntry', params: { type: 'ari', title: "O'RVI hisoboti" } })}
+                >
                     <View style={[styles.actionIconBox, { backgroundColor: 'rgba(167, 139, 250, 0.2)' }]}>
                         <Stethoscope color="#a78bfa" size={24} />
                     </View>
