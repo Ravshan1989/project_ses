@@ -357,6 +357,23 @@ const DashboardScreen = () => {
                 <TouchableOpacity
                     style={styles.actionCard}
                     activeOpacity={0.7}
+                    onPress={() => navigation.navigate('Hisobotlar', { screen: 'ReportsHistory' })}
+                >
+                    <View style={[styles.actionIconBox, { backgroundColor: 'rgba(59, 130, 246, 0.2)' }]}>
+                        <FileText color="#3b82f6" size={24} />
+                    </View>
+                    <View style={styles.actionInfo}>
+                        <Text style={styles.actionTitle}>Hisobotlar Tarixi</Text>
+                        <Text style={styles.actionDesc}>Yuborilgan va tasdiqlangan hisobotlar</Text>
+                    </View>
+                    <View style={styles.actionArrow}>
+                        <ChevronRight color="#94a3b8" size={20} />
+                    </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.actionCard}
+                    activeOpacity={0.7}
                     onPress={() => navigation.navigate('Hisobotlar', { screen: 'ReportEntry', params: { type: 'ari', title: "SARI hisoboti" } })}
                 >
                     <View style={[styles.actionIconBox, { backgroundColor: 'rgba(251, 146, 60, 0.2)' }]}>

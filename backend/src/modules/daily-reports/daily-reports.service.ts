@@ -105,11 +105,13 @@ export class DailyReportsService {
     };
 
     // Level 2 (Viloyat): O'z viloyatiga qarashli
-    if (level === 2 && user.organization) {
+    if (level === 2) {
+      if (!user.organization) return [];
       where.organization = { parent: { id: user.organization.id } };
     }
     // Level 3 (Tuman): O'z tumaniga qarashli
-    else if (level === 3 && user.organization) {
+    else if (level === 3) {
+      if (!user.organization) return [];
       where.organization = { id: user.organization.id };
     }
 
@@ -167,9 +169,11 @@ export class DailyReportsService {
       isTest: includeTest,
     };
 
-    if (level === 2 && user.organization) {
+    if (level === 2) {
+      if (!user.organization) return [];
       where.organization = { parent: { id: user.organization.id } };
-    } else if (level === 3 && user.organization) {
+    } else if (level === 3) {
+      if (!user.organization) return [];
       where.organization = { id: user.organization.id };
     }
 
@@ -227,9 +231,11 @@ export class DailyReportsService {
       isTest: includeTest,
     };
 
-    if (level === 2 && user.organization) {
+    if (level === 2) {
+      if (!user.organization) return [];
       where.organization = { parent: { id: user.organization.id } };
-    } else if (level === 3 && user.organization) {
+    } else if (level === 3) {
+      if (!user.organization) return [];
       where.organization = { id: user.organization.id };
     }
 
@@ -287,9 +293,11 @@ export class DailyReportsService {
       isTest: includeTest,
     };
 
-    if (level === 2 && user.organization) {
+    if (level === 2) {
+      if (!user.organization) return [];
       where.organization = { parent: { id: user.organization.id } };
-    } else if (level === 3 && user.organization) {
+    } else if (level === 3) {
+      if (!user.organization) return [];
       where.organization = { id: user.organization.id };
     }
 
@@ -375,13 +383,16 @@ export class DailyReportsService {
       .addSelect("SUM(COALESCE(report.death_total, 0))", "death_total")
       .addSelect("SUM(COALESCE(report.death_pregnant, 0))", "death_pregnant");
 
-    // UZ: Role Level bo'yicha filtr
+    // UZ: Role Level bo'yicha filtr (Qo'shimcha tekshiruv)
     const level = getRoleLevel(user.role);
-    if (level === 2 && user.organization) {
+    if (level === 2) {
+      if (!user.organization) return [];
       qb.andWhere("organization.parent_id = :orgId", {
         orgId: user.organization.id,
       });
-    } else if (level === 3 && user.organization) {
+    } else if (level === 3) {
+      // UZ: Faqat o'z tashkilotini ko'rsatish (qolganlarni umuman ko'rsatmaslik)
+      if (!user.organization) return [];
       qb.andWhere("organization.id = :orgId", { orgId: user.organization.id });
     } else {
       // ADMIN or others: skip the top-level 'Toshkent viloyati'

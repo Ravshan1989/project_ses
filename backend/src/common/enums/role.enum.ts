@@ -8,8 +8,6 @@ export enum UserRole {
 
   // Tuman Darajasi Rollari (Forma 1 uchun)
   DEPARTMENT_HEAD = "DEPARTMENT_HEAD", // Bo'lim boshlig'i / mudiri
-  EPIDEMIOLOGIST = "EPIDEMIOLOGIST", // Epidemiolog vrach
-  EPIDEMIOLOGIST_ASSISTANT = "EPIDEMIOLOGIST_ASSISTANT", // Epidemiolog vrach yordamchisi
-  SANITARY_DOCTOR = "SANITARY_DOCTOR", // Sanitar vrach
-  SANITARY_ASSISTANT = "SANITARY_ASSISTANT", // Sanitar vrach yordamchisi
+  DISTRICT_SPECIALIST = "DISTRICT_SPECIALIST", // Tuman Mutaxassisi (Epi va Sanitar vrachlar o'rniga)
+  DISTRICT_OPERATOR = "DISTRICT_OPERATOR", // Tuman Operatori (Epi va Sanitar yordamchilari o'rniga)
 }

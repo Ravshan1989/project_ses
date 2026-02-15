@@ -5,6 +5,8 @@ import { LayoutDashboard, FileText, User } from 'lucide-react-native';
 import DashboardScreen from '../screens/DashboardScreen';
 import ReportListScreen from '../screens/ReportListScreen';
 import ReportEntryScreen from '../screens/ReportEntryScreen';
+import ReportsHistoryScreen from '../screens/ReportsHistoryScreen';
+import ReportDetailScreen from '../screens/ReportDetailScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -15,6 +17,8 @@ const ReportsStack = () => (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="ReportList" component={ReportListScreen} />
         <Stack.Screen name="ReportEntry" component={ReportEntryScreen} />
+        <Stack.Screen name="ReportsHistory" component={ReportsHistoryScreen} />
+        <Stack.Screen name="ReportDetail" component={ReportDetailScreen} />
     </Stack.Navigator>
 );
 

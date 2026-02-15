@@ -25,7 +25,13 @@ export class RolePermission {
   canView: boolean;
 
   @Column({ default: false })
+  canCreate: boolean; // UZ: Yaratish huquqi
+
+  @Column({ default: false })
   canEdit: boolean;
+
+  @Column({ default: false })
+  canApprove: boolean; // UZ: Tasdiqlash huquqi
 
   @Column({ default: false })
   canDownload: boolean; // UZ: Excelga yuklab olish huquqi

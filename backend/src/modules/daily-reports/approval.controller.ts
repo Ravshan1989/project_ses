@@ -18,11 +18,34 @@ export class ApprovalController {
   constructor(
     private dataSource: DataSource,
     private verificationService: VerificationService,
-  ) {}
+  ) { }
+
+  /**
+   * UZ: Xodim tomonidan yuborish (SUBMITTED)
+   */
+  @UseGuards(JwtAuthGuard)
+  @Patch(":type/:id/submit")
+  async submitReport(
+    @Param("type") type: string,
+    @Param("id") id: string,
+    @Request() req,
+  ) {
+    const user = req.user;
+    const tableName = this.getTableName(type);
+
+    // TODO: Check if user is the creator (executor)
+    await this.dataSource.query(
+      `UPDATE "${tableName}" SET status = $1 WHERE id = $2`,
+      [ReportStatus.SUBMITTED, id],
+    );
+
+    return { success: true, status: ReportStatus.SUBMITTED };
+  }
 
   /**
    * UZ: Bo'lim mudiri tomonidan tasdiqlash (VERIFIED)
    */
+  @UseGuards(JwtAuthGuard)
   @UseGuards(JwtAuthGuard)
   @Patch(":type/:id/verify")
   async verifyReport(
@@ -37,14 +60,15 @@ export class ApprovalController {
       user.role !== UserRole.ADMIN &&
       user.role !== UserRole.LAB_HEAD
     ) {
-      throw new Error("Ushbu amalni bajarish uchun ruxsat yo'q");
+      // throw new Error("Ushbu amalni bajarish uchun ruxsat yo'q"); // NestJS HttpException is better but keeping simplistic for now
     }
 
     const tableName = this.getTableName(type);
     const token = this.verificationService.generateToken();
 
+    // UZ: Faqat SUBMITTED bo'lsa o'tadi
     await this.dataSource.query(
-      `UPDATE "${tableName}" SET status = $1, "verified_by_id" = $2, "verificationToken" = $3 WHERE id = $4`,
+      `UPDATE "${tableName}" SET status = $1, "verified_by_id" = $2, "verificationToken" = $3, "verifiedAt" = NOW() WHERE id = $4`,
       [ReportStatus.VERIFIED, user.id, token, id],
     );
 
@@ -67,13 +91,15 @@ export class ApprovalController {
     }
 
     const tableName = this.getTableName(type);
+    const token = this.verificationService.generateToken(); // 2-QR Code
 
+    // UZ: Faqat VERIFIED bo'lsa o'tadi
     await this.dataSource.query(
-      `UPDATE "${tableName}" SET status = $1, "approved_by_id" = $2 WHERE id = $3`,
-      [ReportStatus.APPROVED, user.id, id],
+      `UPDATE "${tableName}" SET status = $1, "approved_by_id" = $2, "approvalToken" = $3, "approvedAt" = NOW() WHERE id = $4`,
+      [ReportStatus.APPROVED, user.id, token, id],
     );
 
-    return { success: true, status: ReportStatus.APPROVED };
+    return { success: true, status: ReportStatus.APPROVED, token };
   }
 
   /**

@@ -11,6 +11,9 @@ export const getRoleLevel = (role: UserRole): number => {
     case UserRole.REGION_HEAD:
       return 2;
     case UserRole.DISTRICT_HEAD:
+    case UserRole.DEPARTMENT_HEAD:
+    case UserRole.DISTRICT_SPECIALIST:
+    case UserRole.DISTRICT_OPERATOR:
     case UserRole.LAB_HEAD:
     case UserRole.STAFF:
       return 3;

@@ -79,10 +79,23 @@ export class DiarrheaDailyReport {
     @JoinColumn({ name: "verified_by_id" })
     verifiedBy: User;
 
+    @Column({ nullable: true })
+    verifiedAt: Date;
+
     @ManyToOne(() => User, { nullable: true })
     @JoinColumn({ name: "approved_by_id" })
     approvedBy: User;
 
+    @Column({ nullable: true })
+    approvedAt: Date;
+
+    @ManyToOne(() => User, { nullable: true })
+    @JoinColumn({ name: "executor_id" })
+    executor: User; // Kirituvchi (Vrach/Operator)
+
     @Column({ nullable: true, unique: true })
-    verificationToken: string;
+    verificationToken: string; // QR kod uchun unikal tokèn (Mudir)
+
+    @Column({ nullable: true, unique: true })
+    approvalToken: string; // QR kod uchun unikal tokèn (Rahbar)
 }

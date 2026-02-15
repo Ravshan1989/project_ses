@@ -27,6 +27,11 @@ export const authApi = {
 // UZ: Kunlik hisobotlar API
 export const dailyReportsApi = {
     getByDate: (date: string, isTest = false) => api.get(`/daily-reports?date=${date}&isTest=${isTest}`),
+    getFluByDate: (date: string, isTest = false) => api.get(`/daily-reports/flu?date=${date}&isTest=${isTest}`),
+    getAriByDate: (date: string, isTest = false) => api.get(`/daily-reports/ari?date=${date}&isTest=${isTest}`),
+    getCovidByDate: (date: string, isTest = false) => api.get(`/daily-reports/covid?date=${date}&isTest=${isTest}`),
+    getEpidemiologyByDate: (date: string, isTest = false) => api.get(`/daily-reports/epidemiology?date=${date}&isTest=${isTest}`),
+    getDiarrheaByDate: (date: string, isTest = false) => api.get(`/daily-reports/diarrhea?date=${date}&isTest=${isTest}`),
     upsert: (data: any) => api.post('/daily-reports', data),
     upsertFlu: (data: any) => api.post('/daily-reports/flu', data),
     upsertAri: (data: any) => api.post('/daily-reports/ari', data),
@@ -52,4 +57,10 @@ export const sosApi = {
 
 export const versionApi = {
     getLatest: () => api.get('/version/latest'),
+};
+
+export const approvalApi = {
+    submit: (type: string, id: string) => api.patch(`/daily-reports/${type}/${id}/submit`),
+    verify: (type: string, id: string) => api.patch(`/daily-reports/${type}/${id}/verify`),
+    approve: (type: string, id: string) => api.patch(`/daily-reports/${type}/${id}/approve`),
 };

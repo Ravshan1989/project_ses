@@ -2,13 +2,15 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Organization } from "./entities/organization.entity";
+import { User } from "../users/entities/user.entity";
+import { getRoleLevel } from "../../common/utils/role.util";
 
 @Injectable()
 export class OrganizationsService {
   constructor(
     @InjectRepository(Organization)
     private orgRepo: Repository<Organization>,
-  ) {}
+  ) { }
 
   /* 
     ESKI KOD (Barcha tashkilotlarni, jumladan viloyat darajasini ham qaytaradi):
@@ -18,14 +20,20 @@ export class OrganizationsService {
     */
 
   // YANGI YECHIM (Faqat tuman va shaharlarni qaytaradi, ya'ni 'parent'i borlarni):
-  async findAll(): Promise<Organization[]> {
+  async findAll(user?: User): Promise<Organization[]> {
     const allOrgs = await this.orgRepo.find({ relations: ["parent"] });
-    // Faqat ota-onasi bor tashkilotlarni (tumanlarni) qaytaramiz
-    // UZ: User talabiga ko'ra avvalgi holatga qaytarildi (revert)
-    // return allOrgs;
-    // UZ: Qayta urinish: barcha tumanlar ko'rinishi uchun filterni olib tashlaymiz
+
+    if (user) {
+      const level = getRoleLevel(user.role);
+      if (level === 3 && user.organization) {
+        return allOrgs.filter(o => o.id === user.organization.id);
+      }
+      if (level === 2 && user.organization) {
+        return allOrgs.filter(o => o.parent?.id === user.organization.id);
+      }
+    }
+
     return allOrgs;
-    // return allOrgs.filter((org) => !!org.parent);
   }
 
   async findByName(name: string): Promise<Organization | null> {

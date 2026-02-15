@@ -101,10 +101,23 @@ export class HepatitisDailyReport {
   @JoinColumn({ name: "verified_by_id" })
   verifiedBy: User; // Bo'lim mudiri
 
+  @Column({ nullable: true })
+  verifiedAt: Date;
+
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: "approved_by_id" })
   approvedBy: User; // Bo'lim boshlig'i (Rahbar)
 
+  @Column({ nullable: true })
+  approvedAt: Date;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: "executor_id" })
+  executor: User; // Kirituvchi (Vrach/Operator)
+
   @Column({ nullable: true, unique: true })
-  verificationToken: string; // QR kod uchun unikal tokèn
+  verificationToken: string; // QR kod uchun unikal tokèn (Mudir)
+
+  @Column({ nullable: true, unique: true })
+  approvalToken: string; // QR kod uchun unikal tokèn (Rahbar)
 }
