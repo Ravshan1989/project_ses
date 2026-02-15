@@ -5,6 +5,8 @@ import TabNavigator from './src/navigation/TabNavigator';
 import { NavigationContainer } from '@react-navigation/native';
 import { getToken } from './src/services/auth';
 
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
@@ -25,9 +27,11 @@ export default function App() {
 
   if (isAuthenticated === null) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#1677ff" />
-      </View>
+      <SafeAreaProvider>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#1677ff" />
+        </View>
+      </SafeAreaProvider>
     );
   }
 
@@ -35,19 +39,25 @@ export default function App() {
 
   if (isAuthenticated) {
     return (
-      <NavigationContainer>
-        <TabNavigator onLogout={() => {
-          console.log('[DEBUG] App: Logging out');
-          setIsAuthenticated(false);
-        }} />
-      </NavigationContainer>
+      <SafeAreaProvider>
+        <NavigationContainer>
+          <TabNavigator onLogout={() => {
+            console.log('[DEBUG] App: Logging out');
+            setIsAuthenticated(false);
+          }} />
+        </NavigationContainer>
+      </SafeAreaProvider>
     );
   }
 
-  return <LoginScreen onLoginSuccess={() => {
-    console.log('[DEBUG] App: Login success triggered');
-    setIsAuthenticated(true);
-  }} />;
+  return (
+    <SafeAreaProvider>
+      <LoginScreen onLoginSuccess={() => {
+        console.log('[DEBUG] App: Login success triggered');
+        setIsAuthenticated(true);
+      }} />
+    </SafeAreaProvider>
+  );
 }
 
 const styles = StyleSheet.create({
