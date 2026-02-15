@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { dailyReportsApi, authApi } from '../services/api';
+import { offlineStorage } from '../services/offlineStorage';
 import { Save, ArrowLeft, Calendar } from 'lucide-react-native';
 
 const ReportEntryScreen = () => {
@@ -76,8 +77,29 @@ const ReportEntryScreen = () => {
                 { text: 'OK', onPress: () => navigation.goBack() }
             ]);
         } catch (error: any) {
-            const msg = error.response?.data?.message || 'Saqlashda xatolik yuz berdi';
-            Alert.alert('Xatolik', msg);
+            console.error('Report submission error:', error);
+            const msg = error.response?.data?.message || 'Serverga ulanib bo\'lmadi';
+
+            Alert.alert(
+                'Xatolik',
+                `${msg}. Hisobotni telefon xotirasida saqlab turaymi? Keyinroq yuborishingiz mumkin.`,
+                [
+                    { text: 'Yo\'q', style: 'cancel' },
+                    {
+                        text: 'Saqlash',
+                        onPress: async () => {
+                            const dataToSave = {
+                                reportDate: form.reportDate,
+                                organizationId: profile.organization.id,
+                                ...form
+                            };
+                            await offlineStorage.saveReport(type, dataToSave);
+                            Alert.alert('Saqlandi', 'Hisobot offline saqlandi. Internet paydo bo\'lganda Asosiy sahifadan yuborishingiz mumkin.');
+                            navigation.goBack();
+                        }
+                    }
+                ]
+            );
         } finally {
             setLoading(false);
         }

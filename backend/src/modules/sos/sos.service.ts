@@ -24,7 +24,7 @@ export class SosService {
     @InjectRepository(SosAlert)
     private alertRepo: Repository<SosAlert>,
     private telegramService: TelegramService,
-  ) {}
+  ) { }
 
   // ADMIN logic for predefined diseases
   async createPredefinedDisease(dto: CreateSosDiseaseDto, user: User) {
@@ -77,6 +77,8 @@ export class SosService {
           : "Gumon qilinmoqda",
       date: new Date(saved.createdAt).toLocaleString("uz-UZ"),
       comment: saved.comment,
+      latitude: saved.latitude,
+      longitude: saved.longitude,
     });
 
     this.logger.log(`SOS Alert created: ${saved.id} by ${user.username}`);

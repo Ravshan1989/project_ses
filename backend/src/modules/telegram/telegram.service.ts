@@ -229,6 +229,8 @@ ${escapedDetails}
     status: string;
     date: string;
     comment?: string;
+    latitude?: number;
+    longitude?: number;
   }) {
     if (!this.bot || !this.chatId) return;
 
@@ -245,6 +247,7 @@ ${escapedDetails}
 🆔 *SOS ID:* ${data.id}
 
 📝 *Izoh:* ${escapedComment}
+${data.latitude && data.longitude ? `📍 *Manzil:* [Google xaritada ko'rish](https://www.google.com/maps/search/?api=1&query=${data.latitude},${data.longitude})` : ""}
 
 ⚠️ *DIQQAT:* Ushbu xabar favqulodda epidemiologik vaziyat haqida ogohlantiradi.
     `;

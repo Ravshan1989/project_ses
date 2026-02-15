@@ -12,7 +12,7 @@
       "backgroundColor": "#ffffff"
     },
     "updates": {
-      "url": "https://u.expo.dev/anonymous-project-id",
+      "url": "https://projectses-production.up.railway.app/api/updates/manifest",
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0
     },

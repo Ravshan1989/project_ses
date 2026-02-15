@@ -31,6 +31,8 @@ export const dailyReportsApi = {
     upsertFlu: (data: any) => api.post('/daily-reports/flu', data),
     upsertAri: (data: any) => api.post('/daily-reports/ari', data),
     upsertCovid: (data: any) => api.post('/daily-reports/covid', data),
+    getWeeklySummary: (startDate: string, endDate: string) =>
+        api.get(`/daily-reports/weekly-summary?startDate=${startDate}&endDate=${endDate}`),
 };
 
 export const organizationsApi = {
@@ -39,4 +41,15 @@ export const organizationsApi = {
 
 export const diseasesApi = {
     getAll: () => api.get('/diseases'),
+};
+
+// UZ: SOS (Favqulodda xabar) API
+export const sosApi = {
+    getDiseases: () => api.get('/sos/diseases'),
+    createAlert: (data: { diseaseName: string; status: string; comment?: string; latitude?: number; longitude?: number }) =>
+        api.post('/sos/alerts', data),
+};
+
+export const versionApi = {
+    getLatest: () => api.get('/version/latest'),
 };

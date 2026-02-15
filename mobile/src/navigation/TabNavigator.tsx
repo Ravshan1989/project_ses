@@ -18,7 +18,11 @@ const ReportsStack = () => (
     </Stack.Navigator>
 );
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 const TabNavigator = ({ onLogout }: { onLogout: () => void }) => {
+    const insets = useSafeAreaInsets();
+
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -35,8 +39,8 @@ const TabNavigator = ({ onLogout }: { onLogout: () => void }) => {
                 tabBarActiveTintColor: '#1677ff',
                 tabBarInactiveTintColor: '#94a3b8',
                 tabBarStyle: {
-                    height: 60,
-                    paddingBottom: 8,
+                    height: 60 + (insets.bottom > 0 ? insets.bottom : 10),
+                    paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
                     paddingTop: 8,
                     borderTopWidth: 1,
                     borderTopColor: '#f1f5f9',

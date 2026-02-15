@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsOptional } from "class-validator";
+import { IsString, IsEnum, IsOptional, IsNumber } from "class-validator";
 import { SosStatus } from "../entities/sos-alert.entity";
 
 export class CreateSosAlertDto {
@@ -11,4 +11,13 @@ export class CreateSosAlertDto {
   @IsOptional()
   @IsString()
   comment?: string;
+
+  // UZ: GPS koordinatalari
+  @IsOptional()
+  @IsNumber()
+  latitude?: number;
+
+  @IsOptional()
+  @IsNumber()
+  longitude?: number;
 }
