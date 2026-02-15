@@ -16,7 +16,9 @@ async function bootstrap() {
     // 1. Ensure Roles Exist
     const rolesToSeed = [
         { name: UserRole.DISTRICT_SPECIALIST, level: 3, description: "Tuman Mutaxassisi (Vrach)" },
-        { name: UserRole.DISTRICT_OPERATOR, level: 3, description: "Tuman Operatori (Yordamchi)" }
+        { name: UserRole.DISTRICT_OPERATOR, level: 3, description: "Tuman Operatori (Yordamchi)" },
+        { name: UserRole.DEPARTMENT_HEAD, level: 3, description: "Bo'lim Mudiri" },
+        { name: UserRole.DISTRICT_HEAD, level: 3, description: "Tuman Rahbari" }
     ];
 
     for (const r of rolesToSeed) {
@@ -36,7 +38,7 @@ async function bootstrap() {
     const assignments = [
         {
             role: UserRole.DISTRICT_OPERATOR,
-            perms: commonPerms,
+            perms: ["VIEW_EPIDEMIOLOGY", "VIEW_HEPATITIS", "VIEW_FLU", "VIEW_ARI", "VIEW_COVID", "VIEW_DIARRHEA"],
             canCreate: true,
             canEdit: false,
             canApprove: false,
@@ -44,9 +46,25 @@ async function bootstrap() {
         },
         {
             role: UserRole.DISTRICT_SPECIALIST,
-            perms: commonPerms,
+            perms: ["VIEW_EPIDEMIOLOGY", "VIEW_HEPATITIS", "VIEW_FLU", "VIEW_ARI", "VIEW_COVID", "VIEW_DIARRHEA"],
             canCreate: true,
             canEdit: true,
+            canApprove: false,
+            canDownload: true
+        },
+        {
+            role: UserRole.DEPARTMENT_HEAD,
+            perms: ["VIEW_EPIDEMIOLOGY", "VIEW_HEPATITIS", "VIEW_FLU", "VIEW_ARI", "VIEW_COVID", "VIEW_DIARRHEA", "VERIFY_REPORT"],
+            canCreate: false,
+            canEdit: false,
+            canApprove: true,
+            canDownload: true
+        },
+        {
+            role: UserRole.DISTRICT_HEAD,
+            perms: ["VIEW_EPIDEMIOLOGY", "VIEW_HEPATITIS", "VIEW_FLU", "VIEW_ARI", "VIEW_COVID", "VIEW_DIARRHEA", "APPROVE_REPORT"],
+            canCreate: false,
+            canEdit: false,
             canApprove: true,
             canDownload: true
         }
