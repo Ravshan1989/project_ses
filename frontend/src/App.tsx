@@ -90,7 +90,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             label: t('common.vaccination_entry'),
             onClick: () => navigate('/disease-entry')
         }] : []),
-        ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD', 'DISTRICT_HEAD', 'LAB_HEAD', 'EPIDEMIOLOGIST', 'EPIDEMIOLOGIST_ASSISTANT', 'STAFF']) ? [{
+        ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD', 'DISTRICT_HEAD', 'DEPARTMENT_HEAD', 'LAB_HEAD', 'EPIDEMIOLOGIST', 'EPIDEMIOLOGIST_ASSISTANT', 'STAFF']) ? [{
             key: 'grp_reports',
             icon: <FileTextOutlined />,
             label: t('common.reports'),
