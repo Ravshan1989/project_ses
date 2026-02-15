@@ -155,6 +155,17 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     { key: '/users', icon: <UserOutlined />, label: t('common.users_menu'), onClick: () => navigate('/users') }
                 ] : [])
             ]
+        },
+        {
+            key: 'mobile_app',
+            icon: <DownloadOutlined />,
+            label: 'Mobil Ilova',
+            onClick: () => {
+                const link = document.createElement('a');
+                link.href = '/regionstat.apk';
+                link.download = 'regionstat.apk';
+                link.click();
+            }
         }
     ];
 
