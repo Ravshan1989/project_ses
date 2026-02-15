@@ -6,6 +6,7 @@ import {
   Query,
   UseGuards,
   Request,
+  Patch,
 } from "@nestjs/common";
 import { DailyReportsService } from "./daily-reports.service";
 import { CreateHepatitisReportDto } from "./dto/create-report.dto";
@@ -153,5 +154,23 @@ export class DailyReportsController {
   @Post("bulk-batch")
   async bulkUpsertBatch(@Body() payload: any, @Request() req) {
     return this.reportsService.bulkUpsertBatch(payload, req.user);
+  }
+
+  @Patch(":type/:id/submit")
+  async submit(@Request() req, @Body() body) {
+    // Note: type and id are from params, but NestJS syntax needs @Param
+    return this.reportsService.submit(req.params.type, req.params.id, req.user);
+  }
+
+  @Patch(":type/:id/verify")
+  @RequirePermission("VERIFY_REPORT")
+  async verify(@Request() req) {
+    return this.reportsService.verify(req.params.type, req.params.id, req.user);
+  }
+
+  @Patch(":type/:id/approve")
+  @RequirePermission("APPROVE_REPORT")
+  async approve(@Request() req) {
+    return this.reportsService.approve(req.params.type, req.params.id, req.user);
   }
 }

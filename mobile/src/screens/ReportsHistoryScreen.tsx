@@ -25,43 +25,26 @@ const ReportsHistoryScreen = () => {
     const fetchReports = async () => {
         setLoading(true);
         try {
-            // Fetch all types in parallel
             const [ari, covid, flu, epi, diarrhea, hep] = await Promise.all([
-                dailyReportsApi.getAriByDate(date) || { data: [] }, // Create wrappers for these if not exist, or allow generic getByDate to return all?
-                dailyReportsApi.getCovidByDate(date) || { data: [] },
-                // Add others... using the generic getByDate for now to simplify if specific endpoints aren't ready
-            ].map(p => p.catch(() => ({ data: [] }))));
-
-            // IMPORTANT: The API `dailyReportsApi.getByDate` (generic) might return a mix if backend supports it, 
-            // but currently backend is split. 
-            // Let's assume we fetch generic "All Reports" if backend supported it, or fetch individually.
-            // For now, I will use `getByDate` generic if implemented, or just fetch what I can.
-
-            // Actually `dailyReportsApi.getByDate` fetches Hepatitis (based on service code I saw). 
-            // I need to implement `getAllTypesByDate` or similar in backend, OR call multiple endpoints here.
-
-            // Let's call the `weekly-summary` logic? No that's aggregate.
-            // I'll just fetch ARI and COVID for now as examples since I saw their endpoints.
-
-            // Re-checking api.ts... it has upsertAri, upsertCovid. 
-            // It has `getByDate` (which maps to /daily-reports?date=... -> Hepatitis repo in Service?).
-
-            // Backend `DailyReportsController.findAll` calls `service.getByDate`.
-            // `service.getByDate` queries `hepatitisRepository`.
-
-            // Wait, the backend controller `findAll` allows `type` param?
-            // Let's check `DailyReportsController`.
-
-            // If backend doesn't support generic fetch, I have to fetch individually.
-
-            const resAri = await dailyReportsApi.getAriByDate(date).catch(() => ({ data: [] }));
-            const resCovid = await dailyReportsApi.getCovidByDate(date).catch(() => ({ data: [] }));
-            // ... others
+                dailyReportsApi.getAriByDate(date).catch(() => ({ data: [] })),
+                dailyReportsApi.getCovidByDate(date).catch(() => ({ data: [] })),
+                dailyReportsApi.getFluByDate(date).catch(() => ({ data: [] })),
+                dailyReportsApi.getEpidemiologyByDate(date).catch(() => ({ data: [] })),
+                dailyReportsApi.getDiarrheaByDate(date).catch(() => ({ data: [] })),
+                dailyReportsApi.getByDate(date).catch(() => ({ data: [] })), // Hepatitis
+            ]);
 
             const combined = [
-                ...resAri.data.map((r: any) => ({ ...r, type: 'ari', title: "O'RVI" })),
-                ...resCovid.data.map((r: any) => ({ ...r, type: 'covid', title: "Covid-19" })),
+                ...ari.data.map((r: any) => ({ ...r, type: 'ari', title: "O'RVI" })),
+                ...covid.data.map((r: any) => ({ ...r, type: 'covid', title: "Covid-19" })),
+                ...flu.data.map((r: any) => ({ ...r, type: 'flu', title: "Gripp/Pnevmoniya" })),
+                ...epi.data.map((r: any) => ({ ...r, type: 'epidemiology', title: "Epidemiologiya" })),
+                ...diarrhea.data.map((r: any) => ({ ...r, type: 'diarrhea', title: "O'tkir Diareya" })),
+                ...hep.data.map((r: any) => ({ ...r, type: 'hepatitis', title: "Virusli Gepatit" })),
             ];
+
+            // Sort by creation time (newest first)
+            combined.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
             setReports(combined);
         } catch (error) {

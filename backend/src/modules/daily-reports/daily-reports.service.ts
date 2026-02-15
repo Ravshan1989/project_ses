@@ -13,6 +13,7 @@ import { CovidDailyReport } from "./entities/covid-daily-report.entity";
 import { CreateCovidReportDto } from "./dto/create-covid-report.dto";
 import { DiarrheaDailyReport } from "./entities/diarrhea-daily-report.entity";
 import { CreateDiarrheaReportDto } from "./dto/create-diarrhea-report.dto";
+import { ReportStatus } from "../../common/enums/report-status.enum";
 import { Organization } from "../organizations/entities/organization.entity";
 import { User } from "../users/entities/user.entity";
 import { getRoleLevel } from "../../common/utils/role.util";
@@ -476,9 +477,11 @@ export class DailyReportsService {
       isTest: includeTest,
     };
 
-    if (level === 2 && user.organization) {
+    if (level === 2) {
+      if (!user.organization) return [];
       where.organization = { parent: { id: user.organization.id } };
-    } else if (level === 3 && user.organization) {
+    } else if (level === 3) {
+      if (!user.organization) return [];
       where.organization = { id: user.organization.id };
     }
 
@@ -495,9 +498,11 @@ export class DailyReportsService {
       isTest: includeTest,
     };
 
-    if (level === 2 && user.organization) {
+    if (level === 2) {
+      if (!user.organization) return [];
       where.organization = { parent: { id: user.organization.id } };
-    } else if (level === 3 && user.organization) {
+    } else if (level === 3) {
+      if (!user.organization) return [];
       where.organization = { id: user.organization.id };
     }
 
@@ -729,5 +734,68 @@ export class DailyReportsService {
 
       return { success: true };
     });
+  }
+
+  private getRepoByType(type: string) {
+    switch (type) {
+      case "hepatitis":
+        return this.reportRepo;
+      case "flu":
+        return this.fluRepo;
+      case "ari":
+        return this.ariRepo;
+      case "epidemiology":
+        return this.epiRepo;
+      case "covid":
+        return this.covidRepo;
+      case "diarrhea":
+        return this.diarrheaRepo;
+      default:
+        throw new Error("Invalid report type");
+    }
+  }
+
+  async submit(type: string, id: string, user: User) {
+    const repo: Repository<any> = this.getRepoByType(type) as any;
+    const report = await repo.findOne({ where: { id } });
+    if (!report) throw new Error("Hisobot topilmadi");
+
+    if (report.status !== ReportStatus.DRAFT && report.status !== ReportStatus.REJECTED) {
+      throw new Error("Hisobot allaqachon yuborilgan");
+    }
+
+    report.status = ReportStatus.SUBMITTED;
+    report.executor = user;
+    return repo.save(report);
+  }
+
+  async verify(type: string, id: string, user: User) {
+    const repo: Repository<any> = this.getRepoByType(type) as any;
+    const report = await repo.findOne({ where: { id } });
+    if (!report) throw new Error("Hisobot topilmadi");
+
+    if (report.status !== ReportStatus.SUBMITTED) {
+      throw new Error("Hisobot tasdiqlash uchun yuborilmagan");
+    }
+
+    report.status = ReportStatus.VERIFIED;
+    report.verifiedBy = user;
+    report.verifiedAt = new Date();
+    return repo.save(report);
+  }
+
+  async approve(type: string, id: string, user: User) {
+    const repo: Repository<any> = this.getRepoByType(type) as any;
+    const report = await repo.findOne({ where: { id } });
+    if (!report) throw new Error("Hisobot topilmadi");
+
+    if (report.status !== ReportStatus.VERIFIED) {
+      throw new Error("Hisobot mudir tomonidan tasdiqlanmagan");
+    }
+
+    report.status = ReportStatus.APPROVED;
+    report.approvedBy = user;
+    report.approvedAt = new Date();
+    return repo.save(report);
   }
 }
