@@ -4,21 +4,18 @@ import { User } from "./modules/users/entities/user.entity";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
-async function bootstrap() {
+async function checkUsers() {
   const app = await NestFactory.createApplicationContext(AppModule);
   const userRepo: Repository<User> = app.get(getRepositoryToken(User));
 
-  const users = await userRepo.find({
-    relations: ["organization", "department"],
+  const all = await userRepo.find({ relations: ['organization', 'organization.parent'] });
+  console.log("--- USERS START ---");
+  all.forEach(u => {
+    console.log(`User: ${u.username}, Role: ${u.role}, OrgName: ${u.organization?.name}, OrgID: ${u.organization?.id}, ParentOrg: ${u.organization?.parent?.name}`);
   });
-  console.log("--- DB USERS ---");
-  users.forEach((u) => {
-    console.log(
-      `ID: ${u.id}, Username: ${u.username}, Role: ${u.role}, Dept: ${u.department?.name}`,
-    );
-  });
-  console.log("-----------------");
+  console.log("--- USERS END ---");
 
   await app.close();
 }
-bootstrap();
+
+checkUsers().catch(console.error);

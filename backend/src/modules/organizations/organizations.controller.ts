@@ -39,10 +39,19 @@ export class OrganizationsController {
       "Yangiyo'l t",
     ];
 
+    let region = await this.orgService.findByName("Toshkent viloyati");
+    if (!region) {
+      region = await this.orgService.create("Toshkent viloyati");
+    }
+
     for (const name of districts) {
       const existing = await this.orgService.findByName(name);
       if (!existing) {
-        await this.orgService.create(name);
+        await this.orgService.create(name, region.id);
+      } else if (!existing.parent) {
+        // Link existing if parent is missing
+        existing.parent = region;
+        await this.orgService.create(existing.name, region.id); // Re-use create/save logic
       }
     }
     return { message: "Seeded districts successfully" };

@@ -41,6 +41,13 @@ const LoginPage: React.FC = () => {
                 if (data.user.organization) {
                     localStorage.setItem('user_org_id', data.user.organization.id);
                     localStorage.setItem('user_org_name', data.user.organization.name);
+                    if (data.user.organization.parent) {
+                        localStorage.setItem('user_org_parent_id', data.user.organization.parent.id);
+                        localStorage.setItem('user_org_parent_name', data.user.organization.parent.name);
+                    } else {
+                        localStorage.removeItem('user_org_parent_id');
+                        localStorage.removeItem('user_org_parent_name');
+                    }
 
                     // UZ: Darajani aniqlash (Level 3 - Tuman, Level 2 - Viloyat)
                     // Agar parent bo'lsa - Tuman (3), bo'lmasa - Viloyat/Respublika (2/1)
