@@ -1,2 +1,2 @@
-// UZ: Mobil ilova uchun API server manzili (Local)
-export const API_BASE_URL = 'http://10.0.2.2:3000/api/v1';
+// UZ: Mobil ilova uchun API server manzili (Vercel Production)
+export const API_BASE_URL = 'https://projectses.vercel.app/api/v1';
