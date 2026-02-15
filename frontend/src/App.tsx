@@ -128,7 +128,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             { key: '/sos-monitoring', icon: <BellOutlined />, label: t('common.sos_monitoring'), onClick: () => navigate('/sos-monitoring') },
             { key: '/export', icon: <DownloadOutlined />, label: t('common.export'), onClick: () => navigate('/export') }
         ] : []),
-        ...(hasRole(['REGION_HEAD', 'DISTRICT_HEAD']) ? [{
+        ...(hasRole(['REGION_HEAD', 'DISTRICT_HEAD', 'DEPARTMENT_HEAD']) ? [{
             key: '/import',
             icon: <UploadOutlined />,
             label: t('common.import'),

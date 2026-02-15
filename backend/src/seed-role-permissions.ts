@@ -55,8 +55,8 @@ async function bootstrap() {
         {
             role: UserRole.DEPARTMENT_HEAD,
             perms: ["VIEW_EPIDEMIOLOGY", "VIEW_HEPATITIS", "VIEW_FLU", "VIEW_ARI", "VIEW_COVID", "VIEW_DIARRHEA", "VERIFY_REPORT"],
-            canCreate: false,
-            canEdit: false,
+            canCreate: true,
+            canEdit: true,
             canApprove: true,
             canDownload: true
         },
