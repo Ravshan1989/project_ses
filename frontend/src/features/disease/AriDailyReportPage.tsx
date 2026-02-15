@@ -65,7 +65,11 @@ const AriDailyReportPage: React.FC = () => {
                 };
             });
 
-            if (!isAdmin && connectedOrgId) {
+            const userOrgParentId = localStorage.getItem('user_org_parent_id');
+            const isMudir = userRole === 'DEPARTMENT_HEAD';
+            const isRegionalMudir = isMudir && (!userOrgParentId || userOrgParentId === 'null');
+
+            if (!(isAdmin || isRegionalMudir)) {
                 setData(tableData.filter(d => d.organizationId === connectedOrgId));
             } else {
                 setData(tableData);

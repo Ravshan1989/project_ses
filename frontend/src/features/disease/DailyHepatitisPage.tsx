@@ -105,7 +105,11 @@ const DailyHepatitisPage: React.FC = () => {
                 };
             });
 
-            if (!isAdmin) {
+            const userOrgParentId = localStorage.getItem('user_org_parent_id'); // We might need this, or check if connectedOrgId exists and role is Mudir
+            const isMudir = userRole === 'DEPARTMENT_HEAD';
+            const isRegionalMudir = isMudir && (!userOrgParentId || userOrgParentId === 'null');
+
+            if (!(isAdmin || isRegionalMudir)) {
                 if (connectedOrgId) {
                     tableData = tableData.filter(d => d.organizationId === connectedOrgId);
                 } else {

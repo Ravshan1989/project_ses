@@ -51,6 +51,9 @@ export class ExportsService {
     districtId?: string,
   ) {
     const level = getRoleLevel(user.role, user);
+    if ((level === 2 || level === 3) && !user.organization) {
+      return [];
+    }
     const where: any = {
       reportDate: Between(startDate, endDate),
       isTest: includeTest,
@@ -87,6 +90,9 @@ export class ExportsService {
     districtId?: string,
   ) {
     const level = getRoleLevel(user.role, user);
+    if ((level === 2 || level === 3) && !user.organization) {
+      return [];
+    }
     const where: any = {
       reportDate: Between(startDate, endDate),
       isTest: includeTest,
@@ -123,6 +129,9 @@ export class ExportsService {
     districtId?: string,
   ) {
     const level = getRoleLevel(user.role, user);
+    if ((level === 2 || level === 3) && !user.organization) {
+      return [];
+    }
     const where: any = {
       reportingPeriod: Between(startDate, endDate),
       isTest: includeTest,
@@ -159,6 +168,9 @@ export class ExportsService {
     districtId?: string,
   ) {
     const level = getRoleLevel(user.role, user);
+    if ((level === 2 || level === 3) && !user.organization) {
+      return [];
+    }
     const where: any = {
       reportDate: Between(startDate, endDate),
       isTest: includeTest,
@@ -195,6 +207,9 @@ export class ExportsService {
     districtId?: string,
   ) {
     const level = getRoleLevel(user.role, user);
+    if ((level === 2 || level === 3) && !user.organization) {
+      return [];
+    }
     const where: any = {
       reportDate: Between(startDate, endDate),
       isTest: includeTest,
@@ -231,6 +246,9 @@ export class ExportsService {
     districtId?: string,
   ) {
     const level = getRoleLevel(user.role, user);
+    if ((level === 2 || level === 3) && !user.organization) {
+      return [];
+    }
     const where: any = {
       reportDate: Between(startDate, endDate),
       isTest: includeTest,

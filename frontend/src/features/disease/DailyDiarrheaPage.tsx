@@ -72,8 +72,14 @@ const DailyDiarrheaPage: React.FC = () => {
                 };
             });
 
-            if (!isAdmin && userOrgId) {
-                tableData = tableData.filter(d => d.organizationId === userOrgId);
+            const userOrgParentId = localStorage.getItem('user_org_parent_id');
+            const isMudir = userRole === 'DEPARTMENT_HEAD';
+            const isRegionalMudir = isMudir && (!userOrgParentId || userOrgParentId === 'null');
+
+            if (!(isAdmin || isRegionalMudir)) {
+                if (userOrgId) {
+                    tableData = tableData.filter(d => d.organizationId === userOrgId);
+                }
             }
 
             setData(tableData);
