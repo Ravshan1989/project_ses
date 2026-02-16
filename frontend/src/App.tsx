@@ -161,7 +161,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             icon: <DownloadOutlined />,
             label: 'Mobil Ilova',
             onClick: () => {
-                window.location.href = 'https://github.com/Ravshan1989/project_ses/releases/latest/download/app-debug.apk';
+                window.location.href = 'https://github.com/Ravshan1989/project_ses/releases/latest/download/app-release.apk';
             }
         }
     ];
