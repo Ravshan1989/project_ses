@@ -13,25 +13,23 @@ jobs:
       contents: write
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
           cache-dependency-path: mobile/package-lock.json
 
       - name: Setup Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-version: wrapper
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Install Dependencies
         working-directory: ./mobile
@@ -39,7 +37,7 @@ jobs:
 
       - name: Prebuild (Apply Branding)
         working-directory: ./mobile
-        run: npx expo prebuild --platform android
+        run: npx expo prebuild --platform android --no-interactive
 
       - name: Build APK (Release)
         working-directory: ./mobile/android
@@ -54,7 +52,7 @@ jobs:
           path: mobile/android/app/build/outputs/apk/release/app-release.apk
 
       - name: Publish Direct Download (Release)
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
           name: Latest Smart SES Build
@@ -62,5 +60,6 @@ jobs:
           files: mobile/android/app/build/outputs/apk/release/app-release.apk
           draft: false
           prerelease: false
+          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
