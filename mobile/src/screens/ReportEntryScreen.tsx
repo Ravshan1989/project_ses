@@ -129,15 +129,30 @@ const REPORT_CONFIG: Record<string, SectionDef[]> = {
 const ReportEntryScreen = () => {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
-    const { type, title } = route.params;
+    const { type, title, existingReport } = route.params;
 
     const [loading, setLoading] = useState(false);
     const [profile, setProfile] = useState<any>(null);
     const [form, setForm] = useState<any>({
-        reportDate: new Date().toISOString().split('T')[0],
+        reportDate: existingReport?.reportDate || new Date().toISOString().split('T')[0],
+        ...existingReport
     });
     // Section collapse state (default: all open)
     const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+
+    const canEdit = () => {
+        if (!existingReport) return true;
+        const status = existingReport.status || 'DRAFT';
+        if (status === 'APPROVED' || status === 'VERIFIED') return false;
+
+        const role = profile?.role;
+        const isSpecialist = ['STAFF', 'DISTRICT_SPECIALIST', 'DISTRICT_OPERATOR'].includes(role);
+        const isMudir = ['DEPARTMENT_HEAD', 'LAB_HEAD', 'DISTRICT_HEAD'].includes(role);
+
+        if (isSpecialist) return status === 'DRAFT' || status === 'REJECTED';
+        if (isMudir) return status === 'SUBMITTED';
+        return true; // Admin/Heads can edit (or we can tighten this)
+    };
 
     useEffect(() => {
         fetchProfile();
@@ -222,19 +237,23 @@ const ReportEntryScreen = () => {
         }
     };
 
-    const renderInput = (def: FieldDef) => (
-        <View key={def.key} style={styles.inputGroup}>
-            <Text style={styles.label}>{def.label}</Text>
-            <TextInput
-                style={styles.input}
-                value={form[def.key]?.toString()}
-                onChangeText={(val) => setForm({ ...form, [def.key]: val })}
-                keyboardType="numeric"
-                placeholder={def.placeholder || '0'}
-                placeholderTextColor="#94a3b8"
-            />
-        </View>
-    );
+    const renderInput = (def: FieldDef) => {
+        const editable = canEdit();
+        return (
+            <View key={def.key} style={styles.inputGroup}>
+                <Text style={styles.label}>{def.label}</Text>
+                <TextInput
+                    style={[styles.input, !editable && { backgroundColor: '#f8fafc', color: '#64748b' }]}
+                    value={form[def.key]?.toString()}
+                    onChangeText={(val) => editable && setForm({ ...form, [def.key]: val })}
+                    keyboardType="numeric"
+                    placeholder={def.placeholder || '0'}
+                    placeholderTextColor="#94a3b8"
+                    editable={editable}
+                />
+            </View>
+        );
+    };
 
     const renderSection = (section: SectionDef, index: number) => {
         const isOpen = openSections[index];
@@ -302,20 +321,22 @@ const ReportEntryScreen = () => {
                         </View>
                     )}
 
-                    <TouchableOpacity
-                        style={[styles.saveBtn, loading && styles.disabledBtn]}
-                        onPress={handleSave}
-                        disabled={loading}
-                    >
-                        {loading ? (
-                            <ActivityIndicator color="#fff" />
-                        ) : (
-                            <>
-                                <Save color="#fff" size={20} style={{ marginRight: 8 }} />
-                                <Text style={styles.saveBtnText}>YUBORISH</Text>
-                            </>
-                        )}
-                    </TouchableOpacity>
+                    {canEdit() && (
+                        <TouchableOpacity
+                            style={[styles.saveBtn, loading && styles.disabledBtn]}
+                            onPress={handleSave}
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <ActivityIndicator color="#fff" />
+                            ) : (
+                                <>
+                                    <Save color="#fff" size={20} style={{ marginRight: 8 }} />
+                                    <Text style={styles.saveBtnText}>YUBORISH</Text>
+                                </>
+                            )}
+                        </TouchableOpacity>
+                    )}
                     <View style={{ height: 40 }} />
                 </ScrollView>
             </KeyboardAvoidingView>

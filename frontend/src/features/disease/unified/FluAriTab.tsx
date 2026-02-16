@@ -45,29 +45,46 @@ interface FluReportData {
 interface FluAriTabProps {
     data: FluReportData[];
     loading: boolean;
-    isAdmin: boolean;
+    userRole: string;
     onChange: (value: number | null, rowKey: string, field: keyof FluReportData) => void;
     onVerify: (id: string) => void;
     onApprove: (id: string) => void;
+    onReject: (id: string) => void;
+    onSubmit: (id: string) => void;
 }
 
-const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, isAdmin, onChange, onVerify, onApprove }) => {
+const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, userRole, onChange, onVerify, onApprove, onReject, onSubmit }) => {
     const { t } = useTranslation();
-    const isSubmitted = (row: FluReportData) => !!row.is_submitted || (row.ari_total + row.flu_total + row.pneu_total + row.sari_total + row.death_total) > 0;
 
-    const renderInput = (record: FluReportData, field: keyof FluReportData, readOnly = false) => (
-        <InputNumber
-            size="small"
-            min={0}
-            value={record[field] as number}
-            onChange={(val) => !readOnly && onChange(val || 0, record.key, field)}
-            variant="borderless"
-            readOnly={readOnly}
-            className="report-input"
-            style={{ width: '100%', textAlign: 'center', fontWeight: readOnly ? 'bold' : 'normal' }}
-            controls={false}
-        />
-    );
+    const isAdmin = ['ADMIN', 'REGION_HEAD', 'REPUBLIC_HEAD'].includes(userRole);
+    const isMudir = ['DEPARTMENT_HEAD', 'LAB_HEAD', 'DISTRICT_HEAD'].includes(userRole);
+    const isSpecialist = ['STAFF', 'DISTRICT_SPECIALIST', 'DISTRICT_OPERATOR'].includes(userRole);
+
+    const isSubmitted = (row: FluReportData) => !!row.is_submitted || row.status !== 'DRAFT';
+
+    const canEdit = (record: FluReportData) => {
+        if (record.status === 'APPROVED' || record.status === 'VERIFIED') return false;
+        if (isSpecialist) return record.status === 'DRAFT' || record.status === 'REJECTED' || !record.status;
+        if (isMudir) return record.status === 'SUBMITTED';
+        return isAdmin;
+    };
+
+    const renderInput = (record: FluReportData, field: keyof FluReportData, forceReadOnly = false) => {
+        const readOnly = forceReadOnly || !canEdit(record);
+        return (
+            <InputNumber
+                size="small"
+                min={0}
+                value={record[field] as number}
+                onChange={(val) => !readOnly && onChange(val || 0, record.key, field)}
+                variant="borderless"
+                readOnly={readOnly}
+                className="report-input"
+                style={{ width: '100%', textAlign: 'center', fontWeight: readOnly ? 'bold' : 'normal', color: readOnly ? '#595959' : 'inherit' }}
+                controls={false}
+            />
+        );
+    };
 
     const columns: any = [
         {
@@ -140,25 +157,40 @@ const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, isAdmin, onChange,
         {
             title: t('daily_reports.table.status') || 'Holat',
             key: 'status',
-            width: 120,
+            width: 140,
             fixed: 'right',
             render: (_: any, r: FluReportData) => (
-                <Space direction="vertical" size={2}>
+                <Space direction="vertical" size={2} style={{ width: '100%' }}>
                     <Badge
-                        status={r.status === 'APPROVED' ? 'success' : r.status === 'VERIFIED' ? 'processing' : 'default'}
+                        status={r.status === 'APPROVED' ? 'success' : r.status === 'VERIFIED' ? 'processing' : r.status === 'REJECTED' ? 'error' : r.status === 'SUBMITTED' ? 'warning' : 'default'}
                         text={r.status ? t(`dashboard_page.statuses.${r.status.toLowerCase()}`, { defaultValue: r.status }) : t('dashboard_page.statuses.draft', { defaultValue: 'DRAFT' })}
                     />
-                    {isAdmin && r.id && (
-                        <Space>
-                            {r.status === 'DRAFT' && (
-                                <Button size="small" type="link" onClick={() => onVerify(r.id!)} style={{ padding: 0, fontSize: '11px' }}>
-                                    {t('dashboard_page.table.approve_tooltip') || 'Tekshirish'}
+                    {r.id && (
+                        <Space wrap>
+                            {isSpecialist && (r.status === 'DRAFT' || r.status === 'REJECTED' || !r.status) && (
+                                <Button size="small" type="primary" onClick={() => onSubmit(r.id!)} style={{ fontSize: '10px', height: '22px' }}>
+                                    {t('common.submit') || 'Yuborish'}
                                 </Button>
                             )}
-                            {r.status === 'VERIFIED' && (
-                                <Button size="small" type="link" onClick={() => onApprove(r.id!)} style={{ padding: 0, fontSize: '11px', color: '#52c41a' }}>
-                                    {t('common.approved') || 'Tasdiqlash'}
-                                </Button>
+                            {isMudir && r.status === 'SUBMITTED' && (
+                                <>
+                                    <Button size="small" type="primary" onClick={() => onVerify(r.id!)} style={{ fontSize: '10px', height: '22px', background: '#52c41a' }}>
+                                        {t('common.verify') || 'Tekshirish'}
+                                    </Button>
+                                    <Button size="small" danger onClick={() => onReject(r.id!)} style={{ fontSize: '10px', height: '22px' }}>
+                                        {t('common.reject') || 'Rad etish'}
+                                    </Button>
+                                </>
+                            )}
+                            {isAdmin && r.status === 'VERIFIED' && (
+                                <>
+                                    <Button size="small" type="primary" onClick={() => onApprove(r.id!)} style={{ fontSize: '10px', height: '22px', background: '#722ed1' }}>
+                                        {t('common.approve') || 'Tasdiqlash'}
+                                    </Button>
+                                    <Button size="small" danger onClick={() => onReject(r.id!)} style={{ fontSize: '10px', height: '22px' }}>
+                                        {t('common.reject') || 'Rad etish'}
+                                    </Button>
+                                </>
                             )}
                         </Space>
                     )}

@@ -29,6 +29,8 @@ const DailyReportUnifiedPage: React.FC = () => {
 
     const userRole = localStorage.getItem('user_role') || 'STAFF';
     const isAdmin = ['ADMIN', 'REGION_HEAD', 'REPUBLIC_HEAD'].includes(userRole);
+    const isMudir = ['DEPARTMENT_HEAD', 'LAB_HEAD'].includes(userRole);
+    const isSpecialist = ['STAFF', 'DISTRICT_SPECIALIST', 'DISTRICT_OPERATOR'].includes(userRole);
     const userOrgId = localStorage.getItem('user_org_id');
 
     useEffect(() => {
@@ -118,11 +120,11 @@ const DailyReportUnifiedPage: React.FC = () => {
                 return tableData;
             };
 
-            setHepatitisData(mapper(hepRes.data || [], currentOrgs, { total_cases: 0, age_under_1: 0, age_1_3: 0, age_4_6: 0, age_7_14: 0, age_15_19: 0, age_20_plus: 0 }));
-            setFluAriData(mapper(fluRes.data || [], currentOrgs, { ari_total: 0, flu_total: 0, pneu_total: 0, sari_total: 0, death_total: 0 }));
-            setCovidData(mapper(covidRes.data || [], currentOrgs, { total_cases: 0, hospitalized_count: 0 }));
-            setEpiData(mapper(epiRes.data || [], currentOrgs, { objects_inspected: 0, violations_found: 0 }));
-            setDiarrheaData(mapper(diarrheaRes.data || [], currentOrgs, { total_2025: 0, total_2026: 0 }));
+            setHepatitisData(mapper(hepRes.data || [], currentOrgs, { total_cases: 0, age_under_1: 0, age_1_3: 0, age_4_6: 0, age_7_14: 0, age_15_19: 0, age_20_plus: 0, status: 'DRAFT' }));
+            setFluAriData(mapper(fluRes.data || [], currentOrgs, { ari_total: 0, flu_total: 0, pneu_total: 0, sari_total: 0, death_total: 0, status: 'DRAFT' }));
+            setCovidData(mapper(covidRes.data || [], currentOrgs, { total_cases: 0, hospitalized_count: 0, status: 'DRAFT' }));
+            setEpiData(mapper(epiRes.data || [], currentOrgs, { objects_inspected: 0, violations_found: 0, status: 'DRAFT' }));
+            setDiarrheaData(mapper(diarrheaRes.data || [], currentOrgs, { total_2025: 0, total_2026: 0, status: 'DRAFT' }));
 
         } catch (error) {
             notification.error({ message: 'Xatolik', description: 'Ma\'lumotlarni yuklashda xatolik' });
@@ -175,6 +177,26 @@ const DailyReportUnifiedPage: React.FC = () => {
             fetchAllData();
         } catch (error) {
             notification.error({ message: t('common.error_load_data'), description: t('daily_reports.actions.approve_error_unified') });
+        }
+    };
+
+    const handleReject = async (type: string, id: string, comment?: string) => {
+        try {
+            await dailyReportsApi.reject(type, id, comment);
+            notification.warning({ message: t('common.rejected') || 'Rad etildi', description: t('daily_reports.actions.rejected') || 'Hisobot qaytarildi' });
+            fetchAllData();
+        } catch (error) {
+            notification.error({ message: t('common.error_load_data'), description: 'Rad etishda xatolik' });
+        }
+    };
+
+    const handleSubmit = async (type: string, id: string) => {
+        try {
+            await dailyReportsApi.submit(type, id);
+            notification.success({ message: t('common.submitted') || 'Yuborildi', description: 'Hisobot mudirga yuborildi' });
+            fetchAllData();
+        } catch (error) {
+            notification.error({ message: t('common.error_load_data'), description: 'Yuborishda xatolik' });
         }
     };
 
@@ -284,9 +306,11 @@ const DailyReportUnifiedPage: React.FC = () => {
                 data={hepatitisData}
                 loading={loading}
                 onChange={(v, k, f) => handleCellChange(setHepatitisData, hepatitisData, v, k, f)}
-                isAdmin={isAdmin}
+                userRole={userRole}
                 onVerify={(id) => handleVerify('hepatitis', id)}
                 onApprove={(id) => handleApprove('hepatitis', id)}
+                onReject={(id) => handleReject('hepatitis', id)}
+                onSubmit={(id) => handleSubmit('hepatitis', id)}
             />,
         },
         {
@@ -296,9 +320,11 @@ const DailyReportUnifiedPage: React.FC = () => {
                 data={fluAriData}
                 loading={loading}
                 onChange={(v, k, f) => handleCellChange(setFluAriData, fluAriData, v, k, f)}
-                isAdmin={isAdmin}
+                userRole={userRole}
                 onVerify={(id) => handleVerify('flu', id)}
                 onApprove={(id) => handleApprove('flu', id)}
+                onReject={(id) => handleReject('flu', id)}
+                onSubmit={(id) => handleSubmit('flu', id)}
             />,
         },
         {
@@ -308,9 +334,11 @@ const DailyReportUnifiedPage: React.FC = () => {
                 data={covidData}
                 loading={loading}
                 onChange={(v, k, f) => handleCellChange(setCovidData, covidData, v, k, f)}
-                isAdmin={isAdmin}
+                userRole={userRole}
                 onVerify={(id) => handleVerify('covid', id)}
                 onApprove={(id) => handleApprove('covid', id)}
+                onReject={(id) => handleReject('covid', id)}
+                onSubmit={(id) => handleSubmit('covid', id)}
             />,
         },
         {
@@ -320,9 +348,11 @@ const DailyReportUnifiedPage: React.FC = () => {
                 data={epiData}
                 loading={loading}
                 onChange={(v, k, f) => handleCellChange(setEpiData, epiData, v, k, f)}
-                isAdmin={isAdmin}
+                userRole={userRole}
                 onVerify={(id) => handleVerify('epidemiology', id)}
                 onApprove={(id) => handleApprove('epidemiology', id)}
+                onReject={(id) => handleReject('epidemiology', id)}
+                onSubmit={(id) => handleSubmit('epidemiology', id)}
             />,
         },
         {
@@ -332,9 +362,11 @@ const DailyReportUnifiedPage: React.FC = () => {
                 data={diarrheaData}
                 loading={loading}
                 onChange={(v, k, f) => handleCellChange(setDiarrheaData, diarrheaData, v, k, f)}
-                isAdmin={isAdmin}
+                userRole={userRole}
                 onVerify={(id) => handleVerify('diarrhea', id)}
                 onApprove={(id) => handleApprove('diarrhea', id)}
+                onReject={(id) => handleReject('diarrhea', id)}
+                onSubmit={(id) => handleSubmit('diarrhea', id)}
             />,
         },
     ];

@@ -35,7 +35,37 @@ const ReportDetailScreen = () => {
         }
     };
 
-    const handleAction = async (action: 'submit' | 'verify' | 'approve') => {
+    const handleAction = async (action: 'submit' | 'verify' | 'approve' | 'reject') => {
+        if (action === 'reject') {
+            Alert.prompt(
+                'Rad etish',
+                'Rad etish sababini kiriting:',
+                [
+                    { text: 'Bekor qilish', style: 'cancel' },
+                    {
+                        text: 'Rad etish',
+                        onPress: async (comment?: string) => {
+                            setLoading(true);
+                            try {
+                                const res = await approvalApi.reject(type, report.id, comment);
+                                if (res?.data) {
+                                    setCurrentStatus('REJECTED');
+                                    Alert.alert('Muvaffaqiyat', 'Hisobot rad etildi');
+                                    navigation.goBack();
+                                }
+                            } catch (error: any) {
+                                Alert.alert('Xatolik', error.response?.data?.message || 'Amalni bajarib bo\'lmadi');
+                            } finally {
+                                setLoading(false);
+                            }
+                        }
+                    }
+                ],
+                'plain-text'
+            );
+            return;
+        }
+
         setLoading(true);
         try {
             let res;
@@ -43,9 +73,9 @@ const ReportDetailScreen = () => {
             if (action === 'verify') res = await approvalApi.verify(type, report.id);
             if (action === 'approve') res = await approvalApi.approve(type, report.id);
 
-            if (res?.data?.success) {
-                setCurrentStatus(res.data.status);
-                Alert.alert('Muvaffaqiyat', `Hisobot holati o'zgardi: ${res.data.status}`);
+            if (res?.data) {
+                setCurrentStatus(res.data.status || (action === 'submit' ? 'SUBMITTED' : action === 'verify' ? 'VERIFIED' : 'APPROVED'));
+                Alert.alert('Muvaffaqiyat', `Hisobot holati o'zgardi`);
                 navigation.goBack();
             }
         } catch (error: any) {
@@ -69,8 +99,8 @@ const ReportDetailScreen = () => {
         if (!user) return null;
         const role = user.role;
 
-        // 1. Submit (Owner) - If DRAFT
-        if (currentStatus === 'DRAFT') {
+        // 1. Submit (Owner) - If DRAFT or REJECTED
+        if (currentStatus === 'DRAFT' || currentStatus === 'REJECTED') {
             return (
                 <TouchableOpacity style={[styles.btn, { backgroundColor: '#f59e0b' }]} onPress={() => handleAction('submit')}>
                     <Text style={styles.btnText}>YUBORISH (Mudirga)</Text>
@@ -81,20 +111,30 @@ const ReportDetailScreen = () => {
         // 2. Verify (Dept Head) - If SUBMITTED
         if (role === 'DEPARTMENT_HEAD' && currentStatus === 'SUBMITTED') {
             return (
-                <TouchableOpacity style={[styles.btn, { backgroundColor: '#3b82f6' }]} onPress={() => handleAction('verify')}>
-                    <ShieldCheck color="#fff" size={20} style={{ marginRight: 8 }} />
-                    <Text style={styles.btnText}>TASDIQLASH (Mudir)</Text>
-                </TouchableOpacity>
+                <View style={styles.btnGroup}>
+                    <TouchableOpacity style={[styles.btn, { backgroundColor: '#3b82f6', flex: 1, marginRight: 8 }]} onPress={() => handleAction('verify')}>
+                        <ShieldCheck color="#fff" size={20} style={{ marginRight: 8 }} />
+                        <Text style={styles.btnText}>TEKSHIRISH</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[styles.btn, { backgroundColor: '#ef4444', width: 60 }]} onPress={() => handleAction('reject')}>
+                        <XCircle color="#fff" size={20} />
+                    </TouchableOpacity>
+                </View>
             );
         }
 
-        // 3. Approve (District Head) - If VERIFIED
-        if ((role === 'DISTRICT_HEAD' || role === 'ADMIN') && currentStatus === 'VERIFIED') {
+        // 3. Approve (District Head / Admin) - If VERIFIED
+        if ((role === 'DISTRICT_HEAD' || role === 'ADMIN' || role === 'REGION_HEAD' || role === 'REPUBLIC_HEAD') && currentStatus === 'VERIFIED') {
             return (
-                <TouchableOpacity style={[styles.btn, { backgroundColor: '#22c55e' }]} onPress={() => handleAction('approve')}>
-                    <CheckCircle color="#fff" size={20} style={{ marginRight: 8 }} />
-                    <Text style={styles.btnText}>TASDIQLASH (Rahbar)</Text>
-                </TouchableOpacity>
+                <View style={styles.btnGroup}>
+                    <TouchableOpacity style={[styles.btn, { backgroundColor: '#22c55e', flex: 1, marginRight: 8 }]} onPress={() => handleAction('approve')}>
+                        <CheckCircle color="#fff" size={20} style={{ marginRight: 8 }} />
+                        <Text style={styles.btnText}>TASDIQLASH</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[styles.btn, { backgroundColor: '#ef4444', width: 60 }]} onPress={() => handleAction('reject')}>
+                        <XCircle color="#fff" size={20} />
+                    </TouchableOpacity>
+                </View>
             );
         }
 
@@ -230,6 +270,7 @@ const styles = StyleSheet.create({
     },
     sigText: { marginLeft: 10, color: '#334155', fontSize: 14 },
     actionArea: { marginTop: 20 },
+    btnGroup: { flexDirection: 'row', alignItems: 'center' },
     btn: {
         flexDirection: 'row',
         height: 50,

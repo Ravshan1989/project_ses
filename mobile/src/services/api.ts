@@ -66,4 +66,5 @@ export const approvalApi = {
     submit: (type: string, id: string) => api.patch(`/daily-reports/${type}/${id}/submit`),
     verify: (type: string, id: string) => api.patch(`/daily-reports/${type}/${id}/verify`),
     approve: (type: string, id: string) => api.patch(`/daily-reports/${type}/${id}/approve`),
+    reject: (type: string, id: string, comment?: string) => api.patch(`/daily-reports/${type}/${id}/reject`, { comment }),
 };

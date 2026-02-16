@@ -57,6 +57,15 @@ export class DailyReportsService {
     }
   }
 
+  private validateStatus(report: any) {
+    if (!report) return;
+    if (report.status === ReportStatus.VERIFIED || report.status === ReportStatus.APPROVED) {
+      throw new Error(
+        "Tasdiqlangan hisobotni o'zgartirib bo'lmaydi. Faqat Mudir yoki Boshliq rad etganidan keyin tahrirlash mumkin.",
+      );
+    }
+  }
+
   async upsert(dto: CreateHepatitisReportDto, user: User) {
     this.validateIsolation(user, dto.organizationId);
     let report = await this.reportRepo.findOne({
@@ -68,6 +77,7 @@ export class DailyReportsService {
     });
 
     if (report) {
+      this.validateStatus(report);
       Object.assign(report, dto);
     } else {
       report = this.reportRepo.create({
@@ -133,6 +143,7 @@ export class DailyReportsService {
     });
 
     if (report) {
+      this.validateStatus(report);
       Object.assign(report, dto);
     } else {
       report = this.fluRepo.create({
@@ -195,6 +206,7 @@ export class DailyReportsService {
     });
 
     if (report) {
+      this.validateStatus(report);
       Object.assign(report, dto);
     } else {
       report = this.ariRepo.create({
@@ -257,6 +269,7 @@ export class DailyReportsService {
     });
 
     if (report) {
+      this.validateStatus(report);
       Object.assign(report, dto);
     } else {
       report = this.epiRepo.create({
@@ -796,6 +809,16 @@ export class DailyReportsService {
     report.status = ReportStatus.APPROVED;
     report.approvedBy = user;
     report.approvedAt = new Date();
+    return repo.save(report);
+  }
+
+  async reject(type: string, id: string, user: User, comment?: string) {
+    const repo: Repository<any> = this.getRepoByType(type) as any;
+    const report = await repo.findOne({ where: { id } });
+    if (!report) throw new Error("Hisobot topilmadi");
+
+    report.status = ReportStatus.REJECTED;
+    report.rejectionComment = comment;
     return repo.save(report);
   }
 }

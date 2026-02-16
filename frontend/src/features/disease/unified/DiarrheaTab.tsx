@@ -1,6 +1,4 @@
-import React from 'react';
-import { Table, InputNumber, Tag, Space, Button, Tooltip } from 'antd';
-import { CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { Table, InputNumber, Space, Button, Badge } from 'antd';
 import { useTranslation } from 'react-i18next';
 
 interface DiarrheaReportData {
@@ -38,26 +36,44 @@ interface DiarrheaReportData {
 interface DiarrheaTabProps {
     data: DiarrheaReportData[];
     loading: boolean;
+    userRole: string;
     onChange: (value: number, key: string, field: keyof DiarrheaReportData) => void;
-    isAdmin: boolean;
-    onVerify?: (id: string) => void;
-    onApprove?: (id: string) => void;
+    onVerify: (id: string) => void;
+    onApprove: (id: string) => void;
+    onReject: (id: string) => void;
+    onSubmit: (id: string) => void;
 }
 
-const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, onChange, isAdmin, onVerify, onApprove }) => {
+const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, userRole, onChange, onVerify, onApprove, onReject, onSubmit }) => {
     const { t } = useTranslation();
 
-    const renderInput = (record: DiarrheaReportData, field: keyof DiarrheaReportData, readOnly = false) => (
-        <InputNumber
-            value={record[field] as number}
-            onChange={(val) => !readOnly && onChange(val || 0, record.key, field)}
-            variant="borderless"
-            readOnly={readOnly}
-            className="report-input"
-            style={{ width: '100%', textAlign: 'center', fontWeight: readOnly ? 'bold' : 'normal' }}
-            controls={false}
-        />
-    );
+    const isAdmin = ['ADMIN', 'REGION_HEAD', 'REPUBLIC_HEAD'].includes(userRole);
+    const isMudir = ['DEPARTMENT_HEAD', 'LAB_HEAD', 'DISTRICT_HEAD'].includes(userRole);
+    const isSpecialist = ['STAFF', 'DISTRICT_SPECIALIST', 'DISTRICT_OPERATOR'].includes(userRole);
+
+    const isSubmitted = (row: DiarrheaReportData) => !!row.is_submitted || row.status !== 'DRAFT';
+
+    const canEdit = (record: DiarrheaReportData) => {
+        if (record.status === 'APPROVED' || record.status === 'VERIFIED') return false;
+        if (isSpecialist) return record.status === 'DRAFT' || record.status === 'REJECTED' || !record.status;
+        if (isMudir) return record.status === 'SUBMITTED';
+        return isAdmin;
+    };
+
+    const renderInput = (record: DiarrheaReportData, field: keyof DiarrheaReportData, forceReadOnly = false) => {
+        const readOnly = forceReadOnly || !canEdit(record);
+        return (
+            <InputNumber
+                value={record[field] as number}
+                onChange={(val) => !readOnly && onChange(val || 0, record.key, field)}
+                variant="borderless"
+                readOnly={readOnly}
+                className="report-input"
+                style={{ width: '100%', textAlign: 'center', fontWeight: readOnly ? 'bold' : 'normal', color: readOnly ? '#595959' : 'inherit' }}
+                controls={false}
+            />
+        );
+    };
 
     const columns: any = [
         {
@@ -66,7 +82,7 @@ const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, onChange, isAd
             width: 50,
             fixed: 'left',
             render: (_: any, r: DiarrheaReportData, index: number) => (
-                <div style={{ backgroundColor: r.is_submitted ? '#f6ffed' : '#fff1f0', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff1f0', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {index + 1}
                 </div>
             ),
@@ -77,7 +93,7 @@ const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, onChange, isAd
             width: 150,
             fixed: 'left',
             render: (text: string, r: DiarrheaReportData) => (
-                <span style={{ color: r.is_submitted ? '#52c41a' : '#ff4d4f', fontWeight: 'bold' }}>
+                <span style={{ color: isSubmitted(r) ? '#52c41a' : '#ff4d4f', fontWeight: 'bold' }}>
                     {t(`orgs.${text.toLowerCase()}`, { defaultValue: text })}
                 </span>
             ),
@@ -137,40 +153,45 @@ const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, onChange, isAd
         {
             title: t('daily_reports.table.status') || 'Holat',
             key: 'status',
-            width: 120,
+            width: 140,
             fixed: 'right',
-            render: (_: any, record: DiarrheaReportData) => {
-                const status = record.status || 'DRAFT';
-                let color = 'gold';
-                let icon = <ClockCircleOutlined />;
-                let label = t('dashboard_page.statuses.draft', { defaultValue: 'Qoralama' });
-
-                if (status === 'VERIFIED') {
-                    color = 'blue';
-                    icon = <CheckCircleOutlined />;
-                    label = t('dashboard_page.statuses.verified', { defaultValue: 'Tekshirildi' });
-                } else if (status === 'APPROVED') {
-                    color = 'green';
-                    icon = <CheckCircleOutlined />;
-                    label = t('dashboard_page.statuses.approved', { defaultValue: 'Tasdiqlandi' });
-                }
-
-                return (
-                    <Space>
-                        <Tag icon={icon} color={color}>{label}</Tag>
-                        {isAdmin && status === 'DRAFT' && onVerify && (
-                            <Tooltip title={t('daily_reports.actions.verify') || "Tekshirish"}>
-                                <Button size="small" type="primary" ghost icon={<CheckCircleOutlined />} onClick={() => onVerify(record.id!)} />
-                            </Tooltip>
-                        )}
-                        {isAdmin && status === 'VERIFIED' && onApprove && (
-                            <Tooltip title={t('daily_reports.actions.approve') || "Tasdiqlash"}>
-                                <Button size="small" type="primary" icon={<CheckCircleOutlined />} onClick={() => onApprove(record.id!)} />
-                            </Tooltip>
-                        )}
-                    </Space>
-                );
-            }
+            render: (_: any, record: DiarrheaReportData) => (
+                <Space direction="vertical" size={2} style={{ width: '100%' }}>
+                    <Badge
+                        status={record.status === 'APPROVED' ? 'success' : record.status === 'VERIFIED' ? 'processing' : record.status === 'REJECTED' ? 'error' : record.status === 'SUBMITTED' ? 'warning' : 'default'}
+                        text={record.status ? t(`dashboard_page.statuses.${record.status.toLowerCase()}`, { defaultValue: record.status }) : t('dashboard_page.statuses.draft', { defaultValue: 'DRAFT' })}
+                    />
+                    {record.id && (
+                        <Space wrap>
+                            {isSpecialist && (record.status === 'DRAFT' || record.status === 'REJECTED' || !record.status) && (
+                                <Button size="small" type="primary" onClick={() => onSubmit(record.id!)} style={{ fontSize: '10px', height: '22px' }}>
+                                    {t('common.submit') || 'Yuborish'}
+                                </Button>
+                            )}
+                            {isMudir && record.status === 'SUBMITTED' && (
+                                <>
+                                    <Button size="small" type="primary" onClick={() => onVerify(record.id!)} style={{ fontSize: '10px', height: '22px', background: '#52c41a' }}>
+                                        {t('common.verify') || 'Tekshirish'}
+                                    </Button>
+                                    <Button size="small" danger onClick={() => onReject(record.id!)} style={{ fontSize: '10px', height: '22px' }}>
+                                        {t('common.reject') || 'Rad etish'}
+                                    </Button>
+                                </>
+                            )}
+                            {isAdmin && record.status === 'VERIFIED' && (
+                                <>
+                                    <Button size="small" type="primary" onClick={() => onApprove(record.id!)} style={{ fontSize: '10px', height: '22px', background: '#722ed1' }}>
+                                        {t('common.approve') || 'Tasdiqlash'}
+                                    </Button>
+                                    <Button size="small" danger onClick={() => onReject(record.id!)} style={{ fontSize: '10px', height: '22px' }}>
+                                        {t('common.reject') || 'Rad etish'}
+                                    </Button>
+                                </>
+                            )}
+                        </Space>
+                    )}
+                </Space>
+            )
         }
     ];
 

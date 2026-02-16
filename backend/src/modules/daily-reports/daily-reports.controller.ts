@@ -173,4 +173,10 @@ export class DailyReportsController {
   async approve(@Request() req) {
     return this.reportsService.approve(req.params.type, req.params.id, req.user);
   }
+
+  @Patch(":type/:id/reject")
+  @RequirePermission("VERIFY_REPORT")
+  async reject(@Request() req, @Body() body: { comment?: string }) {
+    return this.reportsService.reject(req.params.type, req.params.id, req.user, body.comment);
+  }
 }
