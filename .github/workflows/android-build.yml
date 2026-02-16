@@ -39,7 +39,7 @@ jobs:
 
       - name: Prebuild (Apply Branding)
         working-directory: ./mobile
-        run: npx expo prebuild --platform android --clean
+        run: npx expo prebuild --platform android
 
       - name: Build APK (Release)
         working-directory: ./mobile/android
