@@ -38,7 +38,7 @@ jobs:
       - name: Prebuild (Apply Branding)
         working-directory: ./mobile
         run: |
-          npx expo prebuild --platform android --no-interactive
+          npx expo prebuild --platform android
           echo "Listing mobile/android directory:"
           ls -R ./android || echo "android directory not found"
 
