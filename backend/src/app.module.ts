@@ -2,6 +2,8 @@ import { Module } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { ConfigModule } from "@nestjs/config";
 import { DatabaseModule } from "./database/database.module";
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 import { SubmissionsModule } from "./modules/submissions/submissions.module";
 import { UsersModule } from "./modules/users/users.module";
 import { OrganizationsModule } from "./modules/organizations/organizations.module";
@@ -58,6 +60,10 @@ import { ScheduleModule } from "@nestjs/schedule";
     EventEmitterModule.forRoot(), // UZ: Eventlar tizimini yoqish
     UpdatesModule, // UZ: Yangilanishlar moduli
     SeedingModule, // UZ: Avtomatik ma'lumotlarni to'ldirish (Auto-fix)
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+      serveRoot: '/public',
+    }),
   ],
   controllers: [AppController],
   providers: [
