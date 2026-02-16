@@ -85,7 +85,8 @@ export class SeedingService implements OnModuleInit {
         }
 
         // 3. Assign Permissions
-        const assignments = [
+        // A. Level 1 Departments (Fixed Names)
+        const level1Assignments = [
             {
                 dept: "Epidemiologiya Bo'limi",
                 perms: ["VIEW_EPIDEMIOLOGY", "VIEW_WEEKLY_SUMMARY"],
@@ -107,39 +108,54 @@ export class SeedingService implements OnModuleInit {
                     "MANAGE_DEPARTMENTS",
                 ],
             },
-            {
-                dept: "Epidemiologiya va immunoprofilaktika",
-                perms: [
-                    "VIEW_FORM1_TABLE1",
-                    "EDIT_FORM1_TABLE1",
-                    "VIEW_HEPATITIS",
-                    "VIEW_FLU",
-                    "VIEW_EPIDEMIOLOGY",
-                    "VIEW_WEEKLY_SUMMARY",
-                    "VIEW_COVID",
-                ],
-            },
         ];
 
-        for (const assign of assignments) {
+        for (const assign of level1Assignments) {
             const dept = await this.deptRepo.findOneBy({ name: assign.dept });
             if (!dept) continue;
 
             for (const code of assign.perms) {
-                const perm = await this.permRepo.findOneBy({ code });
-                if (!perm) continue;
+                await this.assignPermissionToDept(dept, code);
+            }
+        }
 
-                const exists = await this.deptPermRepo.findOne({
-                    where: { department: { id: dept.id }, permission: { id: perm.id } },
-                    relations: ["department", "permission"],
-                });
+        // B. Level 3 Departments (ALL Districts)
+        // Instead of hardcoding "Epidemiologiya va immunoprofilaktika", we find ALL level 3 departments
+        {
+            const level3Depts = await this.deptRepo.findBy({ level: 3 });
+            const level3Perms = [
+                "VIEW_FORM1_TABLE1",
+                "EDIT_FORM1_TABLE1",
+                "VIEW_HEPATITIS",
+                "VIEW_FLU",
+                "VIEW_EPIDEMIOLOGY",
+                "VIEW_WEEKLY_SUMMARY",
+                "VIEW_COVID",
+            ];
 
-                if (!exists) {
-                    const dp = this.deptPermRepo.create({ department: dept, permission: perm });
-                    await this.deptPermRepo.save(dp);
-                    this.logger.log(`Assigned ${code} to ${assign.dept}`);
+            this.logger.log(`Found ${level3Depts.length} Level 3 departments. Assigning permissions...`);
+
+            for (const dept of level3Depts) {
+                for (const code of level3Perms) {
+                    await this.assignPermissionToDept(dept, code);
                 }
             }
+        }
+    }
+
+    private async assignPermissionToDept(dept: Department, code: string) {
+        const perm = await this.permRepo.findOneBy({ code });
+        if (!perm) return;
+
+        const exists = await this.deptPermRepo.findOne({
+            where: { department: { id: dept.id }, permission: { id: perm.id } },
+            relations: ["department", "permission"],
+        });
+
+        if (!exists) {
+            const dp = this.deptPermRepo.create({ department: dept, permission: perm });
+            await this.deptPermRepo.save(dp);
+            this.logger.log(`Assigned ${code} to ${dept.name}`);
         }
     }
 
