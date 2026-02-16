@@ -1,43 +1,30 @@
-import { Controller, Get, Res, Req } from '@nestjs/common';
+import { Controller, Get, Res, Req, Header } from '@nestjs/common';
 import { Response, Request } from 'express';
-import * as path from 'path';
-import * as fs from 'fs';
+import { UpdatesService } from './updates.service';
 
 @Controller('updates')
 export class UpdatesController {
+    constructor(private readonly updatesService: UpdatesService) { }
 
     @Get('manifest')
-    getManifest(@Req() req: Request, @Res() res: Response) {
-        const updateDir = path.join(process.cwd(), '..', 'frontend', 'public', 'updates');
-        // Try android-index.json first
-        let manifestPath = path.join(updateDir, 'android-index.json');
-
-        // Fallback to metadata.json for basic info if index missing
-        if (!fs.existsSync(manifestPath)) {
-            manifestPath = path.join(updateDir, 'metadata.json');
-        }
-
-        if (!fs.existsSync(manifestPath)) {
+    @Header('expo-protocol-version', '1')
+    @Header('expo-sfv-version', '0')
+    @Header('cache-control', 'private, max-age=0')
+    @Header('content-type', 'application/expo+json; charset=utf-8')
+    getManifest(@Res() res: Response) {
+        const manifest = this.updatesService.getManifest();
+        if (!manifest) {
             return res.status(404).json({ error: 'Update manifest not found' });
         }
-
-        const manifestContent = fs.readFileSync(manifestPath, 'utf8');
-
-        res.setHeader('expo-protocol-version', '1');
-        res.setHeader('expo-sfv-version', '0');
-        res.setHeader('cache-control', 'private, max-age=0');
-        res.setHeader('content-type', 'application/expo+json; charset=utf-8');
-
-        return res.send(manifestContent);
+        return res.send(manifest);
     }
 
     @Get('assets/:filename')
     getAsset(@Req() req: Request, @Res() res: Response) {
         const filename = req.params.filename;
-        const updateDir = path.join(process.cwd(), '..', 'frontend', 'public', 'updates', 'assets');
-        const assetPath = path.join(updateDir, filename);
+        const assetPath = this.updatesService.getAssetPath(filename);
 
-        if (fs.existsSync(assetPath)) {
+        if (assetPath) {
             if (filename.endsWith('.js')) res.setHeader('content-type', 'application/javascript');
             else if (filename.endsWith('.png')) res.setHeader('content-type', 'image/png');
             else if (filename.endsWith('.ttf')) res.setHeader('content-type', 'font/ttf');
@@ -50,21 +37,12 @@ export class UpdatesController {
     @Get('bundles/:filename')
     getBundle(@Req() req: Request, @Res() res: Response) {
         const filename = req.params.filename;
-        // Check standard 'bundles' folder
-        let bundlePath = path.join(process.cwd(), '..', 'frontend', 'public', 'updates', 'bundles', filename);
+        const bundlePath = this.updatesService.getBundlePath(filename);
 
-        // Check _expo folder structure if standard missing
-        if (!fs.existsSync(bundlePath)) {
-            // Try finding in _expo/static/js/android/
-            const androidBundlePath = path.join(process.cwd(), '..', 'frontend', 'public', 'updates', '_expo', 'static', 'js', 'android', filename);
-            if (fs.existsSync(androidBundlePath)) bundlePath = androidBundlePath;
+        if (bundlePath) {
+            res.setHeader('content-type', 'application/javascript');
+            return res.sendFile(bundlePath);
         }
-
-        if (!fs.existsSync(bundlePath)) {
-            return res.status(404).send('Bundle not found');
-        }
-
-        res.setHeader('content-type', 'application/javascript');
-        return res.sendFile(bundlePath);
+        return res.status(404).send('Bundle not found');
     }
 }

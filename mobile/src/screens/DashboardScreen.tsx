@@ -16,6 +16,7 @@ import {
     Linking
 } from 'react-native';
 import * as Application from 'expo-application';
+import * as Updates from 'expo-updates';
 import { authApi, sosApi, dailyReportsApi, versionApi } from '../services/api';
 import * as Location from 'expo-location';
 import * as Notifications from 'expo-notifications';
@@ -34,6 +35,7 @@ import {
     AlertTriangle,
     Navigation,
     X,
+    Download
 } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
@@ -69,7 +71,33 @@ const DashboardScreen = () => {
         fetchDiseases();
         setupNotifications();
         checkAppVersion();
+        checkForUpdates();
     }, []);
+
+    const checkForUpdates = async () => {
+        if (__DEV__) return;
+        try {
+            const update = await Updates.checkForUpdateAsync();
+            if (update.isAvailable) {
+                Alert.alert(
+                    'Yangilanish mavjud',
+                    'Dasturning yangi versiyasi yuklab olindi. Ilovani yangilaymizmi?',
+                    [
+                        { text: 'Yo\'q', style: 'cancel' },
+                        {
+                            text: 'Yangilash',
+                            onPress: async () => {
+                                await Updates.fetchUpdateAsync();
+                                await Updates.reloadAsync();
+                            }
+                        }
+                    ]
+                );
+            }
+        } catch (error) {
+            console.log('OTA check failed', error);
+        }
+    };
 
     const checkAppVersion = async () => {
         try {
@@ -79,7 +107,7 @@ const DashboardScreen = () => {
             if (data.version !== currentVersion) {
                 Alert.alert(
                     'Yangi versiya mavjud!',
-                    `Ilovaning yangi ${data.version} versiyasi chiqdi. Yuklab olasizmi?`,
+                    `Ilovaning yangi ${data.version} versiyasi chiqdi (APK). Yuklab olasizmi?`,
                     [
                         { text: 'Keyinroq', style: 'cancel' },
                         {
