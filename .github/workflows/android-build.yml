@@ -37,19 +37,34 @@ jobs:
 
       - name: Prebuild (Apply Branding)
         working-directory: ./mobile
-        run: npx expo prebuild --platform android --no-interactive
+        run: |
+          npx expo prebuild --platform android --no-interactive
+          echo "Listing mobile/android directory:"
+          ls -R ./android || echo "android directory not found"
 
       - name: Build APK (Release)
         working-directory: ./mobile/android
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease --no-daemon --stacktrace
+
+      - name: Find and Verify APK
+        working-directory: ./mobile/android
+        run: |
+          echo "Searching for APK files..."
+          find . -name "*.apk"
+          APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            echo "Error: APK not found!"
+            exit 1
+          fi
+          echo "APK_PATH=$APK_PATH" >> $GITHUB_ENV
 
       - name: Upload APK to Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Smart-SES-App
-          path: mobile/android/app/build/outputs/apk/release/app-release.apk
+          path: mobile/android/${{ env.APK_PATH }}
 
       - name: Publish Direct Download (Release)
         uses: softprops/action-gh-release@v2
@@ -57,7 +72,7 @@ jobs:
           tag_name: latest
           name: Latest Smart SES Build
           body: "Automated Release build from main branch."
-          files: mobile/android/app/build/outputs/apk/release/app-release.apk
+          files: mobile/android/${{ env.APK_PATH }}
           draft: false
           prerelease: false
           make_latest: true
