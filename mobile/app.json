@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "Smart SES",
+    "slug": "smart-ses",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
