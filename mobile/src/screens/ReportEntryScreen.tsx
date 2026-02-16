@@ -9,12 +9,122 @@ import {
     ActivityIndicator,
     Alert,
     KeyboardAvoidingView,
-    Platform
+    Platform,
+    LayoutAnimation,
+    UIManager
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { dailyReportsApi, authApi } from '../services/api';
 import { offlineStorage } from '../services/offlineStorage';
-import { Save, ArrowLeft, Calendar } from 'lucide-react-native';
+import { Save, ArrowLeft, Calendar, ChevronDown, ChevronUp } from 'lucide-react-native';
+
+// Enable LayoutAnimation on Android
+if (Platform.OS === 'android') {
+    if (UIManager.setLayoutAnimationEnabledExperimental) {
+        UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
+}
+
+// Field Definition Interface
+interface FieldDef {
+    key: string;
+    label: string;
+    placeholder?: string;
+}
+
+interface SectionDef {
+    title: string;
+    fields: FieldDef[];
+}
+
+// Report Configuration
+const REPORT_CONFIG: Record<string, SectionDef[]> = {
+    ari: [
+        {
+            title: "Asosiy Ko'rsatkichlar",
+            fields: [
+                { key: 'ari', label: "O'RVI (ARI)", placeholder: '0' },
+                { key: 'pneumonia', label: "Zotiljam (Pneumonia)", placeholder: '0' },
+                { key: 'gk', label: "Grippg o'xshash (GK)", placeholder: '0' },
+            ]
+        }
+    ],
+    covid: [
+        {
+            title: "Statistika",
+            fields: [
+                { key: 'total_cases', label: "Jami holatlar", placeholder: '0' },
+                { key: 'hospitalized_count', label: "Shifoxonaga yotqizilgan", placeholder: '0' },
+            ]
+        }
+    ],
+    hepatitis: [
+        {
+            title: "Jami",
+            fields: [{ key: 'total_cases', label: "Jami Aniqlanganlar", placeholder: '0' }]
+        },
+        {
+            title: "Yoshlar Kesimi",
+            fields: [
+                { key: 'age_under_1', label: "1 yoshgacha", placeholder: '0' },
+                { key: 'age_1_3', label: "1-3 yosh", placeholder: '0' },
+                { key: 'age_4_6', label: "4-6 yosh", placeholder: '0' },
+                { key: 'age_7_14', label: "7-14 yosh", placeholder: '0' },
+                { key: 'age_15_19', label: "15-19 yosh", placeholder: '0' },
+                { key: 'age_20_plus', label: "20 yoshdan katta", placeholder: '0' },
+            ]
+        },
+        {
+            title: "Aholi Guruhi / Kasbi",
+            fields: [
+                { key: 'occ_unorganized', label: "Uyushmagan", placeholder: '0' },
+                { key: 'occ_unorganized_1_6', label: "Uyushmagan (1-6 yosh)", placeholder: '0' },
+                { key: 'occ_organized_1_6', label: "Bog'cha (Uyushgan)", placeholder: '0' },
+                { key: 'occ_unorganized_school_age', label: "Uyushmagan (Maktab yosh)", placeholder: '0' },
+                { key: 'occ_students', label: "Maktab O'quvchilari", placeholder: '0' },
+                { key: 'occ_college_students', label: "Talabalar", placeholder: '0' },
+                { key: 'occ_workers', label: "Ishchi / Xizmatchi", placeholder: '0' },
+            ]
+        },
+        {
+            title: "Yuqish Omili",
+            fields: [
+                { key: 'factor_water', label: "Suv orqali", placeholder: '0' },
+                { key: 'factor_food', label: "Oziq-ovqat orqali", placeholder: '0' },
+                { key: 'factor_contact', label: "Muloqot orqali", placeholder: '0' },
+            ]
+        }
+    ],
+    epidemiology: [
+        {
+            title: "Tekshirilgan Ob'ektlar",
+            fields: [
+                { key: 'inspected_total', label: "Jami", placeholder: '0' },
+                { key: 'inspected_mtm', label: "Maktabgacha Ta'lim (MTM)", placeholder: '0' },
+                { key: 'inspected_school', label: "Maktablar", placeholder: '0' },
+                { key: 'inspected_dpm', label: "Davolash Profilaktika (DPM)", placeholder: '0' },
+                { key: 'inspected_other', label: "Boshqa ob'ektlar", placeholder: '0' },
+            ]
+        },
+        {
+            title: "Aniqlangan Kamchiliklar",
+            fields: [
+                { key: 'defects_total', label: "Jami", placeholder: '0' },
+                { key: 'defects_mtm', label: "MTM", placeholder: '0' },
+                { key: 'defects_school', label: "Maktablar", placeholder: '0' },
+                { key: 'defects_dpm', label: "DPM", placeholder: '0' },
+                { key: 'defects_other', label: "Boshqa", placeholder: '0' },
+            ]
+        },
+        {
+            title: "Jarima va Choralar",
+            fields: [
+                { key: 'fines_total', label: "Jarima (Jami)", placeholder: '0' },
+                { key: 'suspended_total', label: "Faoliyati To'xtatilgan", placeholder: '0' },
+            ]
+        }
+    ]
+};
 
 const ReportEntryScreen = () => {
     const navigation = useNavigation<any>();
@@ -25,17 +135,17 @@ const ReportEntryScreen = () => {
     const [profile, setProfile] = useState<any>(null);
     const [form, setForm] = useState<any>({
         reportDate: new Date().toISOString().split('T')[0],
-        // Default common fields
-        total_cases: '',
-        hospitalized_count: '',
-        // ARI specific
-        ari: '',
-        pneumonia: '',
-        gk: '',
     });
+    // Section collapse state (default: all open)
+    const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
         fetchProfile();
+        // Initialize open sections
+        const config = REPORT_CONFIG[type] || [];
+        const initialOpenState: Record<string, boolean> = {};
+        config.forEach((s, i) => initialOpenState[i] = true);
+        setOpenSections(initialOpenState);
     }, []);
 
     const fetchProfile = async () => {
@@ -45,6 +155,11 @@ const ReportEntryScreen = () => {
         } catch (error) {
             Alert.alert('Xatolik', 'Profilni yuklab bo\'lmadi');
         }
+    };
+
+    const toggleSection = (index: number) => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setOpenSections(prev => ({ ...prev, [index]: !prev[index] }));
     };
 
     const handleSave = async () => {
@@ -58,20 +173,22 @@ const ReportEntryScreen = () => {
             let data: any = {
                 reportDate: form.reportDate,
                 organizationId: profile.organization.id,
+                ...form // Spread all form data
             };
 
-            // Dynamic mapping based on type
-            if (type === 'ari') {
-                data = { ...data, ari: Number(form.ari) || 0, pneumonia: Number(form.pneumonia) || 0, gk: Number(form.gk) || 0 };
-                await dailyReportsApi.upsertAri(data);
-            } else if (type === 'covid') {
-                data = { ...data, total_cases: Number(form.total_cases) || 0, hospitalized_count: Number(form.hospitalized_count) || 0 };
-                await dailyReportsApi.upsertCovid(data);
-            } else {
-                // Default generic upsert
-                data = { ...data, total_cases: Number(form.total_cases) || 0 };
-                await dailyReportsApi.upsert(data);
-            }
+            // Ensure numbers are converted
+            Object.keys(data).forEach(key => {
+                if (key !== 'reportDate' && key !== 'organizationId') {
+                    data[key] = Number(data[key]) || 0;
+                }
+            });
+
+            if (type === 'ari') await dailyReportsApi.upsertAri(data);
+            else if (type === 'covid') await dailyReportsApi.upsertCovid(data);
+            else if (type === 'hepatitis') await dailyReportsApi.upsertHepatitis(data);
+            else if (type === 'epidemiology') await dailyReportsApi.upsertEpidemiology(data);
+            else if (type === 'diarrhea') await dailyReportsApi.upsertDiarrhea(data);
+            else await dailyReportsApi.upsert(data); // Fallback
 
             Alert.alert('Muvaffaqiyat', 'Hisobot yuborildi', [
                 { text: 'OK', onPress: () => navigation.goBack() }
@@ -82,7 +199,7 @@ const ReportEntryScreen = () => {
 
             Alert.alert(
                 'Xatolik',
-                `${msg}. Hisobotni telefon xotirasida saqlab turaymi? Keyinroq yuborishingiz mumkin.`,
+                `${msg}. Hisobotni telefon xotirasida saqlab turaymi?`,
                 [
                     { text: 'Yo\'q', style: 'cancel' },
                     {
@@ -94,7 +211,7 @@ const ReportEntryScreen = () => {
                                 ...form
                             };
                             await offlineStorage.saveReport(type, dataToSave);
-                            Alert.alert('Saqlandi', 'Hisobot offline saqlandi. Internet paydo bo\'lganda Asosiy sahifadan yuborishingiz mumkin.');
+                            Alert.alert('Saqlandi', 'Hisobot offline saqlandi.');
                             navigation.goBack();
                         }
                     }
@@ -105,19 +222,43 @@ const ReportEntryScreen = () => {
         }
     };
 
-    const renderInput = (label: string, key: string, placeholder = '0') => (
-        <View style={styles.inputGroup}>
-            <Text style={styles.label}>{label}</Text>
+    const renderInput = (def: FieldDef) => (
+        <View key={def.key} style={styles.inputGroup}>
+            <Text style={styles.label}>{def.label}</Text>
             <TextInput
                 style={styles.input}
-                value={form[key]?.toString()}
-                onChangeText={(val) => setForm({ ...form, [key]: val })}
+                value={form[def.key]?.toString()}
+                onChangeText={(val) => setForm({ ...form, [def.key]: val })}
                 keyboardType="numeric"
-                placeholder={placeholder}
+                placeholder={def.placeholder || '0'}
                 placeholderTextColor="#94a3b8"
             />
         </View>
     );
+
+    const renderSection = (section: SectionDef, index: number) => {
+        const isOpen = openSections[index];
+        return (
+            <View key={index} style={styles.sectionCard}>
+                <TouchableOpacity
+                    style={styles.sectionHeader}
+                    onPress={() => toggleSection(index)}
+                    activeOpacity={0.7}
+                >
+                    <Text style={styles.sectionTitle}>{section.title}</Text>
+                    {isOpen ? <ChevronUp size={20} color="#64748b" /> : <ChevronDown size={20} color="#64748b" />}
+                </TouchableOpacity>
+
+                {isOpen && (
+                    <View style={styles.sectionContent}>
+                        {section.fields.map(renderInput)}
+                    </View>
+                )}
+            </View>
+        );
+    };
+
+    const config = REPORT_CONFIG[type] || [];
 
     return (
         <View style={styles.container}>
@@ -129,32 +270,36 @@ const ReportEntryScreen = () => {
                 <View style={{ width: 40 }} />
             </View>
 
-            <ScrollView contentContainerStyle={styles.scroll}>
-                <View style={styles.card}>
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Sana (YYYY-MM-DD)</Text>
-                        <View style={styles.dateWrapper}>
-                            <Calendar size={18} color="#64748b" style={{ marginRight: 10 }} />
-                            <TextInput
-                                style={styles.dateInput}
-                                value={form.reportDate}
-                                onChangeText={(val) => setForm({ ...form, reportDate: val })}
-                                placeholder="2026-02-15"
-                            />
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                style={{ flex: 1 }}
+            >
+                <ScrollView contentContainerStyle={styles.scroll}>
+                    {/* Date Selection */}
+                    <View style={styles.card}>
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>Hisobot Sanasi</Text>
+                            <View style={styles.dateWrapper}>
+                                <Calendar size={18} color="#64748b" style={{ marginRight: 10 }} />
+                                <TextInput
+                                    style={styles.dateInput}
+                                    value={form.reportDate}
+                                    onChangeText={(val) => setForm({ ...form, reportDate: val })}
+                                    placeholder="2026-02-15"
+                                />
+                            </View>
                         </View>
                     </View>
 
-                    {type === 'ari' ? (
-                        <>
-                            {renderInput('O\'RVI (ARI)', 'ari')}
-                            {renderInput('Zotiljam (Pneumonia)', 'pneumonia')}
-                            {renderInput('Grippg o\'xshash (GK)', 'gk')}
-                        </>
+                    {/* Dynamic Sections */}
+                    {config.length > 0 ? (
+                        config.map((s, i) => renderSection(s, i))
                     ) : (
-                        <>
-                            {renderInput('Jami holatlar', 'total_cases')}
-                            {renderInput('Shifoxonaga yotqizilgan', 'hospitalized_count')}
-                        </>
+                        <View style={styles.card}>
+                            <Text style={{ textAlign: 'center', color: '#94a3b8' }}>
+                                Bu hisobot turi uchun shakl topilmadi.
+                            </Text>
+                        </View>
                     )}
 
                     <TouchableOpacity
@@ -171,8 +316,9 @@ const ReportEntryScreen = () => {
                             </>
                         )}
                     </TouchableOpacity>
-                </View>
-            </ScrollView>
+                    <View style={{ height: 40 }} />
+                </ScrollView>
+            </KeyboardAvoidingView>
         </View>
     );
 };
@@ -195,15 +341,43 @@ const styles = StyleSheet.create({
     scroll: { padding: 20 },
     card: {
         backgroundColor: '#fff',
-        borderRadius: 20,
+        borderRadius: 16,
         padding: 20,
+        marginBottom: 16,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.05,
-        shadowRadius: 10,
-        elevation: 3,
+        shadowRadius: 5,
+        elevation: 2,
     },
-    inputGroup: { marginBottom: 20 },
+    sectionCard: {
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        marginBottom: 16,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 5,
+        elevation: 2,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 20,
+        backgroundColor: '#fff',
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#1e293b',
+    },
+    sectionContent: {
+        paddingHorizontal: 20,
+        paddingBottom: 20,
+    },
+    inputGroup: { marginBottom: 16 },
     label: { fontSize: 14, fontWeight: '600', color: '#64748b', marginBottom: 8 },
     input: {
         backgroundColor: '#f1f5f9',

@@ -32,10 +32,13 @@ export const dailyReportsApi = {
     getCovidByDate: (date: string, isTest = false) => api.get(`/daily-reports/covid?date=${date}&isTest=${isTest}`),
     getEpidemiologyByDate: (date: string, isTest = false) => api.get(`/daily-reports/epidemiology?date=${date}&isTest=${isTest}`),
     getDiarrheaByDate: (date: string, isTest = false) => api.get(`/daily-reports/diarrhea?date=${date}&isTest=${isTest}`),
-    upsert: (data: any) => api.post('/daily-reports', data),
+    upsert: (data: any) => api.post('/daily-reports', data), // Hepatitis (default)
     upsertFlu: (data: any) => api.post('/daily-reports/flu', data),
     upsertAri: (data: any) => api.post('/daily-reports/ari', data),
     upsertCovid: (data: any) => api.post('/daily-reports/covid', data),
+    upsertHepatitis: (data: any) => api.post('/daily-reports', data), // Alias for clarity
+    upsertEpidemiology: (data: any) => api.post('/daily-reports/epidemiology', data),
+    upsertDiarrhea: (data: any) => api.post('/daily-reports/diarrhea', data),
     getWeeklySummary: (startDate: string, endDate: string) =>
         api.get(`/daily-reports/weekly-summary?startDate=${startDate}&endDate=${endDate}`),
 };
