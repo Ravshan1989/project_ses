@@ -9,6 +9,8 @@ import { Organization } from '../organizations/entities/organization.entity';
 import { Department } from '../departments/entities/department.entity';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
+import { Permission } from '../permissions/entities/permission.entity';
+import { DepartmentPermission } from '../permissions/entities/department-permission.entity';
 
 @Injectable()
 export class SeedingService implements OnModuleInit {
@@ -23,14 +25,122 @@ export class SeedingService implements OnModuleInit {
         private readonly orgRepo: Repository<Organization>,
         @InjectRepository(Department)
         private readonly deptRepo: Repository<Department>,
+        @InjectRepository(Permission)
+        private readonly permRepo: Repository<Permission>,
+        @InjectRepository(DepartmentPermission)
+        private readonly deptPermRepo: Repository<DepartmentPermission>,
         private readonly usersService: UsersService,
     ) { }
 
     async onModuleInit() {
         this.logger.log('Checking and seeding initial data...');
         await this.seedPermissions();
+        await this.seedDepartmentPermissions();
         await this.seedTestTrio();
         this.logger.log('Seeding check complete.');
+    }
+
+    private async seedDepartmentPermissions() {
+        // 1. Define Permissions
+        const permissionsData = [
+            { code: "VIEW_HEPATITIS", description: "View Hepatitis Reports" },
+            { code: "VIEW_FLU", description: "View Flu/ARI Reports" },
+            { code: "VIEW_EPIDEMIOLOGY", description: "View Epidemiology Reports" },
+            { code: "VIEW_WEEKLY_SUMMARY", description: "View Weekly Summaries" },
+            { code: "VIEW_COVID", description: "View Covid-19 Reports" },
+            // Forma 1 Permissions
+            { code: "VIEW_FORM1_TABLE1", description: "View/Edit Form 1 Table 1" },
+            { code: "VIEW_FORM1_TABLE2", description: "View Form 1 Table 2" },
+            { code: "VIEW_FORM1_TABLE3", description: "View Form 1 Table 3" },
+            { code: "EDIT_FORM1_TABLE1", description: "Edit Form 1 Table 1" },
+            { code: "MANAGE_DEPARTMENTS", description: "Create/Edit Departments and Permissions" },
+        ];
+
+        for (const p of permissionsData) {
+            let perm = await this.permRepo.findOneBy({ code: p.code });
+            if (!perm) {
+                perm = this.permRepo.create(p);
+                await this.permRepo.save(perm);
+                this.logger.log(`Created Permission: ${p.code}`);
+            }
+        }
+
+        // 2. Define Departments
+        const departmentsData = [
+            { name: "Epidemiologiya Bo'limi", description: "Faqat epidemiologiya va haftalik xulosani ko'radi", level: 1 },
+            { name: "VGA Bo'limi", description: "Faqat gepatitni ko'radi", level: 1 },
+            { name: "O'RI va Gripp Bo'limi", description: "Faqat grippni ko'radi", level: 1 },
+            { name: "Boshqaruv (Admin)", description: "Hamma narsani ko'radi", level: 1 },
+            // Tuman Darajasi
+            { name: "Epidemiologiya va immunoprofilaktika", description: "Tuman darajasi: Faqat Forma 1-jadval va kunliklar", level: 3 },
+        ];
+
+        for (const d of departmentsData) {
+            let dept = await this.deptRepo.findOneBy({ name: d.name });
+            if (!dept) {
+                dept = this.deptRepo.create(d);
+                await this.deptRepo.save(dept);
+                this.logger.log(`Created Department: ${d.name}`);
+            }
+        }
+
+        // 3. Assign Permissions
+        const assignments = [
+            {
+                dept: "Epidemiologiya Bo'limi",
+                perms: ["VIEW_EPIDEMIOLOGY", "VIEW_WEEKLY_SUMMARY"],
+            },
+            { dept: "VGA Bo'limi", perms: ["VIEW_HEPATITIS"] },
+            { dept: "O'RI va Gripp Bo'limi", perms: ["VIEW_FLU"] },
+            {
+                dept: "Boshqaruv (Admin)",
+                perms: [
+                    "VIEW_HEPATITIS",
+                    "VIEW_FLU",
+                    "VIEW_EPIDEMIOLOGY",
+                    "VIEW_WEEKLY_SUMMARY",
+                    "VIEW_COVID",
+                    "VIEW_FORM1_TABLE1",
+                    "VIEW_FORM1_TABLE2",
+                    "VIEW_FORM1_TABLE3",
+                    "EDIT_FORM1_TABLE1",
+                    "MANAGE_DEPARTMENTS",
+                ],
+            },
+            {
+                dept: "Epidemiologiya va immunoprofilaktika",
+                perms: [
+                    "VIEW_FORM1_TABLE1",
+                    "EDIT_FORM1_TABLE1",
+                    "VIEW_HEPATITIS",
+                    "VIEW_FLU",
+                    "VIEW_EPIDEMIOLOGY",
+                    "VIEW_WEEKLY_SUMMARY",
+                    "VIEW_COVID",
+                ],
+            },
+        ];
+
+        for (const assign of assignments) {
+            const dept = await this.deptRepo.findOneBy({ name: assign.dept });
+            if (!dept) continue;
+
+            for (const code of assign.perms) {
+                const perm = await this.permRepo.findOneBy({ code });
+                if (!perm) continue;
+
+                const exists = await this.deptPermRepo.findOne({
+                    where: { department: { id: dept.id }, permission: { id: perm.id } },
+                    relations: ["department", "permission"],
+                });
+
+                if (!exists) {
+                    const dp = this.deptPermRepo.create({ department: dept, permission: perm });
+                    await this.deptPermRepo.save(dp);
+                    this.logger.log(`Assigned ${code} to ${assign.dept}`);
+                }
+            }
+        }
     }
 
     private async seedPermissions() {
@@ -90,18 +200,13 @@ export class SeedingService implements OnModuleInit {
             const role = await this.roleRepo.findOneBy({ name: assign.role });
             if (!role) continue;
 
-            // Check if permissions already match roughly (optimization)
-            // For now, we will perform a safe update: delete old and re-insert to ensure compliance
-            // To avoid massive deletes on every restart, check count first
             const currentPerms = await this.rolePermRepo.count({ where: { role: { id: role.id } } });
 
-            // Basic check: if count differs or force update needed. 
-            // For this critical fix, we'll force update if verification is missing for Head
             if (assign.role === UserRole.DEPARTMENT_HEAD) {
                 const hasVerify = await this.rolePermRepo.findOne({ where: { role: { id: role.id }, permissionCode: 'VERIFY_REPORT' } });
-                if (hasVerify) continue; // Skip if already has critical permission
+                if (hasVerify) continue;
             } else {
-                if (currentPerms > 0) continue; // Skip others if populated
+                if (currentPerms > 0) continue;
             }
 
             this.logger.log(`Updating permissions for ${assign.role}...`);

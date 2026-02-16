@@ -7,6 +7,8 @@ import { User } from '../users/entities/user.entity';
 import { Organization } from '../organizations/entities/organization.entity';
 import { Department } from '../departments/entities/department.entity';
 import { UsersModule } from '../users/users.module';
+import { Permission } from '../permissions/entities/permission.entity';
+import { DepartmentPermission } from '../permissions/entities/department-permission.entity';
 
 @Module({
     imports: [
@@ -16,6 +18,8 @@ import { UsersModule } from '../users/users.module';
             User,
             Organization,
             Department,
+            Permission,
+            DepartmentPermission,
         ]),
         UsersModule,
     ],
