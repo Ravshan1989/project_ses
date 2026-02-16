@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    timeout-minutes: 60
     permissions:
       contents: write
     steps:
@@ -18,6 +18,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
 
       - name: Setup Java
         uses: actions/setup-java@v3
@@ -25,15 +27,18 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: wrapper
+
       - name: Install Dependencies
         working-directory: ./mobile
         run: npm install
 
       - name: Prebuild (Apply Branding)
         working-directory: ./mobile
-        run: |
-          npx expo prebuild --platform android --clean
-          ls -R android
+        run: npx expo prebuild --platform android --clean
 
       - name: Build APK (Release)
         working-directory: ./mobile/android
