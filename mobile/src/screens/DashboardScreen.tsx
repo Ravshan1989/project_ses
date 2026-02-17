@@ -58,12 +58,14 @@ const DashboardScreen = () => {
     const [offlineCount, setOfflineCount] = useState(0);
     const [isSyncing, setIsSyncing] = useState(false);
     const [chartData, setChartData] = useState<any>(null);
+    const [pendingCount, setPendingCount] = useState(0);
 
     useFocusEffect(
         React.useCallback(() => {
             checkOfflineQueue();
             fetchChartData();
-        }, [])
+            fetchPendingCount();
+        }, [user])
     );
 
     useEffect(() => {
@@ -101,13 +103,14 @@ const DashboardScreen = () => {
 
     const checkAppVersion = async () => {
         try {
-            const currentVersion = Application.nativeApplicationVersion || '1.0.0';
+            const currentVersion = (Application.nativeApplicationVersion || '1.0.0').trim();
             const { data } = await versionApi.getLatest();
+            console.log('[DEBUG] checkAppVersion: Current:', currentVersion, 'Latest:', data.version);
 
-            if (data.version !== currentVersion) {
+            if (data && data.version && data.version.trim() !== currentVersion) {
                 Alert.alert(
                     'Yangi versiya mavjud!',
-                    `Ilovaning yangi ${data.version} versiyasi chiqdi (APK). Yuklab olasizmi?`,
+                    `Ilovaning yangi ${data.version} versiyasi chiqdi. Yuklab olasizmi?\n\nO'zgarishlar: ${data.notes || 'Yaxshilanishlar'}`,
                     [
                         { text: 'Keyinroq', style: 'cancel' },
                         {
@@ -118,7 +121,7 @@ const DashboardScreen = () => {
                 );
             }
         } catch (error) {
-            console.log('Version check failed', error);
+            console.warn('Version check failed:', error);
         }
     };
 
@@ -140,6 +143,18 @@ const DashboardScreen = () => {
     const checkOfflineQueue = async () => {
         const size = await offlineStorage.getQueueSize();
         setOfflineCount(size);
+    };
+
+    const fetchPendingCount = async () => {
+        if (!user || user.role !== 'DEPARTMENT_HEAD') return;
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const response = await dailyReportsApi.getByDate(today);
+            const pending = response.data.filter((r: any) => r.status === 'SUBMITTED');
+            setPendingCount(pending.length);
+        } catch (error) {
+            console.error('Pending count error:', error);
+        }
     };
 
     const fetchChartData = async () => {
@@ -318,8 +333,8 @@ const DashboardScreen = () => {
                         <View style={[styles.iconBox, { backgroundColor: 'rgba(56, 189, 248, 0.2)' }]}>
                             <Activity color="#38bdf8" size={24} />
                         </View>
-                        <Text style={styles.statValue}>15</Text>
-                        <Text style={styles.statLabel}>Bugungi hisobot</Text>
+                        <Text style={styles.statValue}>{pendingCount}</Text>
+                        <Text style={styles.statLabel}>Kutilmoqda (Mudir)</Text>
                     </View>
                     <View style={styles.statCard}>
                         <View style={[styles.iconBox, { backgroundColor: 'rgba(74, 222, 128, 0.2)' }]}>

@@ -17,6 +17,7 @@ const ReportsHistoryScreen = () => {
     const [loading, setLoading] = useState(false);
     const [reports, setReports] = useState<any[]>([]);
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [onlyPending, setOnlyPending] = useState(false);
 
     useEffect(() => {
         fetchReports();
@@ -85,15 +86,21 @@ const ReportsHistoryScreen = () => {
     return (
         <View style={styles.container}>
             <View style={styles.filterBar}>
-                <Calendar color="#64748b" size={20} />
-                <Text style={styles.dateText}>{date}</Text>
-                <TouchableOpacity style={styles.filterBtn}>
-                    <Filter color="#3b82f6" size={20} />
+                <View style={styles.dateInfo}>
+                    <Calendar color="#64748b" size={20} />
+                    <Text style={styles.dateText}>{date}</Text>
+                </View>
+                <TouchableOpacity
+                    style={[styles.pendingFilterBtn, onlyPending && styles.activeFilter]}
+                    onPress={() => setOnlyPending(!onlyPending)}
+                >
+                    <Filter color={onlyPending ? "#fff" : "#3b82f6"} size={18} />
+                    <Text style={[styles.pendingFilterText, onlyPending && { color: '#fff' }]}>Kutilmoqda</Text>
                 </TouchableOpacity>
             </View>
 
             <FlatList
-                data={reports}
+                data={onlyPending ? reports.filter(r => r.status === 'SUBMITTED') : reports}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.list}
@@ -116,8 +123,21 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#e2e8f0',
     },
-    dateText: { flex: 1, marginLeft: 12, fontSize: 16, color: '#1e293b', fontWeight: '500' },
+    dateInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+    dateText: { marginLeft: 12, fontSize: 16, color: '#1e293b', fontWeight: '500' },
     filterBtn: { padding: 4 },
+    pendingFilterBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#eff6ff',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: '#bfdbfe'
+    },
+    activeFilter: { backgroundColor: '#3b82f6', borderColor: '#3b82f6' },
+    pendingFilterText: { marginLeft: 6, fontSize: 12, color: '#3b82f6', fontWeight: '600' },
     list: { padding: 16 },
     card: {
         backgroundColor: '#fff',

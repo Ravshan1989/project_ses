@@ -17,6 +17,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { dailyReportsApi, authApi } from '../services/api';
 import { offlineStorage } from '../services/offlineStorage';
 import { Save, ArrowLeft, Calendar, ChevronDown, ChevronUp } from 'lucide-react-native';
+import { REPORT_CONFIG, SectionDef, FieldDef } from '../constants/reportConfig';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android') {
@@ -25,106 +26,6 @@ if (Platform.OS === 'android') {
     }
 }
 
-// Field Definition Interface
-interface FieldDef {
-    key: string;
-    label: string;
-    placeholder?: string;
-}
-
-interface SectionDef {
-    title: string;
-    fields: FieldDef[];
-}
-
-// Report Configuration
-const REPORT_CONFIG: Record<string, SectionDef[]> = {
-    ari: [
-        {
-            title: "Asosiy Ko'rsatkichlar",
-            fields: [
-                { key: 'ari', label: "O'RVI (ARI)", placeholder: '0' },
-                { key: 'pneumonia', label: "Zotiljam (Pneumonia)", placeholder: '0' },
-                { key: 'gk', label: "Grippg o'xshash (GK)", placeholder: '0' },
-            ]
-        }
-    ],
-    covid: [
-        {
-            title: "Statistika",
-            fields: [
-                { key: 'total_cases', label: "Jami holatlar", placeholder: '0' },
-                { key: 'hospitalized_count', label: "Shifoxonaga yotqizilgan", placeholder: '0' },
-            ]
-        }
-    ],
-    hepatitis: [
-        {
-            title: "Jami",
-            fields: [{ key: 'total_cases', label: "Jami Aniqlanganlar", placeholder: '0' }]
-        },
-        {
-            title: "Yoshlar Kesimi",
-            fields: [
-                { key: 'age_under_1', label: "1 yoshgacha", placeholder: '0' },
-                { key: 'age_1_3', label: "1-3 yosh", placeholder: '0' },
-                { key: 'age_4_6', label: "4-6 yosh", placeholder: '0' },
-                { key: 'age_7_14', label: "7-14 yosh", placeholder: '0' },
-                { key: 'age_15_19', label: "15-19 yosh", placeholder: '0' },
-                { key: 'age_20_plus', label: "20 yoshdan katta", placeholder: '0' },
-            ]
-        },
-        {
-            title: "Aholi Guruhi / Kasbi",
-            fields: [
-                { key: 'occ_unorganized', label: "Uyushmagan", placeholder: '0' },
-                { key: 'occ_unorganized_1_6', label: "Uyushmagan (1-6 yosh)", placeholder: '0' },
-                { key: 'occ_organized_1_6', label: "Bog'cha (Uyushgan)", placeholder: '0' },
-                { key: 'occ_unorganized_school_age', label: "Uyushmagan (Maktab yosh)", placeholder: '0' },
-                { key: 'occ_students', label: "Maktab O'quvchilari", placeholder: '0' },
-                { key: 'occ_college_students', label: "Talabalar", placeholder: '0' },
-                { key: 'occ_workers', label: "Ishchi / Xizmatchi", placeholder: '0' },
-            ]
-        },
-        {
-            title: "Yuqish Omili",
-            fields: [
-                { key: 'factor_water', label: "Suv orqali", placeholder: '0' },
-                { key: 'factor_food', label: "Oziq-ovqat orqali", placeholder: '0' },
-                { key: 'factor_contact', label: "Muloqot orqali", placeholder: '0' },
-            ]
-        }
-    ],
-    epidemiology: [
-        {
-            title: "Tekshirilgan Ob'ektlar",
-            fields: [
-                { key: 'inspected_total', label: "Jami", placeholder: '0' },
-                { key: 'inspected_mtm', label: "Maktabgacha Ta'lim (MTM)", placeholder: '0' },
-                { key: 'inspected_school', label: "Maktablar", placeholder: '0' },
-                { key: 'inspected_dpm', label: "Davolash Profilaktika (DPM)", placeholder: '0' },
-                { key: 'inspected_other', label: "Boshqa ob'ektlar", placeholder: '0' },
-            ]
-        },
-        {
-            title: "Aniqlangan Kamchiliklar",
-            fields: [
-                { key: 'defects_total', label: "Jami", placeholder: '0' },
-                { key: 'defects_mtm', label: "MTM", placeholder: '0' },
-                { key: 'defects_school', label: "Maktablar", placeholder: '0' },
-                { key: 'defects_dpm', label: "DPM", placeholder: '0' },
-                { key: 'defects_other', label: "Boshqa", placeholder: '0' },
-            ]
-        },
-        {
-            title: "Jarima va Choralar",
-            fields: [
-                { key: 'fines_total', label: "Jarima (Jami)", placeholder: '0' },
-                { key: 'suspended_total', label: "Faoliyati To'xtatilgan", placeholder: '0' },
-            ]
-        }
-    ]
-};
 
 const ReportEntryScreen = () => {
     const navigation = useNavigation<any>();
@@ -199,6 +100,7 @@ const ReportEntryScreen = () => {
             });
 
             if (type === 'ari') await dailyReportsApi.upsertAri(data);
+            else if (type === 'flu') await dailyReportsApi.upsertFlu(data);
             else if (type === 'covid') await dailyReportsApi.upsertCovid(data);
             else if (type === 'hepatitis') await dailyReportsApi.upsertHepatitis(data);
             else if (type === 'epidemiology') await dailyReportsApi.upsertEpidemiology(data);

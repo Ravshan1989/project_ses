@@ -13,6 +13,7 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { approvalApi, authApi } from '../services/api'; // Make sure this is updated
 import { ArrowLeft, CheckCircle, CheckSquare, XCircle, Clock, ShieldCheck, User } from 'lucide-react-native';
+import { getFieldLabel } from '../constants/reportConfig';
 
 const ReportDetailScreen = () => {
     const navigation = useNavigation();
@@ -170,10 +171,11 @@ const ReportDetailScreen = () => {
 
                     {/* Dynamic Fields based on Type */}
                     {Object.keys(report).map(key => {
-                        if (['id', 'reportDate', 'createdAt', 'updatedAt', 'organization', 'status', 'verificationToken', 'approvalToken', 'verifiedBy', 'approvedBy', 'executor', 'verifiedAt', 'approvedAt', 'isTest'].includes(key)) return null;
+                        if (['id', 'reportDate', 'createdAt', 'updatedAt', 'organization', 'status', 'verificationToken', 'approvalToken', 'verifiedBy', 'approvedBy', 'executor', 'verifiedAt', 'approvedAt', 'isTest', 'organizationId'].includes(key)) return null;
+                        const label = getFieldLabel(type, key);
                         return (
                             <View key={key} style={styles.row}>
-                                <Text style={styles.label}>{key}:</Text>
+                                <Text style={styles.label}>{label}:</Text>
                                 <Text style={styles.value}>{report[key]}</Text>
                             </View>
                         );

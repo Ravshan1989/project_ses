@@ -1,16 +1,17 @@
 import React from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
-import { FileText, ChevronRight, Thermometer, ShieldCheck, HeartPulse, ClipboardList } from 'lucide-react-native';
+import { FileText, ChevronRight, Thermometer, ShieldCheck, HeartPulse, ClipboardList, Activity } from 'lucide-react-native';
 
 const REPORT_TYPES = [
-    { id: 'ari', title: "O'RVI (Ari)", icon: <Thermometer color="#1677ff" size={24} />, color: '#e6f4ff' },
-    { id: 'sari', title: 'SARI (Og\'ir respirator)', icon: <HeartPulse color="#ff4d4f" size={24} />, color: '#fff1f0' },
+    { id: 'flu', title: "Gripp va O'RVI (Batafsil)", icon: <Thermometer color="#1677ff" size={24} />, color: '#e6f4ff' },
+    { id: 'ari', title: "O'RVI (Qisqa)", icon: <Thermometer color="#0ea5e9" size={24} />, color: '#f0f9ff' },
     { id: 'covid', title: 'Koronavirus (Covid)', icon: <ShieldCheck color="#52c41a" size={24} />, color: '#f6ffed' },
     { id: 'hepatitis', title: 'Virusli Gepatit A', icon: <Activity color="#722ed1" size={24} />, color: '#f9f0ff' },
     { id: 'epidemiology', title: 'Epidemiologiya', icon: <ClipboardList color="#faad14" size={24} />, color: '#fffbe6' },
+    { id: 'diarrhea', title: "O'tkir Diareya", icon: <FileText color="#3b82f6" size={24} />, color: '#eff6ff' },
 ];
 
-import { Activity } from 'lucide-react-native';
+
 
 import { useNavigation } from '@react-navigation/native';
 
