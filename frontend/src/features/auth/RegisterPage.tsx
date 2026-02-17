@@ -99,8 +99,16 @@ const RegisterPage: React.FC = () => {
                     </div>
 
                     <Card bordered={false} style={{ boxShadow: '0 10px 25px rgba(0,0,0,0.05)', borderRadius: 16 }}>
-                        <Form layout="vertical" onFinish={onFinish} requiredMark={false}>
+                        <Form layout="vertical" onFinish={onFinish} requiredMark={true}>
                             <Space style={{ display: 'flex' }} align="start">
+                                <Form.Item
+                                    name="lastName"
+                                    label={t('user.last_name', 'Familiya')}
+                                    rules={[{ required: true, message: t('user.error_last_name', 'Familiyangizni kiriting') }]}
+                                    style={{ flex: 1 }}
+                                >
+                                    <Input prefix={<UserOutlined style={{ color: 'rgba(0,0,0,.25)' }} />} />
+                                </Form.Item>
                                 <Form.Item
                                     name="firstName"
                                     label={t('user.first_name', 'Ism')}
@@ -110,9 +118,9 @@ const RegisterPage: React.FC = () => {
                                     <Input prefix={<UserOutlined style={{ color: 'rgba(0,0,0,.25)' }} />} />
                                 </Form.Item>
                                 <Form.Item
-                                    name="lastName"
-                                    label={t('user.last_name', 'Familiya')}
-                                    rules={[{ required: true, message: t('user.error_last_name', 'Familiyangizni kiriting') }]}
+                                    name="middleName"
+                                    label={t('user.middle_name', "Otasining ismi")}
+                                    rules={[{ required: true, message: t('user.error_middle_name', "Otasining ismini kiriting") }]}
                                     style={{ flex: 1 }}
                                 >
                                     <Input prefix={<UserOutlined style={{ color: 'rgba(0,0,0,.25)' }} />} />

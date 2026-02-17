@@ -4,16 +4,16 @@ import { LoginDto } from "./login.dto";
 
 export class RegisterDto extends LoginDto {
   @IsString()
-  @IsOptional()
-  firstName?: string;
+  firstName: string;
 
   @IsString()
-  @IsOptional()
-  lastName?: string;
+  lastName: string;
 
   @IsString()
-  @IsOptional()
-  phoneNumber?: string;
+  middleName: string;
+
+  @IsString()
+  phoneNumber: string;
 
   @IsEnum(UserRole)
   @IsOptional()
