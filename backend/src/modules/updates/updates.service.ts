@@ -53,4 +53,10 @@ export class UpdatesService {
 
         return null;
     }
+
+    getApkPath() {
+        const apkPath = path.join(process.cwd(), 'public', 'app-release.apk');
+        if (fs.existsSync(apkPath)) return apkPath;
+        return null;
+    }
 }
