@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Select, Card, Typography, message, Space, ConfigProvider, theme } from 'antd';
-import { UserOutlined, MedicineBoxOutlined, ArrowLeftOutlined, BankOutlined, ClusterOutlined } from '@ant-design/icons';
+import { UserOutlined, ArrowLeftOutlined, BankOutlined, ClusterOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { API_BASE_URL } from '../../config';
@@ -15,7 +15,6 @@ const RegisterPage: React.FC = () => {
     const [departments, setDepartments] = useState<any[]>([]);
     const navigate = useNavigate();
     const { t } = useTranslation();
-    const { token } = theme.useToken();
 
     useEffect(() => {
         fetchInitialData();
@@ -93,7 +92,7 @@ const RegisterPage: React.FC = () => {
 
                 <div style={{ maxWidth: 500, width: '100%', margin: 'auto' }}>
                     <div style={{ textAlign: 'center', marginBottom: 40 }}>
-                        <MedicineBoxOutlined style={{ fontSize: 48, color: token.colorPrimary, marginBottom: 16 }} />
+                        <img src="/favicon.png" alt="logo" style={{ width: 64, height: 64, marginBottom: 16, borderRadius: 12 }} />
                         <Title level={2} style={{ margin: 0 }}>{t('common.app_name', 'Smart SES')}</Title>
                         <Text type="secondary">{t('auth.register_title', "Ro'yxatdan o'tish")}</Text>
                     </div>

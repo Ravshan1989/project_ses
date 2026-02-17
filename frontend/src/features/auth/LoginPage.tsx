@@ -184,17 +184,16 @@ const LoginPage: React.FC = () => {
                     `}</style>
 
                     <div style={{ zIndex: 1, display: 'flex', alignItems: 'center', gap: '20px' }}>
-                        <div style={{
-                            width: '64px', height: '64px',
-                            background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
-                            borderRadius: '16px',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: '#fff', fontSize: '32px',
-                            boxShadow: '0 0 30px rgba(99, 102, 241, 0.5)',
-                            animation: 'glow 4s ease-in-out infinite'
-                        }}>
-                            <MedicineBoxOutlined />
-                        </div>
+                        <img
+                            src="/favicon.png"
+                            alt="logo"
+                            style={{
+                                width: '64px', height: '64px',
+                                borderRadius: '16px',
+                                boxShadow: '0 0 30px rgba(99, 102, 241, 0.5)',
+                                animation: 'glow 4s ease-in-out infinite'
+                            }}
+                        />
                         <div>
                             <Text style={{
                                 color: '#fff',
