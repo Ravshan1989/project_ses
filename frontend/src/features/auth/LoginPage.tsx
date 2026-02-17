@@ -417,7 +417,7 @@ const LoginPage: React.FC = () => {
                             <Button
                                 type="default"
                                 icon={<AndroidOutlined />}
-                                href={API_BASE_URL.replace('/api/v1', '/updates/download')}
+                                href={`${API_BASE_URL}/updates/download`}
                                 target="_blank"
                                 style={{
                                     background: 'rgba(255, 255, 255, 0.05)',
