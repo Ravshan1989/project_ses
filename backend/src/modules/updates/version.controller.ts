@@ -7,10 +7,16 @@ export class VersionController {
 
     @Get('latest')
     getLatestVersion() {
-        // 1. Read version from version.json in backend public folder
-        const versionPath = path.join(process.cwd(), 'public', 'version.json');
+        // 1. Read version from version.json (robust path resolution)
+        const versionPath = path.join(__dirname, '..', '..', '..', 'public', 'version.json');
         if (fs.existsSync(versionPath)) {
             const versionData = JSON.parse(fs.readFileSync(versionPath, 'utf8'));
+            return versionData;
+        }
+        // Try fallback path relative to cwd if __dirname fails
+        const fallbackPath = path.join(process.cwd(), 'backend', 'public', 'version.json');
+        if (fs.existsSync(fallbackPath)) {
+            const versionData = JSON.parse(fs.readFileSync(fallbackPath, 'utf8'));
             return versionData;
         }
         return { version: '1.0.0', downloadUrl: 'https://projectses-production.up.railway.app/public/app-release.apk' };
