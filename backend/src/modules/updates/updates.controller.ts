@@ -43,14 +43,17 @@ export class UpdatesController {
             res.setHeader('content-type', 'application/javascript');
             return res.sendFile(bundlePath);
         }
-        @Get('download')
-        @Header('content-type', 'application/vnd.android.package-archive')
-        @Header('content-disposition', 'attachment; filename="Smart-SES.apk"')
-        downloadApk(@Res() res: Response) {
-            const apkPath = this.updatesService.getApkPath();
-            if (apkPath) {
-                return res.sendFile(apkPath);
-            }
-            return res.status(404).send('APK file not found');
-        }
+        return res.status(404).send('Bundle not found');
     }
+
+    @Get('download')
+    @Header('content-type', 'application/vnd.android.package-archive')
+    @Header('content-disposition', 'attachment; filename="Smart-SES.apk"')
+    downloadApk(@Res() res: Response) {
+        const apkPath = this.updatesService.getApkPath();
+        if (apkPath) {
+            return res.sendFile(apkPath);
+        }
+        return res.status(404).send('APK file not found');
+    }
+}
