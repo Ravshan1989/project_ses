@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Select, Card, Typography, message, Space, ConfigProvider, theme } from 'antd';
-import { UserOutlined, LockOutlined, MedicineBoxOutlined, ArrowLeftOutlined, BankOutlined, ClusterOutlined } from '@ant-design/icons';
+import { UserOutlined, MedicineBoxOutlined, ArrowLeftOutlined, BankOutlined, ClusterOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { API_BASE_URL } from '../../config';
@@ -169,22 +169,6 @@ const RegisterPage: React.FC = () => {
                                 />
                             </Form.Item>
 
-                            <Form.Item
-                                name="username"
-                                label={t('user.username', 'Login')}
-                                rules={[{ required: true, message: t('user.error_username', 'Loginni kiriting') }]}
-                            >
-                                <Input prefix={<UserOutlined style={{ color: 'rgba(0,0,0,.25)' }} />} />
-                            </Form.Item>
-
-                            <Form.Item
-                                name="password"
-                                label={t('user.password', 'Parol')}
-                                rules={[{ required: true, message: t('user.error_password', 'Parolni kiriting') }]}
-                            >
-                                <Input.Password prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />} />
-                            </Form.Item>
-
                             <Form.Item style={{ marginBottom: 0 }}>
                                 <Button type="primary" htmlType="submit" loading={loading} block style={{ fontWeight: 600 }}>
                                     {t('auth.register_btn', "RO'YXATDAN O'TISH")}
@@ -193,7 +177,10 @@ const RegisterPage: React.FC = () => {
                         </Form>
                     </Card>
 
-                    <div style={{ textAlign: 'center', marginTop: 24 }}>
+                    <div style={{ textAlign: 'center', marginTop: 24, padding: '0 20px' }}>
+                        <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+                            {t('auth.register_info', "Ro'yxatdan o'tgach, ma'lumotlaringiz admin tomonidan tekshiriladi va login/parol Telegram orqali yuboriladi.")}
+                        </Text>
                         <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/login')}>
                             {t('auth.back_to_login', 'Tizimga qaytish')}
                         </Button>

@@ -31,7 +31,8 @@
         "success_register": "Muvaffaqiyatli ro'yxatdan o'tdingiz! Endi kirishingiz mumkin.",
         "error_register": "Ro'yxatdan o'tishda xatolik yuz berdi",
         "back_to_login": "Tizimga qaytish",
-        "create_account": "Ro'yxatdan o'tish"
+        "create_account": "Ro'yxatdan o'tish",
+        "register_info": "Ro'yxatdan o'tgach, ma'lumotlaringiz admin tomonidan tekshiriladi va login/parol Telegram orqali yuboriladi."
     },
     "regions": {
         "nurafshon_city": "Nurafshon shahri",
