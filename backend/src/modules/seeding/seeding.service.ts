@@ -34,10 +34,66 @@ export class SeedingService implements OnModuleInit {
 
     async onModuleInit() {
         this.logger.log('Checking and seeding initial data...');
+        await this.seedDistricts();
         await this.seedPermissions();
         await this.seedDepartmentPermissions();
         await this.seedTestTrio();
         this.logger.log('Seeding check complete.');
+    }
+
+    private async seedDistricts() {
+        // 1. Ensure Region exists as Parent
+        let region = await this.orgRepo.findOne({
+            where: { name: "Toshkent viloyati" },
+        });
+
+        if (!region) {
+            this.logger.log("Region not found, creating 'Toshkent viloyati'...");
+            region = this.orgRepo.create({
+                name: "Toshkent viloyati",
+                population: 3000000,
+            });
+            region = await this.orgRepo.save(region);
+        }
+
+        const DISTRICTS = [
+            { name: "Nurafshon sh", population: 54100 },
+            { name: "Angren sh", population: 191300 },
+            { name: "Bekobod sh", population: 102000 },
+            { name: "Chirchiq sh", population: 168000 },
+            { name: "Olmaliq sh", population: 138500 },
+            { name: "Ohangaron sh", population: 42000 },
+            { name: "Yangiyo'l sh", population: 63000 },
+            { name: "Oqqo'rg'on t", population: 112400 },
+            { name: "Ohangaron t", population: 108300 },
+            { name: "Bekobod t", population: 163400 },
+            { name: "Bo'stonliq t", population: 175600 },
+            { name: "Bo'ka t", population: 132400 },
+            { name: "Quyi chirchiq t", population: 115800 },
+            { name: "Zangiota t", population: 204300 },
+            { name: "Yuqori Chirchiq t", population: 142100 },
+            { name: "Qibray t", population: 206800 },
+            { name: "Parkent t", population: 153000 },
+            { name: "Piskent t", population: 102400 },
+            { name: "O'rta Chirchiq t", population: 153500 },
+            { name: "Chinoz t", population: 147800 },
+            { name: "Yangiyo'l t", population: 278300 },
+            { name: "Toshkent t", population: 194500 },
+        ];
+
+        for (const data of DISTRICTS) {
+            let district = await this.orgRepo.findOne({ where: { name: data.name } });
+            if (!district) {
+                district = this.orgRepo.create({
+                    name: data.name,
+                    population: data.population,
+                    child_population: Math.round(data.population * 0.3),
+                    parent: region,
+                });
+                await this.orgRepo.save(district);
+                this.logger.log(`Created district: ${data.name}`);
+            }
+        }
     }
 
     private async seedDepartmentPermissions() {

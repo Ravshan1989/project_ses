@@ -19,9 +19,9 @@ export class VersionController {
             const versionData = JSON.parse(fs.readFileSync(fallbackPath, 'utf8'));
             return versionData;
         }
-        // Force 1.0.1 as a last resort to unblock user
+        // Force 1.0.0 as a last resort to stop notification loop until new APK is built
         return {
-            version: '1.0.1',
+            version: '1.0.0',
             downloadUrl: 'https://projectses-production.up.railway.app/public/app-release.apk',
             notes: "Jadvallar va Mudir tahlili yangilanishi"
         };
