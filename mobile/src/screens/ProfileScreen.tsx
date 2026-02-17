@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
 import { LogOut, User, Settings, Info } from 'lucide-react-native';
 import { removeToken } from '../services/auth';
+import * as Application from 'expo-application';
 
 const ProfileScreen = ({ onLogout }: { onLogout: () => void }) => {
     const handleLogout = () => {
@@ -19,6 +20,16 @@ const ProfileScreen = ({ onLogout }: { onLogout: () => void }) => {
                     }
                 },
             ]
+        );
+    };
+
+    const showAbout = () => {
+        const currentVersion = Application.nativeApplicationVersion || '1.0.0';
+        const lastUpdate = '2026-02-15';
+        Alert.alert(
+            'Ilova haqida',
+            `Versiya: ${currentVersion}\nYangilangan sana: ${lastUpdate}\n\nRespublika SES Markazi uchun maxsus ishlab chiqilgan.`,
+            [{ text: 'Tushunarli' }]
         );
     };
 
@@ -43,7 +54,7 @@ const ProfileScreen = ({ onLogout }: { onLogout: () => void }) => {
                     </View>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.menuItem}>
+                <TouchableOpacity style={styles.menuItem} onPress={showAbout}>
                     <View style={styles.menuLeft}>
                         <View style={[styles.iconBox, { backgroundColor: '#f5f5f5' }]}>
                             <Info color="#64748b" size={20} />
