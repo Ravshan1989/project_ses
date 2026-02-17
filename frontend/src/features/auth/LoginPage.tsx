@@ -417,7 +417,7 @@ const LoginPage: React.FC = () => {
                             <Button
                                 type="default"
                                 icon={<AndroidOutlined />}
-                                href="https://github.com/Ravshan1989/project_ses/releases/download/latest/app-debug.apk"
+                                href="/public/app-release.apk"
                                 target="_blank"
                                 style={{
                                     background: 'rgba(255, 255, 255, 0.05)',
