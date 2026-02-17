@@ -40,17 +40,25 @@ jobs:
         run: |
           rm -rf android
           npx expo prebuild --platform android --no-install --non-interactive
-          echo "org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=1024m" >> android/gradle.properties
+          # Remove any existing settings to avoid duplicates
+          sed -i '/org.gradle.jvmargs/d' android/gradle.properties
+          sed -i '/org.gradle.daemon/d' android/gradle.properties
+          sed -i '/android.enablePngCrunchInReleaseBuilds/d' android/gradle.properties
+          sed -i '/org.gradle.parallel/d' android/gradle.properties
+          # Add optimized settings
+          echo "org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m" >> android/gradle.properties
           echo "org.gradle.daemon=false" >> android/gradle.properties
           echo "android.enablePngCrunchInReleaseBuilds=false" >> android/gradle.properties
           echo "org.gradle.parallel=false" >> android/gradle.properties
+          echo "android.nonTransitiveRClass=true" >> android/gradle.properties
+          echo "Done patching gradle.properties"
+          cat android/gradle.properties
 
       - name: Build APK (Release)
         working-directory: ./mobile/android
         run: |
           chmod +x gradlew
-          export GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx3072m -Dorg.gradle.daemon=false"
-          ./gradlew clean assembleRelease --no-daemon --stacktrace --warning-mode all
+          ./gradlew clean assembleRelease --no-daemon --stacktrace --info
 
       - name: Find and Verify APK
         working-directory: ./mobile/android
