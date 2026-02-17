@@ -19,6 +19,11 @@ export class VersionController {
             const versionData = JSON.parse(fs.readFileSync(fallbackPath, 'utf8'));
             return versionData;
         }
-        return { version: '1.0.0', downloadUrl: 'https://projectses-production.up.railway.app/public/app-release.apk' };
+        // Force 1.0.1 as a last resort to unblock user
+        return {
+            version: '1.0.1',
+            downloadUrl: 'https://projectses-production.up.railway.app/public/app-release.apk',
+            notes: "Jadvallar va Mudir tahlili yangilanishi"
+        };
     }
 }
