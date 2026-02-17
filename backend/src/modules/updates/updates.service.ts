@@ -21,6 +21,9 @@ export class UpdatesService {
 
     getManifest() {
         let manifestPath = path.join(this.updatesDir, 'android-index.json');
+        if (!fs.existsSync(manifestPath)) {
+            manifestPath = path.join(this.updatesDir, 'metadata.json');
+        }
 
         // Fallback or logic to find latest
         if (!fs.existsSync(manifestPath)) {
