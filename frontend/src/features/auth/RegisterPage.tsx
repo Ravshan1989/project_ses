@@ -47,10 +47,7 @@ const RegisterPage: React.FC = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    ...values,
-                    role: 'STAFF' // Default role for self-registration
-                }),
+                body: JSON.stringify(values),
             });
 
             const data = await response.json();
@@ -81,23 +78,51 @@ const RegisterPage: React.FC = () => {
         >
             <div style={{
                 minHeight: '100vh',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 display: 'flex',
-                flexDirection: 'column',
-                background: 'linear-gradient(135deg, #f0f2f5 0%, #e6f7ff 100%)',
-                padding: '40px 20px'
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '40px 20px',
+                position: 'relative'
             }}>
-                <div style={{ position: 'absolute', top: 20, right: 20 }}>
+                <div style={{
+                    position: 'absolute',
+                    top: 20,
+                    right: 20,
+                    zIndex: 10
+                }}>
                     <LanguageSwitcher />
                 </div>
 
-                <div style={{ maxWidth: 500, width: '100%', margin: 'auto' }}>
+                <div style={{ maxWidth: 600, width: '100%', margin: 'auto' }}>
                     <div style={{ textAlign: 'center', marginBottom: 40 }}>
-                        <img src="/favicon.png" alt="logo" style={{ width: 64, height: 64, marginBottom: 16, borderRadius: 12 }} />
-                        <Title level={2} style={{ margin: 0 }}>{t('common.app_name', 'Smart SES')}</Title>
-                        <Text type="secondary">{t('auth.register_title', "Ro'yxatdan o'tish")}</Text>
+                        <img
+                            src="/favicon.png"
+                            alt="logo"
+                            style={{
+                                width: 80,
+                                height: 80,
+                                marginBottom: 20,
+                                borderRadius: 16,
+                                boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
+                            }}
+                        />
+                        <Title level={2} style={{ margin: 0, color: '#fff', fontSize: 32, fontWeight: 700 }}>
+                            {t('common.app_name', 'Smart SES')}
+                        </Title>
+                        <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 16, display: 'block', marginTop: 8 }}>
+                            {t('auth.register_title', "Ro'yxatdan o'tish")}
+                        </Text>
                     </div>
 
-                    <Card bordered={false} style={{ boxShadow: '0 10px 25px rgba(0,0,0,0.05)', borderRadius: 16 }}>
+                    <Card
+                        bordered={false}
+                        style={{
+                            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+                            borderRadius: 24,
+                            padding: '20px 10px'
+                        }}
+                    >
                         <Form layout="vertical" onFinish={onFinish} requiredMark={true}>
                             <Space style={{ display: 'flex' }} align="start">
                                 <Form.Item
@@ -158,6 +183,23 @@ const RegisterPage: React.FC = () => {
                             </Form.Item>
 
                             <Form.Item
+                                name="role"
+                                label={t('user.role', 'Lavozim')}
+                                rules={[{ required: true, message: t('user.error_role', 'Lavozimni tanlang') }]}
+                            >
+                                <Select placeholder={t('user.placeholder_role', 'Lavozimni tanlang...')}>
+                                    <Option value="STAFF">Xodim</Option>
+                                    <Option value="DISTRICT_SPECIALIST">Tuman mutaxassisi</Option>
+                                    <Option value="DEPARTMENT_HEAD">Bo'lim mudiri</Option>
+                                    <Option value="REGION_HEAD">Viloyat mudiri</Option>
+                                    <Option value="REPUBLIC_HEAD">Respublika mudiri</Option>
+                                    <Option value="LAB_HEAD">Laboratoriya mudiri</Option>
+                                    <Option value="EPIDEMIOLOGIST">Epidemiolog</Option>
+                                    <Option value="EPIDEMIOLOGIST_ASSISTANT">Epidemiolog yordamchisi</Option>
+                                </Select>
+                            </Form.Item>
+
+                            <Form.Item
                                 name="phoneNumber"
                                 label={t('user.phone_number', 'Telefon raqami')}
                                 rules={[{ required: true, message: t('user.error_phone_number', 'Telefon raqamingizni kiriting') }]}
@@ -168,19 +210,50 @@ const RegisterPage: React.FC = () => {
                                 />
                             </Form.Item>
 
-                            <Form.Item style={{ marginBottom: 0 }}>
-                                <Button type="primary" htmlType="submit" loading={loading} block style={{ fontWeight: 600 }}>
+                            <Form.Item style={{ marginBottom: 0, marginTop: 8 }}>
+                                <Button
+                                    type="primary"
+                                    htmlType="submit"
+                                    loading={loading}
+                                    block
+                                    size="large"
+                                    style={{
+                                        fontWeight: 600,
+                                        height: 48,
+                                        borderRadius: 12,
+                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        border: 'none',
+                                        fontSize: 16
+                                    }}
+                                >
                                     {t('auth.register_btn', "RO'YXATDAN O'TISH")}
                                 </Button>
                             </Form.Item>
                         </Form>
                     </Card>
 
-                    <div style={{ textAlign: 'center', marginTop: 24, padding: '0 20px' }}>
-                        <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
-                            {t('auth.register_info', "Ro'yxatdan o'tgach, ma'lumotlaringiz admin tomonidan tekshiriladi va login/parol Telegram orqali yuboriladi.")}
-                        </Text>
-                        <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/login')}>
+                    <div style={{ textAlign: 'center', marginTop: 32, padding: '0 20px' }}>
+                        <div style={{
+                            background: 'rgba(255,255,255,0.15)',
+                            backdropFilter: 'blur(10px)',
+                            borderRadius: 16,
+                            padding: '20px',
+                            marginBottom: 20
+                        }}>
+                            <Text style={{ color: '#fff', display: 'block', lineHeight: 1.6, fontSize: 14 }}>
+                                {t('auth.register_info', "Ro'yxatdan o'tgach, ma'lumotlaringiz admin tomonidan tekshiriladi va login/parol Telegram orqali yuboriladi.")}
+                            </Text>
+                        </div>
+                        <Button
+                            type="link"
+                            icon={<ArrowLeftOutlined />}
+                            onClick={() => navigate('/login')}
+                            style={{
+                                color: '#fff',
+                                fontWeight: 600,
+                                fontSize: 15
+                            }}
+                        >
                             {t('auth.back_to_login', 'Tizimga qaytish')}
                         </Button>
                     </div>
