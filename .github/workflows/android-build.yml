@@ -46,7 +46,7 @@ jobs:
         run: |
           chmod +x gradlew
           export GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx3072m -Dorg.gradle.daemon=false"
-          ./gradlew assembleRelease --no-daemon --stacktrace --warning-mode all
+          ./gradlew clean assembleRelease --no-daemon --stacktrace --warning-mode all
 
       - name: Find and Verify APK
         working-directory: ./mobile/android
