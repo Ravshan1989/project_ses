@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { API_BASE_URL } from '../../config';
 import { Form, Input, Button, message, Typography, theme, ConfigProvider, Badge } from 'antd';
-import { UserOutlined, LockOutlined, MedicineBoxOutlined, RightOutlined, AndroidOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, RightOutlined, AndroidOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
