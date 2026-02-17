@@ -25,7 +25,8 @@
         "username_required": "Iltimos, loginingizni kiriting",
         "password_required": "Iltimos, parolingizni kiriting",
         "forgot_password": "Parolni unutdingizmi?",
-        "login_btn": "Kirish"
+        "login_btn": "Kirish",
+        "download_app": "Mobil ilovani yuklab olish"
     },
     "regions": {
         "nurafshon_city": "Nurafshon shahri",

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { API_BASE_URL } from '../../config';
 import { Form, Input, Button, message, Typography, theme, ConfigProvider, Badge } from 'antd';
-import { UserOutlined, LockOutlined, MedicineBoxOutlined, RightOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, MedicineBoxOutlined, RightOutlined, AndroidOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
@@ -413,7 +413,40 @@ const LoginPage: React.FC = () => {
                             </Form.Item>
                         </Form>
 
-                        <div style={{ textAlign: 'center', marginTop: '40px' }}>
+                        <div style={{ marginTop: '32px', textAlign: 'center' }}>
+                            <Button
+                                type="default"
+                                icon={<AndroidOutlined />}
+                                href="https://github.com/Ravshan1989/project_ses/releases/download/latest/app-debug.apk"
+                                target="_blank"
+                                style={{
+                                    background: 'rgba(255, 255, 255, 0.05)',
+                                    color: '#94a3b8',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    borderRadius: '16px',
+                                    height: '54px',
+                                    width: '100%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '16px',
+                                    fontWeight: 600,
+                                    transition: 'all 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                                    e.currentTarget.style.color = '#fff';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                                    e.currentTarget.style.color = '#94a3b8';
+                                }}
+                            >
+                                {t('auth.download_app', 'Mobil ilovani yuklab olish')}
+                            </Button>
+                        </div>
+
+                        <div style={{ textAlign: 'center', marginTop: '32px' }}>
                             <Text style={{ color: '#64748b', fontSize: '14px' }}>
                                 Technical Support: <Link style={{ color: '#94a3b8' }}>+998 (71) 276-XX-XX</Link>
                             </Text>

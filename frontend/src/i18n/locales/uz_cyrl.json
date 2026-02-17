@@ -25,7 +25,8 @@
         "username_required": "Илтимос, логинингизни киритинг",
         "password_required": "Илтимос, паролингизни киритинг",
         "forgot_password": "Паролни унутдингизми?",
-        "login_btn": "Кириш"
+        "login_btn": "Кириш",
+        "download_app": "Мобил иловани юклаб олиш"
     },
     "regions": {
         "nurafshon_city": "Нурафшон шаҳри",

@@ -12,7 +12,8 @@
         "username_required": "Please enter your username",
         "password_required": "Please enter your password",
         "forgot_password": "Forgot password?",
-        "login_btn": "Login"
+        "login_btn": "Login",
+        "download_app": "Download Mobile App"
     },
     "regions": {
         "nurafshon_city": "Nurafshon city",

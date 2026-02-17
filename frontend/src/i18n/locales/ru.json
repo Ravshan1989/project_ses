@@ -25,7 +25,8 @@
         "username_required": "Пожалуйста, введите логин",
         "password_required": "Пожалуйста, введите пароль",
         "forgot_password": "Забыли пароль?",
-        "login_btn": "Войти"
+        "login_btn": "Войти",
+        "download_app": "Скачать мобильное приложение"
     },
     "regions": {
         "nurafshon_city": "город Нурафшон",
