@@ -160,8 +160,10 @@ const DashboardScreen = () => {
         try {
             const today = new Date().toISOString().split('T')[0];
             const response = await dailyReportsApi.getByDate(today);
-            const pending = response.data.filter((r: any) => r.status === 'SUBMITTED');
-            setPendingCount(pending.length);
+            if (response.data && Array.isArray(response.data)) {
+                const pending = response.data.filter((r: any) => r.status === 'SUBMITTED');
+                setPendingCount(pending.length);
+            }
         } catch (error) {
             console.error('Pending count error:', error);
         }
@@ -180,14 +182,18 @@ const DashboardScreen = () => {
             const response = await dailyReportsApi.getWeeklySummary(startDate, endDate);
 
             // UZ: Grafik uchun ma'lumotni formatlash
-            if (response.data && response.data.length > 0) {
-                const labels = response.data.slice(0, 5).map((d: any) => d.organization.name.substring(0, 5));
-                const values = response.data.slice(0, 5).map((d: any) => d.ari_total);
+            if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+                const labels = response.data.slice(0, 5).map((d: any) =>
+                    d?.organization?.name ? d.organization.name.substring(0, 5) : '???'
+                );
+                const values = response.data.slice(0, 5).map((d: any) => d?.ari_total || 0);
 
-                setChartData({
-                    labels,
-                    datasets: [{ data: values }]
-                });
+                if (labels.length > 0 && values.length > 0) {
+                    setChartData({
+                        labels,
+                        datasets: [{ data: values }]
+                    });
+                }
             }
         } catch (error) {
             console.error('Chart data error:', error);
@@ -379,7 +385,7 @@ const DashboardScreen = () => {
                 {/* Analytics Chart */}
                 <Text style={styles.sectionTitle}>Kasallanish dinamikasi (Haftalik)</Text>
                 <View style={styles.chartCard}>
-                    {chartData ? (
+                    {chartData && chartData.labels && chartData.labels.length > 0 ? (
                         <LineChart
                             data={chartData}
                             width={width - 40}
@@ -399,7 +405,9 @@ const DashboardScreen = () => {
                         />
                     ) : (
                         <View style={styles.noDataBox}>
-                            <Text style={styles.noDataText}>Ma'lumotlar yuklanmoqda...</Text>
+                            <Text style={styles.noDataText}>
+                                {loading ? "Ma'lumotlar yuklanmoqda..." : "Hozircha ma'lumot yo'q"}
+                            </Text>
                         </View>
                     )}
                 </View>

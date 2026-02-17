@@ -88,7 +88,7 @@ const ReportEntryScreen = () => {
         try {
             let data: any = {
                 reportDate: form.reportDate,
-                organizationId: profile.organization.id,
+                organizationId: profile?.organization?.id,
                 ...form // Spread all form data
             };
 

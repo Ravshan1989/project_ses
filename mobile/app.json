@@ -13,7 +13,7 @@
     },
     "updates": {
       "url": "https://projectses-production.up.railway.app/api/updates/manifest",
-      "checkAutomatically": "ON_LOAD",
+      "checkAutomatically": "NEVER",
       "fallbackToCacheTimeout": 0
     },
     "ios": {
