@@ -56,19 +56,19 @@ jobs:
         working-directory: ./mobile/android
         run: chmod +x gradlew
 
-      # 🔥 RELEASE BUILD (Kod ichiga tikilgan/Standalone bo'lishi uchun)
+      # 🔥 STANDALONE DEBUG BUILD (GitHub runner resurslarini tejash uchun)
       - name: Build Standalone APK
         working-directory: ./mobile/android
-        run: ./gradlew assembleRelease --no-daemon --stacktrace
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Find and Verify APK
         working-directory: ./mobile/android
         run: |
           echo "Searching for APK files..."
           find . -name "*.apk"
-          APK_PATH=$(find app/build/outputs/apk/release -name "app-release.apk" | head -n 1)
+          APK_PATH=$(find app/build/outputs/apk/debug -name "app-debug.apk" | head -n 1)
           if [ -z "$APK_PATH" ]; then
-            APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
+            APK_PATH=$(find app/build/outputs/apk/debug -name "*.apk" | head -n 1)
           fi
           echo "APK_PATH=$APK_PATH" >> $GITHUB_ENV
 
@@ -83,7 +83,7 @@ jobs:
         with:
           tag_name: latest
           name: Latest Smart SES Build (Standalone)
-          body: "Automated STANDALONE build from main branch. This version includes the JS bundle."
+          body: "Automated STANDALONE DEBUG build from main branch. This version includes the JS bundle."
           files: mobile/android/${{ env.APK_PATH }}
           draft: false
           prerelease: false
