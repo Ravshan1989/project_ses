@@ -446,6 +446,21 @@ const LoginPage: React.FC = () => {
                             </Button>
                         </div>
 
+                        <div style={{ marginTop: '16px', textAlign: 'center' }}>
+                            <Button
+                                type="link"
+                                onClick={() => navigate('/register')}
+                                style={{
+                                    color: '#94a3b8',
+                                    fontSize: '16px',
+                                    fontWeight: 600,
+                                    transition: 'all 0.3s ease'
+                                }}
+                            >
+                                {t('auth.create_account', 'Yangi hisob yaratish')}
+                            </Button>
+                        </div>
+
                         <div style={{ textAlign: 'center', marginTop: '32px' }}>
                             <Text style={{ color: '#64748b', fontSize: '14px' }}>
                                 Technical Support: <Link style={{ color: '#94a3b8' }}>+998 (71) 276-XX-XX</Link>

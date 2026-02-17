@@ -238,6 +238,8 @@ const ProtectedRoute = ({ children }: { children: any }) => {
     return <MainLayout>{children}</MainLayout>;
 };
 
+import RegisterPage from './features/auth/RegisterPage';
+
 function App() {
     return (
         <ConfigProvider
@@ -256,6 +258,7 @@ function App() {
             <BrowserRouter>
                 <Routes>
                     <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
                     <Route path="/verify/:token" element={<VerificationPage />} />
                     <Route path="/" element={<Navigate to="/dashboard" />} />
                     <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />

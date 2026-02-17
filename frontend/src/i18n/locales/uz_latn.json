@@ -25,8 +25,13 @@
         "username_required": "Iltimos, loginingizni kiriting",
         "password_required": "Iltimos, parolingizni kiriting",
         "forgot_password": "Parolni unutdingizmi?",
-        "login_btn": "Kirish",
-        "download_app": "Mobil ilovani yuklab olish"
+        "register_btn": "RO'YXATDAN O'TISH",
+        "download_app": "Mobil ilovani yuklab olish",
+        "register_title": "Yangi hisob yaratish",
+        "success_register": "Muvaffaqiyatli ro'yxatdan o'tdingiz! Endi kirishingiz mumkin.",
+        "error_register": "Ro'yxatdan o'tishda xatolik yuz berdi",
+        "back_to_login": "Tizimga qaytish",
+        "create_account": "Yangi hisob yaratish"
     },
     "regions": {
         "nurafshon_city": "Nurafshon shahri",
@@ -99,7 +104,10 @@
         "select_type": "Turini tanlang",
         "district": "Hudud (Tuman/Shahar):",
         "all_districts": "Barcha hududlar",
-        "select_filter_warning": "Iltimos, vaqt oralig'i va hisobot turini tanlang."
+        "select_filter_warning": "Iltimos, vaqt oralig'i va hisobot turini tanlang.",
+        "error_loading_data": "Ma'lumotlarni yuklab bo'lmadi",
+        "placeholder_org": "Qidirish...",
+        "placeholder_dept": "Tanlang..."
     },
     "dashboard_page": {
         "title": "Asosiy panel",
@@ -260,6 +268,8 @@
         "title": "Foydalanuvchilar Boshqaruvi",
         "add_button": "Yangi Hodim Qo'shish",
         "modal_title": "Yangi Foydalanuvchi Qo'shish",
+        "first_name": "Ism",
+        "last_name": "Familiya",
         "username": "Login (Username)",
         "password": "Parol",
         "role": "Rol (Lavozim)",

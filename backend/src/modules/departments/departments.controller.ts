@@ -16,6 +16,7 @@ import { PermissionsGuard } from "../auth/guards/permissions.guard";
 import { RequirePermission } from "../../common/decorators/permissions.decorator";
 import { Permission } from "../permissions/entities/permission.entity";
 import { DepartmentPermission } from "../permissions/entities/department-permission.entity";
+import { Public } from "../../common/decorators/public.decorator";
 
 @Controller("departments")
 @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -27,8 +28,9 @@ export class DepartmentsController {
     private readonly permissionRepo: Repository<Permission>,
     @InjectRepository(DepartmentPermission)
     private readonly deptPermRepo: Repository<DepartmentPermission>,
-  ) {}
+  ) { }
 
+  @Public()
   @Get()
   async findAll() {
     // UZ: Barcha bo'limlarni ruxsatlari bilan birga qaytarish
