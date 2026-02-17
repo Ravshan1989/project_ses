@@ -40,6 +40,10 @@ jobs:
         run: |
           rm -rf android
           npx expo prebuild --platform android --no-install --non-interactive
+          echo "org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=1024m" >> android/gradle.properties
+          echo "org.gradle.daemon=false" >> android/gradle.properties
+          echo "android.enablePngCrunchInReleaseBuilds=false" >> android/gradle.properties
+          echo "org.gradle.parallel=false" >> android/gradle.properties
 
       - name: Build APK (Release)
         working-directory: ./mobile/android
