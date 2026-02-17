@@ -107,7 +107,17 @@ const DashboardScreen = () => {
             const { data } = await versionApi.getLatest();
             console.log('[DEBUG] checkAppVersion: Current:', currentVersion, 'Latest:', data.version);
 
-            if (data && data.version && data.version.trim() !== currentVersion) {
+            const isNewer = (latest: string, current: string) => {
+                const l = latest.split('.').map(Number);
+                const c = current.split('.').map(Number);
+                for (let i = 0; i < 3; i++) {
+                    if (l[i] > (c[i] || 0)) return true;
+                    if (l[i] < (c[i] || 0)) return false;
+                }
+                return false;
+            };
+
+            if (data && data.version && isNewer(data.version.trim(), currentVersion)) {
                 Alert.alert(
                     'Yangi versiya mavjud!',
                     `Ilovaning yangi ${data.version} versiyasi chiqdi. Yuklab olasizmi?\n\nO'zgarishlar: ${data.notes || 'Yaxshilanishlar'}`,
@@ -417,14 +427,14 @@ const DashboardScreen = () => {
                 <TouchableOpacity
                     style={styles.actionCard}
                     activeOpacity={0.7}
-                    onPress={() => navigation.navigate('Hisobotlar', { screen: 'ReportEntry', params: { type: 'ari', title: "SARI hisoboti" } })}
+                    onPress={() => navigation.navigate('Hisobotlar', { screen: 'ReportEntry', params: { type: 'flu', title: "Gripp va O'RVI (Haftalik)" } })}
                 >
-                    <View style={[styles.actionIconBox, { backgroundColor: 'rgba(251, 146, 60, 0.2)' }]}>
-                        <Thermometer color="#fb923c" size={24} />
+                    <View style={[styles.actionIconBox, { backgroundColor: 'rgba(59, 130, 246, 0.2)' }]}>
+                        <Thermometer color="#3b82f6" size={24} />
                     </View>
                     <View style={styles.actionInfo}>
-                        <Text style={styles.actionTitle}>SARI hisoboti</Text>
-                        <Text style={styles.actionDesc}>O'tkir respirator infeksiya</Text>
+                        <Text style={styles.actionTitle}>Gripp va O'RVI</Text>
+                        <Text style={styles.actionDesc}>Haftalik o'tkir respirator tahlil</Text>
                     </View>
                     <View style={styles.actionArrow}>
                         <ChevronRight color="#94a3b8" size={20} />
@@ -434,14 +444,65 @@ const DashboardScreen = () => {
                 <TouchableOpacity
                     style={styles.actionCard}
                     activeOpacity={0.7}
-                    onPress={() => navigation.navigate('Hisobotlar', { screen: 'ReportEntry', params: { type: 'ari', title: "O'RVI hisoboti" } })}
+                    onPress={() => navigation.navigate('Hisobotlar', { screen: 'ReportEntry', params: { type: 'hepatitis', title: "VGA (Gepatit) hisoboti" } })}
                 >
-                    <View style={[styles.actionIconBox, { backgroundColor: 'rgba(167, 139, 250, 0.2)' }]}>
-                        <Stethoscope color="#a78bfa" size={24} />
+                    <View style={[styles.actionIconBox, { backgroundColor: 'rgba(234, 179, 8, 0.2)' }]}>
+                        <Activity color="#eab308" size={24} />
                     </View>
                     <View style={styles.actionInfo}>
-                        <Text style={styles.actionTitle}>O'RVI hisoboti</Text>
-                        <Text style={styles.actionDesc}>Virusli kasalliklar</Text>
+                        <Text style={styles.actionTitle}>VGA (Gepatit)</Text>
+                        <Text style={styles.actionDesc}>Virusli gepatit A hisoboti</Text>
+                    </View>
+                    <View style={styles.actionArrow}>
+                        <ChevronRight color="#94a3b8" size={20} />
+                    </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.actionCard}
+                    activeOpacity={0.7}
+                    onPress={() => navigation.navigate('Hisobotlar', { screen: 'ReportEntry', params: { type: 'diarrhea', title: "Diareya hisoboti" } })}
+                >
+                    <View style={[styles.actionIconBox, { backgroundColor: 'rgba(239, 68, 68, 0.2)' }]}>
+                        <AlertTriangle color="#ef4444" size={24} />
+                    </View>
+                    <View style={styles.actionInfo}>
+                        <Text style={styles.actionTitle}>O'tkir Diareya</Text>
+                        <Text style={styles.actionDesc}>Ich ketish kasalliklari</Text>
+                    </View>
+                    <View style={styles.actionArrow}>
+                        <ChevronRight color="#94a3b8" size={20} />
+                    </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.actionCard}
+                    activeOpacity={0.7}
+                    onPress={() => navigation.navigate('Hisobotlar', { screen: 'ReportEntry', params: { type: 'epidemiology', title: "Epidemiologiya (Sanitariya)" } })}
+                >
+                    <View style={[styles.actionIconBox, { backgroundColor: 'rgba(34, 197, 94, 0.2)' }]}>
+                        <Shield color="#22c55e" size={24} />
+                    </View>
+                    <View style={styles.actionInfo}>
+                        <Text style={styles.actionTitle}>Sanitariya-Epidem.</Text>
+                        <Text style={styles.actionDesc}>Ob'ektlar va jarima choralari</Text>
+                    </View>
+                    <View style={styles.actionArrow}>
+                        <ChevronRight color="#94a3b8" size={20} />
+                    </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.actionCard}
+                    activeOpacity={0.7}
+                    onPress={() => navigation.navigate('Hisobotlar', { screen: 'ReportEntry', params: { type: 'covid', title: "COVID-19 hisoboti" } })}
+                >
+                    <View style={[styles.actionIconBox, { backgroundColor: 'rgba(100, 116, 139, 0.2)' }]}>
+                        <Activity color="#64748b" size={24} />
+                    </View>
+                    <View style={styles.actionInfo}>
+                        <Text style={styles.actionTitle}>COVID-19</Text>
+                        <Text style={styles.actionDesc}>Koronavirus infeksiyasi bo'yicha</Text>
                     </View>
                     <View style={styles.actionArrow}>
                         <ChevronRight color="#94a3b8" size={20} />
