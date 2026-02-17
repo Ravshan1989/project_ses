@@ -151,6 +151,17 @@ const RegisterPage: React.FC = () => {
                             </Form.Item>
 
                             <Form.Item
+                                name="phoneNumber"
+                                label={t('user.phone_number', 'Telefon raqami')}
+                                rules={[{ required: true, message: t('user.error_phone_number', 'Telefon raqamingizni kiriting') }]}
+                            >
+                                <Input
+                                    placeholder="+998 90 123 45 67"
+                                    prefix={<span style={{ color: 'rgba(0,0,0,.25)', marginRight: 4 }}>📞</span>}
+                                />
+                            </Form.Item>
+
+                            <Form.Item
                                 name="username"
                                 label={t('user.username', 'Login')}
                                 rules={[{ required: true, message: t('user.error_username', 'Loginni kiriting') }]}

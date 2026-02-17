@@ -28,6 +28,9 @@ export class User {
   @Column({ nullable: true })
   lastName: string;
 
+  @Column({ nullable: true })
+  phoneNumber: string;
+
   @Column({ select: false }) // Password hash should not be returned by default
   passwordHash: string;
 

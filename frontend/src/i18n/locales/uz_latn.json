@@ -270,6 +270,8 @@
         "modal_title": "Yangi Foydalanuvchi Qo'shish",
         "first_name": "Ism",
         "last_name": "Familiya",
+        "phone_number": "Telefon raqami",
+        "error_phone_number": "Telefon raqamingizni kiriting",
         "username": "Login (Username)",
         "password": "Parol",
         "role": "Rol (Lavozim)",

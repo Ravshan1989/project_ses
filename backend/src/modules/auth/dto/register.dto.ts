@@ -11,6 +11,10 @@ export class RegisterDto extends LoginDto {
   @IsOptional()
   lastName?: string;
 
+  @IsString()
+  @IsOptional()
+  phoneNumber?: string;
+
   @IsEnum(UserRole)
   @IsOptional()
   role?: UserRole;
