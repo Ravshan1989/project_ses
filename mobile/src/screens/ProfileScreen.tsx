@@ -1,10 +1,45 @@
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
-import { LogOut, User, Settings, Info } from 'lucide-react-native';
-import { removeToken } from '../services/auth';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import * as Application from 'expo-application';
+import * as Updates from 'expo-updates';
+import { RefreshCw, LogOut, User, Settings, Info } from 'lucide-react-native';
+import { removeToken } from '../services/auth';
 
 const ProfileScreen = ({ onLogout }: { onLogout: () => void }) => {
+    const [updating, setUpdating] = useState(false);
+
+    const onCheckUpdate = async () => {
+        setUpdating(true);
+        try {
+            const update = await Updates.checkForUpdateAsync();
+            if (update.isAvailable) {
+                Alert.alert(
+                    'Yangilanish mavjud',
+                    'Ilovaning yangi talqini topildi. Uni hozir yuklab olamizmi?',
+                    [
+                        { text: 'Keyinroq', style: 'cancel' },
+                        {
+                            text: 'Yuklash',
+                            onPress: async () => {
+                                await Updates.fetchUpdateAsync();
+                                Alert.alert('Tayyor', 'Yangilanish yuklandi. Ilovani qayta yuklash kerak.', [
+                                    { text: 'Qayta yuklash', onPress: () => Updates.reloadAsync() }
+                                ]);
+                            }
+                        }
+                    ]
+                );
+            } else {
+                Alert.alert('Yangilanish', 'Siz eng oxirgi talqindagi ilovadan foydalanyapsiz.');
+            }
+        } catch (error) {
+            console.error('Update check error:', error);
+            Alert.alert('Xatolik', 'Yangilanishlarni tekshirib bo\'lmadi. Internetni tekshiring.');
+        } finally {
+            setUpdating(false);
+        }
+    };
+
     const handleLogout = () => {
         Alert.alert(
             'Chiqish',
@@ -24,8 +59,8 @@ const ProfileScreen = ({ onLogout }: { onLogout: () => void }) => {
     };
 
     const showAbout = () => {
-        const currentVersion = Application.nativeApplicationVersion || '1.0.0';
-        const lastUpdate = '2026-02-15';
+        const currentVersion = Application.nativeApplicationVersion || '1.0.1';
+        const lastUpdate = '2026-02-17';
         Alert.alert(
             'Ilova haqida',
             `Versiya: ${currentVersion}\nYangilangan sana: ${lastUpdate}\n\nRespublika SES Markazi uchun maxsus ishlab chiqilgan.`,
@@ -51,6 +86,19 @@ const ProfileScreen = ({ onLogout }: { onLogout: () => void }) => {
                             <Settings color="#1677ff" size={20} />
                         </View>
                         <Text style={styles.menuText}>Sozlamalar</Text>
+                    </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.menuItem} onPress={onCheckUpdate} disabled={updating}>
+                    <View style={styles.menuLeft}>
+                        <View style={[styles.iconBox, { backgroundColor: '#f0fdf4' }]}>
+                            {updating ? (
+                                <ActivityIndicator size="small" color="#22c55e" />
+                            ) : (
+                                <RefreshCw color="#22c55e" size={20} />
+                            )}
+                        </View>
+                        <Text style={styles.menuText}>Yangilanishlarni tekshirish</Text>
                     </View>
                 </TouchableOpacity>
 

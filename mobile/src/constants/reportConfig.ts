@@ -84,9 +84,42 @@ export const REPORT_CONFIG: Record<string, SectionDef[]> = {
     ],
     covid: [
         {
-            title: "Statistika",
+            title: "Asosiy Ko'rsatkichlar",
             fields: [
                 { key: 'total_cases', label: "Jami holatlar", placeholder: '0' },
+                { key: 'reinfected', label: "Qayta kasallanganlar", placeholder: '0' },
+                { key: 'vaccinated_infected', label: "Emlanganlar orasida", placeholder: '0' },
+            ]
+        },
+        {
+            title: "Yosh Kesimi",
+            fields: [
+                { key: 'age_0_1', label: "0-1 yosh", placeholder: '0' },
+                { key: 'age_1_3', label: "1-3 yosh", placeholder: '0' },
+                { key: 'age_4_6', label: "4-6 yosh", placeholder: '0' },
+                { key: 'age_7_14', label: "7-14 yosh", placeholder: '0' },
+                { key: 'age_15_19', label: "15-19 yosh", placeholder: '0' },
+                { key: 'age_20_29', label: "20-29 yosh", placeholder: '0' },
+                { key: 'age_30_39', label: "30-39 yosh", placeholder: '0' },
+                { key: 'age_40_49', label: "40-49 yosh", placeholder: '0' },
+                { key: 'age_50_59', label: "50-59 yosh", placeholder: '0' },
+                { key: 'age_60_plus', label: "60 yoshdan yuqori", placeholder: '0' },
+            ]
+        },
+        {
+            title: "Ijtimoiy Guruhlar",
+            fields: [
+                { key: 'pre_school_organized', label: "Bog'cha (Uyushgan)", placeholder: '0' },
+                { key: 'pre_school_unorganized', label: "Bog'cha (Uyushmagan)", placeholder: '0' },
+                { key: 'students', label: "O'quvchilar", placeholder: '0' },
+                { key: 'medical_workers', label: "Tibbiyot xodimlari", placeholder: '0' },
+                { key: 'teachers', label: "O'qituvchilar", placeholder: '0' },
+                { key: 'others', label: "Boshqalar", placeholder: '0' },
+            ]
+        },
+        {
+            title: "Gospitalizatsiya",
+            fields: [
                 { key: 'hospitalized_count', label: "Shifoxonaga yotqizilgan", placeholder: '0' },
             ]
         }
