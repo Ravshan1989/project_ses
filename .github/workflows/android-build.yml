@@ -1,8 +1,8 @@
 name: Build Android APK
+
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -11,6 +11,7 @@ jobs:
     timeout-minutes: 60
     permissions:
       contents: write
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -19,14 +20,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: npm
           cache-dependency-path: mobile/package-lock.json
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
-          java-version: '17'
+          distribution: zulu
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
@@ -35,55 +39,51 @@ jobs:
         working-directory: ./mobile
         run: npm install --legacy-peer-deps
 
-      - name: Clean and Prebuild
+      - name: Expo Prebuild
         working-directory: ./mobile
         run: |
-          rm -rf android
           npx expo prebuild --platform android --no-install --non-interactive
-          # Remove any existing settings to avoid duplicates
-          sed -i '/org.gradle.jvmargs/d' android/gradle.properties
-          sed -i '/org.gradle.daemon/d' android/gradle.properties
-          sed -i '/android.enablePngCrunchInReleaseBuilds/d' android/gradle.properties
-          sed -i '/org.gradle.parallel/d' android/gradle.properties
-          # Add optimized settings
+          # Apply memory fix even to debug build
           echo "org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m" >> android/gradle.properties
           echo "org.gradle.daemon=false" >> android/gradle.properties
           echo "android.enablePngCrunchInReleaseBuilds=false" >> android/gradle.properties
-          echo "org.gradle.parallel=false" >> android/gradle.properties
-          echo "android.nonTransitiveRClass=true" >> android/gradle.properties
-          echo "Done patching gradle.properties"
-          cat android/gradle.properties
 
-      - name: Build APK (Release)
+      - name: Create local.properties
         working-directory: ./mobile/android
-        run: |
-          chmod +x gradlew
-          ./gradlew clean assembleRelease --no-daemon --stacktrace --info
+        run: echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+
+      - name: Grant gradlew permission
+        working-directory: ./mobile/android
+        run: chmod +x gradlew
+
+      # 🔥 DEBUG BUILD (keystore talab qilmaydi)
+      - name: Build Debug APK
+        working-directory: ./mobile/android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Find and Verify APK
         working-directory: ./mobile/android
         run: |
           echo "Searching for APK files..."
           find . -name "*.apk"
-          APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          APK_PATH=$(find app/build/outputs/apk/debug -name "app-debug.apk" | head -n 1)
           if [ -z "$APK_PATH" ]; then
-            echo "Error: APK not found!"
-            exit 1
+            APK_PATH=$(find app/build/outputs/apk/debug -name "*.apk" | head -n 1)
           fi
           echo "APK_PATH=$APK_PATH" >> $GITHUB_ENV
 
       - name: Upload APK to Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Smart-SES-App
+          name: Smart-SES-Debug-App
           path: mobile/android/${{ env.APK_PATH }}
 
       - name: Publish Direct Download (Release)
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
-          name: Latest Smart SES Build
-          body: "Automated Release build from main branch."
+          name: Latest Smart SES Build (Debug)
+          body: "Automated DEBUG build from main branch. Use this if Release build fails."
           files: mobile/android/${{ env.APK_PATH }}
           draft: false
           prerelease: false
