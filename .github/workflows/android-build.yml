@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
           cache-dependency-path: mobile/package-lock.json
 
@@ -35,18 +35,18 @@ jobs:
         working-directory: ./mobile
         run: npm install --legacy-peer-deps
 
-      - name: Prebuild (Apply Branding)
+      - name: Clean and Prebuild
         working-directory: ./mobile
         run: |
+          rm -rf android
           npx expo prebuild --platform android --no-install --non-interactive
-          echo "Listing mobile/android directory:"
-          ls -R ./android || echo "android directory not found"
 
       - name: Build APK (Release)
         working-directory: ./mobile/android
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon --stacktrace
+          export GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
+          ./gradlew assembleRelease --stacktrace
 
       - name: Find and Verify APK
         working-directory: ./mobile/android
