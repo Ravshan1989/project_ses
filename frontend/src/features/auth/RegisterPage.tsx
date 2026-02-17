@@ -98,7 +98,7 @@ const RegisterPage: React.FC = () => {
                         <Text type="secondary">{t('auth.register_title', 'Yangi hisob yaratish')}</Text>
                     </div>
 
-                    <Card borderless style={{ boxShadow: '0 10px 25px rgba(0,0,0,0.05)', borderRadius: 16 }}>
+                    <Card bordered={false} style={{ boxShadow: '0 10px 25px rgba(0,0,0,0.05)', borderRadius: 16 }}>
                         <Form layout="vertical" onFinish={onFinish} requiredMark={false}>
                             <Space style={{ display: 'flex' }} align="start">
                                 <Form.Item
