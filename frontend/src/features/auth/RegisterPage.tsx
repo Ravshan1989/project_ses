@@ -95,7 +95,7 @@ const RegisterPage: React.FC = () => {
                     <div style={{ textAlign: 'center', marginBottom: 40 }}>
                         <MedicineBoxOutlined style={{ fontSize: 48, color: token.colorPrimary, marginBottom: 16 }} />
                         <Title level={2} style={{ margin: 0 }}>{t('common.app_name', 'Smart SES')}</Title>
-                        <Text type="secondary">{t('auth.register_title', 'Yangi hisob yaratish')}</Text>
+                        <Text type="secondary">{t('auth.register_title', "Ro'yxatdan o'tish")}</Text>
                     </div>
 
                     <Card bordered={false} style={{ boxShadow: '0 10px 25px rgba(0,0,0,0.05)', borderRadius: 16 }}>
@@ -140,8 +140,8 @@ const RegisterPage: React.FC = () => {
 
                             <Form.Item
                                 name="departmentId"
-                                label={t('common.department', 'Bo\'lim')}
-                                rules={[{ required: true, message: t('common.error_select_dept', 'Bo\'limni tanlang') }]}
+                                label={t('common.department', "Bo'lim")}
+                                rules={[{ required: true, message: t('common.error_select_dept', "Bo'limni tanlang") }]}
                             >
                                 <Select placeholder={t('common.placeholder_dept', 'Tanlang...')} prefix={<ClusterOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}>
                                     {departments.map(dept => (
@@ -179,7 +179,7 @@ const RegisterPage: React.FC = () => {
 
                             <Form.Item style={{ marginBottom: 0 }}>
                                 <Button type="primary" htmlType="submit" loading={loading} block style={{ fontWeight: 600 }}>
-                                    {t('auth.register_btn', 'RO\'YXATDAN O\'TISH')}
+                                    {t('auth.register_btn', "RO'YXATDAN O'TISH")}
                                 </Button>
                             </Form.Item>
                         </Form>
