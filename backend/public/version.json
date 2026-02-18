@@ -1,6 +1,6 @@
 {
-    "version": "1.0.0",
-    "downloadUrl": "https://projectses-production.up.railway.app/public/app-release.apk",
-    "releaseDate": "2026-02-15",
-    "notes": "Offline rejim, GPS-SOS va Grafiklar qo'shildi"
+    "version": "1.0.2",
+    "downloadUrl": "https://github.com/Ravshan1989/project_ses/releases/latest/download/app-release.apk",
+    "releaseDate": "2026-02-18",
+    "notes": "Rahbar Paneli (Grafiklar va Hududiy tahlil) qo'shildi. Soddalashtirilgan navigatsiya."
 }
