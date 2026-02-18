@@ -53,8 +53,21 @@ const RegisterPage: React.FC = () => {
             const data = await response.json();
 
             if (response.ok) {
-                message.success(t('auth.success_register', "Muvaffaqiyatli ro'yxatdan o'tdingiz! Endi kirishingiz mumkin."));
-                navigate('/login');
+                message.success(t('auth.success_register', "Muvaffaqiyatli ro'yxatdan o'tdingiz!"));
+
+                // Redirect to Telegram bot
+                const botUsername = 'royhatgaolishbot';
+                const userId = data.id; // Backend should return user ID
+                const telegramUrl = `https://t.me/${botUsername}?start=${userId}`;
+
+                // Show info message
+                message.info(t('auth.redirect_to_bot', 'Telegram botga yo\'naltirilmoqda...'), 2);
+
+                // Redirect after 2 seconds
+                setTimeout(() => {
+                    window.open(telegramUrl, '_blank');
+                    navigate('/login');
+                }, 2000);
             } else {
                 message.error(data.message || t('auth.error_register', "Ro'yxatdan o'tishda xatolik yuz berdi"));
             }

@@ -65,6 +65,9 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @Column({ nullable: true })
+  telegramChatId: string;
+
   @Column({ default: true })
   isActive: boolean;
 

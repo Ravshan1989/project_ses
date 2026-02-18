@@ -69,8 +69,36 @@ export class TelegramService implements OnModuleInit {
       return next();
     });
 
-    this.bot.start((ctx) => {
+    this.bot.start(async (ctx) => {
       this.logger.log(`Bot /start buyrug'ini oldi: ${ctx.from.username}`);
+
+      // Check if user came from registration (has start parameter with user ID)
+      const startPayload = ctx.startPayload;
+      if (startPayload) {
+        try {
+          const userId = startPayload;
+          const user = await this.userRepository.findOne({ where: { id: userId } });
+
+          if (user) {
+            // Save Telegram chat ID
+            user.telegramChatId = ctx.from.id.toString();
+            await this.userRepository.save(user);
+
+            await ctx.reply(
+              `Assalomu alaykum, ${user.firstName}!\n\n` +
+              `Siz muvaffaqiyatli ro'yxatdan o'tdingiz. ` +
+              `Ma'lumotlaringiz tekshirilmoqda.\n\n` +
+              `Admin tasdiqlashidan so'ng login va parol shu yerga yuboriladi.`
+            );
+            this.logger.log(`Saved Telegram chat ID for user ${userId}`);
+            return;
+          }
+        } catch (error) {
+          this.logger.error('Error processing /start with payload:', error);
+        }
+      }
+
+      // Default /start response for report requests
       return ctx.reply(
         "Assalomu alaykum! Kerakli hisobot turini tanlang:",
         Markup.inlineKeyboard([
@@ -289,8 +317,8 @@ ${data.latitude && data.longitude ? `📍 *Manzil:* [Google xaritada ko'rish](ht
 
   // Registration notification and approval methods
   async sendRegistrationNotification(user: User): Promise<void> {
-    if (!this.bot || !this.adminChatId) {
-      this.logger.warn("Bot not initialized or admin chat ID not set");
+    if (!this.bot) {
+      this.logger.warn("Bot not initialized");
       return;
     }
 
@@ -307,19 +335,53 @@ ${data.latitude && data.longitude ? `📍 *Manzil:* [Google xaritada ko'rish](ht
 <i>Ushbu foydalanuvchini tasdiqlaysizmi?</i>
     `.trim();
 
+    const keyboard = {
+      inline_keyboard: [
+        [
+          { text: "✅ Tasdiqlash", callback_data: `approve_${user.id}` },
+          { text: "❌ Rad etish", callback_data: `reject_${user.id}` },
+        ],
+      ],
+    };
+
     try {
-      await this.bot.telegram.sendMessage(this.adminChatId, message, {
-        parse_mode: "HTML",
-        reply_markup: {
-          inline_keyboard: [
-            [
-              { text: "✅ Tasdiqlash", callback_data: `approve_${user.id}` },
-              { text: "❌ Rad etish", callback_data: `reject_${user.id}` },
-            ],
-          ],
+      // Find HR users in the same organization
+      const hrUsers = await this.userRepository.find({
+        where: {
+          role: UserRole.HR,
+          organization: { id: user.organization?.id },
+          isActive: true,
         },
       });
-      this.logger.log(`Registration notification sent for user ${user.id}`);
+
+      let sentCount = 0;
+
+      // Send to all HR users with Telegram chat ID
+      for (const hrUser of hrUsers) {
+        if (hrUser.telegramChatId) {
+          try {
+            await this.bot.telegram.sendMessage(hrUser.telegramChatId, message, {
+              parse_mode: "HTML",
+              reply_markup: keyboard,
+            });
+            sentCount++;
+            this.logger.log(`Notification sent to HR user ${hrUser.username} (${hrUser.telegramChatId})`);
+          } catch (error) {
+            this.logger.error(`Failed to send to HR user ${hrUser.username}:`, error);
+          }
+        }
+      }
+
+      // Fallback to admin if no HR users found or none have Telegram
+      if (sentCount === 0 && this.adminChatId) {
+        await this.bot.telegram.sendMessage(this.adminChatId, message, {
+          parse_mode: "HTML",
+          reply_markup: keyboard,
+        });
+        this.logger.log(`No HR users found, sent to admin instead for user ${user.id}`);
+      } else {
+        this.logger.log(`Registration notification sent to ${sentCount} HR user(s) for user ${user.id}`);
+      }
     } catch (error) {
       this.logger.error("Failed to send registration notification", error);
     }
