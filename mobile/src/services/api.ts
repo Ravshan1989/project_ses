@@ -68,3 +68,8 @@ export const approvalApi = {
     approve: (type: string, id: string) => api.patch(`/daily-reports/${type}/${id}/approve`),
     reject: (type: string, id: string, comment?: string) => api.patch(`/daily-reports/${type}/${id}/reject`, { comment }),
 };
+
+export const analysisApi = {
+    getExecutiveSummary: () => api.get('/analysis/executive/summary'),
+    getDistrictDetails: (id: string) => api.get(`/analysis/executive/district/${id}`),
+};

@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { LayoutDashboard, FileText, User } from 'lucide-react-native';
+import { LayoutDashboard, FileText, User, BarChart2 } from 'lucide-react-native';
+import { View, ActivityIndicator } from 'react-native';
 
 import DashboardScreen from '../screens/DashboardScreen';
+import ExecutiveDashboardScreen from '../screens/ExecutiveDashboardScreen';
 import ReportListScreen from '../screens/ReportListScreen';
 import ReportEntryScreen from '../screens/ReportEntryScreen';
 import ReportsHistoryScreen from '../screens/ReportsHistoryScreen';
 import ReportDetailScreen from '../screens/ReportDetailScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { authApi } from '../services/api';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -26,13 +29,39 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const TabNavigator = ({ onLogout }: { onLogout: () => void }) => {
     const insets = useSafeAreaInsets();
+    const [user, setUser] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const response = await authApi.getProfile();
+                setUser(response.data);
+            } catch (error) {
+                console.error('Navigation profile fetch error:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProfile();
+    }, []);
+
+    if (loading) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+                <ActivityIndicator size="large" color="#1677ff" />
+            </View>
+        );
+    }
+
+    const isRegionHead = user?.role === 'REGION_HEAD';
 
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
                 tabBarIcon: ({ focused, color, size }) => {
                     if (route.name === 'Asosiy') {
-                        return <LayoutDashboard size={size} color={color} />;
+                        return isRegionHead ? <BarChart2 size={size} color={color} /> : <LayoutDashboard size={size} color={color} />;
                     } else if (route.name === 'Hisobotlar') {
                         return <FileText size={size} color={color} />;
                     } else if (route.name === 'Profil') {
@@ -64,8 +93,16 @@ const TabNavigator = ({ onLogout }: { onLogout: () => void }) => {
                 }
             })}
         >
-            <Tab.Screen name="Asosiy" component={DashboardScreen} options={{ title: 'Bosh sahifa' }} />
-            <Tab.Screen name="Hisobotlar" component={ReportsStack} options={{ title: 'Hisobotlar' }} />
+            <Tab.Screen
+                name="Asosiy"
+                component={isRegionHead ? ExecutiveDashboardScreen : DashboardScreen}
+                options={{ title: isRegionHead ? 'Rahbar Paneli' : 'Asosiy' }}
+            />
+
+            {!isRegionHead && (
+                <Tab.Screen name="Hisobotlar" component={ReportsStack} options={{ title: 'Hisobotlar' }} />
+            )}
+
             <Tab.Screen name="Profil" options={{ title: 'Profil' }}>
                 {(props) => <ProfileScreen {...props} onLogout={onLogout} />}
             </Tab.Screen>
