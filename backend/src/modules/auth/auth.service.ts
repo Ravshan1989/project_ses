@@ -5,12 +5,14 @@ import * as bcrypt from "bcrypt";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
 import { User } from "../users/entities/user.entity";
+import { TelegramService } from "../telegram/telegram.service";
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private telegramService: TelegramService,
   ) { }
 
   async validateUser(username: string, pass: string): Promise<any> {
@@ -54,11 +56,16 @@ export class AuthService {
     const salt = await bcrypt.genSalt();
     const passwordHash = await bcrypt.hash(dummyPassword, salt);
 
-    return this.usersService.create({
+    const newUser = await this.usersService.create({
       ...registerDto,
       username: tempUsername,
       passwordHash,
       isActive: false, // UZ: Admin tasdiqlamaguncha nofaol bo'ladi
     });
+
+    // Send Telegram notification to admin
+    await this.telegramService.sendRegistrationNotification(newUser);
+
+    return newUser;
   }
 }

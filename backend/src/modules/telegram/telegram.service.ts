@@ -7,6 +7,9 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Telegraf, Markup } from "telegraf";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import * as bcrypt from "bcrypt";
 import { DailyReportsService } from "../daily-reports/daily-reports.service";
 import { User } from "../users/entities/user.entity";
 import { UserRole } from "../../common/enums/role.enum";
@@ -16,15 +19,19 @@ export class TelegramService implements OnModuleInit {
   private bot: Telegraf;
   private readonly logger = new Logger(TelegramService.name);
   private chatId: string;
+  private adminChatId: string;
   private systemUser: User;
 
   constructor(
     private configService: ConfigService,
     @Inject(forwardRef(() => DailyReportsService))
     private dailyReportsService: DailyReportsService,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {
     const token = this.configService.get<string>("TELEGRAM_BOT_TOKEN");
     this.chatId = this.configService.get<string>("TELEGRAM_CHAT_ID");
+    this.adminChatId = this.configService.get<string>("TELEGRAM_ADMIN_CHAT_ID");
 
     if (token) {
       this.bot = new Telegraf(token);
@@ -99,6 +106,19 @@ export class TelegramService implements OnModuleInit {
     this.bot.action("get_epi", (ctx) => {
       this.logger.log("Epidemiologiya hisoboti so'raldi");
       return this.handleReportRequest(ctx, "epi");
+    });
+
+    // Registration approval handlers
+    this.bot.action(/^approve_/, (ctx) => {
+      const userId = ctx.match[0].replace("approve_", "");
+      this.logger.log(`User approval requested: ${userId}`);
+      return this.handleApproval(ctx, userId);
+    });
+
+    this.bot.action(/^reject_/, (ctx) => {
+      const userId = ctx.match[0].replace("reject_", "");
+      this.logger.log(`User rejection requested: ${userId}`);
+      return this.handleRejection(ctx, userId);
     });
   }
 
@@ -265,6 +285,156 @@ ${data.latitude && data.longitude ? `📍 *Manzil:* [Google xaritada ko'rish](ht
         error,
       );
     }
+  }
+
+  // Registration notification and approval methods
+  async sendRegistrationNotification(user: User): Promise<void> {
+    if (!this.bot || !this.adminChatId) {
+      this.logger.warn("Bot not initialized or admin chat ID not set");
+      return;
+    }
+
+    const fullName = `${user.lastName || ""} ${user.firstName || ""} ${user.middleName || ""}`.trim();
+    const message = `
+🆕 <b>Yangi foydalanuvchi ro'yxatdan o'tdi!</b>
+
+👤 <b>F.I.O:</b> ${fullName}
+📞 <b>Telefon:</b> ${user.phoneNumber || "Ko'rsatilmagan"}
+🏢 <b>Tashkilot:</b> ${user.organization?.name || "Ko'rsatilmagan"}
+📋 <b>Bo'lim:</b> ${user.department?.name || "Ko'rsatilmagan"}
+💼 <b>Lavozim:</b> ${this.getRoleLabel(user.role)}
+
+<i>Ushbu foydalanuvchini tasdiqlaysizmi?</i>
+    `.trim();
+
+    try {
+      await this.bot.telegram.sendMessage(this.adminChatId, message, {
+        parse_mode: "HTML",
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: "✅ Tasdiqlash", callback_data: `approve_${user.id}` },
+              { text: "❌ Rad etish", callback_data: `reject_${user.id}` },
+            ],
+          ],
+        },
+      });
+      this.logger.log(`Registration notification sent for user ${user.id}`);
+    } catch (error) {
+      this.logger.error("Failed to send registration notification", error);
+    }
+  }
+
+  private async handleApproval(ctx: any, userId: string) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+        relations: ["organization", "department"],
+      });
+
+      if (!user) {
+        await ctx.editMessageText("❌ Foydalanuvchi topilmadi");
+        return;
+      }
+
+      // Generate username and password
+      const username = this.generateUsername(user);
+      const password = this.generatePassword();
+      const salt = await bcrypt.genSalt();
+      const passwordHash = await bcrypt.hash(password, salt);
+
+      // Update user
+      user.username = username;
+      user.passwordHash = passwordHash;
+      user.isActive = true;
+      user.approvedAt = new Date();
+
+      await this.userRepository.save(user);
+
+      // Update admin message
+      const approvalMessage = `
+✅ <b>Tasdiqlandi!</b>
+
+👤 <b>Foydalanuvchi:</b> ${user.lastName} ${user.firstName}
+🔐 <b>Login:</b> <code>${username}</code>
+🔑 <b>Parol:</b> <code>${password}</code>
+
+<i>Foydalanuvchiga ma'lumotlar yuborildi.</i>
+      `.trim();
+
+      await ctx.editMessageText(approvalMessage, { parse_mode: "HTML" });
+
+      this.logger.log(
+        `User approved: ${username} / ${password} (User ID: ${userId})`,
+      );
+    } catch (error) {
+      this.logger.error("Failed to approve user", error);
+      await ctx.editMessageText("❌ Xatolik yuz berdi");
+    }
+  }
+
+  private async handleRejection(ctx: any, userId: string) {
+    try {
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+
+      if (!user) {
+        await ctx.editMessageText("❌ Foydalanuvchi topilmadi");
+        return;
+      }
+
+      // Delete user from database
+      await this.userRepository.remove(user);
+
+      const rejectionMessage = `
+❌ <b>Rad etildi</b>
+
+👤 <b>Foydalanuvchi:</b> ${user.lastName} ${user.firstName}
+
+<i>Foydalanuvchi ma'lumotlar bazasidan o'chirildi.</i>
+      `.trim();
+
+      await ctx.editMessageText(rejectionMessage, { parse_mode: "HTML" });
+
+      this.logger.log(`User rejected and deleted: ${userId}`);
+    } catch (error) {
+      this.logger.error("Failed to reject user", error);
+    }
+  }
+
+  private generateUsername(user: User): string {
+    const firstName = user.firstName?.toLowerCase().replace(/\s+/g, "") || "";
+    const lastName = user.lastName?.toLowerCase().replace(/\s+/g, "") || "";
+
+    if (firstName && lastName) {
+      return `${firstName}.${lastName}`;
+    } else {
+      return `user_${Date.now()}`;
+    }
+  }
+
+  private generatePassword(): string {
+    const chars =
+      "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+    let password = "";
+    for (let i = 0; i < 10; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  }
+
+  private getRoleLabel(role: string): string {
+    const roleLabels = {
+      STAFF: "Xodim",
+      DISTRICT_SPECIALIST: "Tuman mutaxassisi",
+      DEPARTMENT_HEAD: "Bo'lim mudiri",
+      REGION_HEAD: "Viloyat mudiri",
+      REPUBLIC_HEAD: "Respublika mudiri",
+      LAB_HEAD: "Laboratoriya mudiri",
+      DISTRICT_HEAD: "Tuman boshlig'i",
+      DISTRICT_OPERATOR: "Tuman operatori",
+      ADMIN: "Administrator",
+    };
+    return roleLabels[role] || role;
   }
 
   private escapeMarkdown(text: string): string {
