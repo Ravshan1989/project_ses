@@ -69,11 +69,14 @@ jobs:
         run: |
           echo "Searching for APK files..."
           find . -name "*.apk"
-          APK_PATH=$(find app/build/outputs/apk/debug -name "app-debug.apk" | head -n 1)
-          if [ -z "$APK_PATH" ]; then
-            APK_PATH=$(find app/build/outputs/apk/debug -name "*.apk" | head -n 1)
+          ORIGINAL_APK=$(find app/build/outputs/apk/debug -name "*.apk" | head -n 1)
+          if [ -z "$ORIGINAL_APK" ]; then
+            echo "Error: APK not found!"
+            exit 1
           fi
-          echo "APK_PATH=$APK_PATH" >> $GITHUB_ENV
+          NEW_APK="app/build/outputs/apk/debug/app-release.apk"
+          mv "$ORIGINAL_APK" "$NEW_APK"
+          echo "APK_PATH=$NEW_APK" >> $GITHUB_ENV
 
       - name: Upload APK to Artifacts
         uses: actions/upload-artifact@v4
