@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, Typography, Descriptions, Badge, Spin, Result } from 'antd';
 import axios from 'axios';
+import { API_BASE_URL } from '../../config';
 
 const { Title } = Typography;
 
@@ -14,7 +15,7 @@ const VerificationPage: React.FC = () => {
     useEffect(() => {
         const verify = async () => {
             try {
-                const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1/daily-reports/public/verify?token=${token}`);
+                const response = await axios.get(`${API_BASE_URL}/daily-reports/public/verify?token=${token}`);
                 setData(response.data);
             } catch (err: any) {
                 setError(err.response?.data?.message || 'Verification failed');

@@ -49,7 +49,7 @@ export const AdminUsersPage: React.FC = () => {
     const handleApprove = async (userId: string) => {
         try {
             const token = localStorage.getItem('access_token');
-            const response = await axios.post(`${API_URL}/admin/users/${userId}/approve`, {}, {
+            const response = await axios.post(`${API_BASE_URL}/admin/users/${userId}/approve`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -71,7 +71,7 @@ export const AdminUsersPage: React.FC = () => {
     const handleReject = async (userId: string) => {
         try {
             const token = localStorage.getItem('access_token');
-            await axios.post(`${API_URL}/admin/users/${userId}/reject`, {}, {
+            await axios.post(`${API_BASE_URL}/admin/users/${userId}/reject`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -85,7 +85,7 @@ export const AdminUsersPage: React.FC = () => {
     const handleDeactivate = async (userId: string) => {
         try {
             const token = localStorage.getItem('access_token');
-            await axios.post(`${API_URL}/admin/users/${userId}/deactivate`, {}, {
+            await axios.post(`${API_BASE_URL}/admin/users/${userId}/deactivate`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -99,7 +99,7 @@ export const AdminUsersPage: React.FC = () => {
     const handleActivate = async (userId: string) => {
         try {
             const token = localStorage.getItem('access_token');
-            await axios.post(`${API_URL}/admin/users/${userId}/activate`, {}, {
+            await axios.post(`${API_BASE_URL}/admin/users/${userId}/activate`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
