@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, Typography, Descriptions, Badge, Spin, Result } from 'antd';
+import { Card, Descriptions, Badge, Spin, Result } from 'antd';
 import axios from 'axios';
 import { API_BASE_URL } from '../../config';
-
-const { Title } = Typography;
 
 const VerificationPage: React.FC = () => {
     const { token } = useParams<{ token: string }>();
