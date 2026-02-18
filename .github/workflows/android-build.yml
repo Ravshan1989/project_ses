@@ -59,22 +59,22 @@ jobs:
         working-directory: ./mobile/android
         run: chmod +x gradlew
 
-      # 🔥 STANDALONE DEBUG BUILD (GitHub runner resurslarini tejash uchun)
-      - name: Build Standalone APK
+      # 🔥 STANDALONE RELEASE BUILD (Barqaror va kichik hajm uchun)
+      - name: Build Standalone APK (Release)
         working-directory: ./mobile/android
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Find and Verify APK
         working-directory: ./mobile/android
         run: |
           echo "Searching for APK files..."
           find . -name "*.apk"
-          ORIGINAL_APK=$(find app/build/outputs/apk/debug -name "*.apk" | head -n 1)
+          ORIGINAL_APK=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
           if [ -z "$ORIGINAL_APK" ]; then
             echo "Error: APK not found!"
             exit 1
           fi
-          NEW_APK="app/build/outputs/apk/debug/app-release.apk"
+          NEW_APK="app/build/outputs/apk/release/app-release.apk"
           mv "$ORIGINAL_APK" "$NEW_APK"
           echo "APK_PATH=$NEW_APK" >> $GITHUB_ENV
 
@@ -88,8 +88,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
-          name: Latest Smart SES Build (Standalone)
-          body: "Automated STANDALONE DEBUG build from main branch. This version includes the JS bundle."
+          name: Latest Smart SES Build (Standalone Release)
+          body: "Automated STANDALONE RELEASE build from main branch. This version is optimized and smaller."
           files: mobile/android/${{ env.APK_PATH }}
           draft: false
           prerelease: false
