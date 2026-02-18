@@ -40,6 +40,8 @@ import SosAlertPage from './features/sos/SosAlertPage';
 import SosModal from './features/sos/SosModal';
 import VerificationPage from './features/verify/VerificationPage';
 import DashboardExecutivePage from './features/dashboard/DashboardExecutivePage';
+import RegisterPage from './features/auth/RegisterPage';
+import { AdminUsersPage } from './features/admin/AdminUsersPage';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
