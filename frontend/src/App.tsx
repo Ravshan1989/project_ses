@@ -16,7 +16,7 @@ import {
 } from '@ant-design/icons';
 import RoleManagementPage from './features/admin/RoleManagementPage';
 import UserManagementPage from './features/admin/UserManagementPage';
-import { EyeOutlined, DownloadOutlined, UploadOutlined, SaveOutlined } from '@ant-design/icons';
+import { EyeOutlined, DownloadOutlined, SaveOutlined } from '@ant-design/icons';
 import DashboardPage from './features/dashboard/DashboardPage';
 import DiseaseEntryPage from './features/disease/DiseaseEntryPage';
 import Form1EntryPage from './features/submission/Form1EntryPage';
@@ -74,13 +74,13 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const isRepublic = userRole === 'REPUBLIC_HEAD';
     const isHR = userRole === 'HR';
 
-    const menuItems = [
-        {
+    const menuItems: any[] = ([
+        ...(hasRole(['REGION_HEAD']) ? [] : [{
             key: '/dashboard',
             icon: <DashboardOutlined />,
             label: t('common.dashboard'),
             onClick: () => navigate('/dashboard')
-        },
+        }]),
         ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD']) ? [{
             key: '/dashboard/executive',
             icon: <BarChartOutlined />,
@@ -93,7 +93,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             label: t('common.vaccination_entry'),
             onClick: () => navigate('/disease-entry')
         }] : []),
-        ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD', 'DISTRICT_HEAD', 'DEPARTMENT_HEAD', 'LAB_HEAD', 'EPIDEMIOLOGIST', 'EPIDEMIOLOGIST_ASSISTANT', 'STAFF']) ? [{
+        ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD', 'DISTRICT_HEAD', 'DEPARTMENT_HEAD', 'LAB_HEAD', 'EPIDEMIOLOGIST', 'EPIDEMIOLOGIST_ASSISTANT', 'STAFF']) && !hasRole(['REGION_HEAD']) ? [{
             key: 'grp_reports',
             icon: <FileTextOutlined />,
             label: t('common.reports'),
@@ -127,17 +127,13 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             ]
         }] : []),
         ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD']) ? [
+            { key: '/sos-monitoring', icon: <BellOutlined />, label: t('common.sos_monitoring'), onClick: () => navigate('/sos-monitoring') }
+        ] : []),
+        ...(hasRole(['REPUBLIC_HEAD']) ? [
             { key: '/form1-monitoring', icon: <EyeOutlined />, label: t('reports.form1_monitoring'), onClick: () => navigate('/form1-monitoring') },
-            { key: '/sos-monitoring', icon: <BellOutlined />, label: t('common.sos_monitoring'), onClick: () => navigate('/sos-monitoring') },
             { key: '/export', icon: <DownloadOutlined />, label: t('common.export'), onClick: () => navigate('/export') }
         ] : []),
-        ...(hasRole(['REGION_HEAD', 'DISTRICT_HEAD', 'DEPARTMENT_HEAD']) ? [{
-            key: '/import',
-            icon: <UploadOutlined />,
-            label: t('common.import'),
-            onClick: () => navigate('/import')
-        }] : []),
-        ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD', 'LAB_HEAD']) ? [{
+        ...(hasRole(['REPUBLIC_HEAD', 'LAB_HEAD']) ? [{
             key: 'grp_analytics',
             icon: <BarChartOutlined />,
             label: t('common.analysis'),
@@ -146,7 +142,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 { key: '/analysis/global', label: t('analysis.global'), onClick: () => navigate('/analysis/global') }
             ]
         }] : []),
-        {
+        ...((isAdmin || isRepublic || isHR) && !hasRole(['REGION_HEAD']) ? [{
             key: 'grp_settings',
             label: t('common.settings'),
             type: 'group' as const,
@@ -161,16 +157,17 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     { key: '/admin/users-management', icon: <TeamOutlined />, label: 'Xodimlar boshqaruvi', onClick: () => navigate('/admin/users-management') }
                 ] : [])
             ]
-        },
-        {
+        }] : []),
+        ...(!hasRole(['REGION_HEAD']) ? [{
             key: 'mobile_app',
             icon: <DownloadOutlined />,
             label: 'Mobil Ilova',
             onClick: () => {
                 window.location.href = 'https://github.com/Ravshan1989/project_ses/releases/latest/download/app-release.apk';
             }
-        }
-    ];
+        }] : [])
+    ] as any[]).filter(item => item !== null);
+
 
     const getPageTitle = () => {
         switch (location.pathname) {
