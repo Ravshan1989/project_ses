@@ -72,6 +72,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
     const isAdmin = userRole === 'ADMIN';
     const isRepublic = userRole === 'REPUBLIC_HEAD';
+    const isHR = userRole === 'HR';
 
     const menuItems = [
         {
@@ -155,6 +156,9 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     { key: '/departments', icon: <ClusterOutlined />, label: t('common.departments'), onClick: () => navigate('/departments') },
                     { key: '/roles', icon: <TeamOutlined />, label: t('common.roles_menu'), onClick: () => navigate('/roles') },
                     { key: '/users', icon: <UserOutlined />, label: t('common.users_menu'), onClick: () => navigate('/users') }
+                ] : []),
+                ...(isAdmin || isHR ? [
+                    { key: '/admin/users-management', icon: <TeamOutlined />, label: 'Xodimlar boshqaruvi', onClick: () => navigate('/admin/users-management') }
                 ] : [])
             ]
         },
