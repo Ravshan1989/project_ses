@@ -74,13 +74,15 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const isRepublic = userRole === 'REPUBLIC_HEAD';
     const isHR = userRole === 'HR';
 
+    const isRegionHeadOnly = userRole === 'REGION_HEAD';
+
     const menuItems: any[] = ([
-        ...(hasRole(['REGION_HEAD']) ? [] : [{
+        ...(!isRegionHeadOnly ? [{
             key: '/dashboard',
             icon: <DashboardOutlined />,
             label: t('common.dashboard'),
             onClick: () => navigate('/dashboard')
-        }]),
+        }] : []),
         ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD']) ? [{
             key: '/dashboard/executive',
             icon: <BarChartOutlined />,
@@ -93,7 +95,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             label: t('common.vaccination_entry'),
             onClick: () => navigate('/disease-entry')
         }] : []),
-        ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD', 'DISTRICT_HEAD', 'DEPARTMENT_HEAD', 'LAB_HEAD', 'EPIDEMIOLOGIST', 'EPIDEMIOLOGIST_ASSISTANT', 'STAFF']) && !hasRole(['REGION_HEAD']) ? [{
+        ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD', 'DISTRICT_HEAD', 'DEPARTMENT_HEAD', 'LAB_HEAD', 'EPIDEMIOLOGIST', 'EPIDEMIOLOGIST_ASSISTANT', 'STAFF']) && !isRegionHeadOnly ? [{
             key: 'grp_reports',
             icon: <FileTextOutlined />,
             label: t('common.reports'),
@@ -142,7 +144,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 { key: '/analysis/global', label: t('analysis.global'), onClick: () => navigate('/analysis/global') }
             ]
         }] : []),
-        ...((isAdmin || isRepublic || isHR) && !hasRole(['REGION_HEAD']) ? [{
+        ...((isAdmin || isRepublic || isHR) && !isRegionHeadOnly ? [{
             key: 'grp_settings',
             label: t('common.settings'),
             type: 'group' as const,
@@ -158,7 +160,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 ] : [])
             ]
         }] : []),
-        ...(!hasRole(['REGION_HEAD']) ? [{
+        ...(!isRegionHeadOnly ? [{
             key: 'mobile_app',
             icon: <DownloadOutlined />,
             label: 'Mobil Ilova',
