@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Tag, Input, Modal, message, Popconfirm } from 'antd';
-import { SearchOutlined, CheckOutlined, CloseOutlined, EyeOutlined, EditOutlined, LockOutlined } from '@ant-design/icons';
+import { SearchOutlined, CheckOutlined, CloseOutlined, LockOutlined } from '@ant-design/icons';
 import axios from 'axios';
-import { useTranslation } from 'react-i18next';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { API_BASE_URL } from '../../config';
 
 interface User {
     id: string;
@@ -21,7 +19,6 @@ interface User {
 }
 
 export const AdminUsersPage: React.FC = () => {
-    const { t } = useTranslation();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchText, setSearchText] = useState('');
@@ -35,7 +32,7 @@ export const AdminUsersPage: React.FC = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('access_token');
-            const response = await axios.get(`${API_URL}/admin/users`, {
+            const response = await axios.get(`${API_BASE_URL}/admin/users`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setUsers(response.data);
