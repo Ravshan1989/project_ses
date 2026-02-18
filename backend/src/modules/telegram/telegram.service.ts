@@ -77,20 +77,23 @@ export class TelegramService implements OnModuleInit {
       if (startPayload) {
         try {
           const userId = startPayload;
-          const user = await this.userRepository.findOne({ where: { id: userId } });
+          const user = await this.userRepository.findOne({
+            where: { id: userId },
+            relations: ['organization']
+          });
 
           if (user) {
-            // Save Telegram chat ID
-            user.telegramChatId = ctx.from.id.toString();
-            await this.userRepository.save(user);
-
+            // Request phone number for verification
             await ctx.reply(
-              `Assalomu alaykum, ${user.firstName}!\n\n` +
-              `Siz muvaffaqiyatli ro'yxatdan o'tdingiz. ` +
-              `Ma'lumotlaringiz tekshirilmoqda.\n\n` +
-              `Admin tasdiqlashidan so'ng login va parol shu yerga yuboriladi.`
+              `Assalomu alaykum!\n\n` +
+              `Davom etish uchun telefon raqamingizni tasdiqlang.\n\n` +
+              `Quyidagi tugmani bosing:`,
+              Markup.keyboard([
+                Markup.button.contactRequest('📞 Telefon raqamni yuborish')
+              ]).resize()
             );
-            this.logger.log(`Saved Telegram chat ID for user ${userId}`);
+
+            this.logger.log(`Requested phone verification for user ${userId}`);
             return;
           }
         } catch (error) {
@@ -113,6 +116,53 @@ export class TelegramService implements OnModuleInit {
           [Markup.button.callback("🟣 Epidemiologiya", "get_epi")],
         ]),
       );
+    });
+
+    // Handle phone number verification
+    this.bot.on('contact', async (ctx) => {
+      const contact = ctx.message.contact;
+      const phoneNumber = contact.phone_number;
+
+      this.logger.log(`Received phone number: ${phoneNumber} from ${ctx.from.id}`);
+
+      try {
+        // Find user by phone number
+        const user = await this.userRepository.findOne({
+          where: { phoneNumber: phoneNumber.replace(/\D/g, '') },
+          relations: ['organization']
+        });
+
+        if (user) {
+          // Save Telegram chat ID
+          user.telegramChatId = ctx.from.id.toString();
+          await this.userRepository.save(user);
+
+          await ctx.reply(
+            `✅ Tasdiqlandi!\n\n` +
+            `Assalomu alaykum, ${user.firstName}!\n\n` +
+            `Siz muvaffaqiyatli ro'yxatdan o'tdingiz.\n` +
+            `Ma'lumotlaringiz tekshirilmoqda.\n\n` +
+            `${user.organization?.name || 'Tashkilot'} kadri tasdiqlashidan so'ng ` +
+            `login va parol shu yerga yuboriladi.`,
+            Markup.removeKeyboard()
+          );
+          this.logger.log(`Phone verified and chat ID saved for user ${user.id}`);
+        } else {
+          await ctx.reply(
+            `❌ Xatolik!\n\n` +
+            `Bu telefon raqam tizimda topilmadi.\n\n` +
+            `Iltimos, ro'yxatdan o'tishda kiritgan telefon raqamingizni yuboring.`,
+            Markup.removeKeyboard()
+          );
+          this.logger.warn(`Phone number ${phoneNumber} not found in database`);
+        }
+      } catch (error) {
+        this.logger.error('Error verifying phone number:', error);
+        await ctx.reply(
+          `❌ Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.`,
+          Markup.removeKeyboard()
+        );
+      }
     });
 
     this.bot.action("get_hep", (ctx) => {

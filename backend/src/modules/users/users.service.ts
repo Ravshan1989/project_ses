@@ -136,4 +136,32 @@ export class UsersService {
   async remove(id: string): Promise<void> {
     await this.usersRepository.delete(id);
   }
+
+  // Admin panel methods
+  async findPending(): Promise<User[]> {
+    return this.usersRepository.find({
+      where: { isActive: false },
+      relations: ['organization', 'department'],
+      order: { createdAt: 'DESC' }
+    });
+  }
+
+  async findByOrganization(organizationId: string): Promise<User[]> {
+    return this.usersRepository.find({
+      where: { organization: { id: organizationId } },
+      relations: ['organization', 'department'],
+      order: { createdAt: 'DESC' }
+    });
+  }
+
+  async findPendingByOrganization(organizationId: string): Promise<User[]> {
+    return this.usersRepository.find({
+      where: {
+        organization: { id: organizationId },
+        isActive: false
+      },
+      relations: ['organization', 'department'],
+      order: { createdAt: 'DESC' }
+    });
+  }
 }
