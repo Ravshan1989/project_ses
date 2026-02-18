@@ -244,7 +244,7 @@ const ProtectedRoute = ({ children }: { children: any }) => {
     return <MainLayout>{children}</MainLayout>;
 };
 
-import RegisterPage from './features/auth/RegisterPage';
+
 
 function App() {
     return (
@@ -289,6 +289,7 @@ function App() {
                     <Route path="/users" element={<ProtectedRoute><UserManagementPage /></ProtectedRoute>} />
                     <Route path="/departments" element={<ProtectedRoute><DepartmentManagementPage /></ProtectedRoute>} />
                     <Route path="/roles" element={<ProtectedRoute><RoleManagementPage /></ProtectedRoute>} />
+                    <Route path="/admin/users-management" element={<ProtectedRoute><AdminUsersPage /></ProtectedRoute>} />
                 </Routes>
             </BrowserRouter>
         </ConfigProvider>
