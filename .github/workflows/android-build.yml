@@ -74,9 +74,12 @@ jobs:
             echo "Error: APK not found!"
             exit 1
           fi
-          NEW_APK="app/build/outputs/apk/release/app-release.apk"
-          mv "$ORIGINAL_APK" "$NEW_APK"
-          echo "APK_PATH=$NEW_APK" >> $GITHUB_ENV
+          # Faqat nomi boshqacha bo'lsa qayta nomlaymiz (aks holda mv xato beradi)
+          TARGET_APK="app/build/outputs/apk/release/app-release.apk"
+          if [ "$ORIGINAL_APK" != "$TARGET_APK" ]; then
+            mv "$ORIGINAL_APK" "$TARGET_APK"
+          fi
+          echo "APK_PATH=$TARGET_APK" >> $GITHUB_ENV
 
       - name: Upload APK to Artifacts
         uses: actions/upload-artifact@v4
