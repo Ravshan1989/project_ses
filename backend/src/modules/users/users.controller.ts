@@ -16,10 +16,56 @@ import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { UserRole } from "../../common/enums/role.enum";
 import * as bcrypt from "bcrypt";
+import { Response } from "express";
+import * as ExcelJS from "exceljs";
+
 @Controller("users")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
+
+  @Get("export")
+  @Roles(UserRole.ADMIN)
+  async exportUsers(@Res() res: Response) {
+    const users = await this.usersService.findAll();
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Users");
+
+    worksheet.columns = [
+      { header: "ID", key: "id", width: 10 },
+      { header: "Username", key: "username", width: 20 },
+      { header: "Full Name", key: "fullName", width: 30 },
+      { header: "Role", key: "role", width: 15 },
+      { header: "Organization", key: "organization", width: 30 },
+      { header: "Password (Hash)", key: "passwordHash", width: 40 }, // Added as requested
+      { header: "Created At", key: "createdAt", width: 20 },
+    ];
+
+    users.forEach((user) => {
+      worksheet.addRow({
+        id: user.id,
+        username: user.username,
+        fullName: user.fullName || user.firstName + " " + user.lastName,
+        role: user.role,
+        organization: user.organization ? user.organization.name : "N/A",
+        passwordHash: user.passwordHash,
+        createdAt: user.createdAt,
+      });
+    });
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=users_export.xlsx",
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+  }
 
   @Post()
   @Roles(UserRole.ADMIN) // Only Admin can create users directly

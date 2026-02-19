@@ -227,13 +227,40 @@ export const AdminUsersPage: React.FC = () => {
         <div style={{ padding: '24px' }}>
             <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h2 style={{ margin: 0 }}>Xodimlar Boshqaruvi</h2>
-                <Input
-                    placeholder="F.I.O, telefon yoki tashkilot bo'yicha qidirish..."
-                    prefix={<SearchOutlined />}
-                    style={{ width: 400 }}
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                />
+                <Space>
+                    <Button
+                        type="dashed"
+                        icon={<CheckOutlined style={{ color: 'green' }} />}
+                        onClick={async () => {
+                            try {
+                                const token = localStorage.getItem('access_token');
+                                const response = await axios.get(`${API_BASE_URL}/users/export`, {
+                                    headers: { Authorization: `Bearer ${token}` },
+                                    responseType: 'blob',
+                                });
+                                const url = window.URL.createObjectURL(new Blob([response.data]));
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.setAttribute('download', 'users_export.xlsx');
+                                document.body.appendChild(link);
+                                link.click();
+                                link.remove();
+                                message.success("Excel fayl yuklab olindi!");
+                            } catch (err) {
+                                message.error("Yuklashda xatolik bo'ldi");
+                            }
+                        }}
+                    >
+                        Excelga Yuklash
+                    </Button>
+                    <Input
+                        placeholder="F.I.O, telefon yoki tashkilot bo'yicha qidirish..."
+                        prefix={<SearchOutlined />}
+                        style={{ width: 300 }}
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                    />
+                </Space>
             </div>
 
             <Table
