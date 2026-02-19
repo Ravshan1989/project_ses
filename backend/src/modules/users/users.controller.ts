@@ -8,6 +8,7 @@ import {
   Patch,
   Param,
   Delete,
+  Res, // Added Res import
 } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { RegisterDto } from "../auth/dto/register.dto";
@@ -38,7 +39,7 @@ export class UsersController {
       { header: "Full Name", key: "fullName", width: 30 },
       { header: "Role", key: "role", width: 15 },
       { header: "Organization", key: "organization", width: 30 },
-      { header: "Password (Hash)", key: "passwordHash", width: 40 }, // Added as requested
+      { header: "Password (Hash)", key: "passwordHash", width: 40 },
       { header: "Created At", key: "createdAt", width: 20 },
     ];
 
@@ -46,7 +47,7 @@ export class UsersController {
       worksheet.addRow({
         id: user.id,
         username: user.username,
-        fullName: user.fullName || user.firstName + " " + user.lastName,
+        fullName: `${user.lastName || ""} ${user.firstName || ""}`.trim(), // Fixed fullName access
         role: user.role,
         organization: user.organization ? user.organization.name : "N/A",
         passwordHash: user.passwordHash,
