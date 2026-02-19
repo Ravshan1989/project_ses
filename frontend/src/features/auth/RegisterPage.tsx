@@ -202,7 +202,6 @@ const RegisterPage: React.FC = () => {
                             >
                                 <Select placeholder={t('user.placeholder_role', 'Lavozimni tanlang...')}>
                                     <Option value="STAFF">Xodim</Option>
-                                    <Option value="DISTRICT_SPECIALIST">Tuman mutaxassisi</Option>
                                     <Option value="DEPARTMENT_HEAD">Bo'lim mudiri</Option>
                                     <Option value="REGION_HEAD">Viloyat mudiri</Option>
                                     <Option value="REPUBLIC_HEAD">Respublika mudiri</Option>
