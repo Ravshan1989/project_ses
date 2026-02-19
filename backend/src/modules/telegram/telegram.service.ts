@@ -470,7 +470,7 @@ ${data.latitude && data.longitude ? `📍 *Manzil:* [Google xaritada ko'rish](ht
       }
 
       // Generate username and password
-      const username = this.generateUsername(user);
+      const username = await this.generateUniqueUsername(user);
       const password = this.generatePassword();
       const salt = await bcrypt.genSalt();
       const passwordHash = await bcrypt.hash(password, salt);
@@ -533,15 +533,28 @@ ${data.latitude && data.longitude ? `📍 *Manzil:* [Google xaritada ko'rish](ht
     }
   }
 
-  private generateUsername(user: User): string {
-    const firstName = user.firstName?.toLowerCase().replace(/\s+/g, "") || "";
-    const lastName = user.lastName?.toLowerCase().replace(/\s+/g, "") || "";
+  private async generateUniqueUsername(user: User): Promise<string> {
+    const firstName = user.firstName?.toLowerCase().replace(/[^a-z0-9]/g, "") || "user";
+    const lastName = user.lastName?.toLowerCase().replace(/[^a-z0-9]/g, "") || "";
 
-    if (firstName && lastName) {
-      return `${firstName}.${lastName}`;
-    } else {
-      return `user_${Date.now()}`;
+    let baseUsername = `${firstName}.${lastName}`;
+    if (!lastName) baseUsername = firstName;
+
+    // Check if base username exists
+    const exists = await this.userRepository.findOne({ where: { username: baseUsername } });
+    if (!exists) return baseUsername;
+
+    // If exists, append random number
+    let isUnique = false;
+    let newUsername = baseUsername;
+    while (!isUnique) {
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000); // 4 digit random
+      newUsername = `${baseUsername}${randomSuffix}`;
+      const check = await this.userRepository.findOne({ where: { username: newUsername } });
+      if (!check) isUnique = true;
     }
+
+    return newUsername;
   }
 
   private generatePassword(): string {
