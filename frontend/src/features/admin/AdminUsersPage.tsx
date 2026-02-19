@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Tag, Input, Modal, message, Popconfirm } from 'antd';
-import { SearchOutlined, CheckOutlined, CloseOutlined, LockOutlined } from '@ant-design/icons';
+import { SearchOutlined, CheckOutlined, CloseOutlined, LockOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { API_BASE_URL } from '../../config';
 
@@ -104,6 +104,20 @@ export const AdminUsersPage: React.FC = () => {
             fetchUsers();
         } catch (error) {
             message.error('Faollashtirishda xatolik');
+        }
+    };
+
+    const handleDelete = async (userId: string) => {
+        try {
+            const token = localStorage.getItem('access_token');
+            await axios.delete(`${API_BASE_URL}/users/${userId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            message.success('Xodim o\'chirildi');
+            fetchUsers();
+        } catch (error) {
+            message.error('O\'chirishda xatolik');
         }
     };
 
@@ -220,6 +234,22 @@ export const AdminUsersPage: React.FC = () => {
                     )}
                 </Space>
             ),
+        },
+        {
+            title: 'Boshqa',
+            key: 'delete',
+            render: (record: User) => (
+                <Popconfirm
+                    title="Xodimni o'chirishni tasdiqlaysizmi?"
+                    description="Bu amalni ortga qaytarib bo'lmaydi!"
+                    onConfirm={() => handleDelete(record.id)}
+                    okText="Ha, o'chirish"
+                    cancelText="Yo'q"
+                    okButtonProps={{ danger: true }}
+                >
+                    <Button type="text" danger icon={<DeleteOutlined />} />
+                </Popconfirm>
+            )
         },
     ];
 
