@@ -483,6 +483,9 @@ ${data.latitude && data.longitude ? `📍 *Manzil:* [Google xaritada ko'rish](ht
 
       await this.userRepository.save(user);
 
+      // Send credentials to user
+      await this.sendActivationNotification(user, password);
+
       // Update admin message
       const approvalMessage = `
 ✅ <b>Tasdiqlandi!</b>
