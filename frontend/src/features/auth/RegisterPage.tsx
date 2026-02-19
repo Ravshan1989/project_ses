@@ -207,8 +207,8 @@ const RegisterPage: React.FC = () => {
                                     <Option value="REGION_HEAD">Viloyat mudiri</Option>
                                     <Option value="REPUBLIC_HEAD">Respublika mudiri</Option>
                                     <Option value="LAB_HEAD">Laboratoriya mudiri</Option>
-                                    <Option value="EPIDEMIOLOGIST">Epidemiolog</Option>
-                                    <Option value="EPIDEMIOLOGIST_ASSISTANT">Epidemiolog yordamchisi</Option>
+                                    <Option value="DISTRICT_SPECIALIST">Epidemiolog (Mutaxassis)</Option>
+                                    <Option value="DISTRICT_OPERATOR">Epidemiolog Yordamchisi (Operator)</Option>
                                 </Select>
                             </Form.Item>
 

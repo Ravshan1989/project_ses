@@ -2,7 +2,7 @@ import { IsString, IsOptional, IsEnum } from "class-validator";
 import { UserRole } from "../../../common/enums/role.enum";
 import { LoginDto } from "./login.dto";
 
-export class RegisterDto extends LoginDto {
+export class RegisterDto {
   @IsString()
   firstName: string;
 
@@ -30,4 +30,12 @@ export class RegisterDto extends LoginDto {
   @IsString()
   @IsOptional()
   departmentId?: string; // UZ: Bo'lim ID si
+
+  @IsString()
+  @IsOptional()
+  username?: string;
+
+  @IsString()
+  @IsOptional()
+  password?: string;
 }
