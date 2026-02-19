@@ -474,7 +474,7 @@ export class AnalysisService {
 
     // Top Hotspot
     districtStats.sort((a, b) => b.cases - a.cases);
-    const topHotspot = districtStats.length > 0 ? districtStats[0] : null;
+    const topHotspots = districtStats.slice(0, 5); // Return Top 5
 
     // Top Diseases
     const topDiseases = Array.from(diseaseCounts.entries())
@@ -487,13 +487,41 @@ export class AnalysisService {
     if (totalCasesToday > 500) epidemicStatus = "critical"; // Xavfli
     else if (totalCasesToday > 200) epidemicStatus = "warning"; // Ogohlantirish
 
+    // Latest Reports (Unified List)
+    const fetchLatest = async (repo: Repository<any>, type: string, diseaseName: string) => {
+      return repo.find({
+        order: { createdAt: 'DESC' },
+        take: 5,
+        relations: ['organization']
+      }).then(reports => reports.map(r => ({
+        id: r.id,
+        type,
+        diseaseName,
+        district: r.organization?.name || "Noma'lum",
+        cases: r.total_cases || r.flu_total || r.ari || 0,
+        createdAt: r.createdAt
+      })));
+    };
+
+    const [hepLatest, fluLatest, ariLatest, covidLatest] = await Promise.all([
+      fetchLatest(this.hepatitisRepo, 'hepatitis', 'Gepatit'),
+      fetchLatest(this.fluRepo, 'flu', 'Gripp'),
+      fetchLatest(this.ariRepo, 'ari', "O'RVI"),
+      fetchLatest(this.covidRepo, 'covid', 'COVID-19')
+    ]);
+
+    const latestReports = [...hepLatest, ...fluLatest, ...ariLatest, ...covidLatest]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 5);
+
     return {
       totalCasesToday,
       totalCasesYesterday,
       trend,
       trendPercent: parseFloat(percent.toFixed(1)),
       epidemicStatus,
-      topHotspot,
+      topHotspots, // Changed from topHotspot (single) to topHotspots (list)
+      latestReports, // New field
       topDiseases,
       districtStatuses: districtStats,
       recentAlerts: recentAlerts.map((a) => ({

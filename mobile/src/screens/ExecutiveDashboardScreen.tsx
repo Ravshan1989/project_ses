@@ -125,16 +125,47 @@ const ExecutiveDashboardScreen = () => {
                     </View>
                 </View>
 
-                {/* Hotspot Card */}
-                {data?.topHotspot && (
-                    <View style={styles.hotspotCard}>
-                        <Flame color="#ef4444" size={24} />
-                        <View style={styles.hotspotInfo}>
-                            <Text style={styles.hotspotTitle}>Eng faol o'choq</Text>
-                            <Text style={styles.hotspotName}>{data.topHotspot.name}</Text>
-                        </View>
-                        <View style={styles.hotspotValueBox}>
-                            <Text style={styles.hotspotValue}>{data.topHotspot.cases}</Text>
+                {/* Top 5 Hotspots Section */}
+                {data?.topHotspots && data.topHotspots.length > 0 && (
+                    <View style={{ marginBottom: 24 }}>
+                        <Text style={styles.sectionTitle}>Eng Faol Hududlar (Top 5)</Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 4 }}>
+                            {data.topHotspots.map((hotspot: any, index: number) => (
+                                <View key={index} style={styles.hotspotCardHorizontal}>
+                                    <View style={styles.hotspotHeader}>
+                                        <View style={styles.rankBadge}>
+                                            <Text style={styles.rankText}>#{index + 1}</Text>
+                                        </View>
+                                        <Flame color="#ef4444" size={20} />
+                                    </View>
+                                    <Text style={styles.hotspotNameHorizontal} numberOfLines={1}>{hotspot.name}</Text>
+                                    <Text style={styles.hotspotCases}>{hotspot.cases} ta holat</Text>
+                                </View>
+                            ))}
+                        </ScrollView>
+                    </View>
+                )}
+
+                {/* Latest Reports Section */}
+                {data?.latestReports && data.latestReports.length > 0 && (
+                    <View style={{ marginBottom: 24 }}>
+                        <Text style={styles.sectionTitle}>So'nggi Xabarlar</Text>
+                        <View style={styles.latestReportsContainer}>
+                            {data.latestReports.map((report: any, index: number) => (
+                                <View key={index} style={styles.latestReportItem}>
+                                    <View style={[styles.reportIconBox, { backgroundColor: report.type === 'covid' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(56, 189, 248, 0.1)' }]}>
+                                        {report.type === 'covid' ? <Activity size={18} color="#22c55e" /> : <Activity size={18} color="#38bdf8" />}
+                                    </View>
+                                    <View style={{ flex: 1, marginLeft: 12 }}>
+                                        <Text style={styles.reportDiseaseName}>{report.diseaseName}</Text>
+                                        <Text style={styles.reportDistrictName}>{report.district}</Text>
+                                    </View>
+                                    <View style={{ alignItems: 'flex-end' }}>
+                                        <Text style={styles.reportTime}>{new Date(report.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+                                        <Text style={styles.reportDate}>{new Date(report.createdAt).toLocaleDateString()}</Text>
+                                    </View>
+                                </View>
+                            ))}
                         </View>
                     </View>
                 )}
@@ -280,7 +311,78 @@ const styles = StyleSheet.create({
     modalItemName: { color: '#f1f5f9', fontSize: 16 },
     modalItemValue: { color: '#ef4444', fontWeight: '700' },
     modalCloseBtn: { margin: 20, backgroundColor: '#334155', paddingVertical: 14, borderRadius: 16, alignItems: 'center' },
-    modalCloseBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 }
+    modalCloseBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+
+    // New Styles for Top 5 & Latest Reports
+    hotspotCardHorizontal: {
+        width: 160,
+        backgroundColor: '#1e293b',
+        borderRadius: 16,
+        padding: 12,
+        marginRight: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(239, 68, 68, 0.2)'
+    },
+    hotspotHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 8
+    },
+    rankBadge: {
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 8
+    },
+    hotspotNameHorizontal: {
+        color: '#f8fafc',
+        fontWeight: '700',
+        fontSize: 14,
+        marginBottom: 4
+    },
+    hotspotCases: {
+        color: '#ef4444',
+        fontWeight: 'bold',
+        fontSize: 12
+    },
+    latestReportsContainer: {
+        backgroundColor: '#1e293b',
+        borderRadius: 20,
+        padding: 10
+    },
+    latestReportItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255,255,255,0.05)'
+    },
+    reportIconBox: {
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    reportDiseaseName: {
+        color: '#f1f5f9',
+        fontWeight: '600',
+        fontSize: 14
+    },
+    reportDistrictName: {
+        color: '#94a3b8',
+        fontSize: 12
+    },
+    reportTime: {
+        color: '#f8fafc',
+        fontWeight: '700',
+        fontSize: 12
+    },
+    reportDate: {
+        color: '#64748b',
+        fontSize: 10
+    }
 });
 
 export default ExecutiveDashboardScreen;
