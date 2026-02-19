@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { Injectable, UnauthorizedException, ConflictException } from "@nestjs/common";
 import { UsersService } from "../users/users.service";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
@@ -48,34 +48,32 @@ export class AuthService {
     };
   }
 
-import { Injectable, UnauthorizedException, ConflictException } from "@nestjs/common";
-// ... imports
 
-  async register(registerDto: RegisterDto): Promise < User > {
-  // UZ: Ro'yxatdan o'tishda login/parol avtomat generatsiya qilinadi (Telegram orqali beriladi)
-  // Vaqtincha login sifatida telefon raqamini ishlatamiz
-  const tempUsername = `reg_${registerDto.phoneNumber.replace(/\D/g, "")}`;
-  const dummyPassword = Math.random().toString(36).slice(-8);
-  const salt = await bcrypt.genSalt();
-  const passwordHash = await bcrypt.hash(dummyPassword, salt);
+  async register(registerDto: RegisterDto): Promise<User> {
+    // UZ: Ro'yxatdan o'tishda login/parol avtomat generatsiya qilinadi (Telegram orqali beriladi)
+    // Vaqtincha login sifatida telefon raqamini ishlatamiz
+    const tempUsername = `reg_${registerDto.phoneNumber.replace(/\D/g, "")}`;
+    const dummyPassword = Math.random().toString(36).slice(-8);
+    const salt = await bcrypt.genSalt();
+    const passwordHash = await bcrypt.hash(dummyPassword, salt);
 
-  try {
-    const newUser = await this.usersService.create({
-      ...registerDto,
-      username: tempUsername,
-      passwordHash,
-      isActive: false, // UZ: Admin tasdiqlamaguncha nofaol bo'ladi
-    });
+    try {
+      const newUser = await this.usersService.create({
+        ...registerDto,
+        username: tempUsername,
+        passwordHash,
+        isActive: false, // UZ: Admin tasdiqlamaguncha nofaol bo'ladi
+      });
 
-    // Send Telegram notification to admin
-    await this.telegramService.sendRegistrationNotification(newUser);
+      // Send Telegram notification to admin
+      await this.telegramService.sendRegistrationNotification(newUser);
 
-    return newUser;
-  } catch(error) {
-    if (error.code === '23505') { // Postgres unique_violation
-      throw new ConflictException("Bu telefon raqam bilan foydalanuvchi allaqachon ro'yxatdan o'tgan.");
+      return newUser;
+    } catch (error) {
+      if (error.code === '23505') { // Postgres unique_violation
+        throw new ConflictException("Bu telefon raqam bilan foydalanuvchi allaqachon ro'yxatdan o'tgan.");
+      }
+      throw error;
     }
-    throw error;
   }
-}
 }
