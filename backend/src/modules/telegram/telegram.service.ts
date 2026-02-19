@@ -415,7 +415,26 @@ ${data.latitude && data.longitude ? `📍 *Manzil:* [Google xaritada ko'rish](ht
     };
 
     try {
-      // Find HR users in the same organization
+      // Logic:
+      // 1. If new user is HR (Kadr) -> Send to Admin only.
+      // 2. If new user is NOT HR -> Send to Organization's HR.
+      // 3. Fallback: If no HR found in organization, send to Admin (to avoid stuck requests).
+
+      if (user.role === UserRole.HR) {
+        // Case 1: New user is HR -> Send to Admin
+        if (this.adminChatId) {
+          await this.bot.telegram.sendMessage(this.adminChatId, message, {
+            parse_mode: "HTML",
+            reply_markup: keyboard,
+          });
+          this.logger.log(`Registration notification (HR) sent to Admin for user ${user.id}`);
+        } else {
+          this.logger.warn(`Admin Chat ID not found for HR registration ${user.id}`);
+        }
+        return;
+      }
+
+      // Case 2: New user is NOT HR -> Find Organization's HR
       const hrUsers = await this.userRepository.find({
         where: {
           role: UserRole.HR,
@@ -426,7 +445,7 @@ ${data.latitude && data.longitude ? `📍 *Manzil:* [Google xaritada ko'rish](ht
 
       let sentCount = 0;
 
-      // Send to all HR users with Telegram chat ID
+      // Send to all found HR users
       for (const hrUser of hrUsers) {
         if (hrUser.telegramChatId) {
           try {
@@ -442,13 +461,14 @@ ${data.latitude && data.longitude ? `📍 *Manzil:* [Google xaritada ko'rish](ht
         }
       }
 
-      // Fallback to admin if no HR users found or none have Telegram
+      // Case 3: Fallback (No HR found) -> Send to Admin
       if (sentCount === 0 && this.adminChatId) {
-        await this.bot.telegram.sendMessage(this.adminChatId, message, {
+        const adminMessage = `⚠️ <b>Tashkilotda Kadr (HR) topilmadi!</b>\n\n` + message;
+        await this.bot.telegram.sendMessage(this.adminChatId, adminMessage, {
           parse_mode: "HTML",
           reply_markup: keyboard,
         });
-        this.logger.log(`No HR users found, sent to admin instead for user ${user.id}`);
+        this.logger.log(`No HR users found, fallback sent to Admin for user ${user.id}`);
       } else {
         this.logger.log(`Registration notification sent to ${sentCount} HR user(s) for user ${user.id}`);
       }
