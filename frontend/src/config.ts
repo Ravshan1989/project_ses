@@ -7,8 +7,10 @@ const isLocalhost = typeof window !== 'undefined' &&
 const localPort = 3007; // Backend port
 const railwayUrl = 'https://projectses-production.up.railway.app'; // Production Backend URL
 
-export const API_BASE_URL = isLocalhost
-    ? `http://${window.location.hostname}:${localPort}/api/v1`
-    : `${railwayUrl}/api/v1`;
+export const API_BASE_URL = `${railwayUrl}/api/v1`;
+
+// export const API_BASE_URL = isLocalhost
+//     ? `http://${window.location.hostname}:${localPort}/api/v1`
+//     : `${railwayUrl}/api/v1`;
 
 console.log('Using API_BASE_URL:', API_BASE_URL);
