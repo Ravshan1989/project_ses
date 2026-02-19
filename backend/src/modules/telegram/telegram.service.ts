@@ -55,10 +55,17 @@ export class TelegramService implements OnModuleInit {
     }
 
     this.setupHandlers();
-    this.bot.launch().catch((err) => {
-      this.logger.error("Telegram bot ishga tushirishda xatolik:", err);
+
+    // UZ: Webhookni o'chirish (agar oldin o'rnatilgan bo'lsa) va Pollingni boshlash
+    this.bot.telegram.deleteWebhook().then(() => {
+      this.bot.launch().then(() => {
+        this.logger.log("Telegram bot polling rejimda ishga tushdi (Webhook o'chirildi).");
+      }).catch((err) => {
+        this.logger.error("Telegram bot ishga tushirishda xatolik:", err);
+      });
+    }).catch((err) => {
+      this.logger.error("Webhookni o'chirishda xatolik:", err);
     });
-    this.logger.log("Telegram bot interactive rejimda ishga tushdi.");
   }
 
   private setupHandlers() {
