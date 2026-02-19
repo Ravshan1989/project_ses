@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SaveOutlined, ReloadOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined } from '@ant-design/icons';
-import { Table, DatePicker, Button, InputNumber, notification, Space, Badge, Tooltip, Card } from 'antd';
+import { Table, DatePicker, Button, InputNumber, notification, Space, Badge, Tooltip, Card, Modal, Form, Tabs } from 'antd';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
@@ -43,6 +43,9 @@ const CovidDailyReportPage: React.FC = () => {
     const [data, setData] = useState<CovidReportData[]>([]);
     const [loading, setLoading] = useState(false);
     const [organizations, setOrganizations] = useState<any[]>([]);
+
+    // Mobile check
+    const isMobile = window.innerWidth <= 768;
 
     const userRole = localStorage.getItem('user_role') || 'REGION_HEAD';
     const isAdmin = ['ADMIN', 'REGION_HEAD', 'REPUBLIC_HEAD'].includes(userRole);
@@ -262,6 +265,117 @@ const CovidDailyReportPage: React.FC = () => {
         </Space>
     );
 
+    // Modal State
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState<CovidReportData | null>(null);
+    const [form] = Form.useForm();
+
+    const handleEditClick = (record: CovidReportData) => {
+        setEditingItem(record);
+        form.setFieldsValue(record);
+        setIsModalOpen(true);
+    };
+
+    const handleModalOk = async () => {
+        try {
+            const values = await form.validateFields();
+            if (editingItem) {
+                // Update local state
+                const newData = [...data];
+                const index = newData.findIndex(item => item.key === editingItem.key);
+                if (index > -1) {
+                    newData[index] = { ...newData[index], ...values };
+                    setData(newData);
+                }
+
+                const formattedDate = date.format('YYYY-MM-DD');
+                await dailyReportsApi.upsertCovid({
+                    ...editingItem,
+                    ...values,
+                    reportDate: formattedDate,
+                    organizationId: editingItem.organizationId,
+                });
+                notification.success({ message: t('user.save') });
+            }
+            setIsModalOpen(false);
+            setEditingItem(null);
+        } catch (error) {
+            console.error('Validation failed:', error);
+        }
+    };
+
+    const handleModalCancel = () => {
+        setIsModalOpen(false);
+        setEditingItem(null);
+    };
+
+    const modalContent = (
+        <Form form={form} layout="vertical">
+            <Tabs defaultActiveKey="1" items={[
+                {
+                    key: '1',
+                    label: 'Umumiy',
+                    children: (
+                        <>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                <Form.Item name="total_cases" label="Jami">
+                                    <InputNumber style={{ width: '100%' }} min={0} />
+                                </Form.Item>
+                                <Form.Item name="hospitalized_count" label="Shifoxonada">
+                                    <InputNumber style={{ width: '100%' }} min={0} />
+                                </Form.Item>
+                                <Form.Item name="reinfected" label="Qayta kasallangan">
+                                    <InputNumber style={{ width: '100%' }} min={0} />
+                                </Form.Item>
+                                <Form.Item name="vaccinated_infected" label="Emlangan">
+                                    <InputNumber style={{ width: '100%' }} min={0} />
+                                </Form.Item>
+                            </div>
+                        </>
+                    )
+                },
+                {
+                    key: '2',
+                    label: 'Yosh kesimida',
+                    children: (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                            <Form.Item name="age_0_1" label="0-1 yosh">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="age_1_3" label="1-3 yosh">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="age_4_6" label="4-6 yosh">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="age_7_14" label="7-14 yosh">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="age_15_19" label="15-19 yosh">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="age_20_29" label="20-29 yosh">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="age_30_39" label="30-39 yosh">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="age_40_49" label="40-49 yosh">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="age_50_59" label="50-59 yosh">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="age_60_plus" label="60+ yosh">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                        </div>
+                    )
+                }
+            ]} />
+        </Form>
+    );
+
     return (
         <PermissionGate permission="VIEW_COVID">
             <GlassLayout
@@ -269,17 +383,73 @@ const CovidDailyReportPage: React.FC = () => {
                 subtitle={`${date.format('DD.MM.YYYY')} kungi holat`}
                 headerButtons={headerControls}
             >
-                <Card className="glass-card" bordered={false} bodyStyle={{ padding: 0 }}>
-                    <Table
-                        columns={columns}
-                        dataSource={data}
-                        loading={loading}
-                        bordered
-                        size="small"
-                        pagination={false}
-                        scroll={{ x: 1500 }}
-                    />
-                </Card>
+                {!isMobile ? (
+                    <Card className="glass-card" bordered={false} bodyStyle={{ padding: 0 }}>
+                        <Table
+                            columns={columns}
+                            dataSource={data}
+                            loading={loading}
+                            bordered
+                            size="small"
+                            pagination={false}
+                            scroll={{ x: 1500 }}
+                        />
+                    </Card>
+                ) : (
+                    <div style={{ marginTop: '16px' }}>
+                        {loading ? <div style={{ textAlign: 'center', padding: '20px' }}>Loading...</div> : data.map((item) => (
+                            <Card
+                                key={item.key}
+                                style={{
+                                    marginBottom: '16px',
+                                    borderRadius: '16px',
+                                    background: 'rgba(255, 255, 255, 0.8)',
+                                    border: '1px solid rgba(0,0,0,0.05)'
+                                }}
+                                title={<span style={{ fontSize: '16px', fontWeight: 700 }}>{t(`orgs.${item.district_name.toLowerCase()}`, { defaultValue: item.district_name })}</span>}
+                                extra={<Badge status={item.status === 'APPROVED' ? 'success' : item.status === 'VERIFIED' ? 'processing' : 'default'} text={item.status} />}
+                            >
+                                <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                        <div style={{ background: '#e6f7ff', padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '12px', color: '#1890ff' }}>Jami</div>
+                                            <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{item.total_cases}</div>
+                                        </div>
+                                        <div style={{ background: '#fff7e6', padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '12px', color: '#fa8c16' }}>Shifoxonada</div>
+                                            <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{item.hospitalized_count}</div>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                        <div style={{ background: '#f6ffed', padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '12px', color: '#52c41a' }}>Qayta</div>
+                                            <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{item.reinfected}</div>
+                                        </div>
+                                        <div style={{ background: '#fff0f6', padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '12px', color: '#eb2f96' }}>Emlangan</div>
+                                            <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{item.vaccinated_infected}</div>
+                                        </div>
+                                    </div>
+                                    <Button block type="primary" onClick={() => handleEditClick(item)}>
+                                        Tahrirlash
+                                    </Button>
+                                </Space>
+                            </Card>
+                        ))}
+                    </div>
+                )}
+                <Modal
+                    title={`${editingItem ? t(`orgs.${editingItem.district_name.toLowerCase()}`, { defaultValue: editingItem.district_name }) : ''} - Tahrirlash`}
+                    open={isModalOpen}
+                    onOk={handleModalOk}
+                    onCancel={handleModalCancel}
+                    okText="Saqlash"
+                    cancelText="Bekor qilish"
+                    centered
+                    width={isMobile ? '95%' : 600}
+                >
+                    {modalContent}
+                </Modal>
             </GlassLayout>
         </PermissionGate>
     );

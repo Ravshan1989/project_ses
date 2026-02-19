@@ -139,6 +139,26 @@ const DailyDiarrheaPage: React.FC = () => {
         }
     };
 
+    const handleReject = async (id: string) => {
+        try {
+            await dailyReportsApi.reject('diarrhea', id);
+            notification.success({ message: t('daily_reports.actions.reject_success') });
+            fetchReports();
+        } catch (error) {
+            notification.error({ message: t('daily_reports.actions.reject_error') });
+        }
+    };
+
+    const handleSubmit = async (id: string) => {
+        try {
+            await dailyReportsApi.submit('diarrhea', id);
+            notification.success({ message: t('daily_reports.actions.submit_success') });
+            fetchReports();
+        } catch (error) {
+            notification.error({ message: t('daily_reports.actions.submit_error') });
+        }
+    };
+
     const headerStyle: React.CSSProperties = {
         background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
         padding: '24px',
@@ -189,9 +209,11 @@ const DailyDiarrheaPage: React.FC = () => {
                         data={data}
                         loading={loading}
                         onChange={handleCellChange}
-                        isAdmin={isAdmin}
+                        userRole={userRole}
                         onVerify={handleVerify}
                         onApprove={handleApprove}
+                        onReject={handleReject}
+                        onSubmit={handleSubmit}
                     />
                 </div>
             </div>

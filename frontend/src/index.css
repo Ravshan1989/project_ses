@@ -1,23 +1,184 @@
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom Table Colors for Form 1 */
 .col-green {
-  background-color: #e6f7e6 !important;
+    background-color: #e6f7e6 !important;
 }
 
 .col-yellow {
-  background-color: #fffbe6 !important;
+    background-color: #fffbe6 !important;
 }
 
 /* Ensure inputs inside transparently use background */
 .col-green .ant-input-number,
 .col-yellow .ant-input-number {
-  background-color: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Mobile Login Styles */
+@media (max-width: 768px) {
+
+    /* Mobile Container */
+    .dashboard-container {
+        padding: 16px !important;
+        background: #0f172a !important;
+        min-height: 100vh;
+        padding-bottom: 80px !important;
+        /* Space for Bottom Nav */
+    }
+
+    .login-container {
+        flex-direction: column !important;
+        background: #0f172a !important;
+        /* Slate-900 */
+    }
+
+    /* Hide Left Panel (Slogan) */
+    .login-left-panel {
+        display: none !important;
+        width: 0 !important;
+        padding: 0 !important;
+        flex: 0 !important;
+    }
+
+    /* Right Panel Container */
+    .login-right-panel {
+        background: transparent !important;
+        padding: 20px !important;
+        align-items: center !important;
+        display: flex !important;
+        flex: 1 !important;
+        width: 100% !important;
+    }
+
+    /* Glassmorphism Card Override */
+    .login-right-panel>div {
+        background: rgba(30, 41, 59, 0.85) !important;
+        /* Slate-800 Glass */
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 24px !important;
+        padding: 24px !important;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5) !important;
+        backdrop-filter: blur(12px) !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-top: 40px !important;
+        margin-bottom: 40px !important;
+    }
+
+    /* Text Colors */
+    h2.ant-typography {
+        color: #f8fafc !important;
+        /* Slate-50 */
+        font-size: 28px !important;
+        text-align: center !important;
+    }
+
+    span.ant-typography-secondary {
+        color: #94a3b8 !important;
+        /* Slate-400 */
+        text-align: center !important;
+        display: block !important;
+    }
+
+    /* Input Fields */
+    .ant-form-item-label>label {
+        color: #e2e8f0 !important;
+    }
+
+    .ant-input-affix-wrapper {
+        background-color: #020617 !important;
+        /* Slate-950 */
+        border-color: #334155 !important;
+    }
+
+    .ant-input {
+        background-color: transparent !important;
+        color: #fff !important;
+    }
+
+    .ant-input::placeholder {
+        color: #64748b !important;
+    }
+
+    .anticon {
+        color: #bae6fd !important;
+        /* Sky-200 */
+    }
+
+    /* Login Button */
+    .ant-btn-primary {
+        background: #38bdf8 !important;
+        /* Sky-400 */
+        color: #0f172a !important;
+        /* Slate-900 */
+        font-weight: 800 !important;
+        letter-spacing: 1px !important;
+        text-transform: uppercase !important;
+        box-shadow: 0 4px 10px rgba(56, 189, 248, 0.4) !important;
+        border: none !important;
+    }
+
+    /* Hide Download Button on Mobile Web (since it acts as app) */
+    .ant-btn-default {
+        /* optional: display: none !important; */
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        color: #94a3b8 !important;
+    }
+}
+
+/* Fix for Vertical Sidebar Text Bug */
+@media (max-width: 768px) {
+
+    /* Force hide Sider using CSS instead of JS logic */
+    .hide-on-mobile {
+        display: none !important;
+    }
+
+    /* GlassLayout Header Responsive */
+    .glass-header {
+        flex-direction: column !important;
+        align-items: center !important;
+        display: flex !important;
+        margin-bottom: 24px !important;
+        text-align: center;
+    }
+
+    .glass-header>div:first-child {
+        width: 100%;
+        margin-bottom: 16px;
+    }
+
+    /* Decrease Title Font Size on Mobile */
+    .glass-header h2.ant-typography {
+        font-size: 20px !important;
+        line-height: 1.3 !important;
+        white-space: normal !important;
+    }
+
+    .glass-header span.ant-typography-secondary {
+        font-size: 14px !important;
+    }
+
+    /* Header Buttons Container */
+    .glass-header-actions {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .glass-header-actions .ant-space {
+        justify-content: center !important;
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 8px !important;
+    }
 }

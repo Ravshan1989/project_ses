@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { API_BASE_URL } from '../../config';
 import { Form, Input, Button, message, Typography, theme, ConfigProvider, Badge } from 'antd';
-import { UserOutlined, LockOutlined, RightOutlined, AndroidOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, RightOutlined, AndroidOutlined, AppleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
+import IosInstallGuideModal from './IosInstallGuideModal';
 
 const { Title, Text, Link } = Typography;
 
@@ -85,6 +86,8 @@ const LoginPage: React.FC = () => {
         }
     };
 
+    const [isIosModalVisible, setIsIosModalVisible] = useState(false);
+
     return (
         <ConfigProvider
             theme={{
@@ -105,26 +108,6 @@ const LoginPage: React.FC = () => {
                 }
             }}
         >
-            <style>
-                {`
-                    @media (max-width: 768px) {
-                        .login-container {
-                            flex-direction: column !important;
-                        }
-                        .login-left-panel {
-                            flex: none !important;
-                            width: 100% !important;
-                            padding: 40px 20px !important;
-                        }
-                        .login-left-panel h1 {
-                            font-size: 28px !important;
-                        }
-                        .login-right-panel {
-                            padding: 20px !important;
-                        }
-                    }
-                `}
-            </style>
             <div className="login-container" style={{ display: 'flex', minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', fontFamily: 'Inter, sans-serif' }}>
 
                 {/* Left Side - Modern Gradient Panel with Animation */}
@@ -412,23 +395,23 @@ const LoginPage: React.FC = () => {
                             </Form.Item>
                         </Form>
 
-                        <div style={{ marginTop: '32px', textAlign: 'center' }}>
+                        <div style={{ marginTop: '32px', display: 'flex', gap: '12px' }}>
                             <Button
                                 type="default"
                                 icon={<AndroidOutlined />}
                                 href={`${API_BASE_URL}/updates/download`}
                                 target="_blank"
                                 style={{
+                                    flex: 1,
                                     background: 'rgba(255, 255, 255, 0.05)',
                                     color: '#94a3b8',
                                     border: '1px solid rgba(255, 255, 255, 0.1)',
                                     borderRadius: '16px',
                                     height: '54px',
-                                    width: '100%',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    fontSize: '16px',
+                                    fontSize: '14px',
                                     fontWeight: 600,
                                     transition: 'all 0.3s ease'
                                 }}
@@ -441,7 +424,37 @@ const LoginPage: React.FC = () => {
                                     e.currentTarget.style.color = '#94a3b8';
                                 }}
                             >
-                                {t('auth.download_app', 'Mobil ilovani yuklab olish')}
+                                Android APK
+                            </Button>
+
+                            <Button
+                                type="default"
+                                icon={<AppleOutlined />}
+                                onClick={() => setIsIosModalVisible(true)}
+                                style={{
+                                    flex: 1,
+                                    background: 'rgba(255, 255, 255, 0.05)',
+                                    color: '#94a3b8',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    borderRadius: '16px',
+                                    height: '54px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '14px',
+                                    fontWeight: 600,
+                                    transition: 'all 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                                    e.currentTarget.style.color = '#fff';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                                    e.currentTarget.style.color = '#94a3b8';
+                                }}
+                            >
+                                iOS Install
                             </Button>
                         </div>
 
@@ -468,6 +481,8 @@ const LoginPage: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            <IosInstallGuideModal visible={isIosModalVisible} onClose={() => setIsIosModalVisible(false)} />
         </ConfigProvider>
     );
 };

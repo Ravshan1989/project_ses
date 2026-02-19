@@ -1,5 +1,8 @@
-import { Table, InputNumber, Space, Button, Badge } from 'antd';
+import React, { useState } from 'react';
+import { Table, InputNumber, Space, Button, Badge, Card, Modal, Form, Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { Tooltip, Tag } from 'antd';
 
 interface DiarrheaReportData {
     id?: string;
@@ -50,6 +53,9 @@ const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, userRole, onCh
     const isAdmin = ['ADMIN', 'REGION_HEAD', 'REPUBLIC_HEAD'].includes(userRole);
     const isMudir = ['DEPARTMENT_HEAD', 'LAB_HEAD', 'DISTRICT_HEAD'].includes(userRole);
     const isSpecialist = ['STAFF', 'DISTRICT_SPECIALIST', 'DISTRICT_OPERATOR'].includes(userRole);
+
+    // Mobile check
+    const isMobile = window.innerWidth <= 768;
 
     const isSubmitted = (row: DiarrheaReportData) => !!row.is_submitted || row.status !== 'DRAFT';
 
@@ -195,201 +201,206 @@ const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, userRole, onCh
         }
     ];
 
-    return (
-        <Table
-            columns={columns}
-            dataSource={data}
-            loading={loading}
-            pagination={false}
-            scroll={{ x: 2200, y: 'calc(100vh - 400px)' }}
-            size="small"
-            bordered
-            rowClassName={(record) => record.district.includes('jami') ? 'row-total' : ''}
-        />
-    );
-};
+    // Modal State
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState<DiarrheaReportData | null>(null);
+    const [form] = Form.useForm();
 
-export default DiarrheaTab;
+    const handleEditClick = (record: DiarrheaReportData) => {
+        setEditingItem(record);
+        form.setFieldsValue(record);
+        setIsModalOpen(true);
+    };
 
-/*
-ORIGINAL CODE (Append-only rule):
-import React from 'react';
-import { Table, InputNumber, Tag, Space, Button, Tooltip } from 'antd';
-import { CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+    const handleModalOk = async () => {
+        try {
+            const values = await form.validateFields();
+            if (editingItem) {
+                // Update via onChange prop for each field
+                Object.keys(values).forEach(key => {
+                    onChange(values[key], editingItem.key, key as keyof DiarrheaReportData);
+                });
 
-interface DiarrheaReportData {
-    id?: string;
-    key: string;
-    organizationId: string;
-    district: string;
-    status?: string;
-    verificationToken?: string;
-    total_2025: number;
-    total_2026: number;
-    actively_found: number;
-    hospitalized: number;
-    illness_days_1_2: number;
-    age_under_1: number;
-    age_1_3: number;
-    age_4_6: number;
-    age_7_14: number;
-    age_15_19: number;
-    age_20_plus: number;
-    nursery_org: number;
-    nursery_unorg: number;
-    kindergarten_org: number;
-    kindergarten_unorg: number;
-    students: number;
-    higher_students: number;
-    adults: number;
-    open_water_samples: number;
-    open_water_isolated: number;
-    tap_water_samples: number;
-    tap_water_isolated: number;
-    is_submitted?: boolean;
-}
+                // Note: We cannot save immediately here because we don't have the date.
+                // The user must click the main Save button.
+            }
+            setIsModalOpen(false);
+            setEditingItem(null);
+        } catch (error) {
+            console.error('Validation failed:', error);
+        }
+    };
 
-interface DiarrheaTabProps {
-    data: DiarrheaReportData[];
-    loading: boolean;
-    onChange: (value: number, key: string, field: keyof DiarrheaReportData) => void;
-    isAdmin: boolean;
-    onVerify?: (id: string) => void;
-    onApprove?: (id: string) => void;
-}
+    const handleModalCancel = () => {
+        setIsModalOpen(false);
+        setEditingItem(null);
+    };
 
-const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, onChange, isAdmin, onVerify, onApprove }) => {
-    const { t } = useTranslation();
-
-    const renderInput = (record: DiarrheaReportData, field: keyof DiarrheaReportData, readOnly = false) => (
-        <InputNumber
-            value={record[field] as number}
-            onChange={(val) => !readOnly && onChange(val || 0, record.key, field)}
-            variant="borderless"
-            readOnly={readOnly}
-            className="report-input"
-            style={{ width: '100%', textAlign: 'center', fontWeight: readOnly ? 'bold' : 'normal' }}
-            controls={false}
-        />
-    );
-
-    const columns: any = [
-        {
-            title: '№',
-            dataIndex: 'no',
-            width: 50,
-            fixed: 'left',
-            render: (_: any, r: DiarrheaReportData, index: number) => (
-                <div style={{ backgroundColor: r.is_submitted ? '#f6ffed' : '#fff1f0', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {index + 1}
-                </div>
-            ),
-        },
-        {
-            title: t('daily_reports.table.district'),
-            dataIndex: 'district',
-            width: 150,
-            fixed: 'left',
-            render: (text: string, r: DiarrheaReportData) => (
-                <span style={{ color: r.is_submitted ? '#52c41a' : '#ff4d4f', fontWeight: 'bold' }}>
-                    {t(`orgs.${text.toLowerCase()}`, { defaultValue: text })}
-                </span>
-            ),
-        },
-        {
-            title: "Jami ro'yxatga olingan bemorlar",
-            children: [
-                { title: '2025', width: 70, render: (_: any, r: any) => renderInput(r, 'total_2025') },
-                { title: '2026', width: 70, render: (_: any, r: any) => renderInput(r, 'total_2026') },
-            ]
-        },
-        { title: 'Faol topilganlar', width: 100, render: (_: any, r: any) => renderInput(r, 'actively_found') },
-        { title: 'Shifoxonaga yotqizilgan', width: 110, render: (_: any, r: any) => renderInput(r, 'hospitalized') },
-        { title: '1-2 kunlari', width: 90, render: (_: any, r: any) => renderInput(r, 'illness_days_1_2') },
-        {
-            title: "Bemorlarni yoshlari bo'yicha",
-            children: [
-                { title: '1-yoshgacha', width: 80, render: (_: any, r: any) => renderInput(r, 'age_under_1') },
-                { title: '1-3 yosh', width: 70, render: (_: any, r: any) => renderInput(r, 'age_1_3') },
-                { title: '4-6 yosh', width: 70, render: (_: any, r: any) => renderInput(r, 'age_4_6') },
-                { title: '7-14 yosh', width: 75, render: (_: any, r: any) => renderInput(r, 'age_7_14') },
-                { title: '15-19 yosh', width: 80, render: (_: any, r: any) => renderInput(r, 'age_15_19') },
-                { title: '20+ yosh', width: 75, render: (_: any, r: any) => renderInput(r, 'age_20_plus') },
-            ]
-        },
-        {
-            title: "Bemorlarni kasblari bo'yicha",
-            children: [
-                { title: 'Yasli uyushgan', width: 100, render: (_: any, r: any) => renderInput(r, 'nursery_org') },
-                { title: 'Yasli uyushmagan', width: 110, render: (_: any, r: any) => renderInput(r, 'nursery_unorg') },
-                { title: 'Bog\'cha uyushgan', width: 110, render: (_: any, r: any) => renderInput(r, 'kindergarten_org') },
-                { title: 'Bog\'cha uyushmagan', width: 120, render: (_: any, r: any) => renderInput(r, 'kindergarten_unorg') },
-                { title: 'O\'quvchi', width: 80, render: (_: any, r: any) => renderInput(r, 'students') },
-                { title: 'Talaba', width: 80, render: (_: any, r: any) => renderInput(r, 'higher_students') },
-                { title: 'Kattalar', width: 80, render: (_: any, r: any) => renderInput(r, 'adults') },
-            ]
-        },
-        {
-            title: "Patogen qo'zg'atuvchilarga suv namunalari",
-            children: [
+    const modalContent = (
+        <Form form={form} layout="vertical">
+            <Tabs defaultActiveKey="1" items={[
                 {
-                    title: "Ochiq suvdan",
-                    children: [
-                        { title: 'olingan', width: 80, render: (_: any, r: any) => renderInput(r, 'open_water_samples') },
-                        { title: 'ajratilgan', width: 80, render: (_: any, r: any) => renderInput(r, 'open_water_isolated') },
-                    ]
+                    key: '1',
+                    label: 'Umumiy',
+                    children: (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                            <Form.Item name="total_2025" label="Jami 2025">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="total_2026" label="Jami 2026">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="actively_found" label="Faol topilgan">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="hospitalized" label="Shifoxonada">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="illness_days_1_2" label="1-2 kun murojaat">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                        </div>
+                    )
                 },
                 {
-                    title: "Vodoprovoddan",
-                    children: [
-                        { title: 'olingan', width: 80, render: (_: any, r: any) => renderInput(r, 'tap_water_samples') },
-                        { title: 'ajratilgan', width: 80, render: (_: any, r: any) => renderInput(r, 'tap_water_isolated') },
-                    ]
+                    key: '2',
+                    label: 'Yosh',
+                    children: (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                            <Form.Item name="age_under_1" label="1 yoshgacha">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="age_1_3" label="1-3 yosh">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="age_4_6" label="4-6 yosh">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="age_7_14" label="7-14 yosh">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="age_15_19" label="15-19 yosh">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="age_20_plus" label="20+ yosh">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                        </div>
+                    )
+                },
+                {
+                    key: '3',
+                    label: 'Aholi',
+                    children: (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                            <Form.Item name="nursery_org" label="Bog'cha (Uyush)">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="nursery_unorg" label="Bog'cha (Uyushmagan)">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="kindergarten_org" label="Maktab (Uyush)">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="kindergarten_unorg" label="Maktab (Uyushmagan)">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="students" label="Talabalar">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="adults" label="Kattalar">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                        </div>
+                    )
+                },
+                {
+                    key: '4',
+                    label: 'Suv',
+                    children: (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                            <Form.Item name="open_water_samples" label="Ochiq suv (namuna)">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="open_water_isolated" label="Ochiq suv (ajratma)">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="tap_water_samples" label="Jo'mrak suv (namuna)">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                            <Form.Item name="tap_water_isolated" label="Jo'mrak suv (ajratma)">
+                                <InputNumber style={{ width: '100%' }} min={0} />
+                            </Form.Item>
+                        </div>
+                    )
                 }
-            ]
-        },
-        {
-            title: t('daily_reports.table.status') || 'Holat',
-            key: 'status',
-            width: 120,
-            fixed: 'right',
-            render: (_: any, record: DiarrheaReportData) => {
-                const status = record.status || 'DRAFT';
-                let color = 'gold';
-                let icon = <ClockCircleOutlined />;
-                let label = 'Qoralama';
+            ]} />
+        </Form>
+    );
 
-                if (status === 'VERIFIED') {
-                    color = 'blue';
-                    icon = <CheckCircleOutlined />;
-                    label = t('dashboard_page.statuses.verified', { defaultValue: 'Tekshirildi' });
-                } else if (status === 'APPROVED') {
-                    color = 'green';
-                    icon = <CheckCircleOutlined />;
-                    label = t('dashboard_page.statuses.approved', { defaultValue: 'Tasdiqlandi' });
-                } else {
-                    label = t('dashboard_page.statuses.draft', { defaultValue: 'Qoralama' });
-                }
+    if (isMobile) {
+        return (
+            <div style={{ marginTop: '0px' }}>
+                {loading ? <div style={{ textAlign: 'center', padding: '20px' }}>Loading...</div> : data.map((item) => (
+                    <div
+                        key={item.key}
+                        style={{
+                            marginBottom: '16px',
+                            borderRadius: '16px',
+                            background: 'rgba(255, 255, 255, 0.8)',
+                            border: '1px solid rgba(0,0,0,0.05)',
+                            padding: '16px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                        }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                            <span style={{ fontSize: '16px', fontWeight: 700 }}>{t(`orgs.${item.district.toLowerCase()}`, { defaultValue: item.district })}</span>
+                            <Badge status={item.status === 'APPROVED' ? 'success' : item.status === 'VERIFIED' ? 'processing' : 'default'} text={item.status} />
+                        </div>
 
-                return (
-                    <Space>
-                        <Tag icon={icon} color={color}>{label}</Tag>
-                        {isAdmin && status === 'DRAFT' && onVerify && (
-                            <Tooltip title="Tekshirish">
-                                <Button size="small" type="primary" ghost icon={<CheckCircleOutlined />} onClick={() => onVerify(record.id!)} />
-                            </Tooltip>
-                        )}
-                        {isAdmin && status === 'VERIFIED' && onApprove && (
-                            <Tooltip title="Tasdiqlash">
-                                <Button size="small" type="primary" icon={<CheckCircleOutlined />} onClick={() => onApprove(record.id!)} />
-                            </Tooltip>
-                        )}
-                    </Space>
-                );
-            }
-        }
-    ];
+                        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                <div style={{ background: '#e6f7ff', padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '12px', color: '#1890ff' }}>Jami (2025)</div>
+                                    <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{item.total_2025}</div>
+                                </div>
+                                <div style={{ background: '#fff7e6', padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '12px', color: '#fa8c16' }}>Faol topilgan</div>
+                                    <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{item.actively_found}</div>
+                                </div>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                <div style={{ background: '#f6ffed', padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '12px', color: '#52c41a' }}>Shifoxonada</div>
+                                    <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{item.hospitalized}</div>
+                                </div>
+                                <div style={{ background: '#fff0f6', padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '12px', color: '#eb2f96' }}>1-yoshgacha</div>
+                                    <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{item.age_under_1}</div>
+                                </div>
+                            </div>
+                            <Button block type="primary" onClick={() => handleEditClick(item)}>
+                                Tahrirlash
+                            </Button>
+                        </Space>
+                    </div>
+                ))}
+
+                <Modal
+                    title={`${editingItem ? t(`orgs.${editingItem.district.toLowerCase()}`, { defaultValue: editingItem.district }) : ''} - Tahrirlash`}
+                    open={isModalOpen}
+                    onOk={handleModalOk}
+                    onCancel={handleModalCancel}
+                    okText="OK"
+                    cancelText="Bekor qilish"
+                    centered
+                    width="95%"
+                >
+                    {modalContent}
+                </Modal>
+            </div>
+        );
+    }
 
     return (
         <Table
@@ -406,4 +417,3 @@ const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, onChange, isAd
 };
 
 export default DiarrheaTab;
-*/

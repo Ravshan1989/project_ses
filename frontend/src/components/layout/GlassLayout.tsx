@@ -70,7 +70,7 @@ const GlassLayout: React.FC<GlassLayoutProps> = ({ children, title, subtitle, he
             box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.15);
         }
         .dashboard-container.dark-mode .glass-card:hover {
-             box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
         }
         
         .stat-card-gradient-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
@@ -109,7 +109,7 @@ const GlassLayout: React.FC<GlassLayoutProps> = ({ children, title, subtitle, he
         <div className={`dashboard-container ${isDarkMode ? 'dark-mode' : ''}`}>
             <style>{globalStyles}</style>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }} className="animate-fade-in">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }} className="animate-fade-in glass-header">
                 <div>
                     {title && (
                         <Title level={2} style={{ margin: 0, background: 'linear-gradient(45deg, #11998e, #38ef7d)', WebkitBackgroundClip: isDarkMode ? 'text' : 'text', WebkitTextFillColor: isDarkMode ? 'transparent' : 'transparent', fontWeight: 800, color: isDarkMode ? '#fff' : undefined }}>
@@ -120,29 +120,23 @@ const GlassLayout: React.FC<GlassLayoutProps> = ({ children, title, subtitle, he
                         <Text type="secondary" style={{ fontSize: '16px' }}>{subtitle}</Text>
                     )}
                 </div>
-                <Space>
-                    {headerButtons}
-                    <Switch
-                        checkedChildren="🌙"
-                        unCheckedChildren="☀"
-                        checked={isDarkMode}
-                        onChange={setIsDarkMode}
-                        style={{ background: isDarkMode ? '#11998e' : '#ccc' }}
-                    />
-                    <Button type="primary" shape="round" icon={<ClockCircleOutlined />} size="large" style={{ background: '#11998e', border: 'none' }}>
-                        {dayjs().format('DD.MM.YYYY HH:mm')}
-                    </Button>
-                </Space>
+                <div className="glass-header-actions">
+                    <Space size="small" wrap style={{ justifyContent: 'flex-end', width: '100%' }}>
+                        {headerButtons}
+                        <Switch
+                            checkedChildren="🌙"
+                            unCheckedChildren="☀"
+                            checked={isDarkMode}
+                            onChange={setIsDarkMode}
+                            style={{ background: isDarkMode ? '#11998e' : '#ccc' }}
+                        />
+                        <Button type="primary" shape="round" icon={<ClockCircleOutlined />} size="large" style={{ background: '#11998e', border: 'none' }}>
+                            {dayjs().format('DD.MM.YYYY HH:mm')}
+                        </Button>
+                    </Space>
+                </div>
             </div>
 
-            {/* Pass isDarkMode to children via props if they need it, or they can rely on CSS classes */}
-            {/* For charts that need explicit theme config, we might need a Context, but for now we'll assume children handle it via CSS or we can use a simple prop pattern later if needed. 
-                Actually, charts need 'isDarkMode' prop. We can cloneElement or use Context. 
-                For simplicity, let's export a hook or context later. 
-                For now, let's just render children. If children need isDarkMode JS variable (like Charts), they can't get it easily without Context.
-                
-                Let's export a Context so children can use it.
-            */}
             <LayoutContext.Provider value={{ isDarkMode }}>
                 {children}
             </LayoutContext.Provider>

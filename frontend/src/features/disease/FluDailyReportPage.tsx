@@ -56,6 +56,9 @@ const FluDailyReportPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [organizations, setOrganizations] = useState<any[]>([]);
 
+    // Mobile check
+    const isMobile = window.innerWidth <= 768;
+
     const userRole = localStorage.getItem('user_role') || 'REGION_HEAD';
     const isAdmin = ['ADMIN', 'REGION_HEAD', 'REPUBLIC_HEAD'].includes(userRole);
     const connectedOrgId = localStorage.getItem('user_org_id');
@@ -415,23 +418,68 @@ const FluDailyReportPage: React.FC = () => {
                 subtitle={t('daily_reports.date_status', { date: date.format('DD.MM.YYYY') })}
                 headerButtons={headerControls}
             >
-                {!isAdmin && !connectedOrgId && (
-                    <div style={{ marginBottom: 24 }}>
-                        <Badge status="warning" text={t('daily_reports.errors.no_org_context') || "Tashkilot ma'lumotlari topilmadi."} />
+                {!isMobile ? (
+                    <Card className="glass-card" bordered={false} bodyStyle={{ padding: 0 }}>
+                        <Table
+                            columns={columns}
+                            dataSource={data}
+                            loading={loading}
+                            bordered
+                            size="small"
+                            pagination={false}
+                            scroll={{ x: 1800, y: 600 }}
+                        />
+                    </Card>
+                ) : (
+                    <div style={{ marginTop: '16px' }}>
+                        {loading ? <div style={{ textAlign: 'center', padding: '20px' }}>Loading...</div> : data.map((item) => (
+                            <Card
+                                key={item.key}
+                                style={{
+                                    marginBottom: '16px',
+                                    borderRadius: '16px',
+                                    background: 'rgba(255, 255, 255, 0.8)',
+                                    border: '1px solid rgba(0,0,0,0.05)'
+                                }}
+                                title={<span style={{ fontSize: '16px', fontWeight: 700 }}>{t(`orgs.${item.district_name.toLowerCase()}`, { defaultValue: item.district_name })}</span>}
+                                extra={<Badge status={item.status === 'APPROVED' ? 'success' : 'processing'} text={item.status} />}
+                            >
+                                <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span>Institutions:</span>
+                                        <strong>{item.institution_count}</strong>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                        <div style={{ background: '#e6f7ff', padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '12px', color: '#1890ff' }}>Gripp</div>
+                                            <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{item.flu_total}</div>
+                                        </div>
+                                        <div style={{ background: '#fff7e6', padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '12px', color: '#fa8c16' }}>O'RVI</div>
+                                            <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{item.ari_total}</div>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                        <div style={{ background: '#f6ffed', padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '12px', color: '#52c41a' }}>Pnevmoniya</div>
+                                            <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{item.pneu_total}</div>
+                                        </div>
+                                        <div style={{ background: '#fff0f6', padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                                            <div style={{ fontSize: '12px', color: '#eb2f96' }}>SARI</div>
+                                            <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{item.sari_total}</div>
+                                        </div>
+                                    </div>
+                                    <Button block type="primary" onClick={() => {
+                                        // TODO: Detailed edit modal or expand
+                                        notification.info({ message: 'Batafsil ko\'rish tez orada qo\'shiladi' });
+                                    }}>
+                                        Tahrirlash / Batafsil
+                                    </Button>
+                                </Space>
+                            </Card>
+                        ))}
                     </div>
                 )}
-
-                <Card className="glass-card" bordered={false} bodyStyle={{ padding: 0 }}>
-                    <Table
-                        columns={columns}
-                        dataSource={data}
-                        loading={loading}
-                        bordered
-                        size="small"
-                        pagination={false}
-                        scroll={{ x: 1800, y: 600 }}
-                    />
-                </Card>
             </GlassLayout>
         </PermissionGate>
     );

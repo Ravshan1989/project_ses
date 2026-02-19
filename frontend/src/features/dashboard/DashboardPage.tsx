@@ -11,7 +11,8 @@ import {
     CloseCircleOutlined,
     FileTextOutlined,
     SearchOutlined,
-    EyeOutlined
+    EyeOutlined,
+    RightOutlined
 } from '@ant-design/icons';
 import { Column, Area } from '@ant-design/plots'; // UZ: Area va Pie grafiklar qo'shildi
 import { api } from '../../services/api'; // UZ: API bilan ishlash uchun
@@ -22,18 +23,14 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 import { useTranslation } from 'react-i18next';
 
+import { useNavigate } from 'react-router-dom';
+
 const DashboardPage: React.FC = () => {
     const { t, i18n } = useTranslation();
     const [submissions, setSubmissions] = useState<Submission[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
-
-    // UZ: GlassLayout ichida isDarkMode context orqali olinadi
-    // Lekin hozircha GlassLayout o'zi children render qiladi. Biz chartlar uchun contextni ishlatishimiz kerak.
-    // GlassLayout components/layout/GlassLayout.tsx da export qilingan Context ni ishlatamiz.
-    // Ammo DashboardPage GlassLayout ichida bo'lishi kerak. 
-    // Shuning uchun biz DashboardContent komponentini yaratib, uni DashboardPage da GlassLayout ichiga o'raymiz.
 
     return (
         <GlassLayout title={t('dashboard_page.title')} subtitle={t('dashboard_page.subtitle')}>
@@ -56,6 +53,7 @@ const DashboardPage: React.FC = () => {
 // Internal component to access Context
 const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions, loading, setLoading, searchText, setSearchText, statusFilter, setStatusFilter }) => {
     const { isDarkMode } = useContext(LayoutContext);
+    const navigate = useNavigate();
     const [allForecasts, setAllForecasts] = useState<any[]>([]); // UZ: Barcha prognozlar (xavf darajasi bo'yicha)
     const [selectedDiseaseType, setSelectedDiseaseType] = useState<string>(''); // UZ: Tanlangan kasallik turi
     const [isModalVisible, setIsModalVisible] = useState(false); // UZ: Modal holati
@@ -382,251 +380,515 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
         }
     };
 
+
+    // Mobile-specific styles and layout
+    const isMobile = window.innerWidth <= 768;
+
     return (
         <div>
-            <Row gutter={[24, 24]} style={{ marginBottom: '32px' }}>
-                <Col xs={24} sm={12} lg={6} className="animate-fade-in animate-delay-1">
-                    <Card className="glass-card stat-card-gradient-1" bordered={false} bodyStyle={{ padding: '24px' }}>
-                        <Statistic
-                            title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>{t('dashboard_page.total_reports')}</span>}
-                            value={totalSubmissions}
-                            prefix={<FileTextOutlined style={{ fontSize: '24px', opacity: 0.8, marginRight: '8px' }} />}
-                            valueStyle={{ color: '#fff', fontSize: '36px', fontWeight: 700 }}
-                        />
-                        <div style={{ position: 'absolute', right: -20, top: -20, opacity: 0.1 }}>
-                            <FileTextOutlined style={{ fontSize: '100px', color: '#fff' }} />
-                        </div>
-                    </Card>
-                </Col>
-                <Col xs={24} sm={12} lg={6} className="animate-fade-in animate-delay-2">
-                    <Card className="glass-card stat-card-gradient-2" bordered={false} bodyStyle={{ padding: '24px' }}>
-                        <Statistic
-                            title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>{t('dashboard_page.approved')}</span>}
-                            value={approvedSubmissions}
-                            prefix={<CheckCircleOutlined style={{ fontSize: '24px', opacity: 0.8, marginRight: '8px' }} />}
-                            valueStyle={{ color: '#fff', fontSize: '36px', fontWeight: 700 }}
-                        />
-                        <div style={{ position: 'absolute', right: -20, top: -20, opacity: 0.1 }}>
-                            <CheckCircleOutlined style={{ fontSize: '100px', color: '#fff' }} />
-                        </div>
-                    </Card>
-                </Col>
-                <Col xs={24} sm={12} lg={6} className="animate-fade-in animate-delay-3">
-                    <Card className="glass-card stat-card-gradient-3" bordered={false} bodyStyle={{ padding: '24px' }}>
-                        <Statistic
-                            title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>{t('dashboard_page.pending')}</span>}
-                            value={pendingSubmissions}
-                            prefix={<ClockCircleOutlined style={{ fontSize: '24px', opacity: 0.8, marginRight: '8px' }} />}
-                            valueStyle={{ color: '#fff', fontSize: '36px', fontWeight: 700 }}
-                        />
-                        <div style={{ position: 'absolute', right: -20, top: -20, opacity: 0.1 }}>
-                            <ClockCircleOutlined style={{ fontSize: '100px', color: '#fff' }} />
-                        </div>
-                    </Card>
-                </Col>
-                <Col xs={24} sm={12} lg={6} className="animate-fade-in animate-delay-4">
-                    <Card className="glass-card stat-card-gradient-4" bordered={false} bodyStyle={{ padding: '24px' }}>
-                        <Statistic
-                            title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>{t('dashboard_page.rejected')}</span>}
-                            value={rejectedSubmissions}
-                            prefix={<CloseCircleOutlined style={{ fontSize: '24px', opacity: 0.8, marginRight: '8px' }} />}
-                            valueStyle={{ color: '#fff', fontSize: '36px', fontWeight: 700 }}
-                        />
-                        <div style={{ position: 'absolute', right: -20, top: -20, opacity: 0.1 }}>
-                            <CloseCircleOutlined style={{ fontSize: '100px', color: '#fff' }} />
-                        </div>
-                    </Card>
-                </Col>
-            </Row>
+            <style>
+                {`
+                @media (max-width: 768px) {
+                    .desktop-only { display: none !important; }
+                    .mobile-only { display: block !important; }
+                    
+                    /* Mobile Container */
+                    .dashboard-container {
+                        padding: 16px !important;
+                        background: #0f172a !important;
+                        min-height: 100vh;
+                    }
 
-            <Row gutter={[24, 24]}>
-                <Col xs={24} lg={16} className="animate-fade-in animate-delay-2">
-                    <Card className="glass-card" bordered={false} title={
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Space><FileTextOutlined style={{ color: '#1677ff' }} /> <span style={{ fontSize: '18px', fontWeight: 600 }}>{t('dashboard_page.incoming_reports')}</span></Space>
-                            <Space>
-                                <Input
-                                    placeholder={t('dashboard_page.search_placeholder')}
-                                    prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
-                                    style={{ width: 200, borderRadius: '20px', background: 'rgba(255,255,255,0.5)', border: 'none' }}
-                                    onChange={(e) => setSearchText(e.target.value)}
-                                />
-                                <Select
-                                    placeholder={t('dashboard_page.status_placeholder')}
-                                    style={{ width: 120 }}
-                                    allowClear
-                                    bordered={false}
-                                    onChange={setStatusFilter}
-                                >
-                                    {Object.values(SubmissionStatus).map(status => (
-                                        <Option key={status} value={status}>{t(`dashboard_page.statuses.${status.toLowerCase()}`, { defaultValue: status })}</Option>
-                                    ))}
-                                </Select>
-                            </Space>
-                        </div>
-                    }>
-                        <Table
-                            columns={columns}
-                            dataSource={filteredData}
-                            rowKey="id"
-                            loading={loading}
-                            pagination={{ pageSize: 6 }}
-                        />
-                    </Card>
+                    /* Mobile Header */
+                    .mobile-header {
+                        background: rgba(30, 41, 59, 0.7);
+                        border-radius: 24px;
+                        padding: 20px;
+                        margin-bottom: 24px;
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        backdrop-filter: blur(10px);
+                    }
+                    .profile-row {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 16px;
+                    }
+                    .avatar-container {
+                        width: 50px;
+                        height: 50px;
+                        border-radius: 25px;
+                        background: #38bdf8;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        margin-right: 12px;
+                        box-shadow: 0 4px 10px rgba(56, 189, 248, 0.3);
+                    }
+                    .user-info h4 {
+                        margin: 0;
+                        color: #f8fafc;
+                        font-size: 18px;
+                        font-weight: 700;
+                    }
+                    .user-info p {
+                        margin: 0;
+                        color: #94a3b8;
+                        font-size: 12px;
+                    }
+                    .org-badge {
+                        display: inline-flex;
+                        align-items: center;
+                        background: rgba(15, 23, 42, 0.5);
+                        padding: 8px 12px;
+                        border-radius: 12px;
+                    }
+                    
+                    /* SOS Button */
+                    .sos-btn {
+                        background: #ef4444;
+                        color: white;
+                        width: 100%;
+                        border: none;
+                        border-radius: 16px;
+                        padding: 12px;
+                        font-weight: 700;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin-top: 16px;
+                        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
+                        cursor: pointer;
+                    }
 
-                    <div style={{ marginTop: '24px' }}>
-                        <Row gutter={[24, 24]}>
-                            <Col span={12} className="animate-fade-in animate-delay-3">
-                                <Card className="glass-card" title={<Space><span style={{ fontSize: '16px', fontWeight: 600 }}>{t('dashboard_page.trend_analysis')}</span><Badge status="processing" text={t('dashboard_page.live')} /></Space>} bordered={false}>
-                                    {trendChartData.length > 0 ? (
-                                        <Area {...trendAreaConfig} height={250} />
-                                    ) : (
-                                        <div style={{ height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <Text type="secondary">{t('dashboard_page.loading_data')}</Text>
-                                        </div>
-                                    )}
-                                </Card>
-                            </Col>
-                            <Col span={12} className="animate-fade-in animate-delay-4">
-                                <Card className="glass-card" title={<Space><span style={{ fontSize: '16px', fontWeight: 600 }}>{t('dashboard_page.region_breakdown')}</span></Space>} bordered={false}>
-                                    <Column {...regionColumnConfig} height={250} />
-                                </Card>
-                            </Col>
-                        </Row>
-                    </div>
-                </Col>
-
-                <Col xs={24} lg={8} className="animate-fade-in animate-delay-3">
-                    <Card className="glass-card" style={{ marginBottom: '24px' }} title={
-                        <Space><Badge status="warning" /> <span style={{ fontSize: '16px', fontWeight: 600 }}>Smart Analytics (AI)</span></Space>
-                    } bordered={false}>
-                        <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '5px' }}>
-                            {allForecasts.map((f, i) => (
-                                <div
-                                    key={i}
-                                    onClick={() => {
-                                        setSelectedDiseaseType(f.diseaseType);
-                                        setIsModalVisible(true);
-                                    }}
-                                    style={{
-                                        background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)',
-                                        borderRadius: '12px',
-                                        padding: '12px',
-                                        marginBottom: '12px',
-                                        borderLeft: `4px solid ${f.riskLevel === 'high' ? '#ff4d4f' : '#52c41a'}`,
-                                        cursor: 'pointer',
-                                        transition: 'all 0.3s ease',
-                                        transform: 'scale(1)'
-                                    }}
-                                    className="smart-analysis-card"
-                                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-                                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                                >
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                        <Text strong>{f.diseaseName}</Text>
-                                        <Tag color={f.riskLevel === 'high' ? 'red' : 'green'}>{f.riskScore}{t('dashboard_page.risk_percentage')}</Tag>
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <Text type="secondary" style={{ fontSize: '12px' }}>{t('dashboard_page.forecast_prefix')} <span style={{ color: '#1677ff', fontWeight: 'bold' }}>{f.predictedValue}</span></Text>
-                                        <Text type={f.trend === 'increasing' ? 'danger' : 'success'} style={{ fontSize: '12px' }}>
-                                            {f.trend === 'increasing' ? t('dashboard_page.trend_up') : t('dashboard_page.trend_down')} ({f.growthRate}%)
-                                        </Text>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </Card>
-
-                    <Card className="glass-card" title={<Space><span style={{ fontSize: '16px', fontWeight: 600 }}>{t('dashboard_page.region_title')}</span></Space>} bordered={false}>
-                        <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
-                            {REGION_DATA.sort((a, b) => b.population - a.population).slice(0, 10).map((item, index) => (
-                                <div key={item.id} style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    padding: '12px 0',
-                                    borderBottom: '1px solid rgba(0,0,0,0.05)',
-                                    alignItems: 'center'
-                                }}>
-                                    <Space>
-                                        <div style={{
-                                            width: '24px', height: '24px',
-                                            background: index < 3 ? 'linear-gradient(45deg, #FFD700, #FDB931)' : '#f0f0f0',
-                                            borderRadius: '50%', color: index < 3 ? '#fff' : '#666',
-                                            display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', fontSize: '12px'
-                                        }}>
-                                            {index + 1}
-                                        </div>
-                                        <Text strong>{item.name}</Text>
-                                    </Space>
-                                    <Tag color="blue">{item.population.toLocaleString()}</Tag>
-                                </div>
-                            ))}
-                        </div>
-                    </Card>
-                </Col>
-            </Row>
-
-            {/* Smart Analysis Detail Modal */}
-            <Modal
-                title={
-                    <Space>
-                        <Badge status={selectedForecast?.riskLevel === 'high' ? 'error' : 'success'} />
-                        <span style={{ fontSize: '18px' }}>
-                            {selectedForecast?.diseaseName || t('dashboard_page.ai_modal_title')} {t('dashboard_page.ai_modal_title')}
-                        </span>
-                    </Space>
+                    /* Stats Grid Mobile */
+                    .mobile-stats-grid {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 16px;
+                        margin-bottom: 30px;
+                    }
+                    .mobile-stat-card {
+                        background: rgba(30, 41, 59, 0.7);
+                        border-radius: 20px;
+                        padding: 16px;
+                        border: 1px solid rgba(255, 255, 255, 0.05);
+                        text-align: center;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                    }
+                    
+                    /* Quick Actions */
+                    .action-card {
+                        display: flex;
+                        align-items: center;
+                        background: rgba(30, 41, 59, 0.7);
+                        border-radius: 20px;
+                        padding: 16px;
+                        margin-bottom: 12px;
+                        border: 1px solid rgba(255, 255, 255, 0.05);
+                        cursor: pointer;
+                        backdrop-filter: blur(10px);
+                    }
+                    .action-icon-box {
+                        width: 50px;
+                        height: 50px;
+                        border-radius: 16px;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        margin-right: 16px;
+                    }
                 }
-                open={isModalVisible}
-                onCancel={() => setIsModalVisible(false)}
-                footer={[
-                    <Button key="close" onClick={() => setIsModalVisible(false)}>
-                        {t('common.close')}
-                    </Button>
-                ]}
-                width={800}
-                centered
-            >
-                <div style={{ padding: '20px 0' }}>
-                    <div style={{ marginBottom: '20px', padding: '15px', background: isDarkMode ? 'rgba(255,255,255,0.05)' : '#f9f9f9', borderRadius: '8px' }}>
-                        <Row gutter={16}>
-                            <Col span={8}>
-                                <Statistic
-                                    title={t('dashboard_page.analysis.current_status')}
-                                    value={selectedForecast?.currentValue || 0}
-                                    valueStyle={{ color: isDarkMode ? '#fff' : '#333' }}
-                                />
-                            </Col>
-                            <Col span={8}>
-                                <Statistic
-                                    title={t('dashboard_page.analysis.forecast_next_month')}
-                                    value={selectedForecast?.predictedValue || 0}
-                                    prefix={selectedForecast?.trend === 'increasing' ? <ArrowUpOutlined style={{ color: '#cf1322' }} /> : <ArrowDownOutlined style={{ color: '#3f8600' }} />}
-                                    valueStyle={{ color: selectedForecast?.trend === 'increasing' ? '#cf1322' : '#3f8600' }}
-                                />
-                            </Col>
-                            <Col span={8}>
-                                <Statistic
-                                    title={t('dashboard_page.analysis.growth_rate_label')}
-                                    value={(selectedForecast?.growthRate || 0) + '%'}
-                                    valueStyle={{ fontWeight: 'bold', color: '#1890ff' }}
-                                />
-                            </Col>
-                        </Row>
+                @media (min-width: 769px) {
+                    .mobile-only { display: none !important; }
+                }
+                `}
+            </style>
+
+            {/* --- MOBILE VIEW --- */}
+            <div className="mobile-only dashboard-container">
+                {/* Header */}
+                <div className="mobile-header">
+                    <div className="profile-row">
+                        <div className="avatar-container">
+                            <FileTextOutlined style={{ fontSize: '24px', color: '#fff' }} />
+                        </div>
+                        <div className="user-info">
+                            <p>{t('common.welcome')},</p>
+                            <h4>Foydalanuvchi</h4>
+                        </div>
                     </div>
+                    <div className="org-badge">
+                        <CheckCircleOutlined style={{ color: '#38bdf8', marginRight: 6 }} />
+                        <span style={{ color: '#bae6fd', fontSize: '13px', fontWeight: 500 }}>Toshkent viloyati SES</span>
+                    </div>
+                    <button className="sos-btn">
+                        <span style={{ marginRight: 8 }}>⚠️</span> FAVQULODDA SOS
+                    </button>
+                </div>
 
-                    <Title level={5} style={{ marginBottom: '15px' }}>{t('dashboard_page.ai_modal_chart_title')}</Title>
-                    <Area {...trendAreaConfig} height={300} />
-
-                    <div style={{ marginTop: '20px' }}>
-                        <Text type="secondary">
-                            <InfoCircleOutlined style={{ marginRight: '8px' }} />
-                            {selectedForecast?.trend === 'increasing'
-                                ? t('dashboard_page.ai_high_risk_insight')
-                                : t('dashboard_page.ai_stable_risk_insight')}
-                        </Text>
+                {/* Stats Grid */}
+                <div className="mobile-stats-grid">
+                    <div className="mobile-stat-card">
+                        <div style={{ width: 44, height: 44, borderRadius: 14, background: 'rgba(56, 189, 248, 0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
+                            <ClockCircleOutlined style={{ fontSize: '24px', color: '#38bdf8' }} />
+                        </div>
+                        <span style={{ fontSize: '24px', fontWeight: 800, color: '#f8fafc' }}>{pendingSubmissions}</span>
+                        <span style={{ fontSize: '12px', color: '#94a3b8' }}>Kutilmoqda</span>
+                    </div>
+                    <div className="mobile-stat-card">
+                        <div style={{ width: 44, height: 44, borderRadius: 14, background: 'rgba(74, 222, 128, 0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
+                            <CheckCircleOutlined style={{ fontSize: '24px', color: '#4ade80' }} />
+                        </div>
+                        <span style={{ fontSize: '24px', fontWeight: 800, color: '#f8fafc' }}>{approvedSubmissions}</span>
+                        <span style={{ fontSize: '12px', color: '#94a3b8' }}>Tasdiqlandi</span>
                     </div>
                 </div>
-            </Modal>
+
+                {/* Quick Actions Title */}
+                <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#f8fafc', marginBottom: '16px', marginLeft: '4px' }}>Tezkor amallar</h3>
+
+                {/* Quick Action Cards */}
+                <div className="action-card" onClick={() => navigate('/reports')}>
+                    <div className="action-icon-box" style={{ background: 'rgba(59, 130, 246, 0.2)' }}>
+                        <FileTextOutlined style={{ fontSize: '24px', color: '#3b82f6' }} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <h4 style={{ margin: 0, color: '#f1f5f9', fontSize: '16px' }}>Hisobotlar Tarixi</h4>
+                        <span style={{ color: '#64748b', fontSize: '12px' }}>Yuborilgan va tasdiqlangan</span>
+                    </div>
+                    <div style={{ width: 32, height: 32, background: 'rgba(255, 255, 255, 0.03)', borderRadius: 10, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <span style={{ color: '#94a3b8' }}>›</span>
+                    </div>
+                </div>
+
+                <div className="action-card" onClick={() => navigate('/daily-flu')}>
+                    <div className="action-icon-box" style={{ background: 'rgba(59, 130, 246, 0.2)' }}>
+                        <span style={{ fontSize: '24px' }}>🌡️</span>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <h4 style={{ margin: 0, color: '#f1f5f9', fontSize: '16px' }}>Gripp va O'RVI</h4>
+                        <span style={{ color: '#64748b', fontSize: '12px' }}>Haftalik o'tkir tahlil</span>
+                    </div>
+                    <div style={{ width: 32, height: 32, background: 'rgba(255, 255, 255, 0.03)', borderRadius: 10, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <RightOutlined style={{ color: '#94a3b8' }} />
+                    </div>
+                </div>
+
+                <div className="action-card" onClick={() => navigate('/daily-reports')}>
+                    <div className="action-icon-box" style={{ background: 'rgba(234, 179, 8, 0.2)' }}>
+                        <span style={{ fontSize: '24px' }}>🟡</span>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <h4 style={{ margin: 0, color: '#f1f5f9', fontSize: '16px' }}>VGA (Gepatit)</h4>
+                        <span style={{ color: '#64748b', fontSize: '12px' }}>Virusli gepatit A</span>
+                    </div>
+                    <div style={{ width: 32, height: 32, background: 'rgba(255, 255, 255, 0.03)', borderRadius: 10, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <RightOutlined style={{ color: '#94a3b8' }} />
+                    </div>
+                </div>
+
+                <div className="action-card" onClick={() => navigate('/daily-ari')}>
+                    <div className="action-icon-box" style={{ background: 'rgba(14, 165, 233, 0.2)' }}>
+                        <span style={{ fontSize: '24px' }}>🤧</span>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <h4 style={{ margin: 0, color: '#f1f5f9', fontSize: '16px' }}>O'tkir respirator (ARI)</h4>
+                        <span style={{ color: '#64748b', fontSize: '12px' }}>O'RVI va pnevmoniya</span>
+                    </div>
+                    <div style={{ width: 32, height: 32, background: 'rgba(255, 255, 255, 0.03)', borderRadius: 10, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <RightOutlined style={{ color: '#94a3b8' }} />
+                    </div>
+                </div>
+
+                <div className="action-card" onClick={() => navigate('/daily-covid')}>
+                    <div className="action-icon-box" style={{ background: 'rgba(34, 197, 94, 0.2)' }}>
+                        <span style={{ fontSize: '24px' }}>🦠</span>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <h4 style={{ margin: 0, color: '#f1f5f9', fontSize: '16px' }}>COVID-19</h4>
+                        <span style={{ color: '#64748b', fontSize: '12px' }}>Koronavirus monitoringi</span>
+                    </div>
+                    <div style={{ width: 32, height: 32, background: 'rgba(255, 255, 255, 0.03)', borderRadius: 10, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <RightOutlined style={{ color: '#94a3b8' }} />
+                    </div>
+                </div>
+
+                <div className="action-card" onClick={() => navigate('/daily-diarrhea')}>
+                    <div className="action-icon-box" style={{ background: 'rgba(59, 130, 246, 0.2)' }}>
+                        <span style={{ fontSize: '24px' }}>💧</span>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <h4 style={{ margin: 0, color: '#f1f5f9', fontSize: '16px' }}>O'tkir diareya</h4>
+                        <span style={{ color: '#64748b', fontSize: '12px' }}>Yuqumli ich ketish</span>
+                    </div>
+                    <div style={{ width: 32, height: 32, background: 'rgba(255, 255, 255, 0.03)', borderRadius: 10, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <RightOutlined style={{ color: '#94a3b8' }} />
+                    </div>
+                </div>
+
+                <div className="action-card" onClick={() => navigate('/daily-epidemiology')}>
+                    <div className="action-icon-box" style={{ background: 'rgba(245, 158, 11, 0.2)' }}>
+                        <span style={{ fontSize: '24px' }}>📋</span>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <h4 style={{ margin: 0, color: '#f1f5f9', fontSize: '16px' }}>Epidemiologiya</h4>
+                        <span style={{ color: '#64748b', fontSize: '12px' }}>Umumiy epidemiologik holat</span>
+                    </div>
+                    <div style={{ width: 32, height: 32, background: 'rgba(255, 255, 255, 0.03)', borderRadius: 10, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <RightOutlined style={{ color: '#94a3b8' }} />
+                    </div>
+                </div>
+
+            </div>
+
+            {/* --- DESKTOP VIEW (Original) --- */}
+            <div className="desktop-only">
+                <Row gutter={[24, 24]} style={{ marginBottom: '32px' }}>
+                    <Col xs={24} sm={12} lg={6} className="animate-fade-in animate-delay-1">
+                        <Card className="glass-card stat-card-gradient-1" bordered={false} bodyStyle={{ padding: '24px' }}>
+                            <Statistic
+                                title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>{t('dashboard_page.total_reports')}</span>}
+                                value={totalSubmissions}
+                                prefix={<FileTextOutlined style={{ fontSize: '24px', opacity: 0.8, marginRight: '8px' }} />}
+                                valueStyle={{ color: '#fff', fontSize: '36px', fontWeight: 700 }}
+                            />
+                            <div style={{ position: 'absolute', right: -20, top: -20, opacity: 0.1 }}>
+                                <FileTextOutlined style={{ fontSize: '100px', color: '#fff' }} />
+                            </div>
+                        </Card>
+                    </Col>
+                    <Col xs={24} sm={12} lg={6} className="animate-fade-in animate-delay-2">
+                        <Card className="glass-card stat-card-gradient-2" bordered={false} bodyStyle={{ padding: '24px' }}>
+                            <Statistic
+                                title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>{t('dashboard_page.approved')}</span>}
+                                value={approvedSubmissions}
+                                prefix={<CheckCircleOutlined style={{ fontSize: '24px', opacity: 0.8, marginRight: '8px' }} />}
+                                valueStyle={{ color: '#fff', fontSize: '36px', fontWeight: 700 }}
+                            />
+                            <div style={{ position: 'absolute', right: -20, top: -20, opacity: 0.1 }}>
+                                <CheckCircleOutlined style={{ fontSize: '100px', color: '#fff' }} />
+                            </div>
+                        </Card>
+                    </Col>
+                    <Col xs={24} sm={12} lg={6} className="animate-fade-in animate-delay-3">
+                        <Card className="glass-card stat-card-gradient-3" bordered={false} bodyStyle={{ padding: '24px' }}>
+                            <Statistic
+                                title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>{t('dashboard_page.pending')}</span>}
+                                value={pendingSubmissions}
+                                prefix={<ClockCircleOutlined style={{ fontSize: '24px', opacity: 0.8, marginRight: '8px' }} />}
+                                valueStyle={{ color: '#fff', fontSize: '36px', fontWeight: 700 }}
+                            />
+                            <div style={{ position: 'absolute', right: -20, top: -20, opacity: 0.1 }}>
+                                <ClockCircleOutlined style={{ fontSize: '100px', color: '#fff' }} />
+                            </div>
+                        </Card>
+                    </Col>
+                    <Col xs={24} sm={12} lg={6} className="animate-fade-in animate-delay-4">
+                        <Card className="glass-card stat-card-gradient-4" bordered={false} bodyStyle={{ padding: '24px' }}>
+                            <Statistic
+                                title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>{t('dashboard_page.rejected')}</span>}
+                                value={rejectedSubmissions}
+                                prefix={<CloseCircleOutlined style={{ fontSize: '24px', opacity: 0.8, marginRight: '8px' }} />}
+                                valueStyle={{ color: '#fff', fontSize: '36px', fontWeight: 700 }}
+                            />
+                            <div style={{ position: 'absolute', right: -20, top: -20, opacity: 0.1 }}>
+                                <CloseCircleOutlined style={{ fontSize: '100px', color: '#fff' }} />
+                            </div>
+                        </Card>
+                    </Col>
+                </Row>
+
+                <Row gutter={[24, 24]}>
+                    <Col xs={24} lg={16} className="animate-fade-in animate-delay-2">
+                        <Card className="glass-card" bordered={false} title={
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Space><FileTextOutlined style={{ color: '#1677ff' }} /> <span style={{ fontSize: '18px', fontWeight: 600 }}>{t('dashboard_page.incoming_reports')}</span></Space>
+                                <Space>
+                                    <Input
+                                        placeholder={t('dashboard_page.search_placeholder')}
+                                        prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
+                                        style={{ width: 200, borderRadius: '20px', background: 'rgba(255,255,255,0.5)', border: 'none' }}
+                                        onChange={(e) => setSearchText(e.target.value)}
+                                    />
+                                    <Select
+                                        placeholder={t('dashboard_page.status_placeholder')}
+                                        style={{ width: 120 }}
+                                        allowClear
+                                        bordered={false}
+                                        onChange={setStatusFilter}
+                                    >
+                                        {Object.values(SubmissionStatus).map(status => (
+                                            <Option key={status} value={status}>{t(`dashboard_page.statuses.${status.toLowerCase()}`, { defaultValue: status })}</Option>
+                                        ))}
+                                    </Select>
+                                </Space>
+                            </div>
+                        }>
+                            <Table
+                                columns={columns}
+                                dataSource={filteredData}
+                                rowKey="id"
+                                loading={loading}
+                                pagination={{ pageSize: 6 }}
+                            />
+                        </Card>
+
+                        <div style={{ marginTop: '24px' }}>
+                            <Row gutter={[24, 24]}>
+                                <Col span={12} className="animate-fade-in animate-delay-3">
+                                    <Card className="glass-card" title={<Space><span style={{ fontSize: '16px', fontWeight: 600 }}>{t('dashboard_page.trend_analysis')}</span><Badge status="processing" text={t('dashboard_page.live')} /></Space>} bordered={false}>
+                                        {trendChartData.length > 0 ? (
+                                            <Area {...trendAreaConfig} height={250} />
+                                        ) : (
+                                            <div style={{ height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <Text type="secondary">{t('dashboard_page.loading_data')}</Text>
+                                            </div>
+                                        )}
+                                    </Card>
+                                </Col>
+                                <Col span={12} className="animate-fade-in animate-delay-4">
+                                    <Card className="glass-card" title={<Space><span style={{ fontSize: '16px', fontWeight: 600 }}>{t('dashboard_page.region_breakdown')}</span></Space>} bordered={false}>
+                                        <Column {...regionColumnConfig} height={250} />
+                                    </Card>
+                                </Col>
+                            </Row>
+                        </div>
+                    </Col>
+
+                    <Col xs={24} lg={8} className="animate-fade-in animate-delay-3">
+                        <Card className="glass-card" style={{ marginBottom: '24px' }} title={
+                            <Space><Badge status="warning" /> <span style={{ fontSize: '16px', fontWeight: 600 }}>Smart Analytics (AI)</span></Space>
+                        } bordered={false}>
+                            <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '5px' }}>
+                                {allForecasts.map((f, i) => (
+                                    <div
+                                        key={i}
+                                        onClick={() => {
+                                            setSelectedDiseaseType(f.diseaseType);
+                                            setIsModalVisible(true);
+                                        }}
+                                        style={{
+                                            background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)',
+                                            borderRadius: '12px',
+                                            padding: '12px',
+                                            marginBottom: '12px',
+                                            borderLeft: `4px solid ${f.riskLevel === 'high' ? '#ff4d4f' : '#52c41a'}`,
+                                            cursor: 'pointer',
+                                            transition: 'all 0.3s ease',
+                                            transform: 'scale(1)'
+                                        }}
+                                        className="smart-analysis-card"
+                                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                    >
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                            <Text strong>{f.diseaseName}</Text>
+                                            <Tag color={f.riskLevel === 'high' ? 'red' : 'green'}>{f.riskScore}{t('dashboard_page.risk_percentage')}</Tag>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <Text type="secondary" style={{ fontSize: '12px' }}>{t('dashboard_page.forecast_prefix')} <span style={{ color: '#1677ff', fontWeight: 'bold' }}>{f.predictedValue}</span></Text>
+                                            <Text type={f.trend === 'increasing' ? 'danger' : 'success'} style={{ fontSize: '12px' }}>
+                                                {f.trend === 'increasing' ? t('dashboard_page.trend_up') : t('dashboard_page.trend_down')} ({f.growthRate}%)
+                                            </Text>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </Card>
+
+                        <Card className="glass-card" title={<Space><span style={{ fontSize: '16px', fontWeight: 600 }}>{t('dashboard_page.region_title')}</span></Space>} bordered={false}>
+                            <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
+                                {REGION_DATA.sort((a, b) => b.population - a.population).slice(0, 10).map((item, index) => (
+                                    <div key={item.id} style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        padding: '12px 0',
+                                        borderBottom: '1px solid rgba(0,0,0,0.05)',
+                                        alignItems: 'center'
+                                    }}>
+                                        <Space>
+                                            <div style={{
+                                                width: '24px', height: '24px',
+                                                background: index < 3 ? 'linear-gradient(45deg, #FFD700, #FDB931)' : '#f0f0f0',
+                                                borderRadius: '50%', color: index < 3 ? '#fff' : '#666',
+                                                display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', fontSize: '12px'
+                                            }}>
+                                                {index + 1}
+                                            </div>
+                                            <Text strong>{item.name}</Text>
+                                        </Space>
+                                        <Tag color="blue">{item.population.toLocaleString()}</Tag>
+                                    </div>
+                                ))}
+                            </div>
+                        </Card>
+                    </Col>
+                </Row>
+
+                {/* Smart Analysis Detail Modal */}
+                <Modal
+                    title={
+                        <Space>
+                            <Badge status={selectedForecast?.riskLevel === 'high' ? 'error' : 'success'} />
+                            <span style={{ fontSize: '18px' }}>
+                                {selectedForecast?.diseaseName || t('dashboard_page.ai_modal_title')} {t('dashboard_page.ai_modal_title')}
+                            </span>
+                        </Space>
+                    }
+                    open={isModalVisible}
+                    onCancel={() => setIsModalVisible(false)}
+                    footer={[
+                        <Button key="close" onClick={() => setIsModalVisible(false)}>
+                            {t('common.close')}
+                        </Button>
+                    ]}
+                    width={800}
+                    centered
+                >
+                    <div style={{ padding: '20px 0' }}>
+                        <div style={{ marginBottom: '20px', padding: '15px', background: isDarkMode ? 'rgba(255,255,255,0.05)' : '#f9f9f9', borderRadius: '8px' }}>
+                            <Row gutter={16}>
+                                <Col span={8}>
+                                    <Statistic
+                                        title={t('dashboard_page.analysis.current_status')}
+                                        value={selectedForecast?.currentValue || 0}
+                                        valueStyle={{ color: isDarkMode ? '#fff' : '#333' }}
+                                    />
+                                </Col>
+                                <Col span={8}>
+                                    <Statistic
+                                        title={t('dashboard_page.analysis.forecast_next_month')}
+                                        value={selectedForecast?.predictedValue || 0}
+                                        prefix={selectedForecast?.trend === 'increasing' ? <ArrowUpOutlined style={{ color: '#cf1322' }} /> : <ArrowDownOutlined style={{ color: '#3f8600' }} />}
+                                        valueStyle={{ color: selectedForecast?.trend === 'increasing' ? '#cf1322' : '#3f8600' }}
+                                    />
+                                </Col>
+                                <Col span={8}>
+                                    <Statistic
+                                        title={t('dashboard_page.analysis.growth_rate_label')}
+                                        value={(selectedForecast?.growthRate || 0) + '%'}
+                                        valueStyle={{ fontWeight: 'bold', color: '#1890ff' }}
+                                    />
+                                </Col>
+                            </Row>
+                        </div>
+
+                        <Title level={5} style={{ marginBottom: '15px' }}>{t('dashboard_page.ai_modal_chart_title')}</Title>
+                        <Area {...trendAreaConfig} height={300} />
+
+                        <div style={{ marginTop: '20px' }}>
+                            <Text type="secondary">
+                                <InfoCircleOutlined style={{ marginRight: '8px' }} />
+                                {selectedForecast?.trend === 'increasing'
+                                    ? t('dashboard_page.ai_high_risk_insight')
+                                    : t('dashboard_page.ai_stable_risk_insight')}
+                            </Text>
+                        </div>
+                    </div>
+                </Modal>
+            </div>
         </div>
     );
 };

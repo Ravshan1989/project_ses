@@ -123,7 +123,13 @@ const DailyReportUnifiedPage: React.FC = () => {
             setHepatitisData(mapper(hepRes.data || [], currentOrgs, { total_cases: 0, age_under_1: 0, age_1_3: 0, age_4_6: 0, age_7_14: 0, age_15_19: 0, age_20_plus: 0, status: 'DRAFT' }));
             setFluAriData(mapper(fluRes.data || [], currentOrgs, { ari_total: 0, flu_total: 0, pneu_total: 0, sari_total: 0, death_total: 0, status: 'DRAFT' }));
             setCovidData(mapper(covidRes.data || [], currentOrgs, { total_cases: 0, hospitalized_count: 0, status: 'DRAFT' }));
-            setEpiData(mapper(epiRes.data || [], currentOrgs, { objects_inspected: 0, violations_found: 0, status: 'DRAFT' }));
+            setEpiData(mapper(epiRes.data || [], currentOrgs, {
+                inspected_total: 0, inspected_mtm: 0, inspected_school: 0, inspected_dpm: 0, inspected_other: 0,
+                defects_total: 0, defects_mtm: 0, defects_school: 0, defects_dpm: 0, defects_other: 0,
+                fines_total: 0, fines_mtm: 0, fines_school: 0, fines_dpm: 0, fines_other: 0,
+                suspended_total: 0, suspended_mtm: 0, suspended_school: 0, suspended_dpm: 0, suspended_other: 0,
+                status: 'DRAFT'
+            }));
             setDiarrheaData(mapper(diarrheaRes.data || [], currentOrgs, { total_2025: 0, total_2026: 0, status: 'DRAFT' }));
 
         } catch (error) {
@@ -251,10 +257,10 @@ const DailyReportUnifiedPage: React.FC = () => {
                 data: epiData,
                 columns: [
                     { header: t('export_page.table_headers.region'), key: 'district_name', width: 25 },
-                    { header: t('export_page.table_headers.inspected_total'), key: 'objects_inspected', width: 12 },
-                    { header: t('export_page.table_headers.defects_total'), key: 'violations_found', width: 12 },
-                    { header: t('export_page.table_headers.fines_total'), key: 'fines_count', width: 12 },
-                    { header: t('export_page.table_headers.suspended_total'), key: 'objects_closed', width: 12 },
+                    { header: t('export_page.table_headers.inspected_total'), key: 'inspected_total', width: 12 },
+                    { header: t('export_page.table_headers.defects_total'), key: 'defects_total', width: 12 },
+                    { header: t('export_page.table_headers.fines_total'), key: 'fines_total', width: 12 },
+                    { header: t('export_page.table_headers.suspended_total'), key: 'suspended_total', width: 12 },
                     { header: t('export_page.table_headers.status'), key: 'status', width: 15 },
                 ]
             }

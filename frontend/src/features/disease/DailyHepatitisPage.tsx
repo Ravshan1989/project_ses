@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { SaveOutlined, ReloadOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined } from '@ant-design/icons';
-import { Table, DatePicker, Button, InputNumber, notification, Space, Badge, Tooltip, Card } from 'antd';
+import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
+import { DatePicker, Button, notification, Space, Badge, Card } from 'antd';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
 import PermissionGate from '../../components/PermissionGate';
 import GlassLayout from '../../components/layout/GlassLayout';
+import HepatitisTab from './unified/HepatitisTab';
 
 interface ReportData {
     key: string;
@@ -47,6 +48,9 @@ const DailyHepatitisPage: React.FC = () => {
     const [data, setData] = useState<ReportData[]>([]);
     const [loading, setLoading] = useState(false);
     const [organizations, setOrganizations] = useState<any[]>([]);
+
+    // Mobile check
+
 
     const userRole = localStorage.getItem('user_role') || 'REGION_HEAD';
     const isAdmin = ['ADMIN', 'REGION_HEAD', 'REPUBLIC_HEAD'].includes(userRole);
@@ -145,22 +149,7 @@ const DailyHepatitisPage: React.FC = () => {
         }
     };
 
-    const renderInput = (record: ReportData, field: keyof ReportData, readOnly = false) => (
-        <InputNumber
-            size="small"
-            min={0}
-            value={record[field] as number}
-            onChange={(val) => !readOnly && handleCellChange(val, record.key, field)}
-            variant="borderless"
-            readOnly={readOnly}
-            style={{ width: '100%', padding: 0, fontWeight: readOnly ? 'bold' : 'normal', textAlign: 'center' }}
-            controls={false}
-        />
-    );
 
-    const isSubmitted = (record: ReportData) => {
-        return !!record.is_submitted;
-    };
 
     const handleSave = async () => {
         setLoading(true);
@@ -210,133 +199,27 @@ const DailyHepatitisPage: React.FC = () => {
         }
     };
 
-    const columnsV2: any = [
-        {
-            title: '№',
-            dataIndex: 'key',
-            width: 40, align: 'center', fixed: 'left',
-            onCell: (record: ReportData) => ({
-                style: { backgroundColor: isSubmitted(record) ? '#f6ffed' : '#fff1f0' }
-            })
-        },
-        {
-            title: t('daily_reports.table.district'),
-            dataIndex: 'district_name',
-            width: 150, fixed: 'left',
-            render: (text: string, r: ReportData) => (
-                <span style={{ color: r.is_submitted ? '#52c41a' : '#ff4d4f', fontWeight: 'bold' }}>
-                    {t(`orgs.${text.toLowerCase()}`, { defaultValue: text })}
-                </span>
-            ),
-        },
-        {
-            title: t('daily_reports.table_v2.total_hepatitis'),
-            dataIndex: 'total_cases',
-            width: 90,
-            render: (_: any, r: any) => renderInput(r, 'total_cases', true)
-        },
-        {
-            title: t('daily_reports.table.by_age'),
-            children: [
-                { title: t('daily_reports.table_v2.age_under_1_yr'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_under_1') },
-                { title: t('daily_reports.table.age_1_3'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_1_3') },
-                { title: t('daily_reports.table.age_4_6'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_4_6') },
-                { title: t('daily_reports.table.age_7_14'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_7_14') },
-                { title: t('daily_reports.table.age_15_19'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_15_19') },
-                { title: t('daily_reports.table_v2.age_20_plus_yrs'), width: 80, render: (_: any, r: any) => renderInput(r, 'age_20_plus') },
-            ]
-        },
-        {
-            title: t('daily_reports.table.by_occupation'),
-            children: [
-                { title: t('daily_reports.table_v2.occ_organized_nursery'), width: 100, render: (_: any, _r: any) => <span style={{ color: 'gray' }}>-</span> },
-                { title: t('daily_reports.table_v2.occ_unorganized_nursery'), width: 100, render: (_: any, r: any) => renderInput(r, 'occ_unorganized') },
-                { title: t('daily_reports.table_v2.occ_organized_preschool'), width: 100, render: (_: any, r: any) => renderInput(r, 'occ_organized_1_6') },
-                { title: t('daily_reports.table_v2.occ_unorganized_preschool'), width: 100, render: (_: any, r: any) => renderInput(r, 'occ_unorganized_1_6') },
-                { title: t('daily_reports.table.students'), width: 80, render: (_: any, r: any) => renderInput(r, 'occ_students') },
-                { title: t('daily_reports.table.college_students'), width: 80, render: (_: any, r: any) => renderInput(r, 'occ_college_students') },
-                { title: t('daily_reports.table.adults'), width: 80, render: (_: any, r: any) => renderInput(r, 'occ_workers') },
-            ]
-        },
-        {
-            title: t('daily_reports.table.factors'),
-            children: [
-                { title: t('daily_reports.table.water'), width: 60, render: (_: any, r: any) => renderInput(r, 'factor_water') },
-                { title: t('daily_reports.table_v2.factor_food_detailed'), width: 90, render: (_: any, r: any) => renderInput(r, 'factor_food') },
-                { title: t('daily_reports.table_v2.factor_contact_detailed'), width: 80, render: (_: any, r: any) => renderInput(r, 'factor_contact') },
-            ]
-        },
-        {
-            title: t('daily_reports.table_v2.disinfection_detailed'),
-            children: [
-                { title: t('daily_reports.table_v2.lab_samples_detailed'), width: 90, render: (_: any, r: any) => renderInput(r, 'lab_samples') },
-                { title: t('daily_reports.table_v2.lab_positive_detailed'), width: 80, render: (_: any, r: any) => renderInput(r, 'lab_positive') },
-                { title: t('daily_reports.table_v2.disinfection_detailed'), width: 100, render: (_: any, r: any) => renderInput(r, 'disinfection_done') },
-            ]
-        },
-        {
-            title: t('daily_reports.table.status') || 'Holat',
-            key: 'status',
-            width: 120, fixed: 'right',
-            render: (_: any, r: ReportData) => (
-                <Space>
-                    <Badge
-                        status={r.status === 'APPROVED' ? 'success' : r.status === 'VERIFIED' ? 'processing' : 'default'}
-                        text={r.status}
-                    />
-                    {r.verificationToken && (
-                        <Tooltip title="QR orqali tekshirish">
-                            <Button
-                                size="small"
-                                icon={<QrcodeOutlined />}
-                                onClick={() => window.open(`/verify/${r.verificationToken}`, '_blank')}
-                            />
-                        </Tooltip>
-                    )}
-                </Space>
-            )
-        },
-        {
-            title: t('common.actions') || 'Amallar',
-            key: 'actions',
-            width: 160, fixed: 'right',
-            render: (_: any, r: ReportData) => {
-                const canVerify = (userRole === 'DEPARTMENT_HEAD' || userRole === 'ADMIN') && r.is_submitted && r.status === 'DRAFT';
-                const canApprove = (userRole === 'DISTRICT_HEAD' || userRole === 'ADMIN') && r.status === 'VERIFIED';
-                return (
-                    <Space>
-                        {canVerify && (
-                            <Button
-                                size="small"
-                                type="primary"
-                                icon={<AuditOutlined />}
-                                onClick={() => r.id && handleVerify(r.id)}
-                            >
-                                {t('daily_reports.actions.verify')}
-                            </Button>
-                        )}
-                        {canApprove && (
-                            <Button
-                                size="small"
-                                type="primary"
-                                style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
-                                icon={<CheckCircleOutlined />}
-                                onClick={() => r.id && handleApprove(r.id)}
-                            >
-                                {t('daily_reports.actions.approve')}
-                            </Button>
-                        )}
-                    </Space>
-                );
-            }
-        }
-    ];
 
-    const provinceTotals = data.reduce((acc, curr) => {
-        const fields = Object.keys(curr).filter(k => k !== 'key' && k !== 'district_name' && k !== 'organizationId' && k !== 'is_submitted') as (keyof ReportData)[];
-        fields.forEach(f => { acc[f] = (acc[f] || 0) + (curr[f] as number); });
-        return acc;
-    }, { district_name: t('daily_reports.table.total_province') } as any);
+
+    const handleReject = async (id: string) => {
+        try {
+            await dailyReportsApi.reject('hepatitis', id);
+            notification.success({ message: t('daily_reports.actions.reject_success') });
+            fetchReports();
+        } catch (error) {
+            notification.error({ message: t('daily_reports.actions.reject_error') });
+        }
+    };
+
+    const handleSubmit = async (id: string) => {
+        try {
+            await dailyReportsApi.submit('hepatitis', id);
+            notification.success({ message: t('daily_reports.actions.submit_success') });
+            fetchReports();
+        } catch (error) {
+            notification.error({ message: t('daily_reports.actions.submit_error') });
+        }
+    };
 
     const headerControls = (
         <Space wrap>
@@ -371,42 +254,15 @@ const DailyHepatitisPage: React.FC = () => {
                 )}
 
                 <Card className="glass-card" bordered={false} bodyStyle={{ padding: 0 }}>
-                    <Table
-                        columns={columnsV2}
-                        dataSource={data}
+                    <HepatitisTab
+                        data={data}
                         loading={loading}
-                        bordered
-                        size="small"
-                        pagination={false}
-                        scroll={{ x: 2000, y: 600 }}
-                        summary={() => (
-                            <Table.Summary fixed>
-                                <Table.Summary.Row style={{ background: 'rgba(24, 144, 255, 0.05)', fontWeight: 'bold' }}>
-                                    <Table.Summary.Cell index={0} align="center">-</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={1}>{t('daily_reports.table.total_province')}</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={2}>{provinceTotals.total_cases}</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={3}>{provinceTotals.age_under_1}</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={4}>{provinceTotals.age_1_3}</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={5}>{provinceTotals.age_4_6}</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={6}>{provinceTotals.age_7_14}</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={7}>{provinceTotals.age_15_19}</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={8}>{provinceTotals.age_20_plus}</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={9}>-</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={10}>{provinceTotals.occ_unorganized}</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={11}>{provinceTotals.occ_organized_1_6}</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={12}>{provinceTotals.occ_unorganized_1_6}</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={13}>{provinceTotals.occ_students}</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={14}>{provinceTotals.occ_college_students}</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={15}>{provinceTotals.occ_workers}</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={16}>{provinceTotals.factor_water}</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={17}>{provinceTotals.factor_food}</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={18}>{provinceTotals.factor_contact}</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={19}>{provinceTotals.lab_samples}</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={20}>{provinceTotals.lab_positive}</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={21}>{provinceTotals.disinfection_done}</Table.Summary.Cell>
-                                </Table.Summary.Row>
-                            </Table.Summary>
-                        )}
+                        userRole={userRole}
+                        onChange={handleCellChange}
+                        onVerify={handleVerify}
+                        onApprove={handleApprove}
+                        onReject={handleReject}
+                        onSubmit={handleSubmit}
                     />
                 </Card>
             </GlassLayout>

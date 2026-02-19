@@ -42,11 +42,13 @@ import VerificationPage from './features/verify/VerificationPage';
 import DashboardExecutivePage from './features/dashboard/DashboardExecutivePage';
 import RegisterPage from './features/auth/RegisterPage';
 import { AdminUsersPage } from './features/admin/AdminUsersPage';
+import MobileReportsPage from './features/mobile/MobileReportsPage';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
 
 import LanguageSwitcher from './components/LanguageSwitcher';
+import MobileBottomNav from './components/layout/MobileBottomNav';
 import { useTranslation } from 'react-i18next';
 
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -191,7 +193,19 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 collapsed={collapsed}
                 onCollapse={(value) => setCollapsed(value)}
                 width={250}
-                style={{ background: '#001529', boxShadow: '2px 0 8px rgba(0,0,0,0.15)', zIndex: 10 }}
+                className="desktop-only hide-on-mobile"
+                style={{
+                    background: '#001529',
+                    boxShadow: '2px 0 8px rgba(0,0,0,0.15)',
+                    zIndex: 10,
+                    // FORCE HIDE ON MOBILE (Inline style beats class sometimes in Antd Sider logic)
+                    display: window.innerWidth <= 768 ? 'none' : 'block'
+                }}
+                breakpoint="lg"
+                collapsedWidth="0"
+                onBreakpoint={(broken) => {
+                    console.log(broken);
+                }}
             >
                 <div
                     style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', margin: '16px', borderRadius: 6, cursor: 'pointer' }}
@@ -229,7 +243,8 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 </Header>
                 <Content style={{ margin: '24px 24px 0', overflow: 'initial' }}><div style={{ padding: 0, minHeight: 360 }}>{children}</div></Content>
                 <SosModal visible={sosVisible} onClose={() => setSosVisible(false)} />
-                <Footer style={{ textAlign: 'center', color: '#999', background: 'transparent' }}>
+                <MobileBottomNav />
+                <Footer style={{ textAlign: 'center', color: '#999', background: 'transparent', paddingBottom: '80px' }}>
                     {t('common.app_name')} ©{new Date().getFullYear()} {t('common.footer_org')}
                 </Footer>
             </Layout>
@@ -284,6 +299,7 @@ function App() {
                     <Route path="/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
                     <Route path="/analysis" element={<ProtectedRoute><AnalysisDashboard /></ProtectedRoute>} />
                     <Route path="/analysis/global" element={<ProtectedRoute><GlobalMonitoringPage /></ProtectedRoute>} />
+                    <Route path="/reports" element={<ProtectedRoute><MobileReportsPage /></ProtectedRoute>} />
                     <Route path="/sos-monitoring" element={<ProtectedRoute><SosAlertPage /></ProtectedRoute>} />
                     <Route path="/users" element={<ProtectedRoute><UserManagementPage /></ProtectedRoute>} />
                     <Route path="/departments" element={<ProtectedRoute><DepartmentManagementPage /></ProtectedRoute>} />

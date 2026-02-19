@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { SaveOutlined, ReloadOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined } from '@ant-design/icons';
-import { Table, DatePicker, Button, InputNumber, notification, Space, Badge, Tooltip, Card } from 'antd';
+import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
+import { DatePicker, Button, notification, Space, Card } from 'antd';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
 import PermissionGate from '../../components/PermissionGate';
 import GlassLayout from '../../components/layout/GlassLayout';
+import EpiTab from './unified/EpiTab';
 
 interface EpiReportData {
     key: string;
@@ -43,6 +44,9 @@ const EpidemiologyDailyReportPage: React.FC = () => {
     const [data, setData] = useState<EpiReportData[]>([]);
     const [loading, setLoading] = useState(false);
     const [organizations, setOrganizations] = useState<any[]>([]);
+
+    // Mobile check
+
 
     const userRole = localStorage.getItem('user_role') || 'REGION_HEAD';
     const isAdmin = ['ADMIN', 'REGION_HEAD', 'REPUBLIC_HEAD'].includes(userRole);
@@ -171,105 +175,29 @@ const EpidemiologyDailyReportPage: React.FC = () => {
         }
     };
 
-    const renderInput = (record: EpiReportData, field: keyof EpiReportData) => (
-        <InputNumber size="small" min={0} value={record[field] as number} onChange={(val) => handleCellChange(val, record.key, field)} variant="borderless" style={{ width: '100%', textAlign: 'center' }} controls={false} />
-    );
 
-    const columns: any = [
-        {
-            title: '№',
-            dataIndex: 'key',
-            width: 40, align: 'center', fixed: 'left',
-            render: (text: string, r: EpiReportData) => (
-                <div style={{ backgroundColor: r.is_submitted ? '#f6ffed' : '#fff1f0', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {text}
-                </div>
-            )
-        },
-        {
-            title: t('daily_reports.table.district'),
-            dataIndex: 'district_name',
-            width: 140,
-            fixed: 'left',
-            render: (text: string, r: EpiReportData) => (
-                <span style={{ color: r.is_submitted ? '#52c41a' : '#ff4d4f', fontWeight: 'bold' }}>
-                    {t(`orgs.${text.toLowerCase()}`, { defaultValue: text })}
-                </span>
-            )
-        },
-        {
-            title: t('daily_reports.table.inspected_objects'),
-            children: [
-                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'inspected_total') },
-                { title: t('daily_reports.table.mtm'), width: 50, render: (_: any, r: any) => renderInput(r, 'inspected_mtm') },
-                { title: t('daily_reports.table.school'), width: 60, render: (_: any, r: any) => renderInput(r, 'inspected_school') },
-                { title: t('daily_reports.table.dpm'), width: 50, render: (_: any, r: any) => renderInput(r, 'inspected_dpm') },
-                { title: t('daily_reports.table.other'), width: 60, render: (_: any, r: any) => renderInput(r, 'inspected_other') },
-            ]
-        },
-        {
-            title: t('daily_reports.table.defects_found'),
-            children: [
-                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'defects_total') },
-                { title: t('daily_reports.table.mtm'), width: 50, render: (_: any, r: any) => renderInput(r, 'defects_mtm') },
-                { title: t('daily_reports.table.school'), width: 60, render: (_: any, r: any) => renderInput(r, 'defects_school') },
-                { title: t('daily_reports.table.dpm'), width: 50, render: (_: any, r: any) => renderInput(r, 'defects_dpm') },
-                { title: t('daily_reports.table.other'), width: 60, render: (_: any, r: any) => renderInput(r, 'defects_other') },
-            ]
-        },
-        {
-            title: t('daily_reports.table.fines_issued'),
-            children: [
-                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'fines_total') },
-                { title: t('daily_reports.table.mtm'), width: 50, render: (_: any, r: any) => renderInput(r, 'fines_mtm') },
-                { title: t('daily_reports.table.school'), width: 60, render: (_: any, r: any) => renderInput(r, 'fines_school') },
-                { title: t('daily_reports.table.dpm'), width: 50, render: (_: any, r: any) => renderInput(r, 'fines_dpm') },
-                { title: t('daily_reports.table.other'), width: 60, render: (_: any, r: any) => renderInput(r, 'fines_other') },
-            ]
-        },
-        {
-            title: t('daily_reports.table.suspended_activities'),
-            children: [
-                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'suspended_total') },
-                { title: t('daily_reports.table.mtm'), width: 50, render: (_: any, r: any) => renderInput(r, 'suspended_mtm') },
-                { title: t('daily_reports.table.school'), width: 60, render: (_: any, r: any) => renderInput(r, 'suspended_school') },
-                { title: t('daily_reports.table.dpm'), width: 50, render: (_: any, r: any) => renderInput(r, 'suspended_dpm') },
-                { title: t('daily_reports.table.other'), width: 60, render: (_: any, r: any) => renderInput(r, 'suspended_other') },
-            ]
-        },
-        {
-            title: t('daily_reports.table.status'),
-            key: 'status',
-            width: 140,
-            fixed: 'right',
-            render: (_: any, r: EpiReportData) => (
-                <Space>
-                    <Badge status={r.status === 'APPROVED' ? 'success' : r.status === 'VERIFIED' ? 'processing' : 'default'} text={r.status} />
-                    {r.verificationToken && (
-                        <Tooltip title="QR orqali tekshirish">
-                            <Button size="small" icon={<QrcodeOutlined />} onClick={() => window.open(`/verify/${r.verificationToken}`, '_blank')} />
-                        </Tooltip>
-                    )}
-                </Space>
-            )
-        },
-        {
-            title: t('common.actions'),
-            key: 'actions',
-            width: 180,
-            fixed: 'right',
-            render: (_: any, r: EpiReportData) => {
-                const canVerify = (userRole === 'DEPARTMENT_HEAD' || userRole === 'ADMIN') && r.is_submitted && r.status === 'DRAFT';
-                const canApprove = (userRole === 'DISTRICT_HEAD' || userRole === 'ADMIN') && r.status === 'VERIFIED';
-                return (
-                    <Space>
-                        {canVerify && <Button size="small" type="primary" icon={<AuditOutlined />} onClick={() => r.id && handleVerify(r.id)}>{t('daily_reports.actions.verify')}</Button>}
-                        {canApprove && <Button size="small" type="primary" style={{ background: '#52c41a', borderColor: '#52c41a' }} icon={<CheckCircleOutlined />} onClick={() => r.id && handleApprove(r.id)}>{t('daily_reports.actions.approve')}</Button>}
-                    </Space>
-                );
-            }
+
+
+
+    const handleReject = async (id: string) => {
+        try {
+            await dailyReportsApi.reject('epidemiology', id);
+            notification.success({ message: t('daily_reports.actions.reject_success') });
+            fetchReports();
+        } catch (error) {
+            notification.error({ message: t('daily_reports.actions.reject_error') });
         }
-    ];
+    };
+
+    const handleSubmit = async (id: string) => {
+        try {
+            await dailyReportsApi.submit('epidemiology', id);
+            notification.success({ message: t('daily_reports.actions.submit_success') });
+            fetchReports();
+        } catch (error) {
+            notification.error({ message: t('daily_reports.actions.submit_error') });
+        }
+    };
 
     const headerControls = (
         <Space>
@@ -287,14 +215,15 @@ const EpidemiologyDailyReportPage: React.FC = () => {
                 headerButtons={headerControls}
             >
                 <Card className="glass-card" bordered={false} bodyStyle={{ padding: 0 }}>
-                    <Table
-                        columns={columns}
-                        dataSource={data}
+                    <EpiTab
+                        data={data}
                         loading={loading}
-                        bordered
-                        size="small"
-                        pagination={false}
-                        scroll={{ x: 1800 }}
+                        userRole={userRole}
+                        onChange={handleCellChange}
+                        onVerify={handleVerify}
+                        onApprove={handleApprove}
+                        onReject={handleReject}
+                        onSubmit={handleSubmit}
                     />
                 </Card>
             </GlassLayout>

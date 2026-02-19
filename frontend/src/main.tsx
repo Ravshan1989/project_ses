@@ -12,3 +12,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </ConfigProvider>
     </React.StrictMode>,
 )
+console.log('PWA Version: Mobile Nav Update 1.1');
