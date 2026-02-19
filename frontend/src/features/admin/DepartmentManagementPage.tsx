@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, Switch, message, Space, Transfer, Tag, Typography, Select } from 'antd';
-import { ClusterOutlined, PlusOutlined, SafetyCertificateOutlined, EditOutlined } from '@ant-design/icons';
+import { Table, Button, Modal, Form, Input, Switch, message, Space, Transfer, Tag, Typography, Select, Popconfirm } from 'antd';
+import { ClusterOutlined, PlusOutlined, SafetyCertificateOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { departmentsApi, permissionsApi } from '../../services/api';
 // import { useTranslation } from 'react-i18next';
 
@@ -64,6 +64,17 @@ const DepartmentManagementPage: React.FC = () => {
         }
     };
 
+    const handleDelete = async (id: string) => {
+        try {
+            await departmentsApi.delete(id);
+            message.success("Bo'lim o'chirildi");
+            fetchDepartments();
+        } catch (e) {
+            console.error("Delete error:", e);
+            message.error("O'chirishda xatolik yuz berdi");
+        }
+    };
+
     const handleSyncPermissions = async (targetKeys: any[]) => {
         if (!selectedDept) return;
         try {
@@ -121,6 +132,15 @@ const DepartmentManagementPage: React.FC = () => {
                         setSelectedDept(record);
                         setIsPermModalVisible(true);
                     }}>Ruxsatlar Berish</Button>
+                    <Popconfirm
+                        title="Bo'limni o'chirish"
+                        description="Haqiqatan ham ushbu bo'limni o'chirmoqchimisiz? Unga biriktirilgan xodimlar bo'limsiz qoladi."
+                        onConfirm={() => handleDelete(record.id)}
+                        okText="Ha"
+                        cancelText="Yo'q"
+                    >
+                        <Button danger icon={<DeleteOutlined />}>O'chirish</Button>
+                    </Popconfirm>
                 </Space>
             )
         }
