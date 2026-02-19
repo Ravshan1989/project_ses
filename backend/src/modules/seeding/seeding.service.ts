@@ -124,8 +124,7 @@ export class SeedingService implements OnModuleInit {
         // 2. Define Departments
         const departmentsData = [
             { name: "Epidemiologiya Bo'limi", description: "Faqat epidemiologiya va haftalik xulosani ko'radi", level: 1 },
-            { name: "VGA Bo'limi", description: "Faqat gepatitni ko'radi", level: 1 },
-            { name: "O'RI va Gripp Bo'limi", description: "Faqat grippni ko'radi", level: 1 },
+
             { name: "Boshqaruv (Admin)", description: "Hamma narsani ko'radi", level: 1 },
             // Tuman Darajasi
             { name: "Epidemiologiya va immunoprofilaktika", description: "Tuman darajasi: Faqat Forma 1-jadval va kunliklar", level: 3 },
@@ -147,8 +146,7 @@ export class SeedingService implements OnModuleInit {
                 dept: "Epidemiologiya Bo'limi",
                 perms: ["VIEW_EPIDEMIOLOGY", "VIEW_WEEKLY_SUMMARY"],
             },
-            { dept: "VGA Bo'limi", perms: ["VIEW_HEPATITIS"] },
-            { dept: "O'RI va Gripp Bo'limi", perms: ["VIEW_FLU"] },
+
             {
                 dept: "Boshqaruv (Admin)",
                 perms: [

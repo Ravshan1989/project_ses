@@ -55,12 +55,6 @@ async function bootstrap() {
       description: "Faqat epidemiologiya va haftalik xulosani ko'radi",
       level: 1,
     },
-    { name: "VGA Bo'limi", description: "Faqat gepatitni ko'radi", level: 1 },
-    {
-      name: "O'RI va Gripp Bo'limi",
-      description: "Faqat grippni ko'radi",
-      level: 1,
-    },
     {
       name: "Boshqaruv (Admin)",
       description: "Hamma narsani ko'radi",
@@ -91,8 +85,7 @@ async function bootstrap() {
       dept: "Epidemiologiya Bo'limi",
       perms: ["VIEW_EPIDEMIOLOGY", "VIEW_WEEKLY_SUMMARY"],
     },
-    { dept: "VGA Bo'limi", perms: ["VIEW_HEPATITIS"] },
-    { dept: "O'RI va Gripp Bo'limi", perms: ["VIEW_FLU"] },
+
     {
       dept: "Boshqaruv (Admin)",
       perms: [
