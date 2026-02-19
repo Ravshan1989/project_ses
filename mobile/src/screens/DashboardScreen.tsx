@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import * as Application from 'expo-application';
 import * as Updates from 'expo-updates';
-import { authApi, sosApi, dailyReportsApi, versionApi } from '../services/api';
+import { authApi, sosApi, dailyReportsApi, versionApi, analysisApi } from '../services/api';
 import * as Location from 'expo-location';
 import * as Notifications from 'expo-notifications';
 import { offlineStorage, OfflineReport } from '../services/offlineStorage';
@@ -35,7 +35,9 @@ import {
     AlertTriangle,
     Navigation,
     X,
-    Download
+    Download,
+    TrendingUp,
+    TrendingDown
 } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
@@ -44,6 +46,7 @@ const DashboardScreen = () => {
     const navigation = useNavigation<any>();
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [districtSummary, setDistrictSummary] = useState<any>(null);
 
     // SOS State
     const [sosVisible, setSosVisible] = useState(false);
@@ -65,6 +68,9 @@ const DashboardScreen = () => {
             checkOfflineQueue();
             fetchChartData();
             fetchPendingCount();
+            if (user?.organization?.id) {
+                fetchDistrictSummary();
+            }
         }, [user])
     );
 
@@ -75,6 +81,16 @@ const DashboardScreen = () => {
         checkAppVersion();
         checkForUpdates();
     }, []);
+
+    const fetchDistrictSummary = async () => {
+        if (!user?.organization?.id) return;
+        try {
+            const res = await analysisApi.getDistrictExecutiveSummary(user.organization.id);
+            setDistrictSummary(res.data);
+        } catch (error) {
+            console.error('District summary fetch error:', error);
+        }
+    }
 
     const checkForUpdates = async () => {
         if (__DEV__) return;
@@ -293,6 +309,15 @@ const DashboardScreen = () => {
         }
     };
 
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'safe': return '#22c55e';
+            case 'warning': return '#f59e0b';
+            case 'critical': return '#ef4444';
+            default: return '#3b82f6';
+        }
+    };
+
     if (loading) {
         return (
             <View style={styles.centered}>
@@ -342,6 +367,52 @@ const DashboardScreen = () => {
                         <Text style={styles.sosMainText}>FAVQULODDA SOS</Text>
                     </TouchableOpacity>
                 </View>
+
+                {/* --- DISTRICT EXECUTIVE SUMMARY --- */}
+                {districtSummary && (
+                    <View style={{ marginBottom: 24 }}>
+                        <Text style={styles.sectionTitle}>Tuman Holati (Svodka)</Text>
+
+                        {/* KPI Row */}
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
+                            <View style={styles.kpiCard}>
+                                <View style={[styles.kpiIconBox, { backgroundColor: 'rgba(56, 189, 248, 0.1)' }]}>
+                                    {districtSummary.trend === 'increasing' ? <TrendingUp color="#ef4444" size={20} /> : <TrendingDown color="#22c55e" size={20} />}
+                                </View>
+                                <Text style={styles.kpiValue}>{districtSummary.totalCasesToday || 0}</Text>
+                                <Text style={styles.kpiLabel}>Bugungi kasalliklar</Text>
+                                <Text style={[styles.kpiTrend, { color: districtSummary.trend === 'increasing' ? '#ef4444' : '#22c55e' }]}>
+                                    {districtSummary.trendPercent || 0}% o'zgarish
+                                </Text>
+                            </View>
+                            <View style={styles.kpiCard}>
+                                <View style={[styles.kpiIconBox, { backgroundColor: 'rgba(34, 197, 94, 0.1)' }]}>
+                                    <Activity color={getStatusColor(districtSummary.epidemicStatus)} size={20} />
+                                </View>
+                                <Text style={[styles.kpiValue, { color: getStatusColor(districtSummary.epidemicStatus), fontSize: 20 }]}>
+                                    {districtSummary.epidemicStatus === 'safe' ? 'Barqaror' : districtSummary.epidemicStatus === 'warning' ? 'Xavf' : 'Kritik'}
+                                </Text>
+                                <Text style={styles.kpiLabel}>Epidemik holat</Text>
+                            </View>
+                        </View>
+
+                        {/* Top Diseases */}
+                        {districtSummary.topDiseases?.length > 0 && (
+                            <View style={styles.topDiseasesList}>
+                                <Text style={[styles.sectionTitle, { fontSize: 14, marginBottom: 8, marginTop: 0 }]}>Top Kasalliklar</Text>
+                                {districtSummary.topDiseases.map((disease: any, index: number) => (
+                                    <View key={index} style={styles.diseaseItem}>
+                                        <View style={styles.diseaseRank}>
+                                            <Text style={styles.rankText}>#{index + 1}</Text>
+                                        </View>
+                                        <Text style={styles.diseaseNameText}>{disease.name}</Text>
+                                        <Text style={styles.diseaseCount}>{disease.count}</Text>
+                                    </View>
+                                ))}
+                            </View>
+                        )}
+                    </View>
+                )}
 
                 {/* Stats Grid */}
                 <View style={styles.statsGrid}>
@@ -644,6 +715,80 @@ const styles = StyleSheet.create({
     content: {
         padding: 20,
         paddingTop: 10,
+    },
+    // KPI Styles
+    kpiCard: {
+        width: '48%',
+        backgroundColor: 'rgba(30, 41, 59, 0.7)',
+        borderRadius: 20,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
+        alignItems: 'flex-start',
+    },
+    kpiIconBox: {
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    kpiValue: {
+        fontSize: 24,
+        fontWeight: '800',
+        color: '#f8fafc',
+    },
+    kpiLabel: {
+        fontSize: 12,
+        color: '#94a3b8',
+        marginTop: 2,
+    },
+    kpiTrend: {
+        fontSize: 11,
+        fontWeight: '600',
+        marginTop: 6,
+    },
+    // Top Diseases List Styles
+    topDiseasesList: {
+        backgroundColor: 'rgba(30, 41, 59, 0.7)',
+        borderRadius: 20,
+        padding: 10,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
+    },
+    diseaseItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255,255,255,0.05)',
+    },
+    diseaseRank: {
+        width: 40,
+        height: 30,
+        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    rankText: {
+        color: '#38bdf8',
+        fontWeight: '700',
+        fontSize: 12,
+    },
+    diseaseNameText: {
+        flex: 1,
+        color: '#f1f5f9',
+        fontWeight: '500',
+        fontSize: 14,
+    },
+    diseaseCount: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#f8fafc',
     },
     header: {
         backgroundColor: 'rgba(30, 41, 59, 0.7)', // Glass effect

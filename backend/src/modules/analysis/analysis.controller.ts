@@ -42,6 +42,12 @@ export class AnalysisController {
     return this.analysisService.getExecutiveData();
   }
 
+  @Get("executive/district-summary/:id")
+  async getDistrictExecutiveSummary(@Param("id") id: string) {
+    // UZ: Tuman rahbari uchun (Executive Dashboard o'xshash)
+    return this.analysisService.getDistrictExecutiveSummary(id);
+  }
+
   @Get("executive/district/:id")
   async getDistrictExecutiveDetails(@Param("id") id: string) {
     // UZ: Tuman bo'yicha batafsil (Top kasalliklar)

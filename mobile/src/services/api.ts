@@ -72,4 +72,5 @@ export const approvalApi = {
 export const analysisApi = {
     getExecutiveSummary: () => api.get('/analysis/executive/summary'),
     getDistrictDetails: (id: string) => api.get(`/analysis/executive/district/${id}`),
+    getDistrictExecutiveSummary: (id: string) => api.get(`/analysis/executive/district-summary/${id}`), // UZ: Tuman svodkasi
 };

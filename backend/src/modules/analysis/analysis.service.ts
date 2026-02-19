@@ -550,6 +550,97 @@ export class AnalysisService {
     };
   }
 
+  async getDistrictExecutiveSummary(districtId: string) {
+    const today = new Date();
+    const todayStr = format(today, "yyyy-MM-dd");
+    const yesterday = subDays(today, 1);
+    const yesterdayStr = format(yesterday, "yyyy-MM-dd");
+
+    const [todayData, yesterdayData] = await Promise.all([
+      this.getGlobalSummary(todayStr, todayStr),
+      this.getGlobalSummary(yesterdayStr, yesterdayStr),
+    ]);
+
+    // Filter for specific district
+    const districtToday = todayData.find((d) => d.organizationId === districtId);
+    const districtYesterday = yesterdayData.find((d) => d.organizationId === districtId);
+
+    if (!districtToday) {
+      return {
+        totalCasesToday: 0,
+        totalCasesYesterday: 0,
+        trend: 'stable',
+        trendPercent: 0,
+        epidemicStatus: 'safe',
+        topDiseases: [],
+        latestReports: [], // Future: Implement fetching latest reports for this district
+      };
+    }
+
+    // Calculate Totals
+    let totalCasesToday = 0;
+    districtToday.diseases.forEach((d: any) => totalCasesToday += d.cases);
+
+    let totalCasesYesterday = 0;
+    if (districtYesterday) {
+      districtYesterday.diseases.forEach((d: any) => totalCasesYesterday += d.cases);
+    }
+
+    // Trend
+    const diff = totalCasesToday - totalCasesYesterday;
+    const percent =
+      totalCasesYesterday > 0 ? (diff / totalCasesYesterday) * 100 : 0;
+    const trend = diff >= 0 ? "increasing" : "decreasing";
+
+    // Epidemic Status (District specific thresholds - lower than regional)
+    let epidemicStatus = "safe";
+    if (totalCasesToday > 50) epidemicStatus = "critical";
+    else if (totalCasesToday > 20) epidemicStatus = "warning";
+
+    // Top Diseases
+    const topDiseases = districtToday.diseases.slice(0, 5).map((d: any) => ({
+      name: d.disease,
+      count: d.cases
+    }));
+
+    // Latest Reports (Unified List for District)
+    const fetchLatestForDistrict = async (repo: Repository<any>, type: string, diseaseName: string) => {
+      return repo.find({
+        where: { organization: { id: districtId } },
+        order: { createdAt: 'DESC' },
+        take: 5,
+      }).then(reports => reports.map(r => ({
+        id: r.id,
+        type,
+        diseaseName,
+        district: districtToday.organizationName,
+        cases: r.total_cases || r.flu_total || r.ari || 0,
+        createdAt: r.createdAt
+      })));
+    };
+
+    const [hepLatest, fluLatest, ariLatest, covidLatest] = await Promise.all([
+      fetchLatestForDistrict(this.hepatitisRepo, 'hepatitis', 'Gepatit'),
+      fetchLatestForDistrict(this.fluRepo, 'flu', 'Gripp'),
+      fetchLatestForDistrict(this.ariRepo, 'ari', "O'RVI"),
+      fetchLatestForDistrict(this.covidRepo, 'covid', 'COVID-19')
+    ]);
+
+    const latestReports = [...hepLatest, ...fluLatest, ...ariLatest, ...covidLatest]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 5);
+
+    return {
+      totalCasesToday,
+      totalCasesYesterday,
+      trend,
+      trendPercent: parseFloat(percent.toFixed(1)),
+      epidemicStatus,
+      topDiseases,
+      latestReports
+    };
+  }
+
 }
 
 /**

@@ -12,7 +12,10 @@ import {
     FileTextOutlined,
     SearchOutlined,
     EyeOutlined,
-    RightOutlined
+    RightOutlined,
+    SafetyCertificateOutlined,
+    WarningOutlined,
+    FireOutlined
 } from '@ant-design/icons';
 import { Column, Area } from '@ant-design/plots'; // UZ: Area va Pie grafiklar qo'shildi
 import { api } from '../../services/api'; // UZ: API bilan ishlash uchun
@@ -24,6 +27,16 @@ const { Option } = Select;
 import { useTranslation } from 'react-i18next';
 
 import { useNavigate } from 'react-router-dom';
+
+interface DistrictExecutiveSummary {
+    totalCasesToday: number;
+    totalCasesYesterday: number;
+    trend: 'increasing' | 'decreasing' | 'stable';
+    trendPercent: number;
+    epidemicStatus: 'safe' | 'warning' | 'critical';
+    topDiseases: { name: string; count: number }[];
+    latestReports: { id: string; type: string; diseaseName: string; district: string; cases: number; createdAt: string }[];
+}
 
 const DashboardPage: React.FC = () => {
     const { t, i18n } = useTranslation();
@@ -57,6 +70,7 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
     const [allForecasts, setAllForecasts] = useState<any[]>([]); // UZ: Barcha prognozlar (xavf darajasi bo'yicha)
     const [selectedDiseaseType, setSelectedDiseaseType] = useState<string>(''); // UZ: Tanlangan kasallik turi
     const [isModalVisible, setIsModalVisible] = useState(false); // UZ: Modal holati
+    const [executiveSummary, setExecutiveSummary] = useState<DistrictExecutiveSummary | null>(null); // UZ: Rahbar uchun qisqacha ma'lumot
 
     // Real Tashkent Region Districts Data
     const REGION_DATA = [
@@ -200,9 +214,24 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
         }
     };
 
+    const fetchDistrictSummary = async () => {
+        try {
+            // Get user org id from local storage or context if available
+            // For now, we'll try to get it from profile, else fallback
+            const orgId = localStorage.getItem('user_org_id');
+            if (orgId) {
+                const res = await api.get(`/analysis/executive/district-summary/${orgId}`);
+                setExecutiveSummary(res.data);
+            }
+        } catch (e) {
+            console.error("Error fetching district summary", e);
+        }
+    }
+
     useEffect(() => {
         fetchSubmissions();
         fetchAllForecasts(); // UZ: Barcha prognozlarni yuklash
+        fetchDistrictSummary(); // UZ: Tuman svodkasini yuklash
     }, [i18n.language]);
 
     const handleAction = async (_id: string, action: 'APPROVE' | 'REJECT') => {
@@ -216,6 +245,24 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
             message.success(t('common.success_approve'));
         }
         // fetchSubmissions(); // Refresh
+    };
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'safe': return 'green';
+            case 'warning': return 'orange';
+            case 'critical': return 'red';
+            default: return 'blue';
+        }
+    };
+
+    const getStatusIcon = (status: string) => {
+        switch (status) {
+            case 'safe': return <SafetyCertificateOutlined />;
+            case 'warning': return <WarningOutlined />;
+            case 'critical': return <FireOutlined />;
+            default: return null;
+        }
     };
 
 
@@ -645,6 +692,64 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
 
             {/* --- DESKTOP VIEW (Original) --- */}
             <div className="desktop-only">
+
+                {/* --- DISTRICT EXECUTIVE SUMMARY SECTION --- */}
+                {executiveSummary && (
+                    <div style={{ marginBottom: '32px' }}>
+                        <div style={{ marginBottom: 16 }}>
+                            <Title level={4} style={{ margin: 0 }}> <SafetyCertificateOutlined /> Tuman Holati (Svodka)</Title>
+                            <Text type="secondary">Bugungi kun uchun tezkor ma'lumotlar</Text>
+                        </div>
+                        <Row gutter={[24, 24]}>
+                            {/* KPI Cards */}
+                            <Col xs={24} sm={12} lg={8}>
+                                <Card className="glass-card">
+                                    <Statistic
+                                        title={<span style={{ color: '#64748b' }}>Bugungi jami kasallar</span>}
+                                        value={executiveSummary.totalCasesToday}
+                                        valueStyle={{ color: executiveSummary.trend === 'increasing' ? '#cf1322' : '#3f8600', fontWeight: 'bold' }}
+                                        prefix={executiveSummary.trend === 'increasing' ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                                        suffix={<span style={{ fontSize: 14 }}>({executiveSummary.trendPercent}%)</span>}
+                                    />
+                                </Card>
+                            </Col>
+                            <Col xs={24} sm={12} lg={8}>
+                                <Card className="glass-card">
+                                    <Statistic
+                                        title={<span style={{ color: '#64748b' }}>Epidemik vaziyat</span>}
+                                        value={t(`executive.status_${executiveSummary.epidemicStatus}`) || executiveSummary.epidemicStatus}
+                                        valueStyle={{ color: getStatusColor(executiveSummary.epidemicStatus), fontWeight: 'bold' }}
+                                        prefix={getStatusIcon(executiveSummary.epidemicStatus)}
+                                    />
+                                </Card>
+                            </Col>
+
+                            {/* Top Diseases List for District */}
+                            <Col xs={24} lg={8}>
+                                <Card className="glass-card" title="Top Kasalliklar" bodyStyle={{ padding: '12px 24px' }} size="small">
+                                    {executiveSummary.topDiseases.length > 0 ? (
+                                        <ul style={{ padding: 0, margin: 0, listStyle: 'none' }}>
+                                            {executiveSummary.topDiseases.map((item, index) => (
+                                                <li key={index} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: index !== executiveSummary.topDiseases.length - 1 ? '1px solid #f0f0f0' : 'none' }}>
+                                                    <Space>
+                                                        <Tag color="blue">#{index + 1}</Tag>
+                                                        <Text>{item.name}</Text>
+                                                    </Space>
+                                                    <Tag color="volcano">{item.count}</Tag>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <Text type="secondary">Ma'lumot yo'q</Text>
+                                    )}
+                                </Card>
+                            </Col>
+                        </Row>
+                        <div style={{ height: 1, background: 'rgba(0,0,0,0.05)', margin: '24px 0' }}></div>
+                    </div>
+                )}
+
+
                 <Row gutter={[24, 24]} style={{ marginBottom: '32px' }}>
                     <Col xs={24} sm={12} lg={6} className="animate-fade-in animate-delay-1">
                         <Card className="glass-card stat-card-gradient-1" bordered={false} bodyStyle={{ padding: '24px' }}>

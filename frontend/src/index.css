@@ -22,8 +22,19 @@ body {
     background-color: transparent !important;
 }
 
+/* Hide Mobile Elements on Desktop by default */
+@media (min-width: 769px) {
+    .mobile-only {
+        display: none !important;
+    }
+}
+
 /* Mobile Login Styles */
 @media (max-width: 768px) {
+    .mobile-only {
+        display: flex !important;
+        /* Force display on mobile if needed */
+    }
 
     /* Mobile Container */
     .dashboard-container {
