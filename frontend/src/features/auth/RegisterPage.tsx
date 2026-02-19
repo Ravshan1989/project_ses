@@ -12,7 +12,10 @@ const { Option } = Select;
 const RegisterPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [organizations, setOrganizations] = useState<any[]>([]);
-    const [departments, setDepartments] = useState<any[]>([]);
+    const [allDepartments, setAllDepartments] = useState<any[]>([]);
+    const [filteredDepartments, setFilteredDepartments] = useState<any[]>([]);
+    const [availableRoles, setAvailableRoles] = useState<any[]>([]);
+    const [form] = Form.useForm();
     const navigate = useNavigate();
     const { t } = useTranslation();
 
@@ -31,11 +34,79 @@ const RegisterPage: React.FC = () => {
                 const orgs = await orgRes.json();
                 const depts = await deptRes.json();
                 setOrganizations(orgs);
-                setDepartments(depts);
+                setAllDepartments(depts);
+                // Initial load: show all departments (will be filtered on org select)
+                setFilteredDepartments(depts);
             }
         } catch (error) {
             console.error('Fetch data error:', error);
             message.error(t('common.error_loading_data', 'Ma\'lumotlarni yuklab bo\'lmadi'));
+        }
+    };
+
+    const handleOrganizationChange = (orgId: string) => {
+        form.setFieldsValue({ departmentId: undefined, role: undefined });
+        setAvailableRoles([]);
+
+        const selectedOrg = organizations.find(o => o.id === orgId);
+        if (!selectedOrg) return;
+
+        // Check if District or Region (Districts have a parent)
+        const isDistrict = !!selectedOrg.parent;
+
+        if (isDistrict) {
+            // Filter departments for Districts:
+            // 1. Ma'muriyat (Mapped to "Boshqaruv (Admin)")
+            // 2. Epidemiologiya va immunoprofilaktika
+            const districtDepts = allDepartments.filter(d =>
+                d.name === "Boshqaruv (Admin)" ||
+                d.name === "Epidemiologiya va immunoprofilaktika"
+            ).map(d => ({
+                ...d,
+                // Rename "Boshqaruv (Admin)" to "Ma'muriyat" for display
+                displayName: d.name === "Boshqaruv (Admin)" ? "Ma'muriyat" : d.name
+            }));
+            setFilteredDepartments(districtDepts);
+        } else {
+            // Region level - show all for now (or apply other logic if needed)
+            setFilteredDepartments(allDepartments.map(d => ({ ...d, displayName: d.name })));
+        }
+    };
+
+    const handleDepartmentChange = (deptId: string) => {
+        form.setFieldsValue({ role: undefined });
+
+        const selectedDepartment = allDepartments.find(d => d.id === deptId);
+        const orgId = form.getFieldValue('organizationId');
+        const selectedOrg = organizations.find(o => o.id === orgId);
+        const isDistrict = !!selectedOrg?.parent;
+
+        if (isDistrict && selectedDepartment) {
+            if (selectedDepartment.name === "Boshqaruv (Admin)") {
+                setAvailableRoles([
+                    { value: "DISTRICT_HEAD", label: "Tuman Boshlig'i" },
+                    { value: "HR", label: "Kadr" }
+                ]);
+            } else if (selectedDepartment.name === "Epidemiologiya va immunoprofilaktika") {
+                setAvailableRoles([
+                    { value: "DEPARTMENT_HEAD", label: "Bo'lim mudiri" },
+                    { value: "DISTRICT_SPECIALIST", label: "Epidemiolog vrach" },
+                    { value: "DISTRICT_OPERATOR", label: "Epidemiolog vrach yordamchisi" }
+                ]);
+            } else {
+                setAvailableRoles([
+                    { value: "STAFF", label: "Xodim" }
+                ]);
+            }
+        } else {
+            // Default roles for Region/Republic
+            setAvailableRoles([
+                { value: "STAFF", label: "Xodim" },
+                { value: "DEPARTMENT_HEAD", label: "Bo'lim mudiri" },
+                { value: "REGION_HEAD", label: "Viloyat mudiri" },
+                { value: "REPUBLIC_HEAD", label: "Respublika mudiri" },
+                { value: "LAB_HEAD", label: "Laboratoriya mudiri" }
+            ]);
         }
     };
 
@@ -136,7 +207,7 @@ const RegisterPage: React.FC = () => {
                             padding: '20px 10px'
                         }}
                     >
-                        <Form layout="vertical" onFinish={onFinish} requiredMark={true}>
+                        <Form form={form} layout="vertical" onFinish={onFinish} requiredMark={true}>
                             <Space style={{ display: 'flex' }} align="start">
                                 <Form.Item
                                     name="lastName"
@@ -174,6 +245,7 @@ const RegisterPage: React.FC = () => {
                                     placeholder={t('common.placeholder_org', 'Qidirish...')}
                                     optionFilterProp="children"
                                     prefix={<BankOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
+                                    onChange={handleOrganizationChange}
                                 >
                                     {organizations.map(org => (
                                         <Option key={org.id} value={org.id}>
@@ -188,9 +260,14 @@ const RegisterPage: React.FC = () => {
                                 label={t('common.department', "Bo'lim")}
                                 rules={[{ required: true, message: t('common.error_select_dept', "Bo'limni tanlang") }]}
                             >
-                                <Select placeholder={t('common.placeholder_dept', 'Tanlang...')} prefix={<ClusterOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}>
-                                    {departments.map(dept => (
-                                        <Option key={dept.id} value={dept.id}>{dept.name}</Option>
+                                <Select
+                                    placeholder={t('common.placeholder_dept', 'Tanlang...')}
+                                    prefix={<ClusterOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
+                                    onChange={handleDepartmentChange}
+                                    disabled={!form.getFieldValue('organizationId')}
+                                >
+                                    {filteredDepartments.map(dept => (
+                                        <Option key={dept.id} value={dept.id}>{dept.displayName || dept.name}</Option>
                                     ))}
                                 </Select>
                             </Form.Item>
@@ -200,14 +277,13 @@ const RegisterPage: React.FC = () => {
                                 label={t('user.role', 'Lavozim')}
                                 rules={[{ required: true, message: t('user.error_role', 'Lavozimni tanlang') }]}
                             >
-                                <Select placeholder={t('user.placeholder_role', 'Lavozimni tanlang...')}>
-                                    <Option value="STAFF">Xodim</Option>
-                                    <Option value="DEPARTMENT_HEAD">Bo'lim mudiri</Option>
-                                    <Option value="REGION_HEAD">Viloyat mudiri</Option>
-                                    <Option value="REPUBLIC_HEAD">Respublika mudiri</Option>
-                                    <Option value="LAB_HEAD">Laboratoriya mudiri</Option>
-                                    <Option value="DISTRICT_SPECIALIST">Epidemiolog (Mutaxassis)</Option>
-                                    <Option value="DISTRICT_OPERATOR">Epidemiolog Yordamchisi (Operator)</Option>
+                                <Select
+                                    placeholder={t('user.placeholder_role', 'Lavozimni tanlang...')}
+                                    disabled={!form.getFieldValue('departmentId')}
+                                >
+                                    {availableRoles.map(role => (
+                                        <Option key={role.value} value={role.value}>{role.label}</Option>
+                                    ))}
                                 </Select>
                             </Form.Item>
 
