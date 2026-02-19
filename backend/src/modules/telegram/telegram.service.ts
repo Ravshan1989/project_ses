@@ -549,6 +549,49 @@ ${data.latitude && data.longitude ? `📍 *Manzil:* [Google xaritada ko'rish](ht
     return roleLabels[role] || role;
   }
 
+  async sendActivationNotification(user: User, password: string): Promise<void> {
+    if (!this.bot) return;
+
+    const message = `
+✅ <b>Tabriklaymiz! Sizning akkauntingiz faollashtirildi.</b>
+
+Tizimga kirish uchun ma'lumotlar:
+👤 <b>Login:</b> <code>${user.username}</code>
+🔑 <b>Parol:</b> <code>${password}</code>
+
+<i>Iltimos, parolni hech kimga bermang.</i>
+    `.trim();
+
+    try {
+      // 1. Try sending to the user if they have a chat ID
+      if (user.telegramChatId) {
+        await this.bot.telegram.sendMessage(user.telegramChatId, message, { parse_mode: 'HTML' });
+        this.logger.log(`Activation notification sent to user ${user.username} (${user.telegramChatId})`);
+        return;
+      }
+
+      // 2. If user has no chat ID, send to Admin (fallback)
+      if (this.adminChatId) {
+        const adminMessage = `
+⚠️ <b>Foydalanuvchi faollashtirildi, lekin Telegram ID topilmadi.</b>
+Login/Parol Adminga yuborilmoqda:
+
+👤 <b>Foydalanuvchi:</b> ${user.lastName} ${user.firstName}
+👤 <b>Login:</b> <code>${user.username}</code>
+🔑 <b>Parol:</b> <code>${password}</code>
+        `.trim();
+
+        await this.bot.telegram.sendMessage(this.adminChatId, adminMessage, { parse_mode: 'HTML' });
+        this.logger.log(`Activation notification sent to ADMIN for user ${user.username}`);
+      } else {
+        this.logger.warn(`Could not send activation notification for ${user.username}: No Chat ID and No Admin ID.`);
+      }
+
+    } catch (error) {
+      this.logger.error(`Failed to send activation notification for ${user.username}`, error);
+    }
+  }
+
   private escapeMarkdown(text: string): string {
     if (!text) return "";
     return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, "\\$&");

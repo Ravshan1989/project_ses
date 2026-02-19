@@ -2,12 +2,15 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { User } from "./entities/user.entity";
+import * as bcrypt from "bcrypt";
+import { TelegramService } from "../telegram/telegram.service";
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private telegramService: TelegramService,
   ) { }
 
   async findOneByUsername(username: string): Promise<User | undefined> {
@@ -128,7 +131,34 @@ export class UsersService {
     const user = await this.findOne(id);
     if (!user) return null;
 
+    // Check if activating user
+    const isActivating = !user.isActive && userData.isActive === true;
+
     Object.assign(user, userData);
+
+    if (isActivating) {
+      // Generate credentials if missing or temporary
+      if (!user.username || user.username.startsWith('reg_')) {
+        const firstName = user.firstName?.toLowerCase().replace(/\s+/g, "") || "";
+        const lastName = user.lastName?.toLowerCase().replace(/\s+/g, "") || "";
+        user.username = `${firstName}.${lastName}${Math.floor(Math.random() * 100)}`;
+      }
+
+      // Generate random password
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+      let password = "";
+      for (let i = 0; i < 8; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+
+      const salt = await bcrypt.genSalt();
+      user.passwordHash = await bcrypt.hash(password, salt);
+      user.approvedAt = new Date();
+
+      // Send to Telegram
+      await this.telegramService.sendActivationNotification(user, password);
+    }
+
     await this.usersRepository.save(user);
     return this.findOne(id);
   }
