@@ -48,14 +48,18 @@ export class AuthService {
     };
   }
 
-  async register(registerDto: RegisterDto): Promise<User> {
-    // UZ: Ro'yxatdan o'tishda login/parol avtomat generatsiya qilinadi (Telegram orqali beriladi)
-    // Vaqtincha login sifatida telefon raqamini ishlatamiz
-    const tempUsername = `reg_${registerDto.phoneNumber.replace(/\D/g, "")}`;
-    const dummyPassword = Math.random().toString(36).slice(-8);
-    const salt = await bcrypt.genSalt();
-    const passwordHash = await bcrypt.hash(dummyPassword, salt);
+import { Injectable, UnauthorizedException, ConflictException } from "@nestjs/common";
+// ... imports
 
+  async register(registerDto: RegisterDto): Promise < User > {
+  // UZ: Ro'yxatdan o'tishda login/parol avtomat generatsiya qilinadi (Telegram orqali beriladi)
+  // Vaqtincha login sifatida telefon raqamini ishlatamiz
+  const tempUsername = `reg_${registerDto.phoneNumber.replace(/\D/g, "")}`;
+  const dummyPassword = Math.random().toString(36).slice(-8);
+  const salt = await bcrypt.genSalt();
+  const passwordHash = await bcrypt.hash(dummyPassword, salt);
+
+  try {
     const newUser = await this.usersService.create({
       ...registerDto,
       username: tempUsername,
@@ -67,5 +71,11 @@ export class AuthService {
     await this.telegramService.sendRegistrationNotification(newUser);
 
     return newUser;
+  } catch(error) {
+    if (error.code === '23505') { // Postgres unique_violation
+      throw new ConflictException("Bu telefon raqam bilan foydalanuvchi allaqachon ro'yxatdan o'tgan.");
+    }
+    throw error;
   }
+}
 }
