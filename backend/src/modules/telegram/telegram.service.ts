@@ -114,6 +114,7 @@ export class TelegramService implements OnModuleInit {
             Markup.button.callback("🟢 O'RVI", "get_ari"),
           ],
           [Markup.button.callback("🟣 Epidemiologiya", "get_epi")],
+          [Markup.button.callback("🔐 Ro'yxatdan o'tishni tasdiqlash", "verify_phone")],
         ]),
       );
     });
@@ -184,6 +185,17 @@ export class TelegramService implements OnModuleInit {
     this.bot.action("get_epi", (ctx) => {
       this.logger.log("Epidemiologiya hisoboti so'raldi");
       return this.handleReportRequest(ctx, "epi");
+    });
+
+    // Manual phone verification trigger
+    this.bot.action("verify_phone", async (ctx) => {
+      await ctx.reply(
+        `Davom etish uchun telefon raqamingizni tasdiqlang.\n\n` +
+        `Quyidagi tugmani bosing:`,
+        Markup.keyboard([
+          Markup.button.contactRequest('📞 Telefon raqamni yuborish')
+        ]).resize()
+      );
     });
 
     // Registration approval handlers
@@ -277,6 +289,7 @@ export class TelegramService implements OnModuleInit {
             Markup.button.callback("🟢 O'RVI", "get_ari"),
           ],
           [Markup.button.callback("🟣 Epidemiologiya", "get_epi")],
+          [Markup.button.callback("🔐 Ro'yxatdan o'tishni tasdiqlash", "verify_phone")],
         ]),
       );
     } catch (error) {
