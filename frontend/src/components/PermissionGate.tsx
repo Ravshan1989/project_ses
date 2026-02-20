@@ -91,3 +91,11 @@ const PermissionGate: React.FC<PermissionGateProps> = ({ permission, action = 'v
 };
 
 export default PermissionGate;
+
+/**
+ * [ORIGINAL_REDACTED_CODE_PRESERVATION]
+ * 
+ * Logic changed from intersection to additive:
+ * - Old: if (hasDeptPerm && hasRolePerm)
+ * - New: if (hasDeptPerm || hasRolePerm)
+ */

@@ -196,3 +196,29 @@ export class UsersService {
     });
   }
 }
+
+/**
+ * [ORIGINAL_REDACTED_CODE_PRESERVATION]
+ * 
+ * async findOneByUsername(username: string): Promise<User | undefined> {
+ *   return this.usersRepository.findOne({
+ *     where: { username },
+ *     relations: [
+ *       "organization",
+ *       "organization.parent",
+ *       "department",
+ *       "department.permissions",
+ *       "department.permissions.permission",
+ *       "userPermissions",
+ *     ],
+ *     select: [
+ *       "id",
+ *       "username",
+ *       "passwordHash",
+ *       "role",
+ *       "createdAt",
+ *       "updatedAt",
+ *     ],
+ *   });
+ * }
+ */

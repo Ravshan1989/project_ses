@@ -370,6 +370,22 @@ export class SeedingService implements OnModuleInit {
 /**
  * [ORIGINAL_REDACTED_CODE_PRESERVATION]
  * 
- * (Ushbu qismda faylning o'zgartirishdan oldingi holati saqlanadi)
  * Original lines 106-112 and 186-192 were modified to include VIEW_ARI and VIEW_DIARRHEA.
+ * 
+ * Original seedTestTrio loop:
+ * for (const u of users) {
+ *     const exists = await this.usersService.findOneByUsername(u.username);
+ *     if (!exists) {
+ *         this.logger.log(`Creating test user: ${u.username}`);
+ *         await this.usersService.create({
+ *             username: u.username,
+ *             passwordHash: hash,
+ *             role: u.role,
+ *             organizationId: chirchiq.id,
+ *             departmentId: dept.id,
+ *             firstName: u.name,
+ *             lastName: 'Test',
+ *         });
+ *     }
+ * }
  */

@@ -232,3 +232,11 @@ const EpidemiologyDailyReportPage: React.FC = () => {
 };
 
 export default EpidemiologyDailyReportPage;
+
+/**
+ * [ORIGINAL_REDACTED_CODE_PRESERVATION]
+ * 
+ * Modified PermissionGate key:
+ * - Old: <PermissionGate permission="VIEW_EPI">
+ * - New: <PermissionGate permission="VIEW_EPIDEMIOLOGY">
+ */
