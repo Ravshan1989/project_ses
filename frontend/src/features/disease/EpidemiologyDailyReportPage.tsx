@@ -208,7 +208,7 @@ const EpidemiologyDailyReportPage: React.FC = () => {
     );
 
     return (
-        <PermissionGate permission="VIEW_EPI">
+        <PermissionGate permission="VIEW_EPIDEMIOLOGY">
             <GlassLayout
                 title={t('daily_reports.epidemiology_title')}
                 subtitle={`${date.format('DD.MM.YYYY')} kungi holat`}

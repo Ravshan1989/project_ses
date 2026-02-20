@@ -54,8 +54,8 @@ const PermissionGate: React.FC<PermissionGateProps> = ({ permission, action = 'v
         }
     }
 
-    // UZ: Kesishma (Intersection)
-    if (hasDeptPerm && hasRolePerm) {
+    // UZ: Qo'shma (Additive) mantiq - Agar Bo'lim ruxsat bersa YOKI Rol ruxsat bersa o'tkazadi
+    if (hasDeptPerm || hasRolePerm) {
         return <>{children}</>;
     }
 
@@ -64,15 +64,24 @@ const PermissionGate: React.FC<PermissionGateProps> = ({ permission, action = 'v
     // Biz ko'pincha PermissionGate ni butun sahifa uchun ishlatamiz.
     // Biroq, komponentlar ichida null qaytargan ma'qul.
 
-    // Check if we are at top-level content
-    const isTopLevel = permission.startsWith('VIEW_FORM1');
+    // Check if we are at top-level content (Page level)
+    const isTopLevel = permission.startsWith('VIEW_');
 
     if (isTopLevel && action === 'view') {
         return (
             <Result
                 status="403"
                 title="403"
-                subTitle="Sizda ushbu ma'lumotni ko'rish huquqi yo'q (Dinamik rol yoki Bo'lim ruxsati yetishmayapti)."
+                subTitle={
+                    <div>
+                        <p>Sizda ushbu sahifani ko'rish huquqi yo'q.</p>
+                        <p style={{ fontSize: '12px', color: '#999' }}>
+                            Kiritilgan ruxsat: <b>{permission}</b> |
+                            Bo'lim: {hasDeptPerm ? '✅' : '❌'} |
+                            Rol: {hasRolePerm ? '✅' : '❌'}
+                        </p>
+                    </div>
+                }
                 extra={<Button type="primary" onClick={() => navigate('/')}>Bosh sahifaga qaytish</Button>}
             />
         );

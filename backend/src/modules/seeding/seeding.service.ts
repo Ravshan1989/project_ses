@@ -115,6 +115,8 @@ export class SeedingService implements OnModuleInit {
             { code: "VIEW_FORM1_TABLE2", description: "View Form 1 Table 2" },
             { code: "VIEW_FORM1_TABLE3", description: "View Form 1 Table 3" },
             { code: "EDIT_FORM1_TABLE1", description: "Edit Form 1 Table 1" },
+            { code: "VERIFY_REPORT", description: "Verify Report (Mudir)" },
+            { code: "APPROVE_REPORT", description: "Approve Report (Rahbar)" },
             { code: "MANAGE_DEPARTMENTS", description: "Create/Edit Departments and Permissions" },
         ];
 
@@ -161,10 +163,17 @@ export class SeedingService implements OnModuleInit {
                     "VIEW_EPIDEMIOLOGY",
                     "VIEW_WEEKLY_SUMMARY",
                     "VIEW_COVID",
+                    /* 
+                    "VIEW_COVID",
+                    */
+                    "VIEW_ARI",
+                    "VIEW_DIARRHEA",
                     "VIEW_FORM1_TABLE1",
                     "VIEW_FORM1_TABLE2",
                     "VIEW_FORM1_TABLE3",
                     "EDIT_FORM1_TABLE1",
+                    "VERIFY_REPORT",
+                    "APPROVE_REPORT",
                     "MANAGE_DEPARTMENTS",
                 ],
             },
@@ -283,15 +292,13 @@ export class SeedingService implements OnModuleInit {
             const role = await this.roleRepo.findOneBy({ name: assign.role });
             if (!role) continue;
 
-            const currentPerms = await this.rolePermRepo.count({ where: { role: { id: role.id } } });
+            const currentPermsCount = await this.rolePermRepo.count({ where: { role: { id: role.id } } });
 
-            if (assign.role === UserRole.DEPARTMENT_HEAD) {
-                const hasVerify = await this.rolePermRepo.findOne({ where: { role: { id: role.id }, permissionCode: 'VERIFY_REPORT' } });
-                if (hasVerify) continue;
-            } else {
-                if (currentPerms > 0) continue;
-            }
+            // Check if count or content changed (Simplified: if we add logic here, we should ideally check each perm)
+            // For now, if permissions are updated in seed, we force update if count is different or 
+            // the user specifically wants to refresh.
 
+            // UZ: Ruxsatlarni har doim yangilash (agar change bo'lsa)
             this.logger.log(`Updating permissions for ${assign.role}...`);
             await this.rolePermRepo.delete({ role: { id: role.id } });
 
@@ -334,15 +341,27 @@ export class SeedingService implements OnModuleInit {
             const exists = await this.usersService.findOneByUsername(u.username);
             if (!exists) {
                 this.logger.log(`Creating test user: ${u.username}`);
+
+                // UZ: Dinamik rolni ham biriktiramiz (ruxsatlar ishlashi uchun)
+                const roleEntity = await this.roleRepo.findOne({ where: { name: u.role } });
+
                 await this.usersService.create({
                     username: u.username,
                     passwordHash: hash,
                     role: u.role,
+                    dynamicRoleId: roleEntity?.id,
                     organizationId: chirchiq.id,
                     departmentId: dept.id,
                     firstName: u.name,
                     lastName: 'Test',
                 });
+            } else if (!exists.dynamicRole) {
+                // UZ: Agar user bor bo'lsa-yu, dynamicRole bo'lmasa - qo'shib qo'yamiz
+                const roleEntity = await this.roleRepo.findOne({ where: { name: u.role } });
+                if (roleEntity) {
+                    this.logger.log(`Updating missing dynamicRole for: ${u.username}`);
+                    await this.usersService.update(exists.id, { dynamicRoleId: roleEntity.id });
+                }
             }
         }
     }
