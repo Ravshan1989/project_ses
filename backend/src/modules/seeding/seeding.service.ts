@@ -104,6 +104,12 @@ export class SeedingService implements OnModuleInit {
             { code: "VIEW_EPIDEMIOLOGY", description: "View Epidemiology Reports" },
             { code: "VIEW_WEEKLY_SUMMARY", description: "View Weekly Summaries" },
             { code: "VIEW_COVID", description: "View Covid-19 Reports" },
+            /* 
+            // Original:
+            // { code: "VIEW_COVID", description: "View Covid-19 Reports" },
+            */
+            { code: "VIEW_ARI", description: "View ARI Reports" },
+            { code: "VIEW_DIARRHEA", description: "View Diarrhea Reports" },
             // Forma 1 Permissions
             { code: "VIEW_FORM1_TABLE1", description: "View/Edit Form 1 Table 1" },
             { code: "VIEW_FORM1_TABLE2", description: "View Form 1 Table 2" },
@@ -185,6 +191,13 @@ export class SeedingService implements OnModuleInit {
                 "VIEW_EPIDEMIOLOGY",
                 "VIEW_WEEKLY_SUMMARY",
                 "VIEW_COVID",
+                /* 
+                // Original:
+                // "VIEW_WEEKLY_SUMMARY",
+                // "VIEW_COVID",
+                */
+                "VIEW_ARI",
+                "VIEW_DIARRHEA",
             ];
 
             this.logger.log(`Found ${level3Depts.length} Level 3 departments. Assigning permissions...`);
@@ -334,3 +347,10 @@ export class SeedingService implements OnModuleInit {
         }
     }
 }
+
+/**
+ * [ORIGINAL_REDACTED_CODE_PRESERVATION]
+ * 
+ * (Ushbu qismda faylning o'zgartirishdan oldingi holati saqlanadi)
+ * Original lines 106-112 and 186-192 were modified to include VIEW_ARI and VIEW_DIARRHEA.
+ */

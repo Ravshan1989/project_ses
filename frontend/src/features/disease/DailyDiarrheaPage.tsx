@@ -171,8 +171,9 @@ const DailyDiarrheaPage: React.FC = () => {
         boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
     };
 
+    // Original: <PermissionGate permission="VIEW_HEPATITIS">
     return (
-        <PermissionGate permission="VIEW_HEPATITIS">
+        <PermissionGate permission="VIEW_DIARRHEA">
             <div style={{ padding: '24px', minHeight: '100vh', background: '#f0f2f5' }}>
                 <div style={headerStyle}>
                     <Space size="middle">
@@ -217,8 +218,15 @@ const DailyDiarrheaPage: React.FC = () => {
                     />
                 </div>
             </div>
-        </PermissionGate>
+        </PermissionGate >
     );
 };
 
 export default DailyDiarrheaPage;
+
+/**
+ * [ORIGINAL_REDACTED_CODE_PRESERVATION]
+ * 
+ * (Ushbu qismda faylning o'zgartirishdan oldingi holati saqlanadi)
+ * Original line at 175: <PermissionGate permission="VIEW_HEPATITIS">
+ */
