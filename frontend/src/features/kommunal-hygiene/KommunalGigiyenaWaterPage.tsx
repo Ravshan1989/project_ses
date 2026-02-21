@@ -251,7 +251,7 @@ const KommunalGigiyenaWaterPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState('1');
 
     const currentUser = useMemo(() => JSON.parse(localStorage.getItem('currentUser') || '{}'), []);
-    const isRegionalAdmin = currentUser.role === 'REGIONAL_MUDIR' || currentUser.role === 'EXECUTIVE';
+    const isRegionalAdmin = ['REGIONAL_MUDIR', 'EXECUTIVE', 'SUPER_ADMIN', 'ADMIN'].includes(currentUser.role);
 
     // Table 1 state
     const [dataT1, setDataT1] = useState<Record<string, any>>({});
