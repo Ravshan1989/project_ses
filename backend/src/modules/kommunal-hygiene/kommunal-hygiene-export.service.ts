@@ -20,6 +20,10 @@ export class KommunalHygieneExportService {
     async exportRegional(month: string, organizationId: string | undefined, res: Response) {
         const m = month.length === 7 ? `${month}-01` : month;
 
+        if (organizationId === 'null' || organizationId === 'undefined') {
+            organizationId = undefined;
+        }
+
         let targetOrgs = [];
         if (organizationId && organizationId !== 'all') {
             const org = await this.orgService.findOne(organizationId);
@@ -73,8 +77,9 @@ export class KommunalHygieneExportService {
         let waterData = [];
         if (orgIds.length > 0) {
             waterData = await this.waterRepo.createQueryBuilder('r')
+                .leftJoinAndSelect('r.organization', 'org')
                 .where('r.reportMonth = :m', { m: month })
-                .andWhere('r.organizationId IN (:...orgIds)', { orgIds })
+                .andWhere('org.id IN (:...orgIds)', { orgIds })
                 .getMany();
         }
 
@@ -206,7 +211,7 @@ export class KommunalHygieneExportService {
             data = await this.openWaterRepo.createQueryBuilder('r')
                 .leftJoinAndSelect('r.organization', 'org')
                 .where('r.reportMonth = :m', { m: month })
-                .andWhere('r.organizationId IN (:...orgIds)', { orgIds })
+                .andWhere('org.id IN (:...orgIds)', { orgIds })
                 .getMany();
         }
 
@@ -328,7 +333,7 @@ export class KommunalHygieneExportService {
             data = await this.waterUsageRepo.createQueryBuilder('r')
                 .leftJoinAndSelect('r.organization', 'org')
                 .where('r.reportMonth = :m', { m: month })
-                .andWhere('r.organizationId IN (:...orgIds)', { orgIds })
+                .andWhere('org.id IN (:...orgIds)', { orgIds })
                 .getMany();
         }
 
