@@ -266,15 +266,16 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
     };
 
 
-    // Derived Statistics
-    const totalSubmissions = submissions.length;
-    const pendingSubmissions = submissions.filter((s: Submission) => s.status === SubmissionStatus.SUBMITTED).length;
-    const approvedSubmissions = submissions.filter((s: Submission) => s.status === SubmissionStatus.APPROVED).length;
-    const rejectedSubmissions = submissions.filter((s: Submission) => s.status === SubmissionStatus.REJECTED).length;
+    // Derived Statistics (null-safe)
+    const totalSubmissions = (submissions || []).length;
+    const pendingSubmissions = (submissions || []).filter((s: Submission) => s?.status === SubmissionStatus.SUBMITTED).length;
+    const approvedSubmissions = (submissions || []).filter((s: Submission) => s?.status === SubmissionStatus.APPROVED).length;
+    const rejectedSubmissions = (submissions || []).filter((s: Submission) => s?.status === SubmissionStatus.REJECTED).length;
 
-    const filteredData = submissions.filter((item: Submission) => {
-        const matchesSearch = item.organization.name.toLowerCase().includes(searchText.toLowerCase()) ||
-            item.template.name.toLowerCase().includes(searchText.toLowerCase());
+    const filteredData = (submissions || []).filter((item: Submission) => {
+        if (!item || !item.organization || !item.template) return false;
+        const matchesSearch = (item.organization?.name || '').toLowerCase().includes(searchText.toLowerCase()) ||
+            (item.template?.name || '').toLowerCase().includes(searchText.toLowerCase());
         const matchesStatus = statusFilter ? item.status === statusFilter : true;
         return matchesSearch && matchesStatus;
     });
@@ -284,7 +285,7 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
             title: t('dashboard_page.table.region'),
             dataIndex: ['organization', 'name'],
             key: 'org',
-            render: (text: string) => <Text strong>{t(`orgs.${text.toLowerCase()}`, { defaultValue: text })}</Text>
+            render: (text: string) => <Text strong>{t(`orgs.${(text || '').toLowerCase()}`, { defaultValue: text || '' })}</Text>
         },
         {
             title: t('dashboard_page.table.report_type'),
@@ -429,129 +430,10 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
 
 
     // Mobile-specific styles and layout
-    const isMobile = window.innerWidth <= 768;
+    // Mobile-specific layout check
 
     return (
-        <div>
-            <style>
-                {`
-                @media (max-width: 768px) {
-                    .desktop-only { display: none !important; }
-                    .mobile-only { display: block !important; }
-                    
-                    /* Mobile Container */
-                    .dashboard-container {
-                        padding: 16px !important;
-                        background: #0f172a !important;
-                        min-height: 100vh;
-                    }
-
-                    /* Mobile Header */
-                    .mobile-header {
-                        background: rgba(30, 41, 59, 0.7);
-                        border-radius: 24px;
-                        padding: 20px;
-                        margin-bottom: 24px;
-                        border: 1px solid rgba(255, 255, 255, 0.1);
-                        backdrop-filter: blur(10px);
-                    }
-                    .profile-row {
-                        display: flex;
-                        align-items: center;
-                        margin-bottom: 16px;
-                    }
-                    .avatar-container {
-                        width: 50px;
-                        height: 50px;
-                        border-radius: 25px;
-                        background: #38bdf8;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        margin-right: 12px;
-                        box-shadow: 0 4px 10px rgba(56, 189, 248, 0.3);
-                    }
-                    .user-info h4 {
-                        margin: 0;
-                        color: #f8fafc;
-                        font-size: 18px;
-                        font-weight: 700;
-                    }
-                    .user-info p {
-                        margin: 0;
-                        color: #94a3b8;
-                        font-size: 12px;
-                    }
-                    .org-badge {
-                        display: inline-flex;
-                        align-items: center;
-                        background: rgba(15, 23, 42, 0.5);
-                        padding: 8px 12px;
-                        border-radius: 12px;
-                    }
-                    
-                    /* SOS Button */
-                    .sos-btn {
-                        background: #ef4444;
-                        color: white;
-                        width: 100%;
-                        border: none;
-                        border-radius: 16px;
-                        padding: 12px;
-                        font-weight: 700;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        margin-top: 16px;
-                        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
-                        cursor: pointer;
-                    }
-
-                    /* Stats Grid Mobile */
-                    .mobile-stats-grid {
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
-                        gap: 16px;
-                        margin-bottom: 30px;
-                    }
-                    .mobile-stat-card {
-                        background: rgba(30, 41, 59, 0.7);
-                        border-radius: 20px;
-                        padding: 16px;
-                        border: 1px solid rgba(255, 255, 255, 0.05);
-                        text-align: center;
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                    }
-                    
-                    /* Quick Actions */
-                    .action-card {
-                        display: flex;
-                        align-items: center;
-                        background: rgba(30, 41, 59, 0.7);
-                        border-radius: 20px;
-                        padding: 16px;
-                        margin-bottom: 12px;
-                        border: 1px solid rgba(255, 255, 255, 0.05);
-                        cursor: pointer;
-                        backdrop-filter: blur(10px);
-                    }
-                    .action-icon-box {
-                        width: 50px;
-                        height: 50px;
-                        border-radius: 16px;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        margin-right: 16px;
-                    }
-                }
-                @media (min-width: 769px) {
-                    .mobile-only { display: none !important; }
-                }
-                `}
-            </style>
+        <div className="dashboard-page-main">
 
             {/* --- MOBILE VIEW --- */}
             <div className="mobile-only dashboard-container">

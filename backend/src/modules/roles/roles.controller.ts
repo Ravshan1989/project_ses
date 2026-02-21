@@ -12,12 +12,14 @@ import { RolesService } from "./roles.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { PermissionsGuard } from "../auth/guards/permissions.guard";
 import { RequirePermission } from "../../common/decorators/permissions.decorator";
+import { CreateRoleDto } from "./dto/create-role.dto";
+import { UpdateRoleDto } from "./dto/update-role.dto";
 import { Role } from "./entities/role.entity";
 
 @Controller("roles")
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 export class RolesController {
-  constructor(private readonly rolesService: RolesService) {}
+  constructor(private readonly rolesService: RolesService) { }
 
   @Get()
   async findAll() {
@@ -31,13 +33,13 @@ export class RolesController {
 
   @Post()
   @RequirePermission("MANAGE_DEPARTMENTS") // UZ: Rollarni boshqarish uchun hozircha shu ruxsatdan foydalanamiz
-  async create(@Body() data: Partial<Role>) {
+  async create(@Body() data: CreateRoleDto) {
     return this.rolesService.create(data);
   }
 
   @Patch(":id")
   @RequirePermission("MANAGE_DEPARTMENTS")
-  async update(@Param("id") id: string, @Body() data: Partial<Role>) {
+  async update(@Param("id") id: string, @Body() data: UpdateRoleDto) {
     return this.rolesService.update(id, data);
   }
 

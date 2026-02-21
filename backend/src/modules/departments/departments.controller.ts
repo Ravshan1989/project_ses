@@ -11,6 +11,8 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Department } from "./entities/department.entity";
+import { CreateDepartmentDto } from "./dto/create-department.dto";
+import { UpdateDepartmentDto } from "./dto/update-department.dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { PermissionsGuard } from "../auth/guards/permissions.guard";
 import { RequirePermission } from "../../common/decorators/permissions.decorator";
@@ -42,7 +44,7 @@ export class DepartmentsController {
 
   @Post()
   @RequirePermission("MANAGE_DEPARTMENTS") // UZ: Faqat ruxsati borlar uchun
-  async create(@Body() data: Partial<Department>) {
+  async create(@Body() data: CreateDepartmentDto) {
     // UZ: Yangi bo'lim yaratish
     const dept = this.departmentRepo.create(data);
     return this.departmentRepo.save(dept);
@@ -50,7 +52,7 @@ export class DepartmentsController {
 
   @Patch(":id")
   @RequirePermission("MANAGE_DEPARTMENTS")
-  async update(@Param("id") id: string, @Body() data: Partial<Department>) {
+  async update(@Param("id") id: string, @Body() data: UpdateDepartmentDto) {
     // UZ: Bo'limni tahrirlash
     await this.departmentRepo.update(id, data);
     return this.departmentRepo.findOneBy({ id });

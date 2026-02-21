@@ -7,20 +7,25 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: "postgres",
-        url: configService.get<string>("DATABASE_URL"),
-        host: configService.get<string>("DB_HOST"),
-        port: configService.get<number>("DB_PORT", 5432),
-        username: configService.get<string>("DB_USERNAME"),
-        password: configService.get<string>("DB_PASSWORD"),
-        database: configService.get<string>("DB_NAME"),
-        autoLoadEntities: true,
-        synchronize: true, // Only for development/initial setup
-        ssl: configService.get<string>("DB_SSL") === "true" || !!configService.get<string>("DATABASE_URL")
-          ? { rejectUnauthorized: false }
-          : false,
-      }),
+      useFactory: (configService: ConfigService) => {
+        const dbConfig = {
+          type: "postgres" as const,
+          url: configService.get<string>("DATABASE_URL"),
+          host: configService.get<string>("DB_HOST"),
+          port: configService.get<number>("DB_PORT", 5432),
+          username: configService.get<string>("DB_USERNAME"),
+          password: configService.get<string>("DB_PASSWORD"),
+          database: configService.get<string>("DB_NAME") || configService.get<string>("DB_DATABASE") || "regionstat",
+          autoLoadEntities: true,
+          synchronize: true,
+          logging: true,
+          ssl: configService.get<string>("DB_SSL") === "true" || !!configService.get<string>("DATABASE_URL")
+            ? { rejectUnauthorized: false }
+            : false,
+        };
+        console.log('DATABASE CONNECTION CONFIG:', { ...dbConfig, password: '***' });
+        return dbConfig;
+      },
     }),
   ],
 })

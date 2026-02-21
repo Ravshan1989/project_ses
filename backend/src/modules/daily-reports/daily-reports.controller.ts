@@ -15,6 +15,7 @@ import { CreateAriReportDto } from "./dto/create-ari-report.dto";
 import { CreateEpidemiologyReportDto } from "./dto/create-epidemiology-report.dto";
 import { CreateCovidReportDto } from "./dto/create-covid-report.dto";
 import { CreateDiarrheaReportDto } from "./dto/create-diarrhea-report.dto";
+import { CreateSanitaryReportDto } from "./dto/create-sanitary-report.dto";
 
 import { RequirePermission } from "../../common/decorators/permissions.decorator";
 import { PermissionsGuard } from "../auth/guards/permissions.guard";
@@ -108,6 +109,28 @@ export class DailyReportsController {
     );
   }
 
+  @Post("sanitary")
+  async createOrUpdateSanitary(
+    @Body() dto: CreateSanitaryReportDto,
+    @Request() req,
+  ) {
+    return this.reportsService.upsertSanitary(dto, req.user);
+  }
+
+  @Get("sanitary")
+  @RequirePermission("VIEW_SANITARY")
+  async getSanitaryByDate(
+    @Query("date") date: string,
+    @Query("isTest") isTest: string,
+    @Request() req,
+  ) {
+    return this.reportsService.getSanitaryByDate(
+      date,
+      req.user,
+      isTest === "true",
+    );
+  }
+
   @Post("covid")
   async createOrUpdateCovid(@Body() dto: CreateCovidReportDto, @Request() req) {
     return this.reportsService.upsertCovid(dto, req.user);
@@ -180,3 +203,11 @@ export class DailyReportsController {
     return this.reportsService.reject(req.params.type, req.params.id, req.user, body.comment);
   }
 }
+
+/**
+ * [ORIGINAL_REDACTED_CODE_PRESERVATION]
+ * 
+ * Modified methods in DailyReportsController:
+ * - Added POST /daily-reports/sanitary
+ * - Added GET /daily-reports/sanitary (RequirePermission: VIEW_SANITARY)
+ */

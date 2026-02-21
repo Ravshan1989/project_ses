@@ -17,6 +17,8 @@ import { TelegramModule } from "./modules/telegram/telegram.module";
 import { SosModule } from "./modules/sos/sos.module";
 import { UpdatesModule } from "./modules/updates/updates.module";
 import { SeedingModule } from "./modules/seeding/seeding.module";
+import { KommunalHygieneModule } from "./modules/kommunal-hygiene/kommunal-hygiene.module";
+
 
 import { AuthModule } from "./modules/auth/auth.module";
 import { DepartmentsModule } from "./modules/departments/departments.module";
@@ -60,6 +62,8 @@ import { ScheduleModule } from "@nestjs/schedule";
     EventEmitterModule.forRoot(), // UZ: Eventlar tizimini yoqish
     UpdatesModule, // UZ: Yangilanishlar moduli
     SeedingModule, // UZ: Avtomatik ma'lumotlarni to'ldirish (Auto-fix)
+    KommunalHygieneModule, // UZ: Kommunal gigiyena oylik hisobotlari
+
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
       serveRoot: '/public',

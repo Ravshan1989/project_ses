@@ -13,6 +13,8 @@ import { CovidDailyReport } from "./entities/covid-daily-report.entity";
 import { CreateCovidReportDto } from "./dto/create-covid-report.dto";
 import { DiarrheaDailyReport } from "./entities/diarrhea-daily-report.entity";
 import { CreateDiarrheaReportDto } from "./dto/create-diarrhea-report.dto";
+import { SanitaryDailyReport } from "./entities/sanitary-daily-report.entity";
+import { CreateSanitaryReportDto } from "./dto/create-sanitary-report.dto";
 import { ReportStatus } from "../../common/enums/report-status.enum";
 import { Organization } from "../organizations/entities/organization.entity";
 import { User } from "../users/entities/user.entity";
@@ -36,6 +38,8 @@ export class DailyReportsService {
     private covidRepo: Repository<CovidDailyReport>,
     @InjectRepository(DiarrheaDailyReport)
     private diarrheaRepo: Repository<DiarrheaDailyReport>,
+    @InjectRepository(SanitaryDailyReport)
+    private sanitaryRepo: Repository<SanitaryDailyReport>,
     @InjectRepository(Organization)
     private orgRepo: Repository<Organization>,
     @Inject(forwardRef(() => TelegramService))
@@ -280,7 +284,7 @@ export class DailyReportsService {
     }
     const saved = await this.epiRepo.save(report);
     if (!dto.isTest) {
-      const details = `Tekshirildi: ${saved.inspected_total}\nKamchiliklar: ${saved.defects_total}\nJarima: ${saved.fines_total}\nTo'xtatildi: ${saved.suspended_total}`;
+      const details = `Epidemiologik holat yangilandi`;
       this.telegramService.sendReportNotification(
         "Epidemiologiya",
         user.organization?.name || "Tuman",
@@ -525,6 +529,60 @@ export class DailyReportsService {
     });
   }
 
+  async upsertSanitary(dto: CreateSanitaryReportDto, user: User) {
+    this.validateIsolation(user, dto.organizationId);
+    let report = await this.sanitaryRepo.findOne({
+      where: {
+        reportDate: dto.reportDate,
+        organization: { id: dto.organizationId },
+        isTest: dto.isTest || false,
+      },
+    });
+
+    if (report) {
+      this.validateStatus(report);
+      Object.assign(report, dto);
+    } else {
+      report = this.sanitaryRepo.create({
+        ...dto,
+        organization: { id: dto.organizationId },
+        isTest: dto.isTest || false,
+      });
+    }
+    const saved = await this.sanitaryRepo.save(report);
+    if (!dto.isTest) {
+      const details = `Tekshirildi: ${saved.inspected_total}\nKamchiliklar: ${saved.defects_total}\nJarima: ${saved.fines_total}`;
+      this.telegramService.sendReportNotification(
+        "Sanitariya",
+        user.organization?.name || "Tuman",
+        saved.reportDate,
+        details,
+      );
+    }
+    return saved;
+  }
+
+  async getSanitaryByDate(date: string, user: User, includeTest = false) {
+    const level = getRoleLevel(user.role, user);
+    const where: FindOptionsWhere<SanitaryDailyReport> = {
+      reportDate: date,
+      isTest: includeTest,
+    };
+
+    if (level === 2) {
+      if (!user.organization) return [];
+      where.organization = { parent: { id: user.organization.id } };
+    } else if (level === 3) {
+      if (!user.organization) return [];
+      where.organization = { id: user.organization.id };
+    }
+
+    return this.sanitaryRepo.find({
+      where,
+      relations: ["organization", "organization.parent"],
+    });
+  }
+
   async cleanupTest() {
     await this.reportRepo.delete({ isTest: true });
     await this.fluRepo.delete({ isTest: true });
@@ -532,6 +590,7 @@ export class DailyReportsService {
     await this.epiRepo.delete({ isTest: true });
     await this.covidRepo.delete({ isTest: true });
     await this.diarrheaRepo.delete({ isTest: true });
+    await this.sanitaryRepo.delete({ isTest: true });
     return {
       success: true,
       message: "Test ma'lumotlari muvaffaqiyatli o'chirildi",
@@ -707,6 +766,25 @@ export class DailyReportsService {
         }
       }
 
+      // 4a. Sanitary (NEW)
+      if (payload.epi?.length) { // UZ: Hozircha payload.epi dan kelgan ma'lumotni ham Sanitariyaga yozamiz
+        for (const data of payload.epi) {
+          this.validateIsolation(user, data.organizationId);
+          let report = await manager.findOne(SanitaryDailyReport, {
+            where: { reportDate, organization: { id: data.organizationId }, isTest },
+          });
+          if (report) Object.assign(report, data);
+          else
+            report = manager.create(SanitaryDailyReport, {
+              ...data,
+              reportDate,
+              isTest,
+              organization: { id: data.organizationId },
+            });
+          await manager.save(report);
+        }
+      }
+
       // 5. Covid
       if (payload.covid?.length) {
         for (const data of payload.covid) {
@@ -763,6 +841,8 @@ export class DailyReportsService {
         return this.covidRepo;
       case "diarrhea":
         return this.diarrheaRepo;
+      case "sanitary":
+        return this.sanitaryRepo;
       default:
         throw new Error("Invalid report type");
     }
@@ -822,3 +902,13 @@ export class DailyReportsService {
     return repo.save(report);
   }
 }
+
+/**
+ * [ORIGINAL_REDACTED_CODE_PRESERVATION]
+ * 
+ * Modified methods in DailyReportsService:
+ * - upsertEpidemiology (Removed sanitary fields from telegram notification)
+ * - bulkUpsertBatch (Split epi and sanitary logic)
+ * - cleanupTest, getRepoByType (Added sanitaryRepo)
+ * - getSanitaryByDate, upsertSanitary (New methods)
+ */

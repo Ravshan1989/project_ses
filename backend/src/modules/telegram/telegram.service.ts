@@ -120,7 +120,10 @@ export class TelegramService implements OnModuleInit {
             Markup.button.callback("🔵 Gripp (Batafsil)", "get_flu"),
             Markup.button.callback("🟢 O'RVI", "get_ari"),
           ],
-          [Markup.button.callback("🟣 Epidemiologiya", "get_epi")],
+          [
+            Markup.button.callback("🟣 Epidemiologiya", "get_epi"),
+            Markup.button.callback("🏥 Sanitariya", "get_sanitary"),
+          ],
           [Markup.button.callback("🔐 Ro'yxatdan o'tishni tasdiqlash", "verify_phone")],
         ]),
       );
@@ -192,6 +195,10 @@ export class TelegramService implements OnModuleInit {
     this.bot.action("get_epi", (ctx) => {
       this.logger.log("Epidemiologiya hisoboti so'raldi");
       return this.handleReportRequest(ctx, "epi");
+    });
+    this.bot.action("get_sanitary", (ctx) => {
+      this.logger.log("Sanitariya hisoboti so'raldi");
+      return this.handleReportRequest(ctx, "sanitary");
     });
 
     // Manual phone verification trigger
@@ -278,6 +285,16 @@ export class TelegramService implements OnModuleInit {
         if (data.length === 0) message += "Ma'lumot topilmadi.";
         data.forEach((r) => {
           const orgName = this.escapeMarkdown(r.organization?.name || "");
+          message += `🏢 *${orgName}:* Holati: ${r.status}\n`;
+        });
+      } else if (type === "sanitary") {
+        const data = await this.dailyReportsService.getSanitaryByDate(
+          today,
+          this.systemUser,
+        );
+        if (data.length === 0) message += "Ma'lumot topilmadi.";
+        data.forEach((r) => {
+          const orgName = this.escapeMarkdown(r.organization?.name || "");
           message += `🏢 *${orgName}:* Tekshirildi: ${r.inspected_total}, Jarima: ${r.fines_total}\n`;
         });
       }
@@ -295,7 +312,10 @@ export class TelegramService implements OnModuleInit {
             Markup.button.callback("🔵 Gripp (Batafsil)", "get_flu"),
             Markup.button.callback("🟢 O'RVI", "get_ari"),
           ],
-          [Markup.button.callback("🟣 Epidemiologiya", "get_epi")],
+          [
+            Markup.button.callback("🟣 Epidemiologiya", "get_epi"),
+            Markup.button.callback("🏥 Sanitariya", "get_sanitary"),
+          ],
           [Markup.button.callback("🔐 Ro'yxatdan o'tishni tasdiqlash", "verify_phone")],
         ]),
       );

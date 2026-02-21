@@ -89,7 +89,10 @@
         "update": "Update",
         "save_all": "Save All",
         "approved": "Approved",
-        "close": "Close"
+        "close": "Close",
+        "total": "Total",
+        "status": "Status",
+        "no_data": "No data available"
     },
     "dashboard_page": {
         "title": "Dashboard",
@@ -200,7 +203,101 @@
         "covid": "COVID-19",
         "epidemiology": "Sanitary Control",
         "diarrhea": "Diarrheal Diseases",
-        "unified": "Unified Daily Reports"
+        "unified": "Unified Daily Reports",
+        "kg_water": "Communal Hygiene (Water)",
+        "monthly_reports": "Monthly Reports"
+    },
+    "kommunal_hygiene": {
+        "title": "Communal Hygiene",
+        "subtitle": "Sanitary control and monitoring",
+        "tabs": {
+            "water": "Drinking Water",
+            "open_water": "Open Water Bodies",
+            "usage_objects": "Water Usage Objects",
+            "regional_summary": "Regional Monitoring"
+        },
+        "water_table": {
+            "title": "Communal Hygiene — Monthly report",
+            "subtitle": "Drinking Water (Table 1)",
+            "headers": {
+                "pipeline": "Water Pipeline",
+                "chemical": "By chemical indicators",
+                "bacteriology": "Bacteriology Laboratory",
+                "total_samples": "Total inspected samples",
+                "points_samples": "Samples from external points",
+                "source": "From source",
+                "before_network": "Before network",
+                "control_points": "From network control points",
+                "consumer": "At consumer",
+                "not_compliant_sanitary": "Samples not meeting sanitary norms",
+                "ammonia": "Ammonia",
+                "nitrate": "Nitrate",
+                "nitrite": "Nitrite",
+                "dry_residue": "Dry residue",
+                "chloride": "Chloride",
+                "sulfate": "Sulfate",
+                "turbidity": "Turbidity",
+                "hardness": "Hardness",
+                "others": "Others",
+                "umc": "TBC",
+                "coli": "Coli index",
+                "sfz": "SFZ"
+            }
+        },
+        "open_water_table": {
+            "title": "Open water protection control",
+            "subtitle": "Sewage facilities (Table 2)",
+            "headers": {
+                "water_body": "Water body name",
+                "object_name": "Object name",
+                "treatment_system": "Treatment system",
+                "disinfection": "Disinfection",
+                "lab_control": "Laboratory control",
+                "chem": "Chemical indicators",
+                "bact": "Bacteriological indicators",
+                "before": "Before treatment",
+                "after": "After treatment",
+                "efficiency": "Eff. %",
+                "total_samples": "Total samples",
+                "not_meet": "Does not meet requirements"
+            }
+        },
+        "usage_table": {
+            "title": "Water usage objects",
+            "subtitle": "Monitoring and inspection (Table 3)",
+            "headers": {
+                "water_body": "Water body name",
+                "category": "Category",
+                "samples_taken": "Samples taken",
+                "samples_bad": "Does not meet requirements",
+                "pathogens": "Pathogenic agents",
+                "inf_disease": "Inf. disease",
+                "cholera": "Cholera",
+                "parasite": "Parasite",
+                "chem_pesticide": "Pesticides (chem.)",
+                "presence": "Presence",
+                "bad_pesticide": "Exceeding norm"
+            }
+        },
+        "rows": {
+            "kommunal": "Communal water pipelines total",
+            "kommunal_norm": "Of those not meeting sanitary norms",
+            "departmental": "Departmental water pipeline",
+            "departmental_norm": "Of those not meeting sanitary norms",
+            "total_ki": "TOTAL: C+D",
+            "total_tkb": "TOTAL: TKB"
+        },
+        "regional_indicators": {
+            "title": "Indicators by Districts (Summary)",
+            "district": "District/City",
+            "tables": "Tables",
+            "t1": "Tab. 1",
+            "t2": "Tab. 2",
+            "t3": "Tab. 3",
+            "status_submitted": "Entered",
+            "status_pending": "Not entered",
+            "bad_rate": "Bad samples %"
+        }
     },
     "daily_reports": {
         "actions": {
@@ -318,5 +415,50 @@
             "covid": "COVID-19 Daily Report",
             "epidemiology": "Sanitary Control (Epidemiology)"
         }
+    },
+    "form1": {
+        "title": "Form 1: Monthly Report",
+        "subtitle": "Data entry and analysis window",
+        "actions": {
+            "bulk_upload": "Upload monthly report",
+            "fill_daily": "Aggregate daily reports",
+            "error_load_diseases": "Error loading diseases list",
+            "error_excel_read": "Error reading Excel file",
+            "success_excel_upload": "Excel uploaded successfully",
+            "error_no_template": "Report template not found",
+            "success_save": "Report saved successfully",
+            "error_save": "Error saving report",
+            "success_aggregate": "Daily data aggregated",
+            "error_aggregate": "Error aggregating daily data"
+        },
+        "tabs": {
+            "by_disease": "By Diseases",
+            "by_territory": "By Territories",
+            "matrix": "Matrix"
+        },
+        "table": {
+            "indicator": "Indicators",
+            "code": "Code",
+            "current_month": "Current Month",
+            "total": "Total",
+            "u14": "Under 14",
+            "ytd": "Year to Date",
+            "year_suffix": "year",
+            "abs": "abs",
+            "int": "int",
+            "growth_title": "Growth/Decrease",
+            "growth_abs": "+/- abs",
+            "growth_per": "%",
+            "select_disease": "Select disease",
+            "search": "Search...",
+            "load_data": "Load",
+            "district_city": "District/City",
+            "total_province": "Total for Province"
+        }
+    },
+    "analysis_labels": {
+        "equal": "no change",
+        "increased": "increased",
+        "decreased": "decreased"
     }
 }

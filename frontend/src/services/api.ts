@@ -18,7 +18,21 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-// Mock API calls for now
+// Interceptor for Auth Errors (401)
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            // UZ: Ruxsat berilmagan bo'lsa (token eskirgan yoki noto'g'ri bo'lsa) loginga haydaymiz
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user_role');
+            localStorage.removeItem('user_name');
+            localStorage.removeItem('user_org_id');
+            window.location.href = '/login';
+        }
+        return Promise.reject(error);
+    }
+);
 export const submissionApi = {
     create: (data: any) => api.post('/submissions', data),
     getAll: () => api.get('/submissions'),
@@ -53,7 +67,10 @@ export const dailyReportsApi = {
     upsertCovid: (data: any) => api.post('/daily-reports/covid', data),
     getDiarrheaByDate: (date: string, isTest = false) => api.get(`/daily-reports/diarrhea?date=${date}&isTest=${isTest}`),
     upsertDiarrhea: (data: any) => api.post('/daily-reports/diarrhea', data),
+    getSanitaryByDate: (date: string, isTest = false) => api.get(`/daily-reports/sanitary?date=${date}&isTest=${isTest}`),
+    upsertSanitary: (data: any) => api.post('/daily-reports/sanitary', data),
     cleanupTest: () => api.post('/daily-reports/cleanup-test'),
+    // ... rest of the dailyReportsApi
     // UZ: Tasdiqlash va Tekshirish (Verification/Approval)
     verify: (type: string, id: string) => api.patch(`/daily-reports/${type}/${id}/verify`),
     approve: (type: string, id: string) => api.patch(`/daily-reports/${type}/${id}/approve`),
@@ -114,6 +131,12 @@ export const rolesApi = {
     update: (id: string, data: any) => api.patch(`/roles/${id}`, data),
     syncPermissions: (id: string, permissions: any[]) =>
         api.post(`/roles/${id}/permissions`, { permissions }),
+}; export const kommunalHygieneApi = {
+    getWaterByMonth: (month: string, orgId?: string) => api.get(`/kommunal-hygiene/water?month=${month}${orgId ? `&orgId=${orgId}` : ''}`),
+    saveWaterRow: (data: any) => api.post('/kommunal-hygiene/water', data),
+    getOpenWaterByMonth: (month: string, orgId?: string) => api.get(`/kommunal-hygiene/open-water?month=${month}${orgId ? `&orgId=${orgId}` : ''}`),
+    saveOpenWaterRows: (data: { rows: any[], month: string, organizationId: string }) => api.post('/kommunal-hygiene/open-water', data),
+    getWaterUsageByMonth: (month: string, orgId?: string) => api.get(`/kommunal-hygiene/water-usage?month=${month}${orgId ? `&orgId=${orgId}` : ''}`),
+    saveWaterUsageRows: (data: { rows: any[], month: string, organizationId: string }) => api.post('/kommunal-hygiene/water-usage', data),
 };
-
 

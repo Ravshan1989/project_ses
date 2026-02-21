@@ -30,6 +30,7 @@ import WeeklyFluReportPage from './features/disease/WeeklyFluReportPage';
 import CovidDailyReportPage from './features/disease/CovidDailyReportPage';
 import DailyReportUnifiedPage from './features/disease/unified/DailyReportUnifiedPage';
 import DailyDiarrheaPage from './features/disease/DailyDiarrheaPage';
+import SanitaryDailyReportPage from './features/disease/SanitaryDailyReportPage';
 import AnalysisDashboard from './features/analysis/AnalysisDashboard';
 import GlobalMonitoringPage from './features/analysis/GlobalMonitoringPage';
 import LoginPage from './features/auth/LoginPage';
@@ -43,6 +44,8 @@ import DashboardExecutivePage from './features/dashboard/DashboardExecutivePage'
 import RegisterPage from './features/auth/RegisterPage';
 import { AdminUsersPage } from './features/admin/AdminUsersPage';
 import MobileReportsPage from './features/mobile/MobileReportsPage';
+import KommunalGigiyenaWaterPage from './features/kommunal-hygiene/KommunalGigiyenaWaterPage';
+
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
@@ -130,6 +133,27 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 }
             ]
         }] : []),
+        ...(hasRole(['SANITARY_HEAD', 'SANITARY_SPECIALIST', 'SANITARY_OPERATOR']) ? [{
+            key: 'grp_sanitary',
+            icon: <ClusterOutlined />,
+            label: t('common.sanitary_menu') || 'Sanitariya',
+            children: [
+                {
+                    key: 'sub_sanitary_daily',
+                    label: t('reports.daily_menu'),
+                    children: [
+                        { key: '/daily-sanitary', label: t('reports.sanitary_daily'), onClick: () => navigate('/daily-sanitary') },
+                    ]
+                },
+                {
+                    key: 'sub_sanitary_monthly',
+                    label: t('reports.monthly_reports'),
+                    children: [
+                        { key: '/kg-water', label: t('reports.kg_water'), onClick: () => navigate('/kg-water') },
+                    ]
+                }
+            ]
+        }] : []),
         ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD']) ? [
             { key: '/sos-monitoring', icon: <BellOutlined />, label: t('common.sos_monitoring'), onClick: () => navigate('/sos-monitoring') }
         ] : []),
@@ -170,7 +194,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 window.location.href = 'https://github.com/Ravshan1989/project_ses/releases/latest/download/app-release.apk';
             }
         }] : [])
-    ] as any[]).filter(item => item !== null);
+    ]).filter(item => item !== null);
 
 
     const getPageTitle = () => {
@@ -293,6 +317,9 @@ function App() {
                     <Route path="/weekly-flu" element={<ProtectedRoute><WeeklyFluReportPage /></ProtectedRoute>} />
                     <Route path="/daily-covid" element={<ProtectedRoute><CovidDailyReportPage /></ProtectedRoute>} />
                     <Route path="/daily-diarrhea" element={<ProtectedRoute><DailyDiarrheaPage /></ProtectedRoute>} />
+                    <Route path="/daily-sanitary" element={<ProtectedRoute><SanitaryDailyReportPage /></ProtectedRoute>} />
+                    <Route path="/kg-water" element={<ProtectedRoute><KommunalGigiyenaWaterPage /></ProtectedRoute>} />
+
                     <Route path="/daily-unified" element={<ProtectedRoute><DailyReportUnifiedPage /></ProtectedRoute>} />
                     <Route path="/form1-monitoring" element={<ProtectedRoute><Form1StatusPage /></ProtectedRoute>} />
                     <Route path="/export" element={<ProtectedRoute><ExportPage /></ProtectedRoute>} />
