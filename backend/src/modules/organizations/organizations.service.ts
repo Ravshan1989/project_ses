@@ -40,6 +40,10 @@ export class OrganizationsService {
     return this.orgRepo.findOne({ where: { name } });
   }
 
+  async findOne(id: string): Promise<Organization | null> {
+    return this.orgRepo.findOne({ where: { id } });
+  }
+
   async create(name: string, parentId?: string): Promise<Organization> {
     const org = this.orgRepo.create({
       name,

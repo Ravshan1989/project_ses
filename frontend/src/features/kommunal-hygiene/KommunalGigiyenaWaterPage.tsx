@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, DatePicker, notification, Select, Space, Spin, Card, Tabs, Input, Tooltip } from 'antd';
-import { SaveOutlined, ReloadOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { SaveOutlined, ReloadOutlined, PlusOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { kommunalHygieneApi, organizationsApi } from '../../services/api';
 import GlassLayout from '../../components/layout/GlassLayout';
@@ -269,6 +269,7 @@ const KommunalGigiyenaWaterPage: React.FC = () => {
     const [loadingT3, setLoadingT3] = useState(false);
 
     const [saving, setSaving] = useState(false);
+    const [exporting, setExporting] = useState(false);
 
     // ── Fetch orgs ────────────────────────────────────────────────────────────
     useEffect(() => {
@@ -375,6 +376,26 @@ const KommunalGigiyenaWaterPage: React.FC = () => {
             notification.error({ message: t('common.error_save') });
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleExport = async (isRegional: boolean = false) => {
+        try {
+            setExporting(true);
+            const m = month.format('YYYY-MM');
+            const targetOrg = isRegional ? 'all' : orgId;
+            const res = await kommunalHygieneApi.exportRegionalExcel(m, targetOrg);
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', isRegional ? `KG_Mintaqaviy_Monitoring_${m}.xlsx` : `KG_Tuman_Monitoring_${m}.xlsx`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (e) {
+            notification.error({ message: "Yuklab olishda xatolik yuz berdi" });
+        } finally {
+            setExporting(false);
         }
     };
 
@@ -491,6 +512,9 @@ const KommunalGigiyenaWaterPage: React.FC = () => {
             )}
             <Button icon={<ReloadOutlined />} onClick={fetchAll}>{t('common.update')}</Button>
             {canEdit && <Button type="primary" icon={<SaveOutlined />} onClick={handleGlobalSave} loading={saving}>{t('common.save')}</Button>}
+            <Button icon={<DownloadOutlined />} onClick={() => handleExport(activeTab === '4')} loading={exporting}>
+                Excelga yuklash
+            </Button>
         </Space>
     );
 

@@ -1,0 +1,19 @@
+﻿{
+    "organizationId":  "039b968b-0cbe-4e14-9d53-833476dcc9d2",
+    "rows":  [
+                 {
+                     "efficiency_chem":  80,
+                     "treatment_system":  "Mexanik",
+                     "efficiency_bact":  90,
+                     "before_bact":  1000,
+                     "water_body_name":  "Chirchiq daryosi",
+                     "after_chem":  10.2,
+                     "before_chem":  50.5,
+                     "object_name":  "G\u0027alaba bog\u0027i yaqini",
+                     "after_bact":  100,
+                     "total_samples":  10,
+                     "not_meet_samples":  2
+                 }
+             ],
+    "month":  "2026-02"
+}
