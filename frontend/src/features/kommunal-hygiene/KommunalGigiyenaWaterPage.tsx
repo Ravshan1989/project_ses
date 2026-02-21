@@ -250,8 +250,11 @@ const KommunalGigiyenaWaterPage: React.FC = () => {
     const [orgs, setOrgs] = useState<any[]>([]);
     const [activeTab, setActiveTab] = useState('1');
 
-    const currentUser = useMemo(() => JSON.parse(localStorage.getItem('currentUser') || '{}'), []);
-    const isRegionalAdmin = ['REGIONAL_MUDIR', 'EXECUTIVE', 'SUPER_ADMIN', 'ADMIN'].includes(currentUser.role);
+    const userRole = (localStorage.getItem('user_role') || '').toUpperCase();
+    const isRegionalAdmin = ['REGIONAL_MUDIR', 'EXECUTIVE', 'SUPER_ADMIN', 'ADMIN'].includes(userRole);
+    const userOrgId = localStorage.getItem('user_org_id') || '';
+    const isAdmin = ['ADMIN', 'REPUBLIC_HEAD', 'REGION_HEAD'].includes(userRole);
+    const canEdit = ['SANITARY_SPECIALIST', 'SANITARY_OPERATOR', 'ADMIN'].includes(userRole);
 
     // Table 1 state
     const [dataT1, setDataT1] = useState<Record<string, any>>({});
@@ -266,11 +269,6 @@ const KommunalGigiyenaWaterPage: React.FC = () => {
     const [loadingT3, setLoadingT3] = useState(false);
 
     const [saving, setSaving] = useState(false);
-
-    const userRole = localStorage.getItem('user_role') || '';
-    const userOrgId = localStorage.getItem('user_org_id') || '';
-    const isAdmin = ['ADMIN', 'REPUBLIC_HEAD', 'REGION_HEAD'].includes(userRole);
-    const canEdit = ['SANITARY_SPECIALIST', 'SANITARY_OPERATOR', 'ADMIN'].includes(userRole);
 
     // ── Fetch orgs ────────────────────────────────────────────────────────────
     useEffect(() => {
