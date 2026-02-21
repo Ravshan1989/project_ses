@@ -288,15 +288,17 @@
             "total_tkb": "TOTAL: TKB"
         },
         "regional_indicators": {
-            "title": "Indicators by Districts (Summary)",
+            "title": "Report Submission Status by District (Traffic Light)",
             "district": "District/City",
-            "tables": "Tables",
-            "t1": "Tab. 1",
-            "t2": "Tab. 2",
-            "t3": "Tab. 3",
-            "status_submitted": "Entered",
-            "status_pending": "Not entered",
-            "bad_rate": "Bad samples %"
+            "t1": "Drinking Water",
+            "t2": "Open Water",
+            "t3": "Facilities",
+            "status_submitted": "Submitted",
+            "status_pending": "Pending",
+            "regional_totals": "Overall Regional Indicators",
+            "total_samples": "Total Samples",
+            "bad_count": "Non-compliant",
+            "compliance": "Compliance"
         }
     },
     "daily_reports": {

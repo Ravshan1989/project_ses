@@ -5,9 +5,13 @@ import { KgOpenWaterReport } from './entities/open-water-report.entity';
 import { KgWaterUsageReport } from './entities/water-usage-report.entity';
 import { KommunalHygieneService } from './kommunal-hygiene.service';
 import { KommunalHygieneController } from './kommunal-hygiene.controller';
+import { OrganizationsModule } from '../organizations/organizations.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([KgWaterReport, KgOpenWaterReport, KgWaterUsageReport])],
+    imports: [
+        TypeOrmModule.forFeature([KgWaterReport, KgOpenWaterReport, KgWaterUsageReport]),
+        OrganizationsModule
+    ],
     providers: [KommunalHygieneService],
     controllers: [KommunalHygieneController],
     exports: [KommunalHygieneService],

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, DatePicker, notification, Select, Space, Spin, Card, Tabs, Input } from 'antd';
+import { Button, DatePicker, notification, Select, Space, Spin, Card, Tabs, Input, Tooltip } from 'antd';
 import { SaveOutlined, ReloadOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { kommunalHygieneApi, organizationsApi } from '../../services/api';
@@ -140,39 +140,33 @@ const emptyRowT3 = () => ({
     chem_bad_pesticide: 0,
 });
 
-// ─── Regional Monitoring Section ─────────────────────────────────────────────
-const RegionalMonitoringSection: React.FC<{ month: any }> = ({ month }) => {
+// ─── Status Indicator Component ───────────────────────────────────────────────
+const StatusDot: React.FC<{ status: boolean; tooltip: string }> = ({ status, tooltip }) => (
+    <Tooltip title={tooltip}>
+        <div style={{
+            width: 12,
+            height: 12,
+            borderRadius: '50%',
+            backgroundColor: status ? '#22c55e' : '#ef4444',
+            display: 'inline-block',
+            margin: '0 auto',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+            cursor: 'default'
+        }} />
+    </Tooltip>
+);
+
+// ─── Regional Monitoring Section (Traffic Light System) ──────────────────────
+const RegionalStatusPanel: React.FC<{ month: any }> = ({ month }) => {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
-    const [summaryData, setSummaryData] = useState<any[]>([]);
+    const [statusData, setStatusData] = useState<{ districts: any[], summary: any }>({ districts: [], summary: {} });
 
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const orgRes = await organizationsApi.getAll();
-            const districts = orgRes.data.filter((o: any) => o.parent_id !== null);
-
-            const results = await Promise.all(districts.map(async (d: any) => {
-                const res = await kommunalHygieneApi.getWaterByMonth(month.format('YYYY-MM'), d.id);
-                const data = res.data || [];
-
-                const totalSamples = data.reduce((acc: number, r: any) => acc + (r.chem_total || 0), 0);
-                const badSamples = data.reduce((acc: number, r: any) => acc + (
-                    (r.chem_bad_ammiak || 0) + (r.chem_bad_nitrat || 0) + (r.chem_bad_nitrit || 0) +
-                    (r.chem_bad_qoldiq || 0) + (r.chem_bad_xlorid || 0) + (r.chem_bad_sulfat || 0) +
-                    (r.chem_bad_loyqa || 0) + (r.chem_bad_qattiq || 0) + (r.chem_bad_other || 0)
-                ), 0);
-
-                return {
-                    id: d.id,
-                    name: d.name,
-                    status: data.length > 0 ? 'SUBMITTED' : 'PENDING',
-                    totalSamples,
-                    badSamples,
-                    badPercent: totalSamples > 0 ? ((badSamples / totalSamples) * 100).toFixed(1) : '0'
-                };
-            }));
-            setSummaryData(results);
+            const res = await kommunalHygieneApi.getRegionalStatus(month.format('YYYY-MM'));
+            setStatusData(res.data || { districts: [], summary: {} });
         } catch (e) {
             notification.error({ message: t('common.error_load_data') });
         } finally {
@@ -184,6 +178,8 @@ const RegionalMonitoringSection: React.FC<{ month: any }> = ({ month }) => {
         fetchData();
     }, [fetchData]);
 
+    const { districts, summary } = statusData;
+
     return (
         <Card title={t('kommunal_hygiene.regional_indicators.title')} bordered={false}>
             <div style={{ overflowX: 'auto' }}>
@@ -192,29 +188,50 @@ const RegionalMonitoringSection: React.FC<{ month: any }> = ({ month }) => {
                         <thead>
                             <tr>
                                 <th style={thStyle}>{t('kommunal_hygiene.regional_indicators.district')}</th>
-                                <th style={thStyle}>{t('common.status')}</th>
-                                <th style={thStyle}>{t('kommunal_hygiene.water_table.headers.total_samples')}</th>
-                                <th style={thStyle}>{t('kommunal_hygiene.water_table.headers.not_compliant_sanitary')}</th>
-                                <th style={thStyle}>{t('kommunal_hygiene.regional_indicators.bad_rate')}</th>
+                                <th style={thStyle}>{t('kommunal_hygiene.regional_indicators.t1')}</th>
+                                <th style={thStyle}>{t('kommunal_hygiene.regional_indicators.t2')}</th>
+                                <th style={thStyle}>{t('kommunal_hygiene.regional_indicators.t3')}</th>
+                                <th style={thStyle}>{t('kommunal_hygiene.regional_indicators.total_samples')}</th>
+                                <th style={thStyle}>{t('kommunal_hygiene.regional_indicators.bad_count')}</th>
+                                <th style={thStyle}>{t('kommunal_hygiene.regional_indicators.compliance')}</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {summaryData.map(row => (
+                            {districts.map(row => (
                                 <tr key={row.id}>
                                     <td style={{ ...tdStyle, textAlign: 'left', padding: '8px' }}>{row.name}</td>
                                     <td style={tdStyle}>
-                                        <span style={{ color: row.status === 'SUBMITTED' ? '#22c55e' : '#ef4444' }}>
-                                            {row.status === 'SUBMITTED' ? t('kommunal_hygiene.regional_indicators.status_submitted') : t('kommunal_hygiene.regional_indicators.status_pending')}
-                                        </span>
+                                        <StatusDot status={row.t1} tooltip={row.t1 ? t('kommunal_hygiene.regional_indicators.status_submitted') : t('kommunal_hygiene.regional_indicators.status_pending')} />
+                                    </td>
+                                    <td style={tdStyle}>
+                                        <StatusDot status={row.t2} tooltip={row.t2 ? t('kommunal_hygiene.regional_indicators.status_submitted') : t('kommunal_hygiene.regional_indicators.status_pending')} />
+                                    </td>
+                                    <td style={tdStyle}>
+                                        <StatusDot status={row.t3} tooltip={row.t3 ? t('kommunal_hygiene.regional_indicators.status_submitted') : t('kommunal_hygiene.regional_indicators.status_pending')} />
                                     </td>
                                     <td style={tdStyle}>{row.totalSamples}</td>
-                                    <td style={tdStyle}>{row.badSamples}</td>
-                                    <td style={{ ...tdStyle, fontWeight: 700, color: Number(row.badPercent) > 10 ? '#ef4444' : '#111' }}>{row.badPercent}%</td>
+                                    <td style={tdStyle}>{row.totalBad}</td>
+                                    <td style={{ ...tdStyle, fontWeight: 700, color: Number(row.badPercent) > 10 ? '#ef4444' : '#111' }}>
+                                        {row.totalSamples === 0 ? '-' : `${(100 - Number(row.badPercent)).toFixed(1)}%`}
+                                    </td>
                                 </tr>
                             ))}
-                            {summaryData.length === 0 && !loading && (
+                            {/* Regional Aggregation Row */}
+                            {districts.length > 0 && (
+                                <tr style={{ backgroundColor: '#f1f5f9', fontWeight: 'bold' }}>
+                                    <td colSpan={4} style={{ ...tdStyle, textAlign: 'right', padding: '8px 12px' }}>
+                                        {t('kommunal_hygiene.regional_indicators.regional_totals')}:
+                                    </td>
+                                    <td style={tdStyle}>{summary.totalSamples || 0}</td>
+                                    <td style={tdStyle}>{summary.totalBad || 0}</td>
+                                    <td style={{ ...tdStyle, color: Number(summary.badPercent) > 10 ? '#ef4444' : '#111' }}>
+                                        {summary.totalSamples === 0 ? '-' : `${(100 - Number(summary.badPercent)).toFixed(1)}%`}
+                                    </td>
+                                </tr>
+                            )}
+                            {districts.length === 0 && !loading && (
                                 <tr>
-                                    <td colSpan={5} style={{ ...tdStyle, padding: 24, color: '#94a3b8' }}>{t('common.no_data')}</td>
+                                    <td colSpan={7} style={{ ...tdStyle, padding: 24, color: '#94a3b8' }}>{t('common.no_data')}</td>
                                 </tr>
                             )}
                         </tbody>
@@ -736,7 +753,7 @@ const KommunalGigiyenaWaterPage: React.FC = () => {
                         {/* ══════════════ TAB 4: Regional Monitoring ══════════════════ */}
                         {isRegionalAdmin && (
                             <TabPane tab={t('kommunal_hygiene.tabs.regional_summary')} key="4">
-                                <RegionalMonitoringSection month={month} />
+                                <RegionalStatusPanel month={month} />
                             </TabPane>
                         )}
                     </Tabs>

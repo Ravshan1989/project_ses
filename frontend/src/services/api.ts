@@ -138,5 +138,6 @@ export const rolesApi = {
     saveOpenWaterRows: (data: { rows: any[], month: string, organizationId: string }) => api.post('/kommunal-hygiene/open-water', data),
     getWaterUsageByMonth: (month: string, orgId?: string) => api.get(`/kommunal-hygiene/water-usage?month=${month}${orgId ? `&orgId=${orgId}` : ''}`),
     saveWaterUsageRows: (data: { rows: any[], month: string, organizationId: string }) => api.post('/kommunal-hygiene/water-usage', data),
+    getRegionalStatus: (month: string) => api.get(`/kommunal-hygiene/regional-status?month=${month}`),
 };
 

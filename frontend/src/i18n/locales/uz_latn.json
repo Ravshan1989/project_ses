@@ -354,15 +354,17 @@
             "total_tkb": "JAMI: TKB"
         },
         "regional_indicators": {
-            "title": "Hududlar bo'yicha ko'rsatkichlar (Svodka)",
+            "title": "Hududlar bo'yicha hisobot topshirish holati (Svetofor)",
             "district": "Tuman/Shahar",
-            "tables": "Jadvallar",
-            "t1": "1-jadval",
-            "t2": "2-jadval",
-            "t3": "3-jadval",
-            "status_submitted": "Kiritilgan",
-            "status_pending": "Kiritilmagan",
-            "bad_rate": "Yomon namunalar %"
+            "t1": "Ichimlik suvi",
+            "t2": "Ochiq suv",
+            "t3": "Inshootlar",
+            "status_submitted": "Topshirilgan",
+            "status_pending": "Kutilmoqda",
+            "regional_totals": "Mintaqa bo'yicha jami ko'rsatkichlar",
+            "total_samples": "Jami namunalar",
+            "bad_count": "Yaroqsiz",
+            "compliance": "Muvofiqlik"
         }
     },
     "monitoring": {

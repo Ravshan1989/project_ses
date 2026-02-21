@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { KgWaterReport } from './entities/water-report.entity';
 import { KgOpenWaterReport } from './entities/open-water-report.entity';
 import { KgWaterUsageReport } from './entities/water-usage-report.entity';
+import { OrganizationsService } from '../organizations/organizations.service';
 
 @Injectable()
 export class KommunalHygieneService {
@@ -14,7 +15,9 @@ export class KommunalHygieneService {
         private readonly openWaterRepo: Repository<KgOpenWaterReport>,
         @InjectRepository(KgWaterUsageReport)
         private readonly waterUsageRepo: Repository<KgWaterUsageReport>,
+        private readonly orgService: OrganizationsService,
     ) { }
+
 
     async findByMonthAndOrg(month: string, organizationId?: string) {
         const m = month.length === 7 ? `${month}-01` : month;
@@ -123,5 +126,70 @@ export class KommunalHygieneService {
         })));
 
         return this.waterUsageRepo.save(entities);
+    }
+
+    // ─── REGIONAL STATUS AGGREGATION ──────────────────────────────────────
+
+    async getRegionalStatus(month: string) {
+        const m = month.length === 7 ? `${month}-01` : month;
+
+        // Fetch all districts
+        const allOrgs = await this.orgService.findAll();
+        const districts = allOrgs.filter(o => o.parent !== null);
+
+        // Fetch data for all three tables for the given month
+        const [waterData, openWaterData, usageData] = await Promise.all([
+            this.waterRepo.find({ where: { reportMonth: m }, relations: ['organization'] }),
+            this.openWaterRepo.find({ where: { reportMonth: m }, relations: ['organization'] }),
+            this.waterUsageRepo.find({ where: { reportMonth: m }, relations: ['organization'] }),
+        ]);
+
+        const results = districts.map(d => {
+            const districtWater = waterData.filter(w => w.organization?.id === d.id);
+            const districtOpenWater = openWaterData.filter(ow => ow.organization?.id === d.id);
+            const districtUsage = usageData.filter(u => u.organization?.id === d.id);
+
+            const totalSamplesT1 = districtWater.reduce((acc, r: any) => acc + (r.chem_total || 0), 0);
+            const badSamplesT1 = districtWater.reduce((acc, r: any) => acc + (
+                (r.chem_bad_ammiak || 0) + (r.chem_bad_nitrat || 0) + (r.chem_bad_nitrit || 0) +
+                (r.chem_bad_qoldiq || 0) + (r.chem_bad_xlorid || 0) + (r.chem_bad_sulfat || 0) +
+                (r.chem_bad_loyqa || 0) + (r.chem_bad_qattiq || 0) + (r.chem_bad_other || 0)
+            ), 0);
+
+            const totalSamplesT2 = districtOpenWater.reduce((acc, r: any) => acc + (r.chem_before_total || 0), 0);
+            const badSamplesT2 = districtOpenWater.reduce((acc, r: any) => acc + (r.chem_before_bad || 0), 0);
+
+            const totalSamplesT3 = districtUsage.reduce((acc, r: any) => acc + (r.samples_taken || 0), 0);
+            const badSamplesT3 = districtUsage.reduce((acc, r: any) => acc + (r.samples_bad || 0), 0);
+
+            const totalSamples = totalSamplesT1 + totalSamplesT2 + totalSamplesT3;
+            const totalBad = badSamplesT1 + badSamplesT2 + badSamplesT3;
+            const badPercent = totalSamples > 0 ? ((totalBad / totalSamples) * 100).toFixed(1) : '0';
+
+            return {
+                id: d.id,
+                name: d.name,
+                t1: districtWater.length > 0,
+                t2: districtOpenWater.length > 0,
+                t3: districtUsage.length > 0,
+                totalSamples,
+                totalBad,
+                badPercent
+            };
+        });
+
+        // Add regional totals summary
+        const regionTotalSamples = results.reduce((acc, r) => acc + r.totalSamples, 0);
+        const regionTotalBad = results.reduce((acc, r) => acc + r.totalBad, 0);
+        const regionBadPercent = regionTotalSamples > 0 ? ((regionTotalBad / regionTotalSamples) * 100).toFixed(1) : '0';
+
+        return {
+            districts: results,
+            summary: {
+                totalSamples: regionTotalSamples,
+                totalBad: regionTotalBad,
+                badPercent: regionBadPercent
+            }
+        };
     }
 }

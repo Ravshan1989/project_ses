@@ -45,4 +45,9 @@ export class KommunalHygieneController {
     saveWaterUsage(@Body() body: { rows: any[], month: string, organizationId: string }) {
         return this.service.saveWaterUsageRows(body.rows, body.month, body.organizationId);
     }
+
+    @Get('regional-status')
+    getRegionalStatus(@Query('month') month: string) {
+        return this.service.getRegionalStatus(month);
+    }
 }
