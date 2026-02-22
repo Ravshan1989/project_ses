@@ -382,54 +382,6 @@ ${escapedDetails}
     }
   }
 
-  async sendSosNotification(data: {
-    id: string;
-    organizationName: string;
-    diseaseName: string;
-    status: string;
-    date: string;
-    senderName: string;
-    comment?: string;
-    latitude?: number;
-    longitude?: number;
-  }) {
-    if (!this.bot || !this.chatId) return;
-
-    const escapedOrg = this.escapeMarkdown(data.organizationName);
-    const escapedDisease = this.escapeMarkdown(data.diseaseName);
-    const escapedSender = this.escapeMarkdown(data.senderName);
-    const escapedComment = this.escapeMarkdown(data.comment || "Yo'q");
-    const message = `
-🚨🚨🚨 *SOS XABARNOMASI* 🚨🚨🚨
-🔴 *Daraja:* FAVQULODDA
-🏢 *Tuman/Shahar:* ${escapedOrg}
-👤 *Jo'natuvchi:* ${escapedSender}
-🦠 *Kasallik:* ${escapedDisease}
-📊 *Holat turi:* ${data.status}
-📅 *Sana va vaqt:* ${data.date}
-🆔 *SOS ID:* ${data.id}
-
-📝 *Izoh:* ${escapedComment}
-${data.latitude && data.longitude ? `📍 *Manzil:* [Google xaritada ko'rish](https://www.google.com/maps/search/?api=1&query=${data.latitude},${data.longitude})` : ""}
-
-⚠️ *DIQQAT:* Ushbu xabar favqulodda epidemiologik vaziyat haqida ogohlantiradi.
-    `;
-
-    try {
-      await this.bot.telegram.sendMessage(this.chatId, message, {
-        parse_mode: "Markdown",
-      });
-      this.logger.log(
-        `SOS Telegram xabarnomasi yuborildi: ${data.diseaseName} - ${data.organizationName}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        "SOS Telegram xabarnomasini yuborishda xatolik:",
-        error,
-      );
-    }
-  }
-
   // Registration notification and approval methods
   async sendRegistrationNotification(user: User): Promise<void> {
     if (!this.bot) {

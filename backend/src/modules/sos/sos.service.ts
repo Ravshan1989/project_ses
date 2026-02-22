@@ -10,7 +10,7 @@ import {
 import { CreateSosDiseaseDto } from "./dto/create-sos-disease.dto";
 import { CreateSosAlertDto } from "./dto/create-sos-alert.dto";
 import { User } from "../users/entities/user.entity";
-import { TelegramService } from "../telegram/telegram.service";
+import { SosBotService } from "../telegram/sos-bot.service";
 import { getRoleLevel } from "../../common/utils/role.util";
 import { UserRole } from "../../common/enums/role.enum";
 
@@ -23,7 +23,7 @@ export class SosService {
     private diseaseRepo: Repository<SosDisease>,
     @InjectRepository(SosAlert)
     private alertRepo: Repository<SosAlert>,
-    private telegramService: TelegramService,
+    private sosBotService: SosBotService,
   ) {}
 
   // ADMIN logic for predefined diseases
@@ -66,8 +66,8 @@ export class SosService {
 
     const saved = await this.alertRepo.save(alert);
 
-    // Notify via Telegram
-    await this.telegramService.sendSosNotification({
+    // Notify via Dedicated SOS Bot
+    await this.sosBotService.sendSosNotification({
       id: saved.id,
       organizationName: user.organization.name,
       senderName:

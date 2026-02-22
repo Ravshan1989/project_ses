@@ -6,6 +6,7 @@ import { User } from "../users/entities/user.entity";
 
 import { DataExportService } from "./data-export.service";
 import { BackupBotService } from "./backup-bot.service";
+import { SosBotService } from "./sos-bot.service";
 
 @Global()
 @Module({
@@ -13,7 +14,12 @@ import { BackupBotService } from "./backup-bot.service";
     forwardRef(() => DailyReportsModule),
     TypeOrmModule.forFeature([User]),
   ],
-  providers: [TelegramService, DataExportService, BackupBotService],
-  exports: [TelegramService, DataExportService],
+  providers: [
+    TelegramService,
+    DataExportService,
+    BackupBotService,
+    SosBotService,
+  ],
+  exports: [TelegramService, DataExportService, SosBotService],
 })
 export class TelegramModule {}
