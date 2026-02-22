@@ -388,6 +388,7 @@ ${escapedDetails}
     diseaseName: string;
     status: string;
     date: string;
+    senderName: string;
     comment?: string;
     latitude?: number;
     longitude?: number;
@@ -396,11 +397,13 @@ ${escapedDetails}
 
     const escapedOrg = this.escapeMarkdown(data.organizationName);
     const escapedDisease = this.escapeMarkdown(data.diseaseName);
+    const escapedSender = this.escapeMarkdown(data.senderName);
     const escapedComment = this.escapeMarkdown(data.comment || "Yo'q");
     const message = `
 🚨🚨🚨 *SOS XABARNOMASI* 🚨🚨🚨
 🔴 *Daraja:* FAVQULODDA
 🏢 *Tuman/Shahar:* ${escapedOrg}
+👤 *Jo'natuvchi:* ${escapedSender}
 🦠 *Kasallik:* ${escapedDisease}
 📊 *Holat turi:* ${data.status}
 📅 *Sana va vaqt:* ${data.date}

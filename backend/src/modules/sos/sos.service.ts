@@ -70,6 +70,9 @@ export class SosService {
     await this.telegramService.sendSosNotification({
       id: saved.id,
       organizationName: user.organization.name,
+      senderName:
+        `${user.lastName || ""} ${user.firstName || ""}`.trim() ||
+        user.username,
       diseaseName: saved.diseaseName,
       status:
         saved.status === SosStatus.CONFIRMED
