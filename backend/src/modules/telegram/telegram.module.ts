@@ -13,7 +13,7 @@ import { BackupBotService } from "./backup-bot.service";
     forwardRef(() => DailyReportsModule),
     TypeOrmModule.forFeature([User]),
   ],
-  providers: [TelegramService, DataExportService /*, BackupBotService */],
+  providers: [TelegramService, DataExportService, BackupBotService],
   exports: [TelegramService, DataExportService],
 })
 export class TelegramModule {}

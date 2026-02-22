@@ -23,7 +23,9 @@ export class BackupBotService implements OnModuleInit {
       process.env.BACKUP_BOT_TOKEN;
     this.chatId =
       this.configService.get<string>("BACKUP_CHAT_ID") ||
-      process.env.BACKUP_CHAT_ID;
+      this.configService.get<string>("TELEGRAM_CHAT_ID") ||
+      process.env.BACKUP_CHAT_ID ||
+      process.env.TELEGRAM_CHAT_ID;
 
     if (token) {
       this.bot = new Telegraf(token);
