@@ -33,7 +33,7 @@ export class AnalysisService {
     @InjectRepository(SosAlert)
     private sosRepo: Repository<SosAlert>,
     private forecastingService: ForecastingService, // UZ: ForecastingService ineksiya qilindi
-  ) { }
+  ) {}
 
   async getGlobalSummary(startDate: string, endDate: string) {
     const organizations = await this.orgRepo.find({
@@ -67,10 +67,10 @@ export class AnalysisService {
     ]);
 
     // UZ: O(1) qidiruv uchun lug'at (Map) yaratamiz
-    const hepMap = new Map(hepAgg.map(a => [a.organization_id, a]));
-    const fluMap = new Map(fluAgg.map(a => [a.organization_id, a]));
-    const ariMap = new Map(ariAgg.map(a => [a.organization_id, a]));
-    const covidMap = new Map(covidAgg.map(a => [a.organization_id, a]));
+    const hepMap = new Map(hepAgg.map((a) => [a.organization_id, a]));
+    const fluMap = new Map(fluAgg.map((a) => [a.organization_id, a]));
+    const ariMap = new Map(ariAgg.map((a) => [a.organization_id, a]));
+    const covidMap = new Map(covidAgg.map((a) => [a.organization_id, a]));
 
     const form1Agg = await this.submissionRepo
       .createQueryBuilder("sub")
@@ -93,7 +93,9 @@ export class AnalysisService {
     }
 
     // UZ: Kasalliklarni nomi boyicha tezkor qidirish uchun Map - O(D)
-    const diseaseNameMap = new Map(diseases.map(d => [d.name.toLowerCase(), d]));
+    const diseaseNameMap = new Map(
+      diseases.map((d) => [d.name.toLowerCase(), d]),
+    );
 
     const globalMatrix: any[] = [];
 
@@ -213,7 +215,9 @@ export class AnalysisService {
       .groupBy("report.organization_id")
       .getRawMany();
 
-    const caseAggMap = new Map(caseAggregation.map(a => [a.organization_id, a]));
+    const caseAggMap = new Map(
+      caseAggregation.map((a) => [a.organization_id, a]),
+    );
 
     const results = organizations.map((org) => {
       const agg = caseAggMap.get(org.id); // UZ: O(1) - tezkor qidiruv
@@ -289,40 +293,74 @@ export class AnalysisService {
    * OPTIMIZED: Mock data for faster response (real data integration later)
    */
   async getForecast(diseaseType: string) {
-    // UZ: Top 15 kasallik uchun mock ma'lumotlar (kunlik + oylik)
-    // Har bir kasallik uchun real trend pattern'lar
+    const today = new Date();
+    const history: number[] = [];
 
-    const mockDataByDisease = {
-      // Kunlik kasalliklar (yuqori xavf)
-      flu: [120, 135, 142, 158, 165, 178], // Gripp - o'suvchi
-      ari: [85, 92, 88, 95, 102, 110], // YUQTI - o'suvchi
-      hepatitis: [45, 52, 48, 61, 55, 68], // Gepatit - o'suvchi
-      covid: [30, 28, 25, 22, 20, 18], // COVID - kamayuvchi
+    // UZ: Oxirgi 6 oyni hisoblaymiz
+    for (let i = 5; i >= 0; i--) {
+      const start = startOfMonth(subMonths(today, i));
+      const end = i === 0 ? today : startOfMonth(subMonths(today, i - 1));
+      const startStr = format(start, "yyyy-MM-dd");
+      const endStr = format(end, "yyyy-MM-dd");
 
-      // Oylik kasalliklar (Form 1)
-      measles: [12, 15, 18, 22, 28, 35], // Qizamiq - o'suvchi (xavfli)
-      dysentery: [25, 28, 24, 26, 29, 32], // Dizenteriya - barqaror
-      typhoid: [8, 10, 9, 11, 10, 12], // Tif - barqaror
-      scarlet_fever: [15, 18, 16, 19, 21, 24], // Qizil isitma - o'suvchi
-      whooping_cough: [6, 8, 7, 9, 11, 14], // Ko'k yo'tal - o'suvchi
-      diphtheria: [2, 2, 1, 1, 1, 0], // Difteriya - kamayuvchi
-      meningitis: [5, 6, 7, 8, 9, 11], // Meningit - o'suvchi
-      tuberculosis: [35, 38, 36, 39, 41, 44], // Sil - o'suvchi
-      brucellosis: [10, 12, 11, 13, 15, 17], // Brutselloz - o'suvchi
-      malaria: [3, 2, 2, 1, 1, 0], // Bezgak - kamayuvchi
-      rabies: [1, 1, 2, 1, 2, 3], // Quturish - o'suvchi
-    };
+      let monthlyTotal = 0;
 
-    const finalData = mockDataByDisease[diseaseType] || [
-      45, 52, 48, 61, 55, 68,
-    ];
-    const prediction = this.forecastingService.predictNext(finalData);
+      if (["hepatitis", "flu", "ari", "covid"].includes(diseaseType)) {
+        let repo: Repository<any>;
+        let sumField: string;
+
+        if (diseaseType === "hepatitis") {
+          repo = this.hepatitisRepo;
+          sumField = "total_cases";
+        } else if (diseaseType === "flu") {
+          repo = this.fluRepo;
+          sumField = "flu_total";
+        } else if (diseaseType === "ari") {
+          repo = this.ariRepo;
+          sumField = "ari";
+        } else {
+          repo = this.covidRepo;
+          sumField = "total_cases";
+        }
+
+        const result = await repo
+          .createQueryBuilder("report")
+          .select(`SUM(report.${sumField})`, "total")
+          .where("report.reportDate BETWEEN :startStr AND :endStr", {
+            startStr,
+            endStr,
+          })
+          .getRawOne();
+        monthlyTotal = parseInt(result?.total || 0);
+      } else {
+        // UZ: Form 1 dagi statistikani qidirish
+        const submissions = await this.submissionRepo
+          .createQueryBuilder("sub")
+          .leftJoin("sub.template", "template")
+          .select("sub.data", "data")
+          .where("template.code = :code", { code: "form_1" })
+          .andWhere("sub.reportingPeriod BETWEEN :startStr AND :endStr", {
+            startStr,
+            endStr,
+          })
+          .getRawMany();
+
+        for (const sub of submissions) {
+          if (sub.data && sub.data[diseaseType]) {
+            monthlyTotal += parseInt(sub.data[diseaseType] || 0);
+          }
+        }
+      }
+      history.push(monthlyTotal);
+    }
+
+    const prediction = this.forecastingService.predictNext(history);
 
     return {
-      historicalData: finalData,
+      historicalData: history,
       predictedValue: prediction,
       period: "Next Month",
-      confidence: "85%",
+      confidence: history.every((v) => v === 0) ? "0%" : "85%",
       disease: diseaseType,
     };
   }
@@ -484,34 +522,51 @@ export class AnalysisService {
 
     // Epidemic Status
     let epidemicStatus = "safe"; // Barqaror
-    if (totalCasesToday > 500) epidemicStatus = "critical"; // Xavfli
+    if (totalCasesToday > 500)
+      epidemicStatus = "critical"; // Xavfli
     else if (totalCasesToday > 200) epidemicStatus = "warning"; // Ogohlantirish
 
     // Latest Reports (Unified List)
-    const fetchLatest = async (repo: Repository<any>, type: string, diseaseName: string) => {
-      return repo.find({
-        order: { createdAt: 'DESC' },
-        take: 5,
-        relations: ['organization']
-      }).then(reports => reports.map(r => ({
-        id: r.id,
-        type,
-        diseaseName,
-        district: r.organization?.name || "Noma'lum",
-        cases: r.total_cases || r.flu_total || r.ari || 0,
-        createdAt: r.createdAt
-      })));
+    const fetchLatest = async (
+      repo: Repository<any>,
+      type: string,
+      diseaseName: string,
+    ) => {
+      return repo
+        .find({
+          order: { createdAt: "DESC" },
+          take: 5,
+          relations: ["organization"],
+        })
+        .then((reports) =>
+          reports.map((r) => ({
+            id: r.id,
+            type,
+            diseaseName,
+            district: r.organization?.name || "Noma'lum",
+            cases: r.total_cases || r.flu_total || r.ari || 0,
+            createdAt: r.createdAt,
+          })),
+        );
     };
 
     const [hepLatest, fluLatest, ariLatest, covidLatest] = await Promise.all([
-      fetchLatest(this.hepatitisRepo, 'hepatitis', 'Gepatit'),
-      fetchLatest(this.fluRepo, 'flu', 'Gripp'),
-      fetchLatest(this.ariRepo, 'ari', "O'RVI"),
-      fetchLatest(this.covidRepo, 'covid', 'COVID-19')
+      fetchLatest(this.hepatitisRepo, "hepatitis", "Gepatit"),
+      fetchLatest(this.fluRepo, "flu", "Gripp"),
+      fetchLatest(this.ariRepo, "ari", "O'RVI"),
+      fetchLatest(this.covidRepo, "covid", "COVID-19"),
     ]);
 
-    const latestReports = [...hepLatest, ...fluLatest, ...ariLatest, ...covidLatest]
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    const latestReports = [
+      ...hepLatest,
+      ...fluLatest,
+      ...ariLatest,
+      ...covidLatest,
+    ]
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      )
       .slice(0, 5);
 
     return {
@@ -541,7 +596,9 @@ export class AnalysisService {
     // Fetch data for specific district only by reusing getGlobalSummary logic but filtering later
     // Note: optimization would be to filter in query, but for now we reuse logic
     const allDistricts = await this.getGlobalSummary(todayStr, todayStr);
-    const districtData = allDistricts.find((d) => d.organizationId === districtId);
+    const districtData = allDistricts.find(
+      (d) => d.organizationId === districtId,
+    );
 
     if (!districtData) return null;
 
@@ -562,16 +619,20 @@ export class AnalysisService {
     ]);
 
     // Filter for specific district
-    const districtToday = todayData.find((d) => d.organizationId === districtId);
-    const districtYesterday = yesterdayData.find((d) => d.organizationId === districtId);
+    const districtToday = todayData.find(
+      (d) => d.organizationId === districtId,
+    );
+    const districtYesterday = yesterdayData.find(
+      (d) => d.organizationId === districtId,
+    );
 
     if (!districtToday) {
       return {
         totalCasesToday: 0,
         totalCasesYesterday: 0,
-        trend: 'stable',
+        trend: "stable",
         trendPercent: 0,
-        epidemicStatus: 'safe',
+        epidemicStatus: "safe",
         topDiseases: [],
         latestReports: [], // Future: Implement fetching latest reports for this district
       };
@@ -579,11 +640,13 @@ export class AnalysisService {
 
     // Calculate Totals
     let totalCasesToday = 0;
-    districtToday.diseases.forEach((d: any) => totalCasesToday += d.cases);
+    districtToday.diseases.forEach((d: any) => (totalCasesToday += d.cases));
 
     let totalCasesYesterday = 0;
     if (districtYesterday) {
-      districtYesterday.diseases.forEach((d: any) => totalCasesYesterday += d.cases);
+      districtYesterday.diseases.forEach(
+        (d: any) => (totalCasesYesterday += d.cases),
+      );
     }
 
     // Trend
@@ -600,34 +663,50 @@ export class AnalysisService {
     // Top Diseases
     const topDiseases = districtToday.diseases.slice(0, 5).map((d: any) => ({
       name: d.disease,
-      count: d.cases
+      count: d.cases,
     }));
 
     // Latest Reports (Unified List for District)
-    const fetchLatestForDistrict = async (repo: Repository<any>, type: string, diseaseName: string) => {
-      return repo.find({
-        where: { organization: { id: districtId } },
-        order: { createdAt: 'DESC' },
-        take: 5,
-      }).then(reports => reports.map(r => ({
-        id: r.id,
-        type,
-        diseaseName,
-        district: districtToday.organizationName,
-        cases: r.total_cases || r.flu_total || r.ari || 0,
-        createdAt: r.createdAt
-      })));
+    const fetchLatestForDistrict = async (
+      repo: Repository<any>,
+      type: string,
+      diseaseName: string,
+    ) => {
+      return repo
+        .find({
+          where: { organization: { id: districtId } },
+          order: { createdAt: "DESC" },
+          take: 5,
+        })
+        .then((reports) =>
+          reports.map((r) => ({
+            id: r.id,
+            type,
+            diseaseName,
+            district: districtToday.organizationName,
+            cases: r.total_cases || r.flu_total || r.ari || 0,
+            createdAt: r.createdAt,
+          })),
+        );
     };
 
     const [hepLatest, fluLatest, ariLatest, covidLatest] = await Promise.all([
-      fetchLatestForDistrict(this.hepatitisRepo, 'hepatitis', 'Gepatit'),
-      fetchLatestForDistrict(this.fluRepo, 'flu', 'Gripp'),
-      fetchLatestForDistrict(this.ariRepo, 'ari', "O'RVI"),
-      fetchLatestForDistrict(this.covidRepo, 'covid', 'COVID-19')
+      fetchLatestForDistrict(this.hepatitisRepo, "hepatitis", "Gepatit"),
+      fetchLatestForDistrict(this.fluRepo, "flu", "Gripp"),
+      fetchLatestForDistrict(this.ariRepo, "ari", "O'RVI"),
+      fetchLatestForDistrict(this.covidRepo, "covid", "COVID-19"),
     ]);
 
-    const latestReports = [...hepLatest, ...fluLatest, ...ariLatest, ...covidLatest]
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    const latestReports = [
+      ...hepLatest,
+      ...fluLatest,
+      ...ariLatest,
+      ...covidLatest,
+    ]
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      )
       .slice(0, 5);
 
     return {
@@ -637,23 +716,22 @@ export class AnalysisService {
       trendPercent: parseFloat(percent.toFixed(1)),
       epidemicStatus,
       topDiseases,
-      latestReports
+      latestReports,
     };
   }
-
 }
 
 /**
  * ORIGINAL CODE (APPEND-ONLY RULE)
- * 
+ *
  *   async getGlobalSummary(startDate: string, endDate: string) {
  *     const organizations = await this.orgRepo.find({
  *       where: { parent: Not(IsNull()) }, // Districts only
  *       relations: ["parent"],
  *     });
- * 
+ *
  *     const diseases = await this.diseaseRepo.find({ where: { isActive: true } });
- * 
+ *
  *     const getAggregatedData = async (
  *       repo: Repository<any>,
  *       sumField: string,
@@ -669,14 +747,14 @@ export class AnalysisService {
  *         .groupBy("report.organization_id")
  *         .getRawMany();
  *     };
- * 
+ *
  *     const [hepAgg, fluAgg, ariAgg, covidAgg] = await Promise.all([
  *       getAggregatedData(this.hepatitisRepo, "total_cases"),
  *       getAggregatedData(this.fluRepo, "flu_total"),
  *       getAggregatedData(this.ariRepo, "ari"),
  *       getAggregatedData(this.covidRepo, "total_cases"),
  *     ]);
- * 
+ *
  *     const form1Agg = await this.submissionRepo
  *       .createQueryBuilder("sub")
  *       .leftJoin("sub.template", "template")
@@ -688,23 +766,23 @@ export class AnalysisService {
  *         endDate,
  *       })
  *       .getRawMany();
- * 
+ *
  *     const globalMatrix: any[] = [];
- * 
+ *
  *     for (const org of organizations) {
  *       const orgDiseases: any[] = [];
- * 
+ *
  *       const addSpecialized = (agg: any[], name: string) => {
  *         const found = agg.find((a) => a.organization_id === org.id);
  *         const cases = found ? parseInt(found.total) : 0;
  *         if (cases > 0) orgDiseases.push({ disease: name, cases });
  *       };
- * 
+ *
  *       addSpecialized(hepAgg, "Gepatit");
  *       addSpecialized(fluAgg, "Gripp");
  *       addSpecialized(ariAgg, "O'RVI");
  *       addSpecialized(covidAgg, "Koronavirus (COVID-19)");
- * 
+ *
  *       const orgSubmissions = form1Agg.filter(
  *         (a) => a.organization_id === org.id,
  *       );
@@ -717,7 +795,7 @@ export class AnalysisService {
  *                 d.name.toLowerCase().includes(key.toLowerCase()) ||
  *                 key.toLowerCase().includes(d.name.toLowerCase()),
  *             );
- * 
+ *
  *             if (diseaseMatch) {
  *               const existing = orgDiseases.find(
  *                 (od) => od.disease === diseaseMatch.name,
@@ -731,7 +809,7 @@ export class AnalysisService {
  *           }
  *         }
  *       }
- * 
+ *
  *       const analyzedDiseases = orgDiseases.map((od) => ({
  *         ...od,
  *         rate:
@@ -739,7 +817,7 @@ export class AnalysisService {
  *             ? parseFloat(((od.cases / org.population) * 100000).toFixed(2))
  *             : 0,
  *       }));
- * 
+ *
  *       globalMatrix.push({
  *         organizationId: org.id,
  *         organizationName: org.name,
@@ -747,28 +825,28 @@ export class AnalysisService {
  *         diseases: analyzedDiseases.sort((a, b) => b.rate - a.rate),
  *       });
  *     }
- * 
+ *
  *     return globalMatrix;
  *   }
- * 
+ *
  *   async getIncidenceRates(query: AnalysisQueryDto) {
  *     const { diseaseType, startDate, endDate, organizationId } = query;
- * 
+ *
  *     const queryBuilder = this.orgRepo
  *       .createQueryBuilder("org")
  *       .leftJoinAndSelect("org.parent", "parent");
- * 
+ *
  *     if (organizationId) {
  *       queryBuilder.where("org.id = :organizationId", { organizationId });
  *     } else {
  *       queryBuilder.where("org.parent IS NOT NULL");
  *     }
- * 
+ *
  *     const organizations = await queryBuilder.getMany();
- * 
+ *
  *     let repo: Repository<any>;
  *     let sumField: string;
- * 
+ *
  *     switch (diseaseType) {
  *       case "hepatitis":
  *         repo = this.hepatitisRepo;
@@ -789,7 +867,7 @@ export class AnalysisService {
  *       default:
  *         return [];
  *     }
- * 
+ *
  *     const caseAggregation = await repo
  *       .createQueryBuilder("report")
  *       .select("report.organization_id", "organization_id")
@@ -800,13 +878,13 @@ export class AnalysisService {
  *       })
  *       .groupBy("report.organization_id")
  *       .getRawMany();
- * 
+ *
  *     const results = organizations.map((org) => {
  *       const agg = caseAggregation.find((a) => a.organization_id === org.id);
  *       const totalCases = agg ? parseInt(agg.total) : 0;
  *       const incidenceRate =
  *         org.population > 0 ? (totalCases / org.population) * 100000 : 0;
- * 
+ *
  *       return {
  *         organizationId: org.id,
  *         organizationName: org.name,
@@ -815,7 +893,7 @@ export class AnalysisService {
  *         incidenceRate: parseFloat(incidenceRate.toFixed(2)),
  *       };
  *     });
- * 
+ *
  *     return results.sort((a, b) => b.incidenceRate - a.incidenceRate);
  *   }
  */

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { SaveOutlined, ReloadOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined, DownloadOutlined } from '@ant-design/icons';
-import { Table, DatePicker, Button, InputNumber, notification, Space, Badge, Tooltip, Card } from 'antd';
+import { Table, DatePicker, Button, notification, Space, Badge, Tooltip, Card } from 'antd';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
 import { exportDailyReport } from '../../services/excelExportService';
 import PermissionGate from '../../components/PermissionGate';
 import GlassLayout from '../../components/layout/GlassLayout';
+import EditCell from '../../components/common/EditCell';
 
 interface FluReportData {
     key: string;
@@ -235,18 +236,25 @@ const FluDailyReportPage: React.FC = () => {
         }
     };
 
-    const renderInput = (record: FluReportData, field: keyof FluReportData, readOnly = false) => (
-        <InputNumber
-            size="small"
-            min={0}
-            value={record[field] as number}
-            onChange={(val) => !readOnly && handleCellChange(val, record.key, field)}
-            variant="borderless"
-            readOnly={readOnly}
-            style={{ width: '100%', textAlign: 'center', fontWeight: readOnly ? 'bold' : 'normal' }}
-            controls={false}
-        />
-    );
+    const canEdit = (record: any) => {
+        if (record.status === 'APPROVED' || record.status === 'VERIFIED') return false;
+        if (userRole === 'STAFF') return record.status === 'DRAFT' || record.status === 'REJECTED' || !record.status;
+        if (userRole === 'DEPARTMENT_HEAD') return record.status === 'SUBMITTED';
+        return isAdmin;
+    };
+
+    const renderInput = (record: FluReportData, field: keyof FluReportData, rowIdx: number, colIdx: number, forceReadOnly = false) => {
+        const disabled = forceReadOnly || !canEdit(record);
+        return (
+            <EditCell
+                value={record[field] as number}
+                onChange={(val) => !disabled && handleCellChange(val, record.key, field)}
+                rowIdx={rowIdx}
+                colIdx={colIdx}
+                disabled={disabled}
+            />
+        );
+    };
 
     const isSubmitted = (row: FluReportData) => {
         return !!row.is_submitted;
@@ -268,56 +276,56 @@ const FluDailyReportPage: React.FC = () => {
         {
             title: t('reports.ari'),
             children: [
-                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'ari_total', true) },
-                { title: t('daily_reports.table.age_0_1'), width: 50, render: (_: any, r: any) => renderInput(r, 'ari_0_1') },
-                { title: t('daily_reports.table.age_1_2'), width: 50, render: (_: any, r: any) => renderInput(r, 'ari_1_2') },
-                { title: t('daily_reports.table.age_3_6'), width: 50, render: (_: any, r: any) => renderInput(r, 'ari_3_6') },
-                { title: t('daily_reports.table.age_7_14'), width: 55, render: (_: any, r: any) => renderInput(r, 'ari_7_14') },
-                { title: t('daily_reports.table.adults_short'), width: 65, render: (_: any, r: any) => renderInput(r, 'ari_adult') },
-                { title: t('daily_reports.table.students_short'), width: 55, render: (_: any, r: any) => renderInput(r, 'ari_students') },
-                { title: t('daily_reports.table.nursery_short'), width: 55, render: (_: any, r: any) => renderInput(r, 'ari_nursery') },
+                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'ari_total', ridx, 2, true) },
+                { title: t('daily_reports.table.age_0_1'), width: 50, render: (_: any, r: any, ridx: number) => renderInput(r, 'ari_0_1', ridx, 3) },
+                { title: t('daily_reports.table.age_1_2'), width: 50, render: (_: any, r: any, ridx: number) => renderInput(r, 'ari_1_2', ridx, 4) },
+                { title: t('daily_reports.table.age_3_6'), width: 50, render: (_: any, r: any, ridx: number) => renderInput(r, 'ari_3_6', ridx, 5) },
+                { title: t('daily_reports.table.age_7_14'), width: 55, render: (_: any, r: any, ridx: number) => renderInput(r, 'ari_7_14', ridx, 6) },
+                { title: t('daily_reports.table.adults_short'), width: 65, render: (_: any, r: any, ridx: number) => renderInput(r, 'ari_adult', ridx, 7) },
+                { title: t('daily_reports.table.students_short'), width: 55, render: (_: any, r: any, ridx: number) => renderInput(r, 'ari_students', ridx, 8) },
+                { title: t('daily_reports.table.nursery_short'), width: 55, render: (_: any, r: any, ridx: number) => renderInput(r, 'ari_nursery', ridx, 9) },
             ]
         },
         {
             title: t('reports.pneumonia'),
             children: [
-                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'pneu_total', true) },
-                { title: t('daily_reports.table.age_0_2'), width: 50, render: (_: any, r: any) => renderInput(r, 'pneu_0_2') },
-                { title: t('daily_reports.table.age_3_6'), width: 50, render: (_: any, r: any) => renderInput(r, 'pneu_3_6') },
-                { title: t('daily_reports.table.age_7_14'), width: 55, render: (_: any, r: any) => renderInput(r, 'pneu_7_14') },
-                { title: t('daily_reports.table.adults_short'), width: 65, render: (_: any, r: any) => renderInput(r, 'pneu_adult') },
-                { title: t('daily_reports.table.students_short'), width: 55, render: (_: any, r: any) => renderInput(r, 'pneu_students') },
-                { title: t('daily_reports.table.nursery_short'), width: 55, render: (_: any, r: any) => renderInput(r, 'pneu_nursery') },
+                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'pneu_total', ridx, 10, true) },
+                { title: t('daily_reports.table.age_0_2'), width: 50, render: (_: any, r: any, ridx: number) => renderInput(r, 'pneu_0_2', ridx, 11) },
+                { title: t('daily_reports.table.age_3_6'), width: 50, render: (_: any, r: any, ridx: number) => renderInput(r, 'pneu_3_6', ridx, 12) },
+                { title: t('daily_reports.table.age_7_14'), width: 55, render: (_: any, r: any, ridx: number) => renderInput(r, 'pneu_7_14', ridx, 13) },
+                { title: t('daily_reports.table.adults_short'), width: 65, render: (_: any, r: any, ridx: number) => renderInput(r, 'pneu_adult', ridx, 14) },
+                { title: t('daily_reports.table.students_short'), width: 55, render: (_: any, r: any, ridx: number) => renderInput(r, 'pneu_students', ridx, 15) },
+                { title: t('daily_reports.table.nursery_short'), width: 55, render: (_: any, r: any, ridx: number) => renderInput(r, 'pneu_nursery', ridx, 16) },
             ]
         },
         {
             title: t('reports.flu'),
             children: [
-                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'flu_total', true) },
-                { title: t('daily_reports.table.age_0_1'), width: 50, render: (_: any, r: any) => renderInput(r, 'flu_0_1') },
-                { title: t('daily_reports.table.age_1_2'), width: 50, render: (_: any, r: any) => renderInput(r, 'flu_1_2') },
-                { title: t('daily_reports.table.age_3_6'), width: 50, render: (_: any, r: any) => renderInput(r, 'flu_3_6') },
-                { title: t('daily_reports.table.age_7_14'), width: 55, render: (_: any, r: any) => renderInput(r, 'flu_7_14') },
-                { title: t('daily_reports.table.adults_short'), width: 65, render: (_: any, r: any) => renderInput(r, 'flu_adult') },
-                { title: t('daily_reports.table.students_short'), width: 55, render: (_: any, r: any) => renderInput(r, 'flu_students') },
-                { title: t('daily_reports.table.nursery_short'), width: 55, render: (_: any, r: any) => renderInput(r, 'flu_nursery') },
+                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'flu_total', ridx, 17, true) },
+                { title: t('daily_reports.table.age_0_1'), width: 50, render: (_: any, r: any, ridx: number) => renderInput(r, 'flu_0_1', ridx, 18) },
+                { title: t('daily_reports.table.age_1_2'), width: 50, render: (_: any, r: any, ridx: number) => renderInput(r, 'flu_1_2', ridx, 19) },
+                { title: t('daily_reports.table.age_3_6'), width: 50, render: (_: any, r: any, ridx: number) => renderInput(r, 'flu_3_6', ridx, 20) },
+                { title: t('daily_reports.table.age_7_14'), width: 55, render: (_: any, r: any, ridx: number) => renderInput(r, 'flu_7_14', ridx, 21) },
+                { title: t('daily_reports.table.adults_short'), width: 65, render: (_: any, r: any, ridx: number) => renderInput(r, 'flu_adult', ridx, 22) },
+                { title: t('daily_reports.table.students_short'), width: 55, render: (_: any, r: any, ridx: number) => renderInput(r, 'flu_students', ridx, 23) },
+                { title: t('daily_reports.table.nursery_short'), width: 55, render: (_: any, r: any, ridx: number) => renderInput(r, 'flu_nursery', ridx, 24) },
             ]
         },
         {
             title: t('daily_reports.table.sari'),
             children: [
-                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'sari_total', true) },
-                { title: t('daily_reports.table.age_0_2'), width: 50, render: (_: any, r: any) => renderInput(r, 'sari_0_2') },
-                { title: t('daily_reports.table.age_3_6'), width: 50, render: (_: any, r: any) => renderInput(r, 'sari_3_6') },
-                { title: t('daily_reports.table.age_7_14'), width: 55, render: (_: any, r: any) => renderInput(r, 'sari_7_14') },
-                { title: t('daily_reports.table.adults_short'), width: 65, render: (_: any, r: any) => renderInput(r, 'sari_adult') },
+                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'sari_total', ridx, 25, true) },
+                { title: t('daily_reports.table.age_0_2'), width: 50, render: (_: any, r: any, ridx: number) => renderInput(r, 'sari_0_2', ridx, 26) },
+                { title: t('daily_reports.table.age_3_6'), width: 50, render: (_: any, r: any, ridx: number) => renderInput(r, 'sari_3_6', ridx, 27) },
+                { title: t('daily_reports.table.age_7_14'), width: 55, render: (_: any, r: any, ridx: number) => renderInput(r, 'sari_7_14', ridx, 28) },
+                { title: t('daily_reports.table.adults_short'), width: 65, render: (_: any, r: any, ridx: number) => renderInput(r, 'sari_adult', ridx, 29) },
             ]
         },
         {
             title: t('daily_reports.table.deaths'),
             children: [
-                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'death_total') },
-                { title: t('daily_reports.table.pregnant'), width: 80, render: (_: any, r: any) => renderInput(r, 'death_pregnant') },
+                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'death_total', ridx, 30) },
+                { title: t('daily_reports.table.pregnant'), width: 80, render: (_: any, r: any, ridx: number) => renderInput(r, 'death_pregnant', ridx, 31) },
             ]
         },
         {
@@ -419,7 +427,7 @@ const FluDailyReportPage: React.FC = () => {
                 headerButtons={headerControls}
             >
                 {!isMobile ? (
-                    <Card className="glass-card" bordered={false} bodyStyle={{ padding: 0 }}>
+                    <Card className="glass-card" bordered={false} styles={{ body: { padding: 0 } }}>
                         <Table
                             columns={columns}
                             dataSource={data}

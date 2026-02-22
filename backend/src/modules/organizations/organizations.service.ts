@@ -10,7 +10,7 @@ export class OrganizationsService {
   constructor(
     @InjectRepository(Organization)
     private orgRepo: Repository<Organization>,
-  ) { }
+  ) {}
 
   /* 
     ESKI KOD (Barcha tashkilotlarni, jumladan viloyat darajasini ham qaytaradi):
@@ -26,10 +26,10 @@ export class OrganizationsService {
     if (user) {
       const level = getRoleLevel(user.role, user);
       if (level === 3 && user.organization) {
-        return allOrgs.filter(o => o.id === user.organization.id);
+        return allOrgs.filter((o) => o.id === user.organization.id);
       }
       if (level === 2 && user.organization) {
-        return allOrgs.filter(o => o.parent?.id === user.organization.id);
+        return allOrgs.filter((o) => o.parent?.id === user.organization.id);
       }
     }
 

@@ -1,4 +1,4 @@
-{
+﻿{
     "executive": {
         "title": "Rahbar Paneli",
         "subtitle": "Viloyat bo'yicha tezkor svodka",
@@ -117,7 +117,9 @@
         "error_save": "Saqlashda xatolik yuz berdi",
         "total": "Jami",
         "status": "Holat",
-        "no_data": "Ma'lumot mavjud emas"
+        "no_data": "Ma'lumot mavjud emas",
+        "refresh": "Yangilash",
+        "export_all": "Hammasini eksport qilish"
     },
     "dashboard_page": {
         "title": "Asosiy panel",
@@ -271,6 +273,7 @@
         "pneumonia": "O'tkir pnevmoniya",
         "diarrhea": "O'tkir diareya kasalliklari",
         "kg_water": "Kommunal Gigiyena (Suv)",
+        "ch_hygiene": "Bolalar gigiyenasi",
         "monthly_reports": "Oylik hisobotlar"
     },
     "kommunal_hygiene": {
@@ -405,6 +408,9 @@
         "delete_button": "O'chirish",
         "delete_confirm": "Ushbu foydalanuvchini o'chirib tashlamoqchimisiz?",
         "actions": "Amallar",
+        "organizations": {
+            "select_org": "Tashkilotni tanlang"
+        },
         "roles": {
             "ADMIN": "Admin",
             "REGION_HEAD": "Viloyat Boshqarmasi Rahbari",
@@ -819,5 +825,146 @@
         "equal": "o'zgarmagan",
         "increased": "o'sish",
         "decreased": "pasayish"
+    },
+    "children_hygiene": {
+        "table1": {
+            "title": "Ta'lim-tarbiya muassasalarida olib borilgan sanitariya nazorati to'g'risida (jadval-1)",
+            "columns": {
+                "order": "№",
+                "institutions": "Muassasalar",
+                "institutions_count": "Muassasalar soni",
+                "supervision_plan": "Nazorat o'tkazish rejasi",
+                "total_supervisions": "Jami o'tkazilgan nazoratlar",
+                "planned_supervisions": "O'tkazilgan rejali nazoratlar soni",
+                "unplanned_supervisions": "Rejasiz o'tkazilgan nazorat soni",
+                "plan_execution_percent": "Nazorat rejasining bajarilishi %",
+                "lab_supervisions": "Laboratoriya yordamida nazorat soni",
+                "lab_supervisions_percent": "Laboratoriya yordamida o'tkazilgan tekshirishlar foizi"
+            },
+            "rows": {
+                "total": "I. JAMI",
+                "1_1": "1.1 Maktabgacha va maktab ta'limi vazirligi obyektlari",
+                "1_1_1": "1.1.1 Davlat MTT",
+                "1_1_1_outsourcing": "Autsorsing tashkilotlari",
+                "1_1_2": "1.1.2 Davlat maktablari",
+                "1_1_3": "1.1.3 Prezident ta'lim muassasalari",
+                "1_1_4": "1.1.4 IDUMIlar",
+                "1_1_5": "1.1.5 Maxsus maktab Internatlari",
+                "1_1_7": "1.1.7 Mehribonlik uylari",
+                "1_1_8": "1.1.8 Barkamol avlod markazlari",
+                "1_2": "1.2 Oliy ta'lim, fan va innovatsiyalar vazirligi",
+                "1_2_1": "1.2.1 Kasb hunar maktablari",
+                "1_2_2": "1.2.2 Kasb hunar kollejlar",
+                "1_2_3": "1.2.3 Texnikumlar",
+                "1_2_4": "1.2.4 Akademik litseylar",
+                "1_3": "1.3 SSVligiga qarashli obyektlar",
+                "1_3_1": "1.3.1 Bolalar sanatoriyasi (sihatgoh)lari",
+                "1_3_2": "1.3.2 Muruvvat uylari",
+                "1_3_3": "1.3.3 Go'daklar uylari",
+                "1_4": "1.4 Kasaba uyushmasi Federatsiyasiga qarashli obyektlar",
+                "1_4_1": "1.4.1 Yozgi sog'lomlashtirish oromgohlari",
+                "1_5": "1.5 Madaniyat vazirligiga qarashli obyektlar",
+                "1_5_1": "1.5.1 Musiqa maktablari",
+                "1_5_2": "1.5.2 ARM (kutubxonalar va boshqalar)",
+                "1_5_3": "1.5.3 Musiqa maktab internatlari",
+                "1_6": "1.6 Sport vazirligiga qarashli obyektlar",
+                "1_6_1": "1.6.1 Sport maktablari",
+                "1_6_1_pools": "Shu jumladan suzish havzalari",
+                "1_6_2": "1.6.2 Bolalar suzish havzalari",
+                "1_6_3": "1.6.3 Sport maktab internatlari",
+                "1_7": "1.7 Jami xususiy ta'lim muassasalari, jumladan",
+                "1_7_1": "1.7.1 Oilaviy nodavlat MTT",
+                "1_7_2": "1.7.2 Xususiy MTT",
+                "1_7_3": "1.7.3 DXSh turidagi MTT",
+                "1_7_4": "1.7.4 Xususiy maktablar",
+                "1_7_5": "1.7.5 O'quv markazlari",
+                "1_7_6": "1.7.6 Xususiy o'rta maxsus kasb hunar ta'limi muassasalari",
+                "1_8": "1.8 Boshqalar"
+            }
+        },
+        "table2": {
+            "title": "Ta'lim-tarbiya muassasalarida olib borilgan laboratoriya nazorati to'g'risida (jadval-2)",
+            "columns": {
+                "chem": "Kimyoviy laboratoriya tahlillari soni",
+                "bact": "Bakteriologiya laboratoriya tahlillari soni",
+                "para": "Parazitologiya laboratoriya tahlillari soni",
+                "total": "Jami",
+                "non_compliant": "Talabga mos emas",
+                "percent": "%"
+            }
+        },
+        "table3": {
+            "title": "Ta'lim-tarbiya muassasalarida sanitariya nazorati davomida olingan fizik omillar tahlili (jadval-3)",
+            "columns": {
+                "air": "Yopiq bino havosi",
+                "micro": "Mikroklimat",
+                "vib": "Tebranish",
+                "emf": "Elektromagnit maydon (EMM)",
+                "light": "Yoritilganlik",
+                "noise": "Shovqin",
+                "inspected_count": "Tekshirilgan ob'ektlar soni",
+                "samples_total": "Shu jumladan namunalar soni",
+                "total": "Jami",
+                "samples_12k": "Shundan 1/2k",
+                "rem": "Gigienik normativdan oshgan",
+                "non_compliant": "Normaga mos emas"
+            }
+        },
+        "table3_1": {
+            "title": "Ta'lim-tarbiya muassasalarida sanitariya nazorati davomida olingan laboratoriya tahlillari (jadval 3.1)",
+            "columns": {
+                "chem_count": "Kimyoviy tahlillar soni",
+                "ration": "Kunlik ratsion",
+                "salt": "Osh tuzi",
+                "nitrate": "Sabzavotlar nitrati",
+                "toxic": "Toksik elementlar",
+                "thermal": "Termik ishlov",
+                "mineral": "Undagi minerallar",
+                "soil": "Tuproq",
+                "water": "Suv",
+                "pesticide": "Pestitsidlar",
+                "nutrition": "Ovqat tuyimliligi",
+                "total": "jami",
+                "non_compliant": "Talabga mos emas"
+            }
+        },
+        "table3_2": {
+            "title": "Ta'lim-tarbiya muassasalarida parazitologik va mikrobiologik laboratoriya tahlillari (jadval-3.2)",
+            "columns": {
+                "para": "Parazitologik tahlillar",
+                "micro": "Mikrobiologik tahlillar",
+                "para_veg": "Sabzavot",
+                "para_water": "Suv",
+                "para_soil": "Tuproq",
+                "micro_smear": "Surtma",
+                "micro_food": "Tayyor ovqat mahsulotlari",
+                "micro_water": "Suv",
+                "micro_soil": "Tuproq",
+                "total": "Jami",
+                "non_compliant": "Normaga mos emas"
+            }
+        },
+        "table4": {
+            "title": "Ta'lim-tarbiya muassasalarida sanitariya nazorati davomida qo'llanilgan ma'muriy choralar (jadval-4)",
+            "columns": {
+                "fines": "Jarimalar",
+                "fine_count": "Jarimalar soni",
+                "fine_amount": "Jarima miqdori",
+                "imposed": "Solingan",
+                "collected": "Undirilgan",
+                "activity_suspended": "Ish faoliyati to'xtatildi",
+                "employees_suspended": "Ishdan chetlatildi",
+                "referred_to_investigation": "Tergov organlariga berilgan",
+                "brakera": "Brakerash"
+            }
+        },
+        "indicators": {
+            "inspected_institutions": "Tekshirilgan muassasalar",
+            "total_tests": "Laboratoriya tahlillari",
+            "non_compliant": "Normaga mos emas",
+            "compliance_pct": "Muvofiqlik foizi",
+            "total_fines": "Solingan jarimalar",
+            "district_status": "Tumanlar bo'yicha holat"
+        }
     }
 }

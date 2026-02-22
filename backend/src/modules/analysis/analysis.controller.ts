@@ -4,7 +4,7 @@ import { AnalysisQueryDto } from "./dto/analysis-query.dto";
 
 @Controller("analysis")
 export class AnalysisController {
-  constructor(private readonly analysisService: AnalysisService) { }
+  constructor(private readonly analysisService: AnalysisService) {}
 
   @Get("incidence-rates")
   async getIncidenceRates(@Query() query: AnalysisQueryDto) {

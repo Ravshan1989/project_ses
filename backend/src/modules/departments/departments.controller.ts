@@ -30,7 +30,7 @@ export class DepartmentsController {
     private readonly permissionRepo: Repository<Permission>,
     @InjectRepository(DepartmentPermission)
     private readonly deptPermRepo: Repository<DepartmentPermission>,
-  ) { }
+  ) {}
 
   @Public()
   @Get()

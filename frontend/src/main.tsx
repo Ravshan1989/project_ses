@@ -4,12 +4,24 @@ import App from './App.tsx'
 import './index.css'
 import './i18n/config'; // Initialize i18n
 import { ConfigProvider } from 'antd'; // Ant Design Global Config
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false,
+            retry: 1,
+        },
+    },
+});
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-        <ConfigProvider theme={{ token: { colorPrimary: '#00b96b' } }}>
-            <App />
-        </ConfigProvider>
+        <QueryClientProvider client={queryClient}>
+            <ConfigProvider theme={{ token: { colorPrimary: '#00b96b' } }}>
+                <App />
+            </ConfigProvider>
+        </QueryClientProvider>
     </React.StrictMode>,
 )
 console.log('PWA Version: Mobile Nav Update 1.1');

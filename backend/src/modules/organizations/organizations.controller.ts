@@ -1,11 +1,18 @@
-import { Controller, Get, Post, Body, UseGuards, Request } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Request,
+} from "@nestjs/common";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { OrganizationsService } from "./organizations.service";
 import { Public } from "../../common/decorators/public.decorator";
 
 @Controller("organizations")
 export class OrganizationsController {
-  constructor(private readonly orgService: OrganizationsService) { }
+  constructor(private readonly orgService: OrganizationsService) {}
 
   @Public()
   @Get()

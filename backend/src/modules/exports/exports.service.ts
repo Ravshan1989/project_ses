@@ -41,7 +41,7 @@ export class ExportsService {
     private readonly orgRepo: Repository<Organization>,
     private readonly diseasesService: DiseasesService,
     private readonly verificationService: VerificationService,
-  ) { }
+  ) {}
 
   async getFluReports(
     startDate: string,

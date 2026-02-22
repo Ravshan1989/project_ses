@@ -12,7 +12,8 @@ import {
     TeamOutlined,
     UserOutlined,
     AlertOutlined,
-    BellOutlined
+    BellOutlined,
+    DatabaseOutlined
 } from '@ant-design/icons';
 import RoleManagementPage from './features/admin/RoleManagementPage';
 import UserManagementPage from './features/admin/UserManagementPage';
@@ -45,8 +46,7 @@ import RegisterPage from './features/auth/RegisterPage';
 import { AdminUsersPage } from './features/admin/AdminUsersPage';
 import MobileReportsPage from './features/mobile/MobileReportsPage';
 import KommunalGigiyenaWaterPage from './features/kommunal-hygiene/KommunalGigiyenaWaterPage';
-
-
+import ChildrenHygienePage from './features/children-hygiene/ChildrenHygienePage';
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
 
@@ -133,7 +133,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 }
             ]
         }] : []),
-        ...(hasRole(['SANITARY_HEAD', 'SANITARY_SPECIALIST', 'SANITARY_OPERATOR']) ? [{
+        ...(hasRole(['ADMIN', 'SANITARY_HEAD', 'SANITARY_SPECIALIST', 'SANITARY_OPERATOR', 'DISTRICT_OPERATOR', 'DEPARTMENT_HEAD']) ? [{
             key: 'grp_sanitary',
             icon: <ClusterOutlined />,
             label: t('common.sanitary_menu') || 'Sanitariya',
@@ -150,6 +150,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     label: t('reports.monthly_reports'),
                     children: [
                         { key: '/kg-water', label: t('reports.kg_water'), onClick: () => navigate('/kg-water') },
+                        { key: '/ch-hygiene', label: t('reports.ch_hygiene') || 'Bolalar gigiyenasi', onClick: () => navigate('/ch-hygiene') },
                     ]
                 }
             ]
@@ -185,6 +186,38 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     { key: '/admin/users-management', icon: <TeamOutlined />, label: 'Xodimlar boshqaruvi', onClick: () => navigate('/admin/users-management') }
                 ] : [])
             ]
+        }] : []),
+        ...(!isRegionHeadOnly ? [{
+            key: 'edo_ijro',
+            icon: <FileTextOutlined />,
+            label: 'Edo.Ijro (Hujjatlar)',
+            onClick: () => {
+                window.open('https://edo.ijro.uz/', '_blank');
+            }
+        }] : []),
+        ...(!isRegionHeadOnly ? [{
+            key: 'ykem',
+            icon: <ClusterOutlined />,
+            label: 'Ykem.Sanepid.uz',
+            onClick: () => {
+                window.open('https://ykem.sanepid.uz/', '_blank');
+            }
+        }] : []),
+        ...(!isRegionHeadOnly ? [{
+            key: 'gepatit',
+            icon: <BarChartOutlined />,
+            label: 'Gepatit (Monitor)',
+            onClick: () => {
+                window.open('https://gepatit.sanepid.uz/', '_blank');
+            }
+        }] : []),
+        ...(!isRegionHeadOnly ? [{
+            key: 'risr_ses',
+            icon: <DatabaseOutlined />,
+            label: 'RISR-SES',
+            onClick: () => {
+                window.open('https://risr-ses.sanepid.uz/', '_blank');
+            }
         }] : []),
         ...(!isRegionHeadOnly ? [{
             key: 'mobile_app',
@@ -319,6 +352,7 @@ function App() {
                     <Route path="/daily-diarrhea" element={<ProtectedRoute><DailyDiarrheaPage /></ProtectedRoute>} />
                     <Route path="/daily-sanitary" element={<ProtectedRoute><SanitaryDailyReportPage /></ProtectedRoute>} />
                     <Route path="/kg-water" element={<ProtectedRoute><KommunalGigiyenaWaterPage /></ProtectedRoute>} />
+                    <Route path="/ch-hygiene" element={<ProtectedRoute><ChildrenHygienePage /></ProtectedRoute>} />
 
                     <Route path="/daily-unified" element={<ProtectedRoute><DailyReportUnifiedPage /></ProtectedRoute>} />
                     <Route path="/form1-monitoring" element={<ProtectedRoute><Form1StatusPage /></ProtectedRoute>} />

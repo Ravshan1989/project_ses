@@ -72,7 +72,7 @@ export class EpidemiologyDailyReport {
 
 /**
  * [ORIGINAL_REDACTED_CODE_PRESERVATION]
- * 
+ *
  * Original fields removed from EpidemiologyDailyReport:
  * - inspected_total, inspected_mtm, inspected_school, inspected_dpm, inspected_other
  * - defects_total, defects_mtm, defects_school, defects_dpm, defects_other

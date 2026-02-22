@@ -18,7 +18,7 @@ export class ApprovalController {
   constructor(
     private dataSource: DataSource,
     private verificationService: VerificationService,
-  ) { }
+  ) {}
 
   /**
    * UZ: Xodim tomonidan yuborish (SUBMITTED)

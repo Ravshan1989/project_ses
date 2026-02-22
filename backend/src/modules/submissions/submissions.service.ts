@@ -31,7 +31,7 @@ export class SubmissionsService {
     private organizationsService: OrganizationsService,
     @InjectRepository(Template)
     private templateRepository: Repository<Template>,
-  ) { }
+  ) {}
 
   async create(createSubmissionDto: CreateSubmissionDto, user: User) {
     // Basic validation: User must belong to an organization

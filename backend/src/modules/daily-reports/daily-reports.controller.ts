@@ -24,7 +24,7 @@ import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 @Controller("daily-reports")
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 export class DailyReportsController {
-  constructor(private readonly reportsService: DailyReportsService) { }
+  constructor(private readonly reportsService: DailyReportsService) {}
 
   @Post()
   async createOrUpdate(@Body() dto: CreateHepatitisReportDto, @Request() req) {
@@ -165,7 +165,10 @@ export class DailyReportsController {
   }
 
   @Post("diarrhea")
-  async createOrUpdateDiarrhea(@Body() dto: CreateDiarrheaReportDto, @Request() req) {
+  async createOrUpdateDiarrhea(
+    @Body() dto: CreateDiarrheaReportDto,
+    @Request() req,
+  ) {
     return this.reportsService.upsertDiarrhea(dto, req.user);
   }
   @Post("cleanup-test")
@@ -194,19 +197,28 @@ export class DailyReportsController {
   @Patch(":type/:id/approve")
   @RequirePermission("APPROVE_REPORT")
   async approve(@Request() req) {
-    return this.reportsService.approve(req.params.type, req.params.id, req.user);
+    return this.reportsService.approve(
+      req.params.type,
+      req.params.id,
+      req.user,
+    );
   }
 
   @Patch(":type/:id/reject")
   @RequirePermission("VERIFY_REPORT")
   async reject(@Request() req, @Body() body: { comment?: string }) {
-    return this.reportsService.reject(req.params.type, req.params.id, req.user, body.comment);
+    return this.reportsService.reject(
+      req.params.type,
+      req.params.id,
+      req.user,
+      body.comment,
+    );
   }
 }
 
 /**
  * [ORIGINAL_REDACTED_CODE_PRESERVATION]
- * 
+ *
  * Modified methods in DailyReportsController:
  * - Added POST /daily-reports/sanitary
  * - Added GET /daily-reports/sanitary (RequirePermission: VIEW_SANITARY)

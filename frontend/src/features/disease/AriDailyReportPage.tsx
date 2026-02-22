@@ -6,6 +6,7 @@ import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
 import PermissionGate from '../../components/PermissionGate';
 import GlassLayout from '../../components/layout/GlassLayout';
+import EditCell from '../../components/common/EditCell';
 
 interface AriReportData {
     key: string;
@@ -140,15 +141,20 @@ const AriDailyReportPage: React.FC = () => {
         }
     };
 
-    const renderInput = (record: AriReportData, field: keyof AriReportData) => (
-        <InputNumber
-            size="small"
-            min={0}
+    const canEdit = (record: any) => {
+        if (record.status === 'APPROVED' || record.status === 'VERIFIED') return false;
+        if (userRole === 'STAFF') return record.status === 'DRAFT' || record.status === 'REJECTED' || !record.status;
+        if (userRole === 'DEPARTMENT_HEAD') return record.status === 'SUBMITTED';
+        return isAdmin;
+    };
+
+    const renderInput = (record: AriReportData, field: keyof AriReportData, rowIdx: number, colIdx: number) => (
+        <EditCell
             value={record[field] as number}
             onChange={(val) => handleCellChange(val, record.key, field)}
-            variant="borderless"
-            style={{ width: '100%', textAlign: 'center' }}
-            controls={false}
+            rowIdx={rowIdx}
+            colIdx={colIdx}
+            disabled={!canEdit(record)}
         />
     );
 
@@ -165,9 +171,9 @@ const AriDailyReportPage: React.FC = () => {
                 </span>
             )
         },
-        { title: t('daily_reports.table.gk'), width: 120, render: (_: any, r: any) => renderInput(r, 'gk'), align: 'center' },
-        { title: t('daily_reports.table.ari'), width: 120, render: (_: any, r: any) => renderInput(r, 'ari'), align: 'center' },
-        { title: t('daily_reports.table.pneumonia'), width: 120, render: (_: any, r: any) => renderInput(r, 'pneumonia'), align: 'center' },
+        { title: t('daily_reports.table.gk'), width: 120, render: (_: any, r: any, ridx: number) => renderInput(r, 'gk', ridx, 2), align: 'center' },
+        { title: t('daily_reports.table.ari'), width: 120, render: (_: any, r: any, ridx: number) => renderInput(r, 'ari', ridx, 3), align: 'center' },
+        { title: t('daily_reports.table.pneumonia'), width: 120, render: (_: any, r: any, ridx: number) => renderInput(r, 'pneumonia', ridx, 4), align: 'center' },
         {
             title: t('daily_reports.table.status'),
             key: 'status',
@@ -265,7 +271,7 @@ const AriDailyReportPage: React.FC = () => {
                 headerButtons={headerControls}
             >
                 {!isMobile ? (
-                    <Card className="glass-card" bordered={false} bodyStyle={{ padding: 0 }}>
+                    <Card className="glass-card" bordered={false} styles={{ body: { padding: 0 } }}>
                         <Table
                             columns={columns}
                             dataSource={data}

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Table, InputNumber, Space, Badge, Button } from 'antd';
+import { Table, Space, Badge, Button } from 'antd';
+import EditCell from '../../../components/common/EditCell';
 import { useTranslation } from 'react-i18next';
 
 export interface SanitaryReportData {
@@ -58,19 +59,15 @@ const SanitaryTab: React.FC<SanitaryTabProps> = ({ data, loading, userRole, onCh
         return isAdmin;
     };
 
-    const renderInput = (record: SanitaryReportData, field: keyof SanitaryReportData, forceReadOnly = false) => {
-        const readOnly = forceReadOnly || !canEdit(record);
+    const renderInput = (record: SanitaryReportData, field: keyof SanitaryReportData, rowIdx: number, colIdx: number, forceReadOnly = false) => {
+        const disabled = forceReadOnly || !canEdit(record);
         return (
-            <InputNumber
-                size="small"
-                min={0}
+            <EditCell
                 value={record[field] as number}
-                onChange={(val) => !readOnly && onChange(val || 0, record.key, field)}
-                variant="borderless"
-                readOnly={readOnly}
-                className="report-input"
-                style={{ width: '100%', textAlign: 'center', fontWeight: readOnly ? 'bold' : 'normal', color: readOnly ? '#595959' : 'inherit' }}
-                controls={false}
+                onChange={(val) => !disabled && onChange(val, record.key, field)}
+                rowIdx={rowIdx}
+                colIdx={colIdx}
+                disabled={disabled}
             />
         );
     };
@@ -100,41 +97,41 @@ const SanitaryTab: React.FC<SanitaryTabProps> = ({ data, loading, userRole, onCh
         {
             title: t('daily_reports.table.inspected_objects'),
             children: [
-                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'inspected_total', true) },
-                { title: t('daily_reports.table.mtm'), width: 50, render: (_: any, r: any) => renderInput(r, 'inspected_mtm') },
-                { title: t('daily_reports.table.school'), width: 60, render: (_: any, r: any) => renderInput(r, 'inspected_school') },
-                { title: t('daily_reports.table.dpm'), width: 50, render: (_: any, r: any) => renderInput(r, 'inspected_dpm') },
-                { title: t('daily_reports.table.other'), width: 60, render: (_: any, r: any) => renderInput(r, 'inspected_other') },
+                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'inspected_total', ridx, 2, true) },
+                { title: t('daily_reports.table.mtm'), width: 50, render: (_: any, r: any, ridx: number) => renderInput(r, 'inspected_mtm', ridx, 3) },
+                { title: t('daily_reports.table.school'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'inspected_school', ridx, 4) },
+                { title: t('daily_reports.table.dpm'), width: 50, render: (_: any, r: any, ridx: number) => renderInput(r, 'inspected_dpm', ridx, 5) },
+                { title: t('daily_reports.table.other'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'inspected_other', ridx, 6) },
             ]
         },
         {
             title: t('daily_reports.table.defects_found'),
             children: [
-                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'defects_total', true) },
-                { title: t('daily_reports.table.mtm'), width: 50, render: (_: any, r: any) => renderInput(r, 'defects_mtm') },
-                { title: t('daily_reports.table.school'), width: 60, render: (_: any, r: any) => renderInput(r, 'defects_school') },
-                { title: t('daily_reports.table.dpm'), width: 50, render: (_: any, r: any) => renderInput(r, 'defects_dpm') },
-                { title: t('daily_reports.table.other'), width: 60, render: (_: any, r: any) => renderInput(r, 'defects_other') },
+                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'defects_total', ridx, 7, true) },
+                { title: t('daily_reports.table.mtm'), width: 50, render: (_: any, r: any, ridx: number) => renderInput(r, 'defects_mtm', ridx, 8) },
+                { title: t('daily_reports.table.school'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'defects_school', ridx, 9) },
+                { title: t('daily_reports.table.dpm'), width: 50, render: (_: any, r: any, ridx: number) => renderInput(r, 'defects_dpm', ridx, 10) },
+                { title: t('daily_reports.table.other'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'defects_other', ridx, 11) },
             ]
         },
         {
             title: t('daily_reports.table.fines_issued'),
             children: [
-                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'fines_total', true) },
-                { title: t('daily_reports.table.mtm'), width: 50, render: (_: any, r: any) => renderInput(r, 'fines_mtm') },
-                { title: t('daily_reports.table.school'), width: 60, render: (_: any, r: any) => renderInput(r, 'fines_school') },
-                { title: t('daily_reports.table.dpm'), width: 50, render: (_: any, r: any) => renderInput(r, 'fines_dpm') },
-                { title: t('daily_reports.table.other'), width: 60, render: (_: any, r: any) => renderInput(r, 'fines_other') },
+                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'fines_total', ridx, 12, true) },
+                { title: t('daily_reports.table.mtm'), width: 50, render: (_: any, r: any, ridx: number) => renderInput(r, 'fines_mtm', ridx, 13) },
+                { title: t('daily_reports.table.school'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'fines_school', ridx, 14) },
+                { title: t('daily_reports.table.dpm'), width: 50, render: (_: any, r: any, ridx: number) => renderInput(r, 'fines_dpm', ridx, 15) },
+                { title: t('daily_reports.table.other'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'fines_other', ridx, 16) },
             ]
         },
         {
             title: t('daily_reports.table.suspended_activities'),
             children: [
-                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any) => renderInput(r, 'suspended_total', true) },
-                { title: t('daily_reports.table.mtm'), width: 50, render: (_: any, r: any) => renderInput(r, 'suspended_mtm') },
-                { title: t('daily_reports.table.school'), width: 60, render: (_: any, r: any) => renderInput(r, 'suspended_school') },
-                { title: t('daily_reports.table.dpm'), width: 50, render: (_: any, r: any) => renderInput(r, 'suspended_dpm') },
-                { title: t('daily_reports.table.other'), width: 60, render: (_: any, r: any) => renderInput(r, 'suspended_other') },
+                { title: t('daily_reports.table.lab_total'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'suspended_total', ridx, 17, true) },
+                { title: t('daily_reports.table.mtm'), width: 50, render: (_: any, r: any, ridx: number) => renderInput(r, 'suspended_mtm', ridx, 18) },
+                { title: t('daily_reports.table.school'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'suspended_school', ridx, 19) },
+                { title: t('daily_reports.table.dpm'), width: 50, render: (_: any, r: any, ridx: number) => renderInput(r, 'suspended_dpm', ridx, 20) },
+                { title: t('daily_reports.table.other'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'suspended_other', ridx, 21) },
             ]
         },
         {

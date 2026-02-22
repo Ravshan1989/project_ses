@@ -24,7 +24,7 @@ export class SosService {
     @InjectRepository(SosAlert)
     private alertRepo: Repository<SosAlert>,
     private telegramService: TelegramService,
-  ) { }
+  ) {}
 
   // ADMIN logic for predefined diseases
   async createPredefinedDisease(dto: CreateSosDiseaseDto, user: User) {

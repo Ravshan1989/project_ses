@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, ConflictException } from "@nestjs/common";
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+} from "@nestjs/common";
 import { UsersService } from "../users/users.service";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
@@ -13,7 +17,7 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private telegramService: TelegramService,
-  ) { }
+  ) {}
 
   async validateUser(username: string, pass: string): Promise<any> {
     console.log(`[DEBUG] Validating user: ${username}`);
@@ -48,7 +52,6 @@ export class AuthService {
     };
   }
 
-
   async register(registerDto: RegisterDto): Promise<User> {
     // UZ: Ro'yxatdan o'tishda login/parol avtomat generatsiya qilinadi (Telegram orqali beriladi)
     // Vaqtincha login sifatida telefon raqamini ishlatamiz
@@ -75,8 +78,11 @@ export class AuthService {
 
       return newUser;
     } catch (error) {
-      if (error.code === '23505') { // Postgres unique_violation
-        throw new ConflictException("Bu telefon raqam bilan foydalanuvchi allaqachon ro'yxatdan o'tgan.");
+      if (error.code === "23505") {
+        // Postgres unique_violation
+        throw new ConflictException(
+          "Bu telefon raqam bilan foydalanuvchi allaqachon ro'yxatdan o'tgan.",
+        );
       }
       throw error;
     }

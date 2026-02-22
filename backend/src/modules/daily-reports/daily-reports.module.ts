@@ -32,11 +32,11 @@ import { ApprovalController } from "./approval.controller";
   controllers: [DailyReportsController, ApprovalController],
   exports: [DailyReportsService, VerificationService],
 })
-export class DailyReportsModule { }
+export class DailyReportsModule {}
 
 /**
  * [ORIGINAL_REDACTED_CODE_PRESERVATION]
- * 
+ *
  * Original TypeOrmModule in DailyReportsModule:
  * TypeOrmModule.forFeature([
  *   HepatitisDailyReport,

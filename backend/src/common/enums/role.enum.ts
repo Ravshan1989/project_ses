@@ -20,7 +20,7 @@ export enum UserRole {
 
 /**
  * [ORIGINAL_REDACTED_CODE_PRESERVATION]
- * 
+ *
  * export enum UserRole {
  *   ADMIN = "ADMIN",
  *   HR = "HR",

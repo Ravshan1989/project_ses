@@ -11,8 +11,12 @@ import * as bcrypt from "bcrypt";
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);
   const usersService = app.get(UsersService);
-  const orgRepo: Repository<Organization> = app.get(getRepositoryToken(Organization));
-  const deptRepo: Repository<Department> = app.get(getRepositoryToken(Department));
+  const orgRepo: Repository<Organization> = app.get(
+    getRepositoryToken(Organization),
+  );
+  const deptRepo: Repository<Department> = app.get(
+    getRepositoryToken(Department),
+  );
 
   // 1. Get/Create Department
   let dept = await deptRepo.findOne({ where: { name: "Boshqaruv (Admin)" } });
@@ -21,7 +25,7 @@ async function bootstrap() {
       name: "Boshqaruv (Admin)",
       description: "Sistem Administrator",
       level: 1,
-      isActive: true
+      isActive: true,
     });
     dept = await deptRepo.save(dept);
   }
@@ -31,7 +35,7 @@ async function bootstrap() {
   if (!viloyat) {
     viloyat = orgRepo.create({
       name: "Toshkent viloyati",
-      population: 3000000
+      population: 3000000,
     });
     viloyat = await orgRepo.save(viloyat);
   }

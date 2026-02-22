@@ -26,7 +26,7 @@ export class ImportsService {
 
     @InjectRepository(Template)
     private readonly templateRepo: Repository<Template>,
-  ) { }
+  ) {}
 
   async processImport(file: Express.Multer.File, type: string) {
     try {
@@ -235,9 +235,9 @@ export class ImportsService {
     const child_population =
       Number(
         row["Bolalar soni"] ||
-        row["14 yoshgacha"] ||
-        row["child_population"] ||
-        row["Bolalar"],
+          row["14 yoshgacha"] ||
+          row["child_population"] ||
+          row["Bolalar"],
       ) || organization.child_population;
 
     organization.population = population;

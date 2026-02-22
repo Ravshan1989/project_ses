@@ -253,7 +253,7 @@ const DailyHepatitisPage: React.FC = () => {
                     </div>
                 )}
 
-                <Card className="glass-card" bordered={false} bodyStyle={{ padding: 0 }}>
+                <Card className="glass-card" bordered={false} styles={{ body: { padding: 0 } }}>
                     <HepatitisTab
                         data={data}
                         loading={loading}
@@ -266,7 +266,7 @@ const DailyHepatitisPage: React.FC = () => {
                     />
                 </Card>
             </GlassLayout>
-        </PermissionGate >
+        </PermissionGate>
     );
 };
 

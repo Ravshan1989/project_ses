@@ -16,4 +16,4 @@ import { BackupBotService } from "./backup-bot.service";
   providers: [TelegramService, DataExportService /*, BackupBotService */],
   exports: [TelegramService, DataExportService],
 })
-export class TelegramModule { }
+export class TelegramModule {}

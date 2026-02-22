@@ -44,7 +44,7 @@ export class DailyReportsService {
     private orgRepo: Repository<Organization>,
     @Inject(forwardRef(() => TelegramService))
     private telegramService: TelegramService,
-  ) { }
+  ) {}
 
   private validateIsolation(user: User, organizationId: string) {
     if (!user || !user.organization) return; // Should not happen with JwtGuard
@@ -63,7 +63,10 @@ export class DailyReportsService {
 
   private validateStatus(report: any) {
     if (!report) return;
-    if (report.status === ReportStatus.VERIFIED || report.status === ReportStatus.APPROVED) {
+    if (
+      report.status === ReportStatus.VERIFIED ||
+      report.status === ReportStatus.APPROVED
+    ) {
       throw new Error(
         "Tasdiqlangan hisobotni o'zgartirib bo'lmaydi. Faqat Mudir yoki Boshliq rad etganidan keyin tahrirlash mumkin.",
       );
@@ -465,25 +468,41 @@ export class DailyReportsService {
 
   async upsertCovid(dto: CreateCovidReportDto, user: User) {
     const report = await this.covidRepo.findOne({
-      where: { reportDate: dto.reportDate, organization: { id: dto.organizationId }, isTest: !!dto.isTest }
+      where: {
+        reportDate: dto.reportDate,
+        organization: { id: dto.organizationId },
+        isTest: !!dto.isTest,
+      },
     });
     if (report) {
       Object.assign(report, dto);
       return this.covidRepo.save(report);
     }
-    const newReport = this.covidRepo.create({ ...dto, organization: { id: dto.organizationId }, isTest: !!dto.isTest });
+    const newReport = this.covidRepo.create({
+      ...dto,
+      organization: { id: dto.organizationId },
+      isTest: !!dto.isTest,
+    });
     return this.covidRepo.save(newReport);
   }
 
   async upsertDiarrhea(dto: CreateDiarrheaReportDto, user: User) {
     const report = await this.diarrheaRepo.findOne({
-      where: { reportDate: dto.reportDate, organization: { id: dto.organizationId }, isTest: !!dto.isTest }
+      where: {
+        reportDate: dto.reportDate,
+        organization: { id: dto.organizationId },
+        isTest: !!dto.isTest,
+      },
     });
     if (report) {
       Object.assign(report, dto);
       return this.diarrheaRepo.save(report);
     }
-    const newReport = this.diarrheaRepo.create({ ...dto, organization: { id: dto.organizationId }, isTest: !!dto.isTest });
+    const newReport = this.diarrheaRepo.create({
+      ...dto,
+      organization: { id: dto.organizationId },
+      isTest: !!dto.isTest,
+    });
     return this.diarrheaRepo.save(newReport);
   }
 
@@ -695,7 +714,11 @@ export class DailyReportsService {
         for (const data of payload.hepatitis) {
           this.validateIsolation(user, data.organizationId);
           let report = await manager.findOne(HepatitisDailyReport, {
-            where: { reportDate, organization: { id: data.organizationId }, isTest },
+            where: {
+              reportDate,
+              organization: { id: data.organizationId },
+              isTest,
+            },
           });
           if (report) Object.assign(report, data);
           else
@@ -714,7 +737,11 @@ export class DailyReportsService {
         for (const data of payload.flu) {
           this.validateIsolation(user, data.organizationId);
           let report = await manager.findOne(FluDailyReport, {
-            where: { reportDate, organization: { id: data.organizationId }, isTest },
+            where: {
+              reportDate,
+              organization: { id: data.organizationId },
+              isTest,
+            },
           });
           if (report) Object.assign(report, data);
           else
@@ -733,7 +760,11 @@ export class DailyReportsService {
         for (const data of payload.ari) {
           this.validateIsolation(user, data.organizationId);
           let report = await manager.findOne(AriDailyReport, {
-            where: { reportDate, organization: { id: data.organizationId }, isTest },
+            where: {
+              reportDate,
+              organization: { id: data.organizationId },
+              isTest,
+            },
           });
           if (report) Object.assign(report, data);
           else
@@ -752,7 +783,11 @@ export class DailyReportsService {
         for (const data of payload.epi) {
           this.validateIsolation(user, data.organizationId);
           let report = await manager.findOne(EpidemiologyDailyReport, {
-            where: { reportDate, organization: { id: data.organizationId }, isTest },
+            where: {
+              reportDate,
+              organization: { id: data.organizationId },
+              isTest,
+            },
           });
           if (report) Object.assign(report, data);
           else
@@ -767,11 +802,16 @@ export class DailyReportsService {
       }
 
       // 4a. Sanitary (NEW)
-      if (payload.epi?.length) { // UZ: Hozircha payload.epi dan kelgan ma'lumotni ham Sanitariyaga yozamiz
+      if (payload.epi?.length) {
+        // UZ: Hozircha payload.epi dan kelgan ma'lumotni ham Sanitariyaga yozamiz
         for (const data of payload.epi) {
           this.validateIsolation(user, data.organizationId);
           let report = await manager.findOne(SanitaryDailyReport, {
-            where: { reportDate, organization: { id: data.organizationId }, isTest },
+            where: {
+              reportDate,
+              organization: { id: data.organizationId },
+              isTest,
+            },
           });
           if (report) Object.assign(report, data);
           else
@@ -790,7 +830,11 @@ export class DailyReportsService {
         for (const data of payload.covid) {
           this.validateIsolation(user, data.organizationId);
           let report = await manager.findOne(CovidDailyReport, {
-            where: { reportDate, organization: { id: data.organizationId }, isTest },
+            where: {
+              reportDate,
+              organization: { id: data.organizationId },
+              isTest,
+            },
           });
           if (report) Object.assign(report, data);
           else
@@ -809,7 +853,11 @@ export class DailyReportsService {
         for (const data of payload.diarrhea) {
           this.validateIsolation(user, data.organizationId);
           let report = await manager.findOne(DiarrheaDailyReport, {
-            where: { reportDate, organization: { id: data.organizationId }, isTest },
+            where: {
+              reportDate,
+              organization: { id: data.organizationId },
+              isTest,
+            },
           });
           if (report) Object.assign(report, data);
           else
@@ -853,7 +901,10 @@ export class DailyReportsService {
     const report = await repo.findOne({ where: { id } });
     if (!report) throw new Error("Hisobot topilmadi");
 
-    if (report.status !== ReportStatus.DRAFT && report.status !== ReportStatus.REJECTED) {
+    if (
+      report.status !== ReportStatus.DRAFT &&
+      report.status !== ReportStatus.REJECTED
+    ) {
       throw new Error("Hisobot allaqachon yuborilgan");
     }
 
@@ -905,7 +956,7 @@ export class DailyReportsService {
 
 /**
  * [ORIGINAL_REDACTED_CODE_PRESERVATION]
- * 
+ *
  * Modified methods in DailyReportsService:
  * - upsertEpidemiology (Removed sanitary fields from telegram notification)
  * - bulkUpsertBatch (Split epi and sanitary logic)

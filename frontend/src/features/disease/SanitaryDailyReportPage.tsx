@@ -177,7 +177,7 @@ const SanitaryDailyReportPage: React.FC = () => {
                 subtitle={`${date.format('DD.MM.YYYY')} kungi holat`}
                 headerButtons={headerControls}
             >
-                <Card className="glass-card" bordered={false} bodyStyle={{ padding: 0 }}>
+                <Card className="glass-card" bordered={false} styles={{ body: { padding: 0 } }}>
                     <SanitaryTab
                         data={data}
                         loading={loading}

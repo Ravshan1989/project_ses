@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Table, InputNumber, Space, Badge, Button, Modal, Form, Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
+import EditCell from '../../../components/common/EditCell';
 
 interface ReportData {
     key: string;
@@ -59,19 +60,15 @@ const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, userRole, on
         return isAdmin;
     };
 
-    const renderInput = (record: ReportData, field: keyof ReportData, forceReadOnly = false) => {
-        const readOnly = forceReadOnly || !canEdit(record);
+    const renderInput = (record: ReportData, field: keyof ReportData, rowIdx: number, colIdx: number, forceReadOnly = false) => {
+        const disabled = forceReadOnly || !canEdit(record);
         return (
-            <InputNumber
-                size="small"
-                min={0}
+            <EditCell
                 value={record[field] as number}
-                onChange={(val) => !readOnly && onChange(val || 0, record.key, field)}
-                variant="borderless"
-                readOnly={readOnly}
-                className="report-input"
-                style={{ width: '100%', padding: 0, fontWeight: readOnly ? 'bold' : 'normal', color: readOnly ? '#595959' : 'inherit' }}
-                controls={false}
+                onChange={(val) => onChange(val, record.key, field)}
+                rowIdx={rowIdx}
+                colIdx={colIdx}
+                disabled={disabled}
             />
         );
     };
@@ -101,46 +98,46 @@ const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, userRole, on
                 }
             })
         },
-        { title: t('dashboard_page.total_reports') || 'Jami', width: 60, render: (_: any, r: any) => renderInput(r, 'total_cases', true) },
+        { title: t('dashboard_page.total_reports') || 'Jami', width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'total_cases', ridx, 2, true) },
         {
             title: t('daily_reports.tabs.hepatitis.by_age'),
             children: [
-                { title: t('daily_reports.tabs.common.age_under_1'), width: 60, render: (_: any, r: any) => renderInput(r, 'age_under_1') },
-                { title: t('daily_reports.tabs.common.age_1_3'), width: 60, render: (_: any, r: any) => renderInput(r, 'age_1_3') },
-                { title: t('daily_reports.tabs.common.age_4_6'), width: 60, render: (_: any, r: any) => renderInput(r, 'age_4_6') },
-                { title: t('daily_reports.tabs.common.age_7_14'), width: 65, render: (_: any, r: any) => renderInput(r, 'age_7_14') },
-                { title: t('daily_reports.tabs.common.age_15_19'), width: 65, render: (_: any, r: any) => renderInput(r, 'age_15_19') },
-                { title: t('daily_reports.tabs.common.age_20_plus'), width: 65, render: (_: any, r: any) => renderInput(r, 'age_20_plus') },
+                { title: t('daily_reports.tabs.common.age_under_1'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_under_1', ridx, 3) },
+                { title: t('daily_reports.tabs.common.age_1_3'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_1_3', ridx, 4) },
+                { title: t('daily_reports.tabs.common.age_4_6'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_4_6', ridx, 5) },
+                { title: t('daily_reports.tabs.common.age_7_14'), width: 65, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_7_14', ridx, 6) },
+                { title: t('daily_reports.tabs.common.age_15_19'), width: 65, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_15_19', ridx, 7) },
+                { title: t('daily_reports.tabs.common.age_20_plus'), width: 65, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_20_plus', ridx, 8) },
             ]
         },
         {
             title: t('daily_reports.tabs.hepatitis.by_occ'),
             children: [
-                { title: t('daily_reports.tabs.hepatitis.unorganized_u1'), width: 100, render: (_: any, r: any) => renderInput(r, 'occ_unorganized') },
-                { title: t('daily_reports.tabs.hepatitis.unorganized_1_6'), width: 100, render: (_: any, r: any) => renderInput(r, 'occ_unorganized_1_6') },
-                { title: t('daily_reports.tabs.hepatitis.kindergarten_1_6'), width: 100, render: (_: any, r: any) => renderInput(r, 'occ_organized_1_6') },
-                { title: t('daily_reports.tabs.hepatitis.unorganized_school'), width: 110, render: (_: any, r: any) => renderInput(r, 'occ_unorganized_school_age') },
-                { title: t('daily_reports.tabs.hepatitis.students'), width: 100, render: (_: any, r: any) => renderInput(r, 'occ_students') },
-                { title: t('daily_reports.tabs.hepatitis.college_students'), width: 100, render: (_: any, r: any) => renderInput(r, 'occ_college_students') },
-                { title: t('daily_reports.tabs.hepatitis.workers'), width: 100, render: (_: any, r: any) => renderInput(r, 'occ_workers') },
+                { title: t('daily_reports.tabs.hepatitis.unorganized_u1'), width: 100, render: (_: any, r: any, ridx: number) => renderInput(r, 'occ_unorganized', ridx, 9) },
+                { title: t('daily_reports.tabs.hepatitis.unorganized_1_6'), width: 100, render: (_: any, r: any, ridx: number) => renderInput(r, 'occ_unorganized_1_6', ridx, 10) },
+                { title: t('daily_reports.tabs.hepatitis.kindergarten_1_6'), width: 100, render: (_: any, r: any, ridx: number) => renderInput(r, 'occ_organized_1_6', ridx, 11) },
+                { title: t('daily_reports.tabs.hepatitis.unorganized_school'), width: 110, render: (_: any, r: any, ridx: number) => renderInput(r, 'occ_unorganized_school_age', ridx, 12) },
+                { title: t('daily_reports.tabs.hepatitis.students'), width: 100, render: (_: any, r: any, ridx: number) => renderInput(r, 'occ_students', ridx, 13) },
+                { title: t('daily_reports.tabs.hepatitis.college_students'), width: 100, render: (_: any, r: any, ridx: number) => renderInput(r, 'occ_college_students', ridx, 14) },
+                { title: t('daily_reports.tabs.hepatitis.workers'), width: 100, render: (_: any, r: any, ridx: number) => renderInput(r, 'occ_workers', ridx, 15) },
             ]
         },
         {
             title: t('daily_reports.tabs.hepatitis.factors_title'),
             children: [
-                { title: t('daily_reports.tabs.hepatitis.water'), width: 80, render: (_: any, r: any) => renderInput(r, 'factor_water') },
-                { title: t('daily_reports.tabs.hepatitis.food'), width: 80, render: (_: any, r: any) => renderInput(r, 'factor_food') },
-                { title: t('daily_reports.tabs.hepatitis.contact'), width: 85, render: (_: any, r: any) => renderInput(r, 'factor_contact') },
+                { title: t('daily_reports.tabs.hepatitis.water'), width: 80, render: (_: any, r: any, ridx: number) => renderInput(r, 'factor_water', ridx, 16) },
+                { title: t('daily_reports.tabs.hepatitis.food'), width: 80, render: (_: any, r: any, ridx: number) => renderInput(r, 'factor_food', ridx, 17) },
+                { title: t('daily_reports.tabs.hepatitis.contact'), width: 85, render: (_: any, r: any, ridx: number) => renderInput(r, 'factor_contact', ridx, 18) },
             ]
         },
         {
             title: t('daily_reports.tabs.hepatitis.lab_title'),
             children: [
-                { title: t('export_page.table_headers.total') || 'Jami', width: 50, render: (_: any, r: any) => renderInput(r, 'lab_samples') },
-                { title: t('daily_reports.tabs.hepatitis.positive'), width: 55, render: (_: any, r: any) => renderInput(r, 'lab_positive') },
+                { title: t('export_page.table_headers.total') || 'Jami', width: 50, render: (_: any, r: any, ridx: number) => renderInput(r, 'lab_samples', ridx, 19) },
+                { title: t('daily_reports.tabs.hepatitis.positive'), width: 55, render: (_: any, r: any, ridx: number) => renderInput(r, 'lab_positive', ridx, 20) },
             ]
         },
-        { title: t('daily_reports.tabs.hepatitis.disinfection'), dataIndex: 'disinfection_done', width: 80, render: (_: any, r: any) => renderInput(r, 'disinfection_done') },
+        { title: t('daily_reports.tabs.hepatitis.disinfection'), dataIndex: 'disinfection_done', width: 80, render: (_: any, r: any, ridx: number) => renderInput(r, 'disinfection_done', ridx, 21) },
         {
             title: t('daily_reports.table.status') || 'Holat',
             key: 'status',

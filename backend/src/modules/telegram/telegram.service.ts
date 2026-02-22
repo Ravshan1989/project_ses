@@ -57,15 +57,23 @@ export class TelegramService implements OnModuleInit {
     this.setupHandlers();
 
     // UZ: Webhookni o'chirish (agar oldin o'rnatilgan bo'lsa) va Pollingni boshlash
-    this.bot.telegram.deleteWebhook().then(() => {
-      this.bot.launch().then(() => {
-        this.logger.log("Telegram bot polling rejimda ishga tushdi (Webhook o'chirildi).");
-      }).catch((err) => {
-        this.logger.error("Telegram bot ishga tushirishda xatolik:", err);
+    this.bot.telegram
+      .deleteWebhook()
+      .then(() => {
+        this.bot
+          .launch()
+          .then(() => {
+            this.logger.log(
+              "Telegram bot polling rejimda ishga tushdi (Webhook o'chirildi).",
+            );
+          })
+          .catch((err) => {
+            this.logger.error("Telegram bot ishga tushirishda xatolik:", err);
+          });
+      })
+      .catch((err) => {
+        this.logger.error("Webhookni o'chirishda xatolik:", err);
       });
-    }).catch((err) => {
-      this.logger.error("Webhookni o'chirishda xatolik:", err);
-    });
   }
 
   private setupHandlers() {
@@ -86,25 +94,25 @@ export class TelegramService implements OnModuleInit {
           const userId = startPayload;
           const user = await this.userRepository.findOne({
             where: { id: userId },
-            relations: ['organization']
+            relations: ["organization"],
           });
 
           if (user) {
             // Request phone number for verification
             await ctx.reply(
               `Assalomu alaykum!\n\n` +
-              `Davom etish uchun telefon raqamingizni tasdiqlang.\n\n` +
-              `Quyidagi tugmani bosing:`,
+                `Davom etish uchun telefon raqamingizni tasdiqlang.\n\n` +
+                `Quyidagi tugmani bosing:`,
               Markup.keyboard([
-                Markup.button.contactRequest('📞 Telefon raqamni yuborish')
-              ]).resize()
+                Markup.button.contactRequest("📞 Telefon raqamni yuborish"),
+              ]).resize(),
             );
 
             this.logger.log(`Requested phone verification for user ${userId}`);
             return;
           }
         } catch (error) {
-          this.logger.error('Error processing /start with payload:', error);
+          this.logger.error("Error processing /start with payload:", error);
         }
       }
 
@@ -124,23 +132,30 @@ export class TelegramService implements OnModuleInit {
             Markup.button.callback("🟣 Epidemiologiya", "get_epi"),
             Markup.button.callback("🏥 Sanitariya", "get_sanitary"),
           ],
-          [Markup.button.callback("🔐 Ro'yxatdan o'tishni tasdiqlash", "verify_phone")],
+          [
+            Markup.button.callback(
+              "🔐 Ro'yxatdan o'tishni tasdiqlash",
+              "verify_phone",
+            ),
+          ],
         ]),
       );
     });
 
     // Handle phone number verification
-    this.bot.on('contact', async (ctx) => {
+    this.bot.on("contact", async (ctx) => {
       const contact = ctx.message.contact;
       const phoneNumber = contact.phone_number;
 
-      this.logger.log(`Received phone number: ${phoneNumber} from ${ctx.from.id}`);
+      this.logger.log(
+        `Received phone number: ${phoneNumber} from ${ctx.from.id}`,
+      );
 
       try {
         // Find user by phone number
         const user = await this.userRepository.findOne({
-          where: { phoneNumber: phoneNumber.replace(/\D/g, '') },
-          relations: ['organization']
+          where: { phoneNumber: phoneNumber.replace(/\D/g, "") },
+          relations: ["organization"],
         });
 
         if (user) {
@@ -150,28 +165,30 @@ export class TelegramService implements OnModuleInit {
 
           await ctx.reply(
             `✅ Tasdiqlandi!\n\n` +
-            `Assalomu alaykum, ${user.firstName}!\n\n` +
-            `Siz muvaffaqiyatli ro'yxatdan o'tdingiz.\n` +
-            `Ma'lumotlaringiz tekshirilmoqda.\n\n` +
-            `${user.organization?.name || 'Tashkilot'} kadri tasdiqlashidan so'ng ` +
-            `login va parol shu yerga yuboriladi.`,
-            Markup.removeKeyboard()
+              `Assalomu alaykum, ${user.firstName}!\n\n` +
+              `Siz muvaffaqiyatli ro'yxatdan o'tdingiz.\n` +
+              `Ma'lumotlaringiz tekshirilmoqda.\n\n` +
+              `${user.organization?.name || "Tashkilot"} kadri tasdiqlashidan so'ng ` +
+              `login va parol shu yerga yuboriladi.`,
+            Markup.removeKeyboard(),
           );
-          this.logger.log(`Phone verified and chat ID saved for user ${user.id}`);
+          this.logger.log(
+            `Phone verified and chat ID saved for user ${user.id}`,
+          );
         } else {
           await ctx.reply(
             `❌ Xatolik!\n\n` +
-            `Bu telefon raqam tizimda topilmadi.\n\n` +
-            `Iltimos, ro'yxatdan o'tishda kiritgan telefon raqamingizni yuboring.`,
-            Markup.removeKeyboard()
+              `Bu telefon raqam tizimda topilmadi.\n\n` +
+              `Iltimos, ro'yxatdan o'tishda kiritgan telefon raqamingizni yuboring.`,
+            Markup.removeKeyboard(),
           );
           this.logger.warn(`Phone number ${phoneNumber} not found in database`);
         }
       } catch (error) {
-        this.logger.error('Error verifying phone number:', error);
+        this.logger.error("Error verifying phone number:", error);
         await ctx.reply(
           `❌ Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.`,
-          Markup.removeKeyboard()
+          Markup.removeKeyboard(),
         );
       }
     });
@@ -205,10 +222,10 @@ export class TelegramService implements OnModuleInit {
     this.bot.action("verify_phone", async (ctx) => {
       await ctx.reply(
         `Davom etish uchun telefon raqamingizni tasdiqlang.\n\n` +
-        `Quyidagi tugmani bosing:`,
+          `Quyidagi tugmani bosing:`,
         Markup.keyboard([
-          Markup.button.contactRequest('📞 Telefon raqamni yuborish')
-        ]).resize()
+          Markup.button.contactRequest("📞 Telefon raqamni yuborish"),
+        ]).resize(),
       );
     });
 
@@ -316,7 +333,12 @@ export class TelegramService implements OnModuleInit {
             Markup.button.callback("🟣 Epidemiologiya", "get_epi"),
             Markup.button.callback("🏥 Sanitariya", "get_sanitary"),
           ],
-          [Markup.button.callback("🔐 Ro'yxatdan o'tishni tasdiqlash", "verify_phone")],
+          [
+            Markup.button.callback(
+              "🔐 Ro'yxatdan o'tishni tasdiqlash",
+              "verify_phone",
+            ),
+          ],
         ]),
       );
     } catch (error) {
@@ -412,7 +434,8 @@ ${data.latitude && data.longitude ? `📍 *Manzil:* [Google xaritada ko'rish](ht
       return;
     }
 
-    const fullName = `${user.lastName || ""} ${user.firstName || ""} ${user.middleName || ""}`.trim();
+    const fullName =
+      `${user.lastName || ""} ${user.firstName || ""} ${user.middleName || ""}`.trim();
     const message = `
 🆕 <b>Yangi foydalanuvchi ro'yxatdan o'tdi!</b>
 
@@ -447,9 +470,13 @@ ${data.latitude && data.longitude ? `📍 *Manzil:* [Google xaritada ko'rish](ht
             parse_mode: "HTML",
             reply_markup: keyboard,
           });
-          this.logger.log(`Registration notification (HR) sent to Admin for user ${user.id}`);
+          this.logger.log(
+            `Registration notification (HR) sent to Admin for user ${user.id}`,
+          );
         } else {
-          this.logger.warn(`Admin Chat ID not found for HR registration ${user.id}`);
+          this.logger.warn(
+            `Admin Chat ID not found for HR registration ${user.id}`,
+          );
         }
         return;
       }
@@ -469,28 +496,42 @@ ${data.latitude && data.longitude ? `📍 *Manzil:* [Google xaritada ko'rish](ht
       for (const hrUser of hrUsers) {
         if (hrUser.telegramChatId) {
           try {
-            await this.bot.telegram.sendMessage(hrUser.telegramChatId, message, {
-              parse_mode: "HTML",
-              reply_markup: keyboard,
-            });
+            await this.bot.telegram.sendMessage(
+              hrUser.telegramChatId,
+              message,
+              {
+                parse_mode: "HTML",
+                reply_markup: keyboard,
+              },
+            );
             sentCount++;
-            this.logger.log(`Notification sent to HR user ${hrUser.username} (${hrUser.telegramChatId})`);
+            this.logger.log(
+              `Notification sent to HR user ${hrUser.username} (${hrUser.telegramChatId})`,
+            );
           } catch (error) {
-            this.logger.error(`Failed to send to HR user ${hrUser.username}:`, error);
+            this.logger.error(
+              `Failed to send to HR user ${hrUser.username}:`,
+              error,
+            );
           }
         }
       }
 
       // Case 3: Fallback (No HR found) -> Send to Admin
       if (sentCount === 0 && this.adminChatId) {
-        const adminMessage = `⚠️ <b>Tashkilotda Kadr (HR) topilmadi!</b>\n\n` + message;
+        const adminMessage =
+          `⚠️ <b>Tashkilotda Kadr (HR) topilmadi!</b>\n\n` + message;
         await this.bot.telegram.sendMessage(this.adminChatId, adminMessage, {
           parse_mode: "HTML",
           reply_markup: keyboard,
         });
-        this.logger.log(`No HR users found, fallback sent to Admin for user ${user.id}`);
+        this.logger.log(
+          `No HR users found, fallback sent to Admin for user ${user.id}`,
+        );
       } else {
-        this.logger.log(`Registration notification sent to ${sentCount} HR user(s) for user ${user.id}`);
+        this.logger.log(
+          `Registration notification sent to ${sentCount} HR user(s) for user ${user.id}`,
+        );
       }
     } catch (error) {
       this.logger.error("Failed to send registration notification", error);
@@ -577,14 +618,18 @@ ${data.latitude && data.longitude ? `📍 *Manzil:* [Google xaritada ko'rish](ht
   }
 
   private async generateUniqueUsername(user: User): Promise<string> {
-    const firstName = user.firstName?.toLowerCase().replace(/[^a-z0-9]/g, "") || "user";
-    const lastName = user.lastName?.toLowerCase().replace(/[^a-z0-9]/g, "") || "";
+    const firstName =
+      user.firstName?.toLowerCase().replace(/[^a-z0-9]/g, "") || "user";
+    const lastName =
+      user.lastName?.toLowerCase().replace(/[^a-z0-9]/g, "") || "";
 
     let baseUsername = `${firstName}.${lastName}`;
     if (!lastName) baseUsername = firstName;
 
     // Check if base username exists
-    const exists = await this.userRepository.findOne({ where: { username: baseUsername } });
+    const exists = await this.userRepository.findOne({
+      where: { username: baseUsername },
+    });
     if (!exists) return baseUsername;
 
     // If exists, append random number
@@ -593,7 +638,9 @@ ${data.latitude && data.longitude ? `📍 *Manzil:* [Google xaritada ko'rish](ht
     while (!isUnique) {
       const randomSuffix = Math.floor(1000 + Math.random() * 9000); // 4 digit random
       newUsername = `${baseUsername}${randomSuffix}`;
-      const check = await this.userRepository.findOne({ where: { username: newUsername } });
+      const check = await this.userRepository.findOne({
+        where: { username: newUsername },
+      });
       if (!check) isUnique = true;
     }
 
@@ -601,8 +648,7 @@ ${data.latitude && data.longitude ? `📍 *Manzil:* [Google xaritada ko'rish](ht
   }
 
   private generatePassword(): string {
-    const chars =
-      "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
     let password = "";
     for (let i = 0; i < 10; i++) {
       password += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -625,7 +671,10 @@ ${data.latitude && data.longitude ? `📍 *Manzil:* [Google xaritada ko'rish](ht
     return roleLabels[role] || role;
   }
 
-  async sendActivationNotification(user: User, password: string): Promise<void> {
+  async sendActivationNotification(
+    user: User,
+    password: string,
+  ): Promise<void> {
     if (!this.bot) return;
 
     const message = `
@@ -641,8 +690,12 @@ Tizimga kirish uchun ma'lumotlar:
     try {
       // 1. Try sending to the user if they have a chat ID
       if (user.telegramChatId) {
-        await this.bot.telegram.sendMessage(user.telegramChatId, message, { parse_mode: 'HTML' });
-        this.logger.log(`Activation notification sent to user ${user.username} (${user.telegramChatId})`);
+        await this.bot.telegram.sendMessage(user.telegramChatId, message, {
+          parse_mode: "HTML",
+        });
+        this.logger.log(
+          `Activation notification sent to user ${user.username} (${user.telegramChatId})`,
+        );
         return;
       }
 
@@ -657,14 +710,22 @@ Login/Parol Adminga yuborilmoqda:
 🔑 <b>Parol:</b> <code>${password}</code>
         `.trim();
 
-        await this.bot.telegram.sendMessage(this.adminChatId, adminMessage, { parse_mode: 'HTML' });
-        this.logger.log(`Activation notification sent to ADMIN for user ${user.username}`);
+        await this.bot.telegram.sendMessage(this.adminChatId, adminMessage, {
+          parse_mode: "HTML",
+        });
+        this.logger.log(
+          `Activation notification sent to ADMIN for user ${user.username}`,
+        );
       } else {
-        this.logger.warn(`Could not send activation notification for ${user.username}: No Chat ID and No Admin ID.`);
+        this.logger.warn(
+          `Could not send activation notification for ${user.username}: No Chat ID and No Admin ID.`,
+        );
       }
-
     } catch (error) {
-      this.logger.error(`Failed to send activation notification for ${user.username}`, error);
+      this.logger.error(
+        `Failed to send activation notification for ${user.username}`,
+        error,
+      );
     }
   }
 

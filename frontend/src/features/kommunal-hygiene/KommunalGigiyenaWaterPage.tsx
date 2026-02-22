@@ -38,46 +38,136 @@ const TW = ({ label, width }: { label: string; width: number }) => (
 );
 
 // ─── EditCell: click to edit number ──────────────────────────────────────────
-const EditCell = ({ value, onChange, readOnly }: { value: number; onChange: (v: number) => void; readOnly: boolean }) => {
+const EditCell = ({ value, onChange, readOnly, rowIdx, colIdx }: { value: number; onChange: (v: number) => void; readOnly: boolean; rowIdx?: number; colIdx?: number }) => {
     const [editing, setEditing] = useState(false);
     const [local, setLocal] = useState(String(value));
+    const inputRef = React.useRef<HTMLInputElement>(null);
+
     useEffect(() => { setLocal(String(value)); }, [value]);
+
+    const handleBlur = () => {
+        setEditing(false);
+        onChange(Number(local) || 0);
+    };
+
+    const moveFocus = (rowDelta: number, colDelta: number) => {
+        if (rowIdx === undefined || colIdx === undefined) return;
+        setTimeout(() => {
+            const nextRow = rowIdx + rowDelta;
+            const nextCol = colIdx + colDelta;
+            const selector = `[data-row="${nextRow}"][data-col="${nextCol}"]`;
+            const nextEl = document.querySelector(selector) as HTMLElement;
+            if (nextEl) {
+                nextEl.click();
+                if (nextEl.tagName === 'INPUT') nextEl.focus();
+            }
+        }, 50);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' || e.key === 'ArrowDown') {
+            handleBlur();
+            moveFocus(1, 0);
+        } else if (e.key === 'ArrowUp') {
+            handleBlur();
+            moveFocus(-1, 0);
+        } else if (e.key === 'Tab') {
+            e.preventDefault();
+            handleBlur();
+            moveFocus(0, e.shiftKey ? -1 : 1);
+        } else if (e.key === 'ArrowRight' && inputRef.current?.selectionStart === local.length) {
+            handleBlur();
+            moveFocus(0, 1);
+        } else if (e.key === 'ArrowLeft' && inputRef.current?.selectionStart === 0) {
+            handleBlur();
+            moveFocus(0, -1);
+        }
+    };
+
     if (readOnly) return <span style={{ fontSize: 10 }}>{value}</span>;
     if (editing) return (
         <input
+            ref={inputRef}
             autoFocus
             value={local}
+            data-row={rowIdx}
+            data-col={colIdx}
             onChange={e => setLocal(e.target.value)}
-            onBlur={() => { setEditing(false); onChange(Number(local) || 0); }}
-            onKeyDown={e => { if (e.key === 'Enter') { setEditing(false); onChange(Number(local) || 0); } }}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            onFocus={e => e.target.select()}
             style={{ width: 48, fontSize: 10, textAlign: 'center', border: '1px solid #3b82f6', borderRadius: 2, outline: 'none' }}
         />
     );
     return (
-        <span onClick={() => setEditing(true)} style={{ cursor: 'pointer', fontSize: 10, display: 'block', minWidth: 28, minHeight: 16, color: value === 0 ? '#94a3b8' : '#111' }}>
+        <span
+            onClick={() => setEditing(true)}
+            data-row={rowIdx}
+            data-col={colIdx}
+            style={{ cursor: 'pointer', fontSize: 10, display: 'block', minWidth: 28, minHeight: 16, color: value === 0 ? '#94a3b8' : '#111' }}
+        >
             {value}
         </span>
     );
 };
 
-const EditTextCell = ({ value, onChange, readOnly, textAlign = 'left' }: { value: string; onChange: (v: string) => void; readOnly: boolean, textAlign?: 'left' | 'center' | 'right' }) => {
+const EditTextCell = ({ value, onChange, readOnly, textAlign = 'left', rowIdx, colIdx }: { value: string; onChange: (v: string) => void; readOnly: boolean, textAlign?: 'left' | 'center' | 'right', rowIdx?: number, colIdx?: number }) => {
     const [editing, setEditing] = useState(false);
     const [local, setLocal] = useState(value);
     useEffect(() => { setLocal(value); }, [value]);
+
+    const handleBlur = () => {
+        setEditing(false);
+        onChange(local);
+    };
+
+    const moveFocus = (rowDelta: number, colDelta: number) => {
+        if (rowIdx === undefined || colIdx === undefined) return;
+        setTimeout(() => {
+            const nextRow = rowIdx + rowDelta;
+            const nextCol = colIdx + colDelta;
+            const selector = `[data-row="${nextRow}"][data-col="${nextCol}"]`;
+            const nextEl = document.querySelector(selector) as HTMLElement;
+            if (nextEl) {
+                nextEl.click();
+            }
+        }, 50);
+    };
+
     if (readOnly) return <span style={{ fontSize: 10 }}>{value}</span>;
     if (editing) return (
         <Input
             autoFocus
             size="small"
             value={local}
+            data-row={rowIdx}
+            data-col={colIdx}
             onChange={e => setLocal(e.target.value)}
-            onBlur={() => { setEditing(false); onChange(local); }}
-            onPressEnter={() => { setEditing(false); onChange(local); }}
+            onBlur={handleBlur}
+            onPressEnter={handleBlur}
+            onKeyDown={e => {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    handleBlur();
+                    moveFocus(0, e.shiftKey ? -1 : 1);
+                } else if (e.key === 'ArrowDown') {
+                    handleBlur();
+                    moveFocus(1, 0);
+                } else if (e.key === 'ArrowUp') {
+                    handleBlur();
+                    moveFocus(-1, 0);
+                }
+            }}
             style={{ fontSize: 10, textAlign }}
         />
     );
     return (
-        <span onClick={() => setEditing(true)} style={{ cursor: 'pointer', fontSize: 10, display: 'block', minHeight: 16, color: !value ? '#94a3b8' : '#111', textAlign, padding: '0 4px' }}>
+        <span
+            onClick={() => setEditing(true)}
+            data-row={rowIdx}
+            data-col={colIdx}
+            style={{ cursor: 'pointer', fontSize: 10, display: 'block', minHeight: 16, color: !value ? '#94a3b8' : '#111', textAlign, padding: '0 4px' }}
+        >
             {value || '...'}
         </span>
     );
@@ -580,19 +670,21 @@ const KommunalGigiyenaWaterPage: React.FC = () => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {ROW_TYPES.map(rt => (
+                                            {ROW_TYPES.map((rt, ridx) => (
                                                 <tr key={rt.key}>
                                                     <td style={{ ...tdStyle, textAlign: 'left', fontWeight: rt.key.includes('norm') ? 400 : 700, paddingLeft: rt.key.includes('norm') ? 24 : 8, width: 220 }}>
                                                         {rt.key.includes('norm')
                                                             ? <span style={{ color: '#64748b', fontSize: 10 }}>{t(rt.labelKey)}</span>
                                                             : t(rt.labelKey)}
                                                     </td>
-                                                    {NUM_FIELDS_T1.map(f => (
+                                                    {NUM_FIELDS_T1.map((f, cidx) => (
                                                         <td key={f} style={tdStyle}>
                                                             <EditCell
                                                                 value={dataT1[rt.key]?.[f] || 0}
                                                                 readOnly={!canEdit || f === 'chem_total' || f === 'total_inspected_samples'}
                                                                 onChange={v => handleChangeT1(rt.key, f, v)}
+                                                                rowIdx={ridx}
+                                                                colIdx={cidx}
                                                             />
                                                         </td>
                                                     ))}
@@ -661,18 +753,18 @@ const KommunalGigiyenaWaterPage: React.FC = () => {
                                         <tbody>
                                             {rowsT2.map((row: any, idx: number) => (
                                                 <tr key={idx}>
-                                                    <td style={tdStyle}><EditTextCell value={row.water_body_name} onChange={v => handleChangeT2(idx, 'water_body_name', v)} readOnly={!canEdit} /></td>
-                                                    <td style={tdStyle}><EditTextCell value={row.object_name} onChange={v => handleChangeT2(idx, 'object_name', v)} readOnly={!canEdit} /></td>
-                                                    <td style={tdStyle}><EditTextCell value={row.treatment_system} onChange={v => handleChangeT2(idx, 'treatment_system', v)} readOnly={!canEdit} textAlign="center" /></td>
-                                                    <td style={tdStyle}><EditCell value={row.chem_before_total} onChange={v => handleChangeT2(idx, 'chem_before_total', v)} readOnly={!canEdit} /></td>
-                                                    <td style={tdStyle}><EditCell value={row.chem_before_bad} onChange={v => handleChangeT2(idx, 'chem_before_bad', v)} readOnly={!canEdit} /></td>
-                                                    <td style={tdStyle}><EditCell value={row.chem_after_total} onChange={v => handleChangeT2(idx, 'chem_after_total', v)} readOnly={!canEdit} /></td>
-                                                    <td style={tdStyle}><EditCell value={row.chem_after_bad} onChange={v => handleChangeT2(idx, 'chem_after_bad', v)} readOnly={!canEdit} /></td>
+                                                    <td style={tdStyle}><EditTextCell value={row.water_body_name} onChange={v => handleChangeT2(idx, 'water_body_name', v)} readOnly={!canEdit} rowIdx={idx} colIdx={0} /></td>
+                                                    <td style={tdStyle}><EditTextCell value={row.object_name} onChange={v => handleChangeT2(idx, 'object_name', v)} readOnly={!canEdit} rowIdx={idx} colIdx={1} /></td>
+                                                    <td style={tdStyle}><EditTextCell value={row.treatment_system} onChange={v => handleChangeT2(idx, 'treatment_system', v)} readOnly={!canEdit} textAlign="center" rowIdx={idx} colIdx={2} /></td>
+                                                    <td style={tdStyle}><EditCell value={row.chem_before_total} onChange={v => handleChangeT2(idx, 'chem_before_total', v)} readOnly={!canEdit} rowIdx={idx} colIdx={3} /></td>
+                                                    <td style={tdStyle}><EditCell value={row.chem_before_bad} onChange={v => handleChangeT2(idx, 'chem_before_bad', v)} readOnly={!canEdit} rowIdx={idx} colIdx={4} /></td>
+                                                    <td style={tdStyle}><EditCell value={row.chem_after_total} onChange={v => handleChangeT2(idx, 'chem_after_total', v)} readOnly={!canEdit} rowIdx={idx} colIdx={5} /></td>
+                                                    <td style={tdStyle}><EditCell value={row.chem_after_bad} onChange={v => handleChangeT2(idx, 'chem_after_bad', v)} readOnly={!canEdit} rowIdx={idx} colIdx={6} /></td>
                                                     <td style={{ ...tdStyle, background: '#eff6ff', fontWeight: 700 }}>{row.chem_efficiency}%</td>
-                                                    <td style={tdStyle}><EditCell value={row.bact_before_total} onChange={v => handleChangeT2(idx, 'bact_before_total', v)} readOnly={!canEdit} /></td>
-                                                    <td style={tdStyle}><EditCell value={row.bact_before_bad} onChange={v => handleChangeT2(idx, 'bact_before_bad', v)} readOnly={!canEdit} /></td>
-                                                    <td style={tdStyle}><EditCell value={row.bact_after_total} onChange={v => handleChangeT2(idx, 'bact_after_total', v)} readOnly={!canEdit} /></td>
-                                                    <td style={tdStyle}><EditCell value={row.bact_after_bad} onChange={v => handleChangeT2(idx, 'bact_after_bad', v)} readOnly={!canEdit} /></td>
+                                                    <td style={tdStyle}><EditCell value={row.bact_before_total} onChange={v => handleChangeT2(idx, 'bact_before_total', v)} readOnly={!canEdit} rowIdx={idx} colIdx={7} /></td>
+                                                    <td style={tdStyle}><EditCell value={row.bact_before_bad} onChange={v => handleChangeT2(idx, 'bact_before_bad', v)} readOnly={!canEdit} rowIdx={idx} colIdx={8} /></td>
+                                                    <td style={tdStyle}><EditCell value={row.bact_after_total} onChange={v => handleChangeT2(idx, 'bact_after_total', v)} readOnly={!canEdit} rowIdx={idx} colIdx={9} /></td>
+                                                    <td style={tdStyle}><EditCell value={row.bact_after_bad} onChange={v => handleChangeT2(idx, 'bact_after_bad', v)} readOnly={!canEdit} rowIdx={idx} colIdx={10} /></td>
                                                     <td style={tdStyle}>{row.bact_efficiency}%</td>
                                                     <td style={{ ...tdStyle, border: 'none' }}>
                                                         {canEdit && <Button type="text" danger size="small" icon={<DeleteOutlined />} onClick={() => removeRowT2(idx)} />}
@@ -733,17 +825,17 @@ const KommunalGigiyenaWaterPage: React.FC = () => {
                                         <tbody>
                                             {rowsT3.map((row: any, idx: number) => (
                                                 <tr key={idx}>
-                                                    <td style={tdStyle}><EditTextCell value={row.water_body_name} onChange={v => handleChangeT3(idx, 'water_body_name', v)} readOnly={!canEdit} /></td>
-                                                    <td style={tdStyle}><EditTextCell value={row.category} onChange={v => handleChangeT3(idx, 'category', v)} readOnly={!canEdit} textAlign="center" /></td>
-                                                    <td style={tdStyle}><EditCell value={row.samples_taken} onChange={v => handleChangeT3(idx, 'samples_taken', v)} readOnly={!canEdit} /></td>
-                                                    <td style={tdStyle}><EditCell value={row.samples_bad} onChange={v => handleChangeT3(idx, 'samples_bad', v)} readOnly={!canEdit} /></td>
-                                                    <td style={tdStyle}><EditCell value={row.pathogen_inf_disease} onChange={v => handleChangeT3(idx, 'pathogen_inf_disease', v)} readOnly={!canEdit} /></td>
-                                                    <td style={tdStyle}><EditCell value={row.pathogen_cholera} onChange={v => handleChangeT3(idx, 'pathogen_cholera', v)} readOnly={!canEdit} /></td>
-                                                    <td style={tdStyle}><EditCell value={row.pathogen_parasite} onChange={v => handleChangeT3(idx, 'pathogen_parasite', v)} readOnly={!canEdit} /></td>
-                                                    <td style={tdStyle}><EditCell value={row.chem_samples_total} onChange={v => handleChangeT3(idx, 'chem_samples_total', v)} readOnly={!canEdit} /></td>
-                                                    <td style={tdStyle}><EditCell value={row.chem_pesticide_presence} onChange={v => handleChangeT3(idx, 'chem_pesticide_presence', v)} readOnly={!canEdit} /></td>
-                                                    <td style={tdStyle}><EditCell value={row.chem_bad_total} onChange={v => handleChangeT3(idx, 'chem_bad_total', v)} readOnly={!canEdit} /></td>
-                                                    <td style={tdStyle}><EditCell value={row.chem_bad_pesticide} onChange={v => handleChangeT3(idx, 'chem_bad_pesticide', v)} readOnly={!canEdit} /></td>
+                                                    <td style={tdStyle}><EditTextCell value={row.water_body_name} onChange={v => handleChangeT3(idx, 'water_body_name', v)} readOnly={!canEdit} rowIdx={idx} colIdx={0} /></td>
+                                                    <td style={tdStyle}><EditTextCell value={row.category} onChange={v => handleChangeT3(idx, 'category', v)} readOnly={!canEdit} textAlign="center" rowIdx={idx} colIdx={1} /></td>
+                                                    <td style={tdStyle}><EditCell value={row.samples_taken} onChange={v => handleChangeT3(idx, 'samples_taken', v)} readOnly={!canEdit} rowIdx={idx} colIdx={2} /></td>
+                                                    <td style={tdStyle}><EditCell value={row.samples_bad} onChange={v => handleChangeT3(idx, 'samples_bad', v)} readOnly={!canEdit} rowIdx={idx} colIdx={3} /></td>
+                                                    <td style={tdStyle}><EditCell value={row.pathogen_inf_disease} onChange={v => handleChangeT3(idx, 'pathogen_inf_disease', v)} readOnly={!canEdit} rowIdx={idx} colIdx={4} /></td>
+                                                    <td style={tdStyle}><EditCell value={row.pathogen_cholera} onChange={v => handleChangeT3(idx, 'pathogen_cholera', v)} readOnly={!canEdit} rowIdx={idx} colIdx={5} /></td>
+                                                    <td style={tdStyle}><EditCell value={row.pathogen_parasite} onChange={v => handleChangeT3(idx, 'pathogen_parasite', v)} readOnly={!canEdit} rowIdx={idx} colIdx={6} /></td>
+                                                    <td style={tdStyle}><EditCell value={row.chem_samples_total} onChange={v => handleChangeT3(idx, 'chem_samples_total', v)} readOnly={!canEdit} rowIdx={idx} colIdx={7} /></td>
+                                                    <td style={tdStyle}><EditCell value={row.chem_pesticide_presence} onChange={v => handleChangeT3(idx, 'chem_pesticide_presence', v)} readOnly={!canEdit} rowIdx={idx} colIdx={8} /></td>
+                                                    <td style={tdStyle}><EditCell value={row.chem_bad_total} onChange={v => handleChangeT3(idx, 'chem_bad_total', v)} readOnly={!canEdit} rowIdx={idx} colIdx={9} /></td>
+                                                    <td style={tdStyle}><EditCell value={row.chem_bad_pesticide} onChange={v => handleChangeT3(idx, 'chem_bad_pesticide', v)} readOnly={!canEdit} rowIdx={idx} colIdx={10} /></td>
                                                     <td style={{ ...tdStyle, border: 'none' }}>
                                                         {canEdit && <Button type="text" danger size="small" icon={<DeleteOutlined />} onClick={() => removeRowT3(idx)} />}
                                                     </td>

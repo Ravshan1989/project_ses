@@ -2,8 +2,8 @@ import { Module } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { ConfigModule } from "@nestjs/config";
 import { DatabaseModule } from "./database/database.module";
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
+import { ServeStaticModule } from "@nestjs/serve-static";
+import { join } from "path";
 import { SubmissionsModule } from "./modules/submissions/submissions.module";
 import { UsersModule } from "./modules/users/users.module";
 import { OrganizationsModule } from "./modules/organizations/organizations.module";
@@ -18,7 +18,7 @@ import { SosModule } from "./modules/sos/sos.module";
 import { UpdatesModule } from "./modules/updates/updates.module";
 import { SeedingModule } from "./modules/seeding/seeding.module";
 import { KommunalHygieneModule } from "./modules/kommunal-hygiene/kommunal-hygiene.module";
-
+import { ChildrenHygieneModule } from "./modules/children-hygiene/children-hygiene.module";
 
 import { AuthModule } from "./modules/auth/auth.module";
 import { DepartmentsModule } from "./modules/departments/departments.module";
@@ -58,15 +58,14 @@ import { ScheduleModule } from "@nestjs/schedule";
     ValidationModule, // UZ: Mantiqiy validatsiya moduli qo'shildi
     NotificationsModule, // UZ: Bildirishnomalar moduli qo'shildi
     EventEmitterModule.forRoot(), // UZ: Eventlar tizimini yoqish
-    NotificationsModule, // UZ: Bildirishnomalar moduli qo'shildi
-    EventEmitterModule.forRoot(), // UZ: Eventlar tizimini yoqish
     UpdatesModule, // UZ: Yangilanishlar moduli
     SeedingModule, // UZ: Avtomatik ma'lumotlarni to'ldirish (Auto-fix)
     KommunalHygieneModule, // UZ: Kommunal gigiyena oylik hisobotlari
+    ChildrenHygieneModule, // UZ: Bolalar va o'smirlar gigiyenasi
 
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'),
-      serveRoot: '/public',
+      rootPath: join(__dirname, "..", "public"),
+      serveRoot: "/public",
     }),
   ],
   controllers: [AppController],
@@ -75,4 +74,4 @@ import { ScheduleModule } from "@nestjs/schedule";
     { provide: APP_INTERCEPTOR, useClass: NotificationInterceptor }, // UZ: Bildirishnomalar uchun interceptor
   ],
 })
-export class AppModule { }
+export class AppModule {}

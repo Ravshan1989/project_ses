@@ -12,4 +12,4 @@ import { TelegramModule } from "../telegram/telegram.module";
   controllers: [SosController],
   exports: [SosService, TypeOrmModule],
 })
-export class SosModule { }
+export class SosModule {}

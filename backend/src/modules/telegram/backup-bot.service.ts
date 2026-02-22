@@ -18,8 +18,12 @@ export class BackupBotService implements OnModuleInit {
   }
 
   private initializeBot() {
-    const token = this.configService.get<string>("BACKUP_BOT_TOKEN") || process.env.BACKUP_BOT_TOKEN;
-    this.chatId = this.configService.get<string>("BACKUP_CHAT_ID") || process.env.BACKUP_CHAT_ID;
+    const token =
+      this.configService.get<string>("BACKUP_BOT_TOKEN") ||
+      process.env.BACKUP_BOT_TOKEN;
+    this.chatId =
+      this.configService.get<string>("BACKUP_CHAT_ID") ||
+      process.env.BACKUP_CHAT_ID;
 
     if (token) {
       this.bot = new Telegraf(token);
@@ -45,10 +49,14 @@ export class BackupBotService implements OnModuleInit {
     }
 
     this.setupHandlers();
-    this.bot.launch()
+    this.bot
+      .launch()
       .then(() => this.logger.log("Zaxira boti Telegram bilan bog'landi."))
       .catch((err) => {
-        this.logger.error("Zaxira botini launch qilishda xatolik:", err.message);
+        this.logger.error(
+          "Zaxira botini launch qilishda xatolik:",
+          err.message,
+        );
       });
   }
 
@@ -60,12 +68,16 @@ export class BackupBotService implements OnModuleInit {
     this.logger.log("⏳ Avtomatik zaxira (Scheduled) boshlandi...");
 
     if (!this.bot) {
-      this.logger.warn("⚠️ Zaxira boti ishga tushmagan (bot instance null). Qayta urinib ko'rilmoqda...");
+      this.logger.warn(
+        "⚠️ Zaxira boti ishga tushmagan (bot instance null). Qayta urinib ko'rilmoqda...",
+      );
       this.initializeBot();
     }
 
     if (!this.bot || !this.chatId) {
-      this.logger.error("❌ Zaxira boti yoki Chat ID mavjud emas. Bekor qilindi.");
+      this.logger.error(
+        "❌ Zaxira boti yoki Chat ID mavjud emas. Bekor qilindi.",
+      );
       return;
     }
 
@@ -120,6 +132,10 @@ export class BackupBotService implements OnModuleInit {
       );
     });
 
-    this.bot.help((ctx) => ctx.reply("Ma'lumotlarni zaxira qilish uchun /backup buyrug'idan foydalaning."));
+    this.bot.help((ctx) =>
+      ctx.reply(
+        "Ma'lumotlarni zaxira qilish uchun /backup buyrug'idan foydalaning.",
+      ),
+    );
   }
 }

@@ -4,24 +4,24 @@ import { DailyReportsService } from "./modules/daily-reports/daily-reports.servi
 import { UsersService } from "./modules/users/users.service";
 
 async function bootstrap() {
-    const app = await NestFactory.createApplicationContext(AppModule);
-    const reportsService = app.get(DailyReportsService);
-    const usersService = app.get(UsersService);
+  const app = await NestFactory.createApplicationContext(AppModule);
+  const reportsService = app.get(DailyReportsService);
+  const usersService = app.get(UsersService);
 
-    const admin = await usersService.findOneByUsername("admin");
-    const today = new Date().toISOString().split('T')[0];
+  const admin = await usersService.findOneByUsername("admin");
+  const today = new Date().toISOString().split("T")[0];
 
-    console.log(`Checking Hepatitis reports for date: ${today}`);
-    const reports = await reportsService.getByDate(today, admin as any, false);
+  console.log(`Checking Hepatitis reports for date: ${today}`);
+  const reports = await reportsService.getByDate(today, admin as any, false);
 
-    console.log(`Found ${reports.length} real reports.`);
-    if (reports.length > 0) {
-        reports.forEach(r => {
-            console.log(` - ${r.organization.name}: Total=${r.total_cases}`);
-        });
-    }
+  console.log(`Found ${reports.length} real reports.`);
+  if (reports.length > 0) {
+    reports.forEach((r) => {
+      console.log(` - ${r.organization.name}: Total=${r.total_cases}`);
+    });
+  }
 
-    await app.close();
+  await app.close();
 }
 
 bootstrap();

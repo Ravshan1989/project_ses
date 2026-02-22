@@ -11,7 +11,7 @@ export class UsersService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     private telegramService: TelegramService,
-  ) { }
+  ) {}
 
   async findOneByUsername(username: string): Promise<User | undefined> {
     return this.usersRepository.findOne({
@@ -139,8 +139,9 @@ export class UsersService {
 
     if (isActivating) {
       // Generate credentials if missing or temporary
-      if (!user.username || user.username.startsWith('reg_')) {
-        const firstName = user.firstName?.toLowerCase().replace(/\s+/g, "") || "";
+      if (!user.username || user.username.startsWith("reg_")) {
+        const firstName =
+          user.firstName?.toLowerCase().replace(/\s+/g, "") || "";
         const lastName = user.lastName?.toLowerCase().replace(/\s+/g, "") || "";
         user.username = `${firstName}.${lastName}${Math.floor(Math.random() * 100)}`;
       }
@@ -172,16 +173,16 @@ export class UsersService {
   async findPending(): Promise<User[]> {
     return this.usersRepository.find({
       where: { isActive: false },
-      relations: ['organization', 'department'],
-      order: { createdAt: 'DESC' }
+      relations: ["organization", "department"],
+      order: { createdAt: "DESC" },
     });
   }
 
   async findByOrganization(organizationId: string): Promise<User[]> {
     return this.usersRepository.find({
       where: { organization: { id: organizationId } },
-      relations: ['organization', 'department'],
-      order: { createdAt: 'DESC' }
+      relations: ["organization", "department"],
+      order: { createdAt: "DESC" },
     });
   }
 
@@ -189,17 +190,17 @@ export class UsersService {
     return this.usersRepository.find({
       where: {
         organization: { id: organizationId },
-        isActive: false
+        isActive: false,
       },
-      relations: ['organization', 'department'],
-      order: { createdAt: 'DESC' }
+      relations: ["organization", "department"],
+      order: { createdAt: "DESC" },
     });
   }
 }
 
 /**
  * [ORIGINAL_REDACTED_CODE_PRESERVATION]
- * 
+ *
  * async findOneByUsername(username: string): Promise<User | undefined> {
  *   return this.usersRepository.findOne({
  *     where: { username },

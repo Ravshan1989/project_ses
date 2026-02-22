@@ -19,7 +19,7 @@ import { Role } from "./entities/role.entity";
 @Controller("roles")
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 export class RolesController {
-  constructor(private readonly rolesService: RolesService) { }
+  constructor(private readonly rolesService: RolesService) {}
 
   @Get()
   async findAll() {

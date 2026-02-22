@@ -6,6 +6,7 @@ import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
 import PermissionGate from '../../components/PermissionGate';
 import GlassLayout from '../../components/layout/GlassLayout';
+import EditCell from '../../components/common/EditCell';
 
 interface CovidReportData {
     key: string;
@@ -174,15 +175,20 @@ const CovidDailyReportPage: React.FC = () => {
         }
     };
 
-    const renderInput = (record: CovidReportData, field: keyof CovidReportData) => (
-        <InputNumber
-            size="small"
-            min={0}
+    const canEdit = (record: any) => {
+        if (record.status === 'APPROVED' || record.status === 'VERIFIED') return false;
+        if (userRole === 'STAFF') return record.status === 'DRAFT' || record.status === 'REJECTED' || !record.status;
+        if (userRole === 'DEPARTMENT_HEAD') return record.status === 'SUBMITTED';
+        return isAdmin;
+    };
+
+    const renderInput = (record: CovidReportData, field: keyof CovidReportData, rowIdx: number, colIdx: number) => (
+        <EditCell
             value={record[field] as number}
             onChange={(val) => handleCellChange(val, record.key, field)}
-            variant="borderless"
-            style={{ width: '100%', textAlign: 'center' }}
-            controls={false}
+            rowIdx={rowIdx}
+            colIdx={colIdx}
+            disabled={!canEdit(record)}
         />
     );
 
@@ -199,28 +205,28 @@ const CovidDailyReportPage: React.FC = () => {
                 </span>
             )
         },
-        { title: t('daily_reports.table.total_cases'), width: 80, render: (_: any, r: any) => renderInput(r, 'total_cases'), align: 'center' },
-        { title: t('daily_reports.table.reinfected'), width: 80, render: (_: any, r: any) => renderInput(r, 'reinfected'), align: 'center' },
-        { title: t('daily_reports.table.vaccinated_infected'), width: 100, render: (_: any, r: any) => renderInput(r, 'vaccinated_infected'), align: 'center' },
+        { title: t('daily_reports.table.total_cases'), width: 80, render: (_: any, r: any, ridx: number) => renderInput(r, 'total_cases', ridx, 2), align: 'center' },
+        { title: t('daily_reports.table.reinfected'), width: 80, render: (_: any, r: any, ridx: number) => renderInput(r, 'reinfected', ridx, 3), align: 'center' },
+        { title: t('daily_reports.table.vaccinated_infected'), width: 100, render: (_: any, r: any, ridx: number) => renderInput(r, 'vaccinated_infected', ridx, 4), align: 'center' },
         {
             title: t('daily_reports.table.by_age'),
             children: [
-                { title: t('daily_reports.table.age_0_1'), width: 60, render: (_: any, r: any) => renderInput(r, 'age_0_1') },
-                { title: t('daily_reports.table.age_1_3'), width: 60, render: (_: any, r: any) => renderInput(r, 'age_1_3') },
-                { title: t('daily_reports.table.age_4_6'), width: 60, render: (_: any, r: any) => renderInput(r, 'age_4_6') },
-                { title: t('daily_reports.table.age_7_14'), width: 60, render: (_: any, r: any) => renderInput(r, 'age_7_14') },
-                { title: t('daily_reports.table.age_15_19'), width: 60, render: (_: any, r: any) => renderInput(r, 'age_15_19') },
-                { title: t('daily_reports.table.age_20_29'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_20_29') },
-                { title: t('daily_reports.table.age_30_39'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_30_39') },
-                { title: t('daily_reports.table.age_40_49'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_40_49') },
-                { title: t('daily_reports.table.age_50_59'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_50_59') },
-                { title: t('daily_reports.table.age_60_plus'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_60_plus') },
+                { title: t('daily_reports.table.age_0_1'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_0_1', ridx, 5) },
+                { title: t('daily_reports.table.age_1_3'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_1_3', ridx, 6) },
+                { title: t('daily_reports.table.age_4_6'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_4_6', ridx, 7) },
+                { title: t('daily_reports.table.age_7_14'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_7_14', ridx, 8) },
+                { title: t('daily_reports.table.age_15_19'), width: 60, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_15_19', ridx, 9) },
+                { title: t('daily_reports.table.age_20_29'), width: 70, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_20_29', ridx, 10) },
+                { title: t('daily_reports.table.age_30_39'), width: 70, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_30_39', ridx, 11) },
+                { title: t('daily_reports.table.age_40_49'), width: 70, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_40_49', ridx, 12) },
+                { title: t('daily_reports.table.age_50_59'), width: 70, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_50_59', ridx, 13) },
+                { title: t('daily_reports.table.age_60_plus'), width: 70, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_60_plus', ridx, 14) },
             ]
         },
         {
             title: t('daily_reports.table.hospitalized'),
             width: 100,
-            render: (_: any, r: any) => renderInput(r, 'hospitalized_count'),
+            render: (_: any, r: any, ridx: number) => renderInput(r, 'hospitalized_count', ridx, 15),
             align: 'center'
         },
         {
@@ -384,7 +390,7 @@ const CovidDailyReportPage: React.FC = () => {
                 headerButtons={headerControls}
             >
                 {!isMobile ? (
-                    <Card className="glass-card" bordered={false} bodyStyle={{ padding: 0 }}>
+                    <Card className="glass-card" bordered={false} styles={{ body: { padding: 0 } }}>
                         <Table
                             columns={columns}
                             dataSource={data}

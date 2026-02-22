@@ -1,19 +1,25 @@
-import { IsString, IsNotEmpty, IsOptional, IsInt, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsInt,
+  IsBoolean,
+} from "class-validator";
 
 export class CreateRoleDto {
-    @IsString()
-    @IsNotEmpty()
-    name: string;
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 
-    @IsString()
-    @IsOptional()
-    description?: string;
+  @IsString()
+  @IsOptional()
+  description?: string;
 
-    @IsBoolean()
-    @IsOptional()
-    isActive?: boolean;
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
 
-    @IsInt()
-    @IsOptional()
-    level?: number;
+  @IsInt()
+  @IsOptional()
+  level?: number;
 }

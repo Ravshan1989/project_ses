@@ -1,4 +1,4 @@
-{
+﻿{
     "auth": {
         "success_login": "Welcome!",
         "error_login": "Invalid username or password",
@@ -88,11 +88,11 @@
         "select_filter_warning": "Please select a date range and report type.",
         "update": "Update",
         "save_all": "Save All",
-        "approved": "Approved",
-        "close": "Close",
-        "total": "Total",
         "status": "Status",
-        "no_data": "No data available"
+        "no_data": "No data available",
+        "refresh": "Refresh",
+        "export_all": "Export All",
+        "save": "Save"
     },
     "dashboard_page": {
         "title": "Dashboard",
@@ -116,8 +116,8 @@
         "region_breakdown": "Regional Breakdown",
         "risk_percentage": "% Risk",
         "forecast_prefix": "Forecast:",
-        "trend_up": "↗ Growth",
-        "trend_down": "↘ Decrease",
+        "trend_up": "в†— Growth",
+        "trend_down": "в† Decrease",
         "ai_modal_title": "Analysis Dynamics",
         "ai_modal_chart_title": "Monthly metrics chart",
         "ai_high_risk_insight": "Attention! An increasing trend is observed for this disease. Strengthening preventive measures is recommended.",
@@ -205,6 +205,7 @@
         "diarrhea": "Diarrheal Diseases",
         "unified": "Unified Daily Reports",
         "kg_water": "Communal Hygiene (Water)",
+        "ch_hygiene": "Children Hygiene",
         "monthly_reports": "Monthly Reports"
     },
     "kommunal_hygiene": {
@@ -217,7 +218,7 @@
             "regional_summary": "Regional Monitoring"
         },
         "water_table": {
-            "title": "Communal Hygiene — Monthly report",
+            "title": "Communal Hygiene вЂ” Monthly report",
             "subtitle": "Drinking Water (Table 1)",
             "headers": {
                 "pipeline": "Water Pipeline",
@@ -462,5 +463,137 @@
         "equal": "no change",
         "increased": "increased",
         "decreased": "decreased"
+    },
+    "children_hygiene": {
+        "table1": {
+            "title": "Sanitary Supervision in Educational Institutions (Table-1)",
+            "columns": {
+                "order": "#",
+                "institutions": "Institutions",
+                "institutions_count": "Number of Institutions",
+                "supervision_plan": "Supervision Plan",
+                "total_supervisions": "Total Supervisions Conducted",
+                "planned_supervisions": "Number of Planned Supervisions",
+                "unplanned_supervisions": "Number of Unplanned Supervisions",
+                "plan_execution_percent": "% Plan Execution",
+                "lab_supervisions": "Number of Lab-assisted Supervisions",
+                "lab_supervisions_percent": "Percentage of Lab-assisted Supervisions"
+            },
+            "rows": {
+                "total": "I. TOTAL",
+                "1_1": "1.1 Objects of the Ministry of Preschool and School Education",
+                "1_1_1": "1.1.1 State Preschools",
+                "1_1_1_outsourcing": "Outsourcing Organizations",
+                "1_1_2": "1.1.2 State Schools",
+                "1_1_3": "1.1.3 Presidential Educational Institutions",
+                "1_1_4": "1.1.4 IDUMI",
+                "1_1_5": "1.1.5 Special Boarding Schools",
+                "1_1_7": "1.1.7 Mehribonlik Homes",
+                "1_1_8": "1.1.8 Barkamol Avlod Centers",
+                "1_2": "1.2 Ministry of Higher Education, Science and Innovation",
+                "1_2_1": "1.2.1 Vocational Schools",
+                "1_2_2": "1.2.2 Vocational Colleges",
+                "1_2_3": "1.2.3 Technicums",
+                "1_2_4": "1.2.4 Academic Lyceums",
+                "1_3": "1.3 Objects under the Ministry of Health",
+                "1_3_1": "1.3.1 Children's Sanatoriums",
+                "1_3_2": "1.3.2 Muruvvat Homes",
+                "1_3_3": "1.3.3 Baby Homes",
+                "1_4": "1.4 Objects under the Federation of Trade Unions",
+                "1_4_1": "1.4.1 Summer Health Camps",
+                "1_5": "1.5 Objects under the Ministry of Culture",
+                "1_5_1": "1.5.1 Music Schools",
+                "1_5_2": "1.5.2 IRC (libraries and others)",
+                "1_5_3": "1.5.3 Music Boarding Schools",
+                "1_6": "1.6 Objects under the Ministry of Sport",
+                "1_6_1": "1.6.1 Sports Schools",
+                "1_6_1_pools": "Including Swimming Pools",
+                "1_6_2": "1.6.2 Children's Swimming Pools",
+                "1_6_3": "1.6.3 Sports Boarding Schools",
+                "1_7": "1.7 Total Private Educational Institutions, including",
+                "1_7_1": "1.7.1 Family Non-state Preschools",
+                "1_7_2": "1.7.2 Private Preschools",
+                "1_7_3": "1.7.3 PPP-type Preschools",
+                "1_7_4": "1.7.4 Private Schools",
+                "1_7_5": "1.7.5 Training Centers",
+                "1_7_6": "1.7.6 Private Secondary Special Vocational Institutions",
+                "1_8": "1.8 Others"
+            }
+        },
+        "table2": {
+            "title": "Laboratory Control in Educational Institutions (Table-2)",
+            "columns": {
+                "chem": "Number of Chemical Lab Tests",
+                "bact": "Number of Bacteriological Lab Tests",
+                "para": "Number of Parasitological Lab Tests",
+                "total": "total",
+                "non_compliant": "Non-compliant"
+            }
+        },
+        "table3": {
+            "title": "Physical Factors in Educational Institutions (Table-3)",
+            "columns": {
+                "air": "Indoor Air",
+                "micro": "Microclimate",
+                "vib": "Vibration",
+                "emf": "Electromagnetic Field (EMF)",
+                "light": "Lighting",
+                "noise": "Noise",
+                "inspected_count": "Number of Inspected Objects",
+                "samples_total": "Incl. number of samples",
+                "total": "total",
+                "samples_12k": "of which 1/2k",
+                "rem": "Exceeds hygienic normative",
+                "non_compliant": "Non-compliant"
+            }
+        },
+        "table3_1": {
+            "title": "Laboratory Tests during Sanitary Supervision in Educational Institutions (Table 3.1)",
+            "columns": {
+                "chem_count": "Number of Chemical Tests",
+                "ration": "Daily Ration",
+                "salt": "Table Salt",
+                "nitrate": "Vegetable Nitrates",
+                "toxic": "Toxic Elements",
+                "thermal": "Thermal Processing",
+                "mineral": "Minerals in Flour",
+                "soil": "Soil",
+                "water": "Water",
+                "pesticide": "Pesticides",
+                "nutrition": "Food Nutrition Value",
+                "total": "total",
+                "non_compliant": "Non-compliant"
+            }
+        },
+        "table3_2": {
+            "title": "Parasitological and Microbiological Laboratory Tests (Table 3.2)",
+            "columns": {
+                "para": "Parasitological Tests",
+                "micro": "Microbiological Tests",
+                "para_veg": "Vegetables",
+                "para_water": "Water",
+                "para_soil": "Soil",
+                "micro_smear": "Smears",
+                "micro_food": "Ready Food Products",
+                "micro_water": "Water",
+                "micro_soil": "Soil",
+                "total": "Total",
+                "non_compliant": "Non-compliant"
+            }
+        },
+        "table4": {
+            "title": "Administrative Measures applied during Sanitary Supervision (Table-4)",
+            "columns": {
+                "fines": "Fines",
+                "fine_count": "Number of Fines",
+                "fine_amount": "Fine Amount",
+                "imposed": "Imposed",
+                "collected": "Collected",
+                "activity_suspended": "Activity Suspended",
+                "employees_suspended": "Employees Suspended",
+                "referred_to_investigation": "Referred to Investigation",
+                "brakera": "Brakerash"
+            }
+        }
     }
 }

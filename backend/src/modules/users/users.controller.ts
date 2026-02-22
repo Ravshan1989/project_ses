@@ -23,7 +23,7 @@ import * as ExcelJS from "exceljs";
 @Controller("users")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Get("export")
   @Roles(UserRole.ADMIN)

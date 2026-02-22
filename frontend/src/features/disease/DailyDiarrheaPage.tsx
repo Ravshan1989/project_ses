@@ -218,7 +218,7 @@ const DailyDiarrheaPage: React.FC = () => {
                     />
                 </div>
             </div>
-        </PermissionGate >
+        </PermissionGate>
     );
 };
 

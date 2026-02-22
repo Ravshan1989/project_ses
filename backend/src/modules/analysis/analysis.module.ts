@@ -35,4 +35,4 @@ import { SosModule } from "../sos/sos.module"; // UZ: SosModule import qilindi
     ForecastingService, // UZ: Tashqi modullar uchun export qilindi
   ],
 })
-export class AnalysisModule { }
+export class AnalysisModule {}

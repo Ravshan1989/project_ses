@@ -142,3 +142,18 @@ export const rolesApi = {
     exportRegionalExcel: (month: string, orgId?: string) => api.get(`/kommunal-hygiene/export-excel?month=${month}${orgId ? `&orgId=${orgId}` : ''}`, { responseType: 'blob' }),
 };
 
+export const childrenHygieneApi = {
+    getTable1: (month: string, orgId?: string) => api.get(`/children-hygiene/table1?month=${month}${orgId ? `&orgId=${orgId}` : ''}`),
+    saveTable1: (data: { rows: any[], month: string, organizationId: string }) => api.post('/children-hygiene/table1', data),
+    getTable2: (month: string, orgId?: string) => api.get(`/children-hygiene/table2?month=${month}${orgId ? `&orgId=${orgId}` : ''}`),
+    saveTable2: (data: { rows: any[], month: string, organizationId: string }) => api.post('/children-hygiene/table2', data),
+    getTable3: (month: string, orgId?: string) => api.get(`/children-hygiene/table3?month=${month}${orgId ? `&orgId=${orgId}` : ''}`),
+    saveTable3: (data: { rows: any[], month: string, organizationId: string }) => api.post('/children-hygiene/table3', data),
+    getTable3_1: (month: string, orgId?: string) => api.get(`/children-hygiene/table3-1?month=${month}${orgId ? `&orgId=${orgId}` : ''}`),
+    saveTable3_1: (data: { rows: any[], month: string, organizationId: string }) => api.post('/children-hygiene/table3-1', data),
+    getTable3_2: (month: string, orgId?: string) => api.get(`/children-hygiene/table3-2?month=${month}${orgId ? `&orgId=${orgId}` : ''}`),
+    saveTable3_2: (data: { rows: any[], month: string, organizationId: string }) => api.post('/children-hygiene/table3-2', data),
+    getTable4: (month: string, orgId?: string) => api.get(`/children-hygiene/table4?month=${month}${orgId ? `&orgId=${orgId}` : ''}`),
+    saveTable4: (data: { rows: any[], month: string, organizationId: string }) => api.post('/children-hygiene/table4', data),
+    getRegionalStatus: (month: string) => api.get(`/children-hygiene/regional-status?month=${month}`),
+};

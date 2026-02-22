@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Table, InputNumber, Space, Button, Badge, Card, Modal, Form, Tabs } from 'antd';
+import { Table, InputNumber, Space, Button, Badge, Modal, Form, Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
-import { Tooltip, Tag } from 'antd';
+// 
+
+import EditCell from '../../../components/common/EditCell';
 
 interface DiarrheaReportData {
     id?: string;
@@ -66,17 +67,14 @@ const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, userRole, onCh
         return isAdmin;
     };
 
-    const renderInput = (record: DiarrheaReportData, field: keyof DiarrheaReportData, forceReadOnly = false) => {
-        const readOnly = forceReadOnly || !canEdit(record);
+    const renderInput = (record: DiarrheaReportData, field: keyof DiarrheaReportData, rowIdx: number, colIdx: number) => {
         return (
-            <InputNumber
+            <EditCell
                 value={record[field] as number}
-                onChange={(val) => !readOnly && onChange(val || 0, record.key, field)}
-                variant="borderless"
-                readOnly={readOnly}
-                className="report-input"
-                style={{ width: '100%', textAlign: 'center', fontWeight: readOnly ? 'bold' : 'normal', color: readOnly ? '#595959' : 'inherit' }}
-                controls={false}
+                onChange={(val) => onChange(val, record.key, field)}
+                rowIdx={rowIdx}
+                colIdx={colIdx}
+                disabled={!canEdit(record)}
             />
         );
     };
@@ -107,34 +105,34 @@ const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, userRole, onCh
         {
             title: t('daily_reports.tabs.diarrhea.total_patients'),
             children: [
-                { title: '2025', width: 70, render: (_: any, r: any) => renderInput(r, 'total_2025') },
-                { title: '2026', width: 70, render: (_: any, r: any) => renderInput(r, 'total_2026') },
+                { title: '2025', width: 70, render: (_: any, r: any, ridx: number) => renderInput(r, 'total_2025', ridx, 2) },
+                { title: '2026', width: 70, render: (_: any, r: any, ridx: number) => renderInput(r, 'total_2026', ridx, 3) },
             ]
         },
-        { title: t('daily_reports.tabs.diarrhea.actively_found'), width: 100, render: (_: any, r: any) => renderInput(r, 'actively_found') },
-        { title: t('daily_reports.tabs.diarrhea.hospitalized'), width: 110, render: (_: any, r: any) => renderInput(r, 'hospitalized') },
-        { title: t('daily_reports.tabs.diarrhea.illness_days'), width: 90, render: (_: any, r: any) => renderInput(r, 'illness_days_1_2') },
+        { title: t('daily_reports.tabs.diarrhea.actively_found'), width: 100, render: (_: any, r: any, ridx: number) => renderInput(r, 'actively_found', ridx, 4) },
+        { title: t('daily_reports.tabs.diarrhea.hospitalized'), width: 110, render: (_: any, r: any, ridx: number) => renderInput(r, 'hospitalized', ridx, 5) },
+        { title: t('daily_reports.tabs.diarrhea.illness_days'), width: 90, render: (_: any, r: any, ridx: number) => renderInput(r, 'illness_days_1_2', ridx, 6) },
         {
             title: t('daily_reports.tabs.diarrhea.by_age'),
             children: [
-                { title: t('daily_reports.tabs.common.age_under_1'), width: 80, render: (_: any, r: any) => renderInput(r, 'age_under_1') },
-                { title: t('daily_reports.tabs.common.age_1_3'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_1_3') },
-                { title: t('daily_reports.tabs.common.age_4_6'), width: 70, render: (_: any, r: any) => renderInput(r, 'age_4_6') },
-                { title: t('daily_reports.tabs.common.age_7_14'), width: 75, render: (_: any, r: any) => renderInput(r, 'age_7_14') },
-                { title: t('daily_reports.tabs.common.age_15_19'), width: 80, render: (_: any, r: any) => renderInput(r, 'age_15_19') },
-                { title: t('daily_reports.tabs.common.age_20_plus'), width: 75, render: (_: any, r: any) => renderInput(r, 'age_20_plus') },
+                { title: t('daily_reports.tabs.common.age_under_1'), width: 80, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_under_1', ridx, 7) },
+                { title: t('daily_reports.tabs.common.age_1_3'), width: 70, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_1_3', ridx, 8) },
+                { title: t('daily_reports.tabs.common.age_4_6'), width: 70, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_4_6', ridx, 9) },
+                { title: t('daily_reports.tabs.common.age_7_14'), width: 75, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_7_14', ridx, 10) },
+                { title: t('daily_reports.tabs.common.age_15_19'), width: 80, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_15_19', ridx, 11) },
+                { title: t('daily_reports.tabs.common.age_20_plus'), width: 75, render: (_: any, r: any, ridx: number) => renderInput(r, 'age_20_plus', ridx, 12) },
             ]
         },
         {
             title: t('daily_reports.tabs.diarrhea.by_occ'),
             children: [
-                { title: t('daily_reports.tabs.diarrhea.occ_nursery_org'), width: 100, render: (_: any, r: any) => renderInput(r, 'nursery_org') },
-                { title: t('daily_reports.tabs.diarrhea.occ_nursery_unorg'), width: 110, render: (_: any, r: any) => renderInput(r, 'nursery_unorg') },
-                { title: t('daily_reports.tabs.diarrhea.occ_kindergarten_org'), width: 110, render: (_: any, r: any) => renderInput(r, 'kindergarten_org') },
-                { title: t('daily_reports.tabs.diarrhea.occ_kindergarten_unorg'), width: 120, render: (_: any, r: any) => renderInput(r, 'kindergarten_unorg') },
-                { title: t('daily_reports.tabs.diarrhea.occ_students'), width: 80, render: (_: any, r: any) => renderInput(r, 'students') },
-                { title: t('daily_reports.tabs.diarrhea.occ_higher_students'), width: 80, render: (_: any, r: any) => renderInput(r, 'higher_students') },
-                { title: t('daily_reports.tabs.diarrhea.occ_adults'), width: 80, render: (_: any, r: any) => renderInput(r, 'adults') },
+                { title: t('daily_reports.tabs.diarrhea.occ_nursery_org'), width: 100, render: (_: any, r: any, ridx: number) => renderInput(r, 'nursery_org', ridx, 13) },
+                { title: t('daily_reports.tabs.diarrhea.occ_nursery_unorg'), width: 110, render: (_: any, r: any, ridx: number) => renderInput(r, 'nursery_unorg', ridx, 14) },
+                { title: t('daily_reports.tabs.diarrhea.occ_kindergarten_org'), width: 110, render: (_: any, r: any, ridx: number) => renderInput(r, 'kindergarten_org', ridx, 15) },
+                { title: t('daily_reports.tabs.diarrhea.occ_kindergarten_unorg'), width: 120, render: (_: any, r: any, ridx: number) => renderInput(r, 'kindergarten_unorg', ridx, 16) },
+                { title: t('daily_reports.tabs.diarrhea.occ_students'), width: 80, render: (_: any, r: any, ridx: number) => renderInput(r, 'students', ridx, 17) },
+                { title: t('daily_reports.tabs.diarrhea.occ_higher_students'), width: 80, render: (_: any, r: any, ridx: number) => renderInput(r, 'higher_students', ridx, 18) },
+                { title: t('daily_reports.tabs.diarrhea.occ_adults'), width: 80, render: (_: any, r: any, ridx: number) => renderInput(r, 'adults', ridx, 19) },
             ]
         },
         {
@@ -143,15 +141,15 @@ const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, userRole, onCh
                 {
                     title: t('daily_reports.tabs.diarrhea.open_water'),
                     children: [
-                        { title: t('daily_reports.tabs.diarrhea.samples'), width: 80, render: (_: any, r: any) => renderInput(r, 'open_water_samples') },
-                        { title: t('daily_reports.tabs.diarrhea.isolated'), width: 80, render: (_: any, r: any) => renderInput(r, 'open_water_isolated') },
+                        { title: t('daily_reports.tabs.diarrhea.samples'), width: 80, render: (_: any, r: any, ridx: number) => renderInput(r, 'open_water_samples', ridx, 20) },
+                        { title: t('daily_reports.tabs.diarrhea.isolated'), width: 80, render: (_: any, r: any, ridx: number) => renderInput(r, 'open_water_isolated', ridx, 21) },
                     ]
                 },
                 {
                     title: t('daily_reports.tabs.diarrhea.tap_water'),
                     children: [
-                        { title: t('daily_reports.tabs.diarrhea.samples'), width: 80, render: (_: any, r: any) => renderInput(r, 'tap_water_samples') },
-                        { title: t('daily_reports.tabs.diarrhea.isolated'), width: 80, render: (_: any, r: any) => renderInput(r, 'tap_water_isolated') },
+                        { title: t('daily_reports.tabs.diarrhea.samples'), width: 80, render: (_: any, r: any, ridx: number) => renderInput(r, 'tap_water_samples', ridx, 22) },
+                        { title: t('daily_reports.tabs.diarrhea.isolated'), width: 80, render: (_: any, r: any, ridx: number) => renderInput(r, 'tap_water_isolated', ridx, 23) },
                     ]
                 }
             ]

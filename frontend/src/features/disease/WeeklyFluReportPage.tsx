@@ -202,7 +202,7 @@ const WeeklyFluReportPage: React.FC = () => {
                 .period-picker .ant-picker-suffix, .period-picker .ant-picker-range-separator { color: rgba(255,255,255,0.8) !important; }
             `}</style>
 
-            <Card className="glass-card" bordered={false} bodyStyle={{ padding: '0px' }}>
+            <Card className="glass-card" bordered={false} styles={{ body: { padding: '0px' } }}>
                 <Table
                     columns={columns}
                     dataSource={data}
