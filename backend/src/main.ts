@@ -2,11 +2,14 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { ValidationPipe } from "@nestjs/common";
 import { json, urlencoded } from "express";
+import helmet from "helmet";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ["log", "error", "warn", "debug", "verbose"],
   });
+
+  app.use(helmet()); // UZ: Xavfsizlik sarlavhalarini o'rnatish
 
   app.use(json({ limit: "50mb" }));
   app.use(urlencoded({ limit: "50mb", extended: true }));

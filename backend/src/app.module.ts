@@ -25,7 +25,6 @@ import { DepartmentsModule } from "./modules/departments/departments.module";
 import { PermissionsModule } from "./modules/permissions/permissions.module";
 import { RolesModule } from "./modules/roles/roles.module";
 import { AuditModule } from "./modules/audit/audit.module"; // UZ: Audit loglari uchun moduli
-import { APP_INTERCEPTOR } from "@nestjs/core"; // UZ: Global interceptor uchun
 import { AuditInterceptor } from "./modules/audit/audit.interceptor"; // UZ: Audit interceptori
 import { ValidationModule } from "./modules/validation/validation.module"; // UZ: Validatsiya moduli
 import { NotificationsModule } from "./modules/notifications/notifications.module"; // UZ: Real-vaqt bildirishnomalari
@@ -33,12 +32,20 @@ import { NotificationInterceptor } from "./modules/notifications/notifications.i
 import { EventEmitterModule } from "@nestjs/event-emitter"; // UZ: Ichki eventlar uchun
 
 import { ScheduleModule } from "@nestjs/schedule";
+import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
+import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core"; // UZ: Global interceptor va guardlar uchun
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(), // UZ: Taymerlar uchun modul
     DatabaseModule,
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]), // UZ: Rate limiting - 1 daqiqada 100 ta so'rov
     AuthModule, // Added AuthModule
     SubmissionsModule,
     UsersModule,
@@ -70,6 +77,7 @@ import { ScheduleModule } from "@nestjs/schedule";
   ],
   controllers: [AppController],
   providers: [
+    { provide: APP_GUARD, useClass: ThrottlerGuard }, // UZ: Global rate limiting
     { provide: APP_INTERCEPTOR, useClass: AuditInterceptor }, // UZ: Global audit loglarini yozish uchun
     { provide: APP_INTERCEPTOR, useClass: NotificationInterceptor }, // UZ: Bildirishnomalar uchun interceptor
   ],
