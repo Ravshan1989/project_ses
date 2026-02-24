@@ -165,24 +165,26 @@
             "verified": "Tekshirilgan",
             "approved": "Tasdiqlangan",
             "rejected": "Rad etilgan"
-        },
-        "analysis": {
-            "chart_submissions_title": "Statistikasi",
-            "chart_regions_title": "Hududlar bo'yicha tahlil (Top 10)",
-            "forecast_card_title": "Smart Analytics: Kelgusi oy uchun prognoz",
-            "expected_cases": "Kutilayotgan holatlar soni",
-            "confidence_level": "Ishonch darajasi",
-            "forecast_footer_hint": "* Ushbu prognoz oxirgi 6 oylik statistik ma'lumotlar asosida algoritmik hisoblangan.",
-            "historical_label": "Tarixiy",
-            "forecast_label": "Bashorat",
-            "month_offset_label": "{{offset}} oydagi holat",
-            "next_month_label": "Kelgusi oy (Bashorat)",
-            "region_alias": "Hudud",
-            "population_alias": "Aholi soni",
-            "current_status": "Hozirgi holat",
-            "forecast_next_month": "Bashorat (Kelasi oy)",
-            "growth_rate_label": "O'sish sur'ati"
         }
+    },
+    "analysis": {
+        "regional": "Hududiy tahlil",
+        "global": "Global tahlil",
+        "chart_submissions_title": "Statistikasi",
+        "chart_regions_title": "Hududlar bo'yicha tahlil (Top 10)",
+        "forecast_card_title": "Smart Analytics: Kelgusi oy uchun prognoz",
+        "expected_cases": "Kutilayotgan holatlar soni",
+        "confidence_level": "Ishonch darajasi",
+        "forecast_footer_hint": "* Ushbu prognoz oxirgi 6 oylik statistik ma'lumotlar asosida algoritmik hisoblangan.",
+        "historical_label": "Tarixiy",
+        "forecast_label": "Bashorat",
+        "month_offset_label": "{{offset}} oydagi holat",
+        "next_month_label": "Kelgusi oy (Bashorat)",
+        "region_alias": "Hudud",
+        "population_alias": "Aholi soni",
+        "current_status": "Hozirgi holat",
+        "forecast_next_month": "Bashorat (Kelasi oy)",
+        "growth_rate_label": "O'sish sur'ati"
     },
     "export_page": {
         "title": "Hisobotlarni Eksport Qilish",
@@ -255,26 +257,72 @@
         "daily": "Kunlik Ma'lumotlar",
         "monthly": "Oylik Ma'lumotlar",
         "daily_menu": "Kunlik Hisobotlar",
-        "monthly_menu": "Oylik Ma'lumot Kiritish (Forma-1)",
+        "monthly_menu": "Oylik Hisobotlar",
         "form1": "Shakl 1 (Oylik)",
         "hepatitis": "Gepatit",
-        "daily_hepatitis": "Kunlik Hisobotlar (Virusli Gepatit A)",
+        "daily_hepatitis": "Kunlik (Virusli Gepatit A)",
         "flu": "Gripp va O'RVI",
         "pneu_flu_ari": "O'RI, Gripp va Pnevmoniya",
         "ari": "O'RI, Gripp va Pnevmoniya",
+        "weekly_flu": "Haftalik Gripp hisoboti",
         "epidemiology": "Epidemiologiya tadbirlari",
         "sanitary": "Sanitariya tadbirlari",
         "sanitary_daily": "Kunlik (Sanitariya)",
-        "sanitary_title": "Sanitariya bo'limi (Kunlik)",
-        "weekly_flu": "Haftalik yig'ma (Gripp/O'RVI)",
-        "covid": "Koronavirus infeksiyasi (COVID-19)",
-        "unified": "Yagona kunlik hisobot (Barcha bo'limlar)",
-        "form1_monitoring": "Shakl 1 (Oylik monitoring)",
-        "pneumonia": "O'tkir pnevmoniya",
-        "diarrhea": "O'tkir diareya kasalliklari",
-        "kg_water": "Kommunal Gigiyena (Suv)",
-        "ch_hygiene": "Bolalar gigiyenasi",
-        "monthly_reports": "Oylik hisobotlar"
+        "weekly_summary": "Haftalik xulosa",
+        "sanitary_supervision": "Sanitariya nazorati",
+        "ch_hygiene": "Bolalar va o'smirlar gigiyenasi",
+        "nutrition_hygiene": "Ovqatlanish gigiyenasi",
+        "kommunal_hygiene": "Kommunal gigiyena",
+        "appeals": "Ijro intizomi va murojaatlar",
+        "inspections": "Nazoratlarni muvofiqlashtirish",
+        "form1_monitoring": "Shakl-1 monitoringi",
+        "unified": "Yagona kunlik hisobotlar"
+    },
+    "appeals": {
+        "title": "Ijro intizomi va murojaatlar bilan ishlash",
+        "tabs": {
+            "t1": "Rahbarlar qabuli",
+            "t2": "Masalalar kesimida",
+            "t3": "Tumanlar kesimida",
+            "t4": "Mavzular (Matritsa)",
+            "t5": "Murojaat turlari",
+            "t6": "Qabulxonalar",
+            "t7": "Intizomiy choralar"
+        },
+        "table1": {
+            "title": "Rahbarlar tomonidan murojaatlar ko'rib chiqilishi",
+            "rows": {
+                "head": "Sanepidxizmat bo'limi boshlig'i",
+                "deputy_epid": "Epidemiologiya bo'limi mudiri",
+                "deputy_san": "Sanitariya bo'limi mudiri"
+            }
+        },
+        "subjects": {
+            "san_epid": "Sanitariya-epidemiologiya masalalari",
+            "coronavirus": "Koronavirus bilan bog'liq masalalar",
+            "labor": "Mehnat munosabatlari",
+            "medical": "Tibbiy muassasalar faoliyati",
+            "complaint_leader": "Rahbarning xatti-harakati",
+            "staff_behavior": "Xodimlarning odob-axloqi",
+            "disinfection": "Dezinfeksiya ishlari",
+            "fines": "Jarimalar",
+            "other": "Boshqa masalalar"
+        }
+    },
+    "inspections": {
+        "title": "Nazoratlarni muvofiqlashtirish",
+        "document_title": "Toshkent viloyat Sanepidbo'shqarmasi tomonidan {{year}} yil {{month}}-oy davomida prokurattura organlariga yuborilgan tekshirish hujjatlari to'g'risida",
+        "info_label": "MA'LUMOT",
+        "add_row": "Qator qo'shish",
+        "delete_confirm": "Ushbu yozuvni o'chirmoqchimisiz?",
+        "no_records": "Ma'lumot yo'q. Yangi qator qo'shish uchun 'Qator qo'shish' tugmasini bosing.",
+        "col_object": "Hudud va Prokurattura organiga ishi o'tkazilgan ob'ekt (shaxslarning nomlari)",
+        "col_date": "Prokuratura organiga o'tkazilgan sana",
+        "col_reason": "Prokuratura organiga o'tkazilishiga sabab bo'lgan holatning mazmuni",
+        "col_measures": "Prokuratura organlari tomonidan qo'llanilgan ta'sir choralari",
+        "tab1_label": "Prokuraturaga yuborilganlar (Jadval 1)",
+        "tab2_label": "Tadbirkorlik tekshirishlari (Jadval 2)",
+        "tab3_label": "Ta'sir choralari (Jadval 3)"
     },
     "kommunal_hygiene": {
         "title": "Kommunal Gigiyena",
@@ -372,10 +420,6 @@
     },
     "monitoring": {
         "title": "Shakl 1: Monitoring"
-    },
-    "analysis": {
-        "regional": "Hududiy Tahlil",
-        "global": "Global Monitoring"
     },
     "user": {
         "title": "Foydalanuvchilar Boshqaruvi",
@@ -965,6 +1009,34 @@
             "compliance_pct": "Muvofiqlik foizi",
             "total_fines": "Solingan jarimalar",
             "district_status": "Tumanlar bo'yicha holat"
+        }
+    },
+    "nutrition": {
+        "title": "Ovqatlanish gigiyenasi",
+        "rows": {
+            "total": "Tuman hisoboti"
+        },
+        "tabs": {
+            "t1": "Nazorat va xabardor etish",
+            "t2": "Tibbiy ko'rik",
+            "t3": "Iste'moldan olingan mahsulotlar",
+            "t4": "Iodlangan tuz",
+            "t5": "Vitaminlangan un",
+            "t6": "Dehqon bozorlari"
+        },
+        "t3": {
+            "meat": "Go'sht va go'sht mahsulotlari",
+            "milk": "Sut va sut mahsulotlari",
+            "fish": "Baliq va dengiz mahsulotlari",
+            "bread": "Non va non mahsulotlari",
+            "sugar": "Shakar va qandolat",
+            "fruit_veg": "Meva-sabzavot va poliz",
+            "fat_oil": "Yog' va moylar",
+            "alcohol": "Spirtli va salqin ichimliklar",
+            "baby_food": "Bolalar ovqatlari",
+            "canned": "Konservalangan mahsulotlar",
+            "salt": "Osh tuzi",
+            "other": "Boshqalar"
         }
     }
 }

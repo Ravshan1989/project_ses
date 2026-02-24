@@ -47,12 +47,15 @@ import { AdminUsersPage } from './features/admin/AdminUsersPage';
 import MobileReportsPage from './features/mobile/MobileReportsPage';
 import KommunalGigiyenaWaterPage from './features/kommunal-hygiene/KommunalGigiyenaWaterPage';
 import ChildrenHygienePage from './features/children-hygiene/ChildrenHygienePage';
-const { Header, Content, Footer } = Layout;
-const { Text } = Typography;
-
+import AppealsPage from './features/appeals/AppealsPage';
+import InspectionsPage from './features/inspections/InspectionsPage';
+import NutritionHygienePage from './features/nutrition-hygiene/NutritionHygienePage';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import MobileBottomNav from './components/layout/MobileBottomNav';
 import { useTranslation } from 'react-i18next';
+
+const { Header, Content, Footer } = Layout;
+const { Text } = Typography;
 
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const navigate = useNavigate();
@@ -147,10 +150,13 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 },
                 {
                     key: 'sub_sanitary_monthly',
-                    label: t('reports.monthly_reports'),
+                    label: t('reports.monthly_menu'),
                     children: [
-                        { key: '/kg-water', label: t('reports.kg_water'), onClick: () => navigate('/kg-water') },
-                        { key: '/ch-hygiene', label: t('reports.ch_hygiene') || 'Bolalar gigiyenasi', onClick: () => navigate('/ch-hygiene') },
+                        { key: '/kg-water', label: t('reports.kommunal_hygiene'), onClick: () => navigate('/kg-water') },
+                        { key: '/ch-hygiene', label: t('reports.ch_hygiene'), onClick: () => navigate('/ch-hygiene') },
+                        { key: '/nutrition-hygiene', label: t('reports.nutrition_hygiene') || 'Ovqatlanish gigiyenasi', onClick: () => navigate('/nutrition-hygiene') },
+                        { key: '/appeals', label: t('reports.appeals'), onClick: () => navigate('/appeals') },
+                        { key: '/inspections', label: t('reports.inspections') || 'Nazoratlarni muvofiqlashtirish', onClick: () => navigate('/inspections') },
                     ]
                 }
             ]
@@ -159,8 +165,8 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             { key: '/sos-monitoring', icon: <BellOutlined />, label: t('common.sos_monitoring'), onClick: () => navigate('/sos-monitoring') }
         ] : []),
         ...(hasRole(['REPUBLIC_HEAD']) ? [
-            { key: '/form1-monitoring', icon: <EyeOutlined />, label: t('reports.form1_monitoring'), onClick: () => navigate('/form1-monitoring') },
-            { key: '/export', icon: <DownloadOutlined />, label: t('common.export'), onClick: () => navigate('/export') }
+            { key: '/form1-monitoring', icon: <EyeOutlined />, label: t('reports.form1_monitoring') || 'Shakl-1 monitoringi', onClick: () => navigate('/form1-monitoring') },
+            { key: '/export', icon: <DownloadOutlined />, label: t('common.export') || 'Eksport', onClick: () => navigate('/export') }
         ] : []),
         ...(hasRole(['REPUBLIC_HEAD', 'LAB_HEAD']) ? [{
             key: 'grp_analytics',
@@ -353,6 +359,9 @@ function App() {
                     <Route path="/daily-sanitary" element={<ProtectedRoute><SanitaryDailyReportPage /></ProtectedRoute>} />
                     <Route path="/kg-water" element={<ProtectedRoute><KommunalGigiyenaWaterPage /></ProtectedRoute>} />
                     <Route path="/ch-hygiene" element={<ProtectedRoute><ChildrenHygienePage /></ProtectedRoute>} />
+                    <Route path="/nutrition-hygiene" element={<ProtectedRoute><NutritionHygienePage /></ProtectedRoute>} />
+                    <Route path="/appeals" element={<ProtectedRoute><AppealsPage /></ProtectedRoute>} />
+                    <Route path="/inspections" element={<ProtectedRoute><InspectionsPage /></ProtectedRoute>} />
 
                     <Route path="/daily-unified" element={<ProtectedRoute><DailyReportUnifiedPage /></ProtectedRoute>} />
                     <Route path="/form1-monitoring" element={<ProtectedRoute><Form1StatusPage /></ProtectedRoute>} />

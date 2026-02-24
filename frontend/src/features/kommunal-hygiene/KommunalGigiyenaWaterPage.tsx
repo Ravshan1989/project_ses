@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, DatePicker, notification, Select, Space, Spin, Card, Tabs, Input, Tooltip } from 'antd';
-import { SaveOutlined, ReloadOutlined, PlusOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
+import { FileExcelOutlined, FilePdfOutlined, SaveOutlined, ReloadOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { kommunalHygieneApi, organizationsApi } from '../../services/api';
+import * as exportService from '../../services/kommunalHygieneExportService';
 import GlassLayout from '../../components/layout/GlassLayout';
 import PermissionGate from '../../components/PermissionGate';
 
@@ -469,21 +470,20 @@ const KommunalGigiyenaWaterPage: React.FC = () => {
         }
     };
 
-    const handleExport = async (isRegional: boolean = false) => {
+    const handleExport = async (format: 'excel' | 'pdf') => {
         try {
             setExporting(true);
             const m = month.format('YYYY-MM');
-            const targetOrg = isRegional ? 'all' : orgId;
-            const res = await kommunalHygieneApi.exportRegionalExcel(m, targetOrg);
-            const url = window.URL.createObjectURL(new Blob([res.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', isRegional ? `KG_Mintaqaviy_Monitoring_${m}.xlsx` : `KG_Tuman_Monitoring_${m}.xlsx`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
+            const currentOrg = orgs.find((o: any) => o.id === orgId)?.name || '---';
+            const allData = await kommunalHygieneApi.getAllTables(m, orgId);
+
+            if (format === 'excel') {
+                exportService.exportAllExcel(allData, m, currentOrg, t);
+            } else {
+                exportService.exportAllPDF(allData, m, currentOrg, t);
+            }
         } catch (e) {
-            notification.error({ message: "Yuklab olishda xatolik yuz berdi" });
+            notification.error({ message: t('common.error_load_data') });
         } finally {
             setExporting(false);
         }
@@ -602,9 +602,26 @@ const KommunalGigiyenaWaterPage: React.FC = () => {
             )}
             <Button icon={<ReloadOutlined />} onClick={fetchAll}>{t('common.update')}</Button>
             {canEdit && <Button type="primary" icon={<SaveOutlined />} onClick={handleGlobalSave} loading={saving}>{t('common.save')}</Button>}
-            <Button icon={<DownloadOutlined />} onClick={() => handleExport(activeTab === '4')} loading={exporting}>
-                Excelga yuklash
-            </Button>
+            <Space>
+                <Button
+                    icon={<FileExcelOutlined />}
+                    onClick={() => handleExport('excel')}
+                    loading={exporting}
+                    className="glass-button"
+                    style={{ borderColor: '#10b981', color: '#059669' }}
+                >
+                    {t('common.export_all')} (Excel)
+                </Button>
+                <Button
+                    icon={<FilePdfOutlined />}
+                    onClick={() => handleExport('pdf')}
+                    loading={exporting}
+                    className="glass-button"
+                    style={{ borderColor: '#ef4444', color: '#dc2626' }}
+                >
+                    {t('common.export_all')} (PDF)
+                </Button>
+            </Space>
         </Space>
     );
 

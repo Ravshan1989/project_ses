@@ -29,7 +29,7 @@ export class SeedingService implements OnModuleInit {
     @InjectRepository(DepartmentPermission)
     private readonly deptPermRepo: Repository<DepartmentPermission>,
     private readonly usersService: UsersService,
-  ) {}
+  ) { }
 
   async onModuleInit() {
     this.logger.log("Checking and seeding initial data...");
@@ -113,6 +113,10 @@ export class SeedingService implements OnModuleInit {
       { code: "EDIT_FORM1_TABLE1", description: "Edit Form 1 Table 1" },
       { code: "VERIFY_REPORT", description: "Verify Report (Mudir)" },
       { code: "APPROVE_REPORT", description: "Approve Report (Rahbar)" },
+      { code: "VIEW_APPEALS", description: "View Appeals and Execution Discipline" },
+      { code: "EDIT_APPEALS", description: "Edit Appeals and Execution Discipline" },
+      { code: "VIEW_NUTRITION_HYGIENE", description: "View Nutrition Hygiene Reports" },
+      { code: "EDIT_NUTRITION_HYGIENE", description: "Edit Nutrition Hygiene Reports" },
       {
         code: "MANAGE_DEPARTMENTS",
         description: "Create/Edit Departments and Permissions",
@@ -154,6 +158,16 @@ export class SeedingService implements OnModuleInit {
         description: "Tuman darajasi: Sanitariya va gigiyena tadbirlari",
         level: 3,
       },
+      {
+        name: "Ijro intizomi va murojaatlar bilan ishlash bo'limi",
+        description: "Ijro intizomi va murojaatlar bilan ishlash",
+        level: 1,
+      },
+      {
+        name: "Ovqatlanish gigiyenasi bo'limi",
+        description: "Ovqatlanish gigiyenasi bo'limi mutaxassislari",
+        level: 1,
+      },
     ];
 
     for (const d of departmentsData) {
@@ -185,6 +199,10 @@ export class SeedingService implements OnModuleInit {
           "VIEW_ARI",
           "VIEW_DIARRHEA",
           "VIEW_SANITARY",
+          "VIEW_APPEALS",
+          "EDIT_APPEALS",
+          "VIEW_NUTRITION_HYGIENE",
+          "EDIT_NUTRITION_HYGIENE",
           "VIEW_FORM1_TABLE1",
           "VIEW_FORM1_TABLE2",
           "VIEW_FORM1_TABLE3",
@@ -193,6 +211,14 @@ export class SeedingService implements OnModuleInit {
           "APPROVE_REPORT",
           "MANAGE_DEPARTMENTS",
         ],
+      },
+      {
+        dept: "Ijro intizomi va murojaatlar bilan ishlash bo'limi",
+        perms: ["VIEW_APPEALS", "EDIT_APPEALS"],
+      },
+      {
+        dept: "Ovqatlanish gigiyenasi bo'limi",
+        perms: ["VIEW_NUTRITION_HYGIENE", "EDIT_NUTRITION_HYGIENE"],
       },
     ];
 

@@ -140,6 +140,18 @@ export const rolesApi = {
     saveWaterUsageRows: (data: { rows: any[], month: string, organizationId: string }) => api.post('/kommunal-hygiene/water-usage', data),
     getRegionalStatus: (month: string) => api.get(`/kommunal-hygiene/regional-status?month=${month}`),
     exportRegionalExcel: (month: string, orgId?: string) => api.get(`/kommunal-hygiene/export-excel?month=${month}${orgId ? `&orgId=${orgId}` : ''}`, { responseType: 'blob' }),
+    getAllTables: async (month: string, orgId: string) => {
+        const [t1, t2, t3] = await Promise.all([
+            kommunalHygieneApi.getWaterByMonth(month, orgId),
+            kommunalHygieneApi.getOpenWaterByMonth(month, orgId),
+            kommunalHygieneApi.getWaterUsageByMonth(month, orgId),
+        ]);
+        return {
+            table1: t1.data,
+            table2: t2.data,
+            table3: t3.data,
+        };
+    }
 };
 
 export const childrenHygieneApi = {
@@ -156,4 +168,22 @@ export const childrenHygieneApi = {
     getTable4: (month: string, orgId?: string) => api.get(`/children-hygiene/table4?month=${month}${orgId ? `&orgId=${orgId}` : ''}`),
     saveTable4: (data: { rows: any[], month: string, organizationId: string }) => api.post('/children-hygiene/table4', data),
     getRegionalStatus: (month: string) => api.get(`/children-hygiene/regional-status?month=${month}`),
+    getAllTables: async (month: string, orgId: string) => {
+        const [t1, t2, t3, t31, t32, t4] = await Promise.all([
+            childrenHygieneApi.getTable1(month, orgId),
+            childrenHygieneApi.getTable2(month, orgId),
+            childrenHygieneApi.getTable3(month, orgId),
+            childrenHygieneApi.getTable3_1(month, orgId),
+            childrenHygieneApi.getTable3_2(month, orgId),
+            childrenHygieneApi.getTable4(month, orgId),
+        ]);
+        return {
+            table1: t1.data,
+            table2: t2.data,
+            table3: t3.data,
+            table3_1: t31.data,
+            table3_2: t32.data,
+            table4: t4.data,
+        };
+    }
 };

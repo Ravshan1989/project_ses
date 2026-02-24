@@ -22,18 +22,14 @@ const cellStyle = {
     }
 };
 
-// ─── Table 1 Export (Excel) ──────────────────────────────────────────────────
-export const exportTable1Excel = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
-    const workbook = XLSX.utils.book_new();
+// ─── Table 1 Helper (Excel) ──────────────────────────────────────────────────
+const getTable1Sheet = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
     const worksheetData: any[][] = [];
-
-    // Title
-    worksheetData.push([t('reports.ch_hygiene') + ' - 1-jadval']);
+    worksheetData.push([t('reports.children_hygiene') + ' - 1-jadval']);
     worksheetData.push([`Tashkilot: ${orgName}`]);
     worksheetData.push([`Davr: ${month}`]);
     worksheetData.push([]);
 
-    // Headers
     const headers = [
         t('children_hygiene.table1.columns.order'),
         t('children_hygiene.table1.columns.institutions'),
@@ -48,15 +44,11 @@ export const exportTable1Excel = (data: any[], rows: any[], month: string, orgNa
     ];
     worksheetData.push(headers);
 
-    // Rows
     rows.forEach(rowInfo => {
         const item = data.find(r => r.row_key === rowInfo.key) || {};
-
-        // Percentages calculation
         const total = item.totalSupervisionsConducted || 0;
         const plan = item.supervisionPlan || 0;
         const planExec = plan ? ((total / plan) * 100).toFixed(1) : '0';
-
         const lab = item.labSupervisionsCount || 0;
         const labPct = total ? ((lab / total) * 100).toFixed(1) : '0';
 
@@ -75,8 +67,6 @@ export const exportTable1Excel = (data: any[], rows: any[], month: string, orgNa
     });
 
     const ws = XLSX.utils.aoa_to_sheet(worksheetData);
-
-    // Apply styles
     ws['A1'].s = { font: { bold: true, sz: 14 } };
     const headerRowIdx = 4;
     headers.forEach((_, c) => {
@@ -98,19 +88,21 @@ export const exportTable1Excel = (data: any[], rows: any[], month: string, orgNa
             }
         }
     }
-
     ws['!cols'] = [{ wch: 5 }, { wch: 40 }, ...Array(8).fill({ wch: 12 })];
-
-    XLSX.utils.book_append_sheet(workbook, ws, '1-jadval');
-    XLSX.writeFile(workbook, `Bolalar_Gigiyenasi_1_jadval_${month}.xlsx`);
+    return ws;
 };
 
-// ─── Table 1 Export (PDF) ────────────────────────────────────────────────────
-export const exportTable1PDF = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+export const exportTable1Excel = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
+    const workbook = XLSX.utils.book_new();
+    const ws = getTable1Sheet(data, rows, month, orgName, t);
+    XLSX.utils.book_append_sheet(workbook, ws, '1-jadval');
+    XLSX.writeFile(workbook, `Bolalar_va_Osmirlar_Gigiyenasi_1_jadval_${month}.xlsx`);
+};
 
+// ─── Table 1 Helper (PDF) ────────────────────────────────────────────────────
+const addTable1ToPDF = (doc: jsPDF, data: any[], rows: any[], month: string, orgName: string, t: any) => {
     doc.setFontSize(14);
-    doc.text(t('reports.ch_hygiene') + ' - 1-jadval', 14, 15);
+    doc.text(t('reports.children_hygiene') + ' - 1-jadval', 14, 15);
     doc.setFontSize(10);
     doc.text(`Tashkilot: ${orgName} | Davr: ${month}`, 14, 22);
 
@@ -172,21 +164,22 @@ export const exportTable1PDF = (data: any[], rows: any[], month: string, orgName
         },
         theme: 'grid'
     });
-
-    doc.save(`Bolalar_Gigiyenasi_1_jadval_${month}.pdf`);
 };
 
-// ─── Table 2 Export (Excel) ──────────────────────────────────────────────────
-export const exportTable2Excel = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
-    const workbook = XLSX.utils.book_new();
-    const worksheetData: any[][] = [];
+export const exportTable1PDF = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    addTable1ToPDF(doc, data, rows, month, orgName, t);
+    doc.save(`Bolalar_va_Osmirlar_Gigiyenasi_1_jadval_${month}.pdf`);
+};
 
-    worksheetData.push([t('reports.ch_hygiene') + ' - 2-jadval']);
+// ─── Table 2 Helper (Excel) ──────────────────────────────────────────────────
+const getTable2Sheet = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
+    const worksheetData: any[][] = [];
+    worksheetData.push([t('reports.children_hygiene') + ' - 2-jadval']);
     worksheetData.push([`Tashkilot: ${orgName}`]);
     worksheetData.push([`Davr: ${month}`]);
     worksheetData.push([]);
 
-    // Header Row 1
     worksheetData.push([
         t('children_hygiene.table1.columns.order'),
         t('children_hygiene.table1.columns.institutions'),
@@ -195,7 +188,6 @@ export const exportTable2Excel = (data: any[], rows: any[], month: string, orgNa
         t('children_hygiene.table2.columns.para'), '', ''
     ]);
 
-    // Header Row 2
     worksheetData.push([
         '', '',
         t('children_hygiene.table2.columns.total'), t('children_hygiene.table2.columns.non_compliant'), '%',
@@ -203,12 +195,9 @@ export const exportTable2Excel = (data: any[], rows: any[], month: string, orgNa
         t('children_hygiene.table2.columns.total'), t('children_hygiene.table2.columns.non_compliant'), '%'
     ]);
 
-    // Rows
     rows.forEach(rowInfo => {
         const item = data.find(r => r.row_key === rowInfo.key) || {};
-
         const getPct = (total: number, non: number) => total ? ((non / total) * 100).toFixed(1) + '%' : '0%';
-
         worksheetData.push([
             rowInfo.key === 'total' ? 'I' : rowInfo.key.replace(/_/g, '.'),
             t(rowInfo.labelKey),
@@ -219,18 +208,15 @@ export const exportTable2Excel = (data: any[], rows: any[], month: string, orgNa
     });
 
     const ws = XLSX.utils.aoa_to_sheet(worksheetData);
-
-    // Merges
     ws['!merges'] = [
         { s: { r: 0, c: 0 }, e: { r: 0, c: 10 } },
-        { s: { r: 4, c: 0 }, e: { r: 5, c: 0 } }, // Order
-        { s: { r: 4, c: 1 }, e: { r: 5, c: 1 } }, // Institutions
-        { s: { r: 4, c: 2 }, e: { r: 4, c: 4 } }, // Chem
-        { s: { r: 4, c: 5 }, e: { r: 4, c: 7 } }, // Bact
-        { s: { r: 4, c: 8 }, e: { r: 4, c: 10 } }  // Para
+        { s: { r: 4, c: 0 }, e: { r: 5, c: 0 } },
+        { s: { r: 4, c: 1 }, e: { r: 5, c: 1 } },
+        { s: { r: 4, c: 2 }, e: { r: 4, c: 4 } },
+        { s: { r: 4, c: 5 }, e: { r: 4, c: 7 } },
+        { s: { r: 4, c: 8 }, e: { r: 4, c: 10 } }
     ];
 
-    // Style headers
     [4, 5].forEach(r => {
         for (let c = 0; c <= 10; c++) {
             const cell = XLSX.utils.encode_cell({ r, c });
@@ -238,7 +224,6 @@ export const exportTable2Excel = (data: any[], rows: any[], month: string, orgNa
         }
     });
 
-    // Style data
     for (let r = 6; r < worksheetData.length; r++) {
         for (let c = 0; c <= 10; c++) {
             const cell = XLSX.utils.encode_cell({ r, c });
@@ -253,23 +238,24 @@ export const exportTable2Excel = (data: any[], rows: any[], month: string, orgNa
             }
         }
     }
-
     ws['!cols'] = [{ wch: 5 }, { wch: 40 }, ...Array(9).fill({ wch: 10 })];
-
-    XLSX.utils.book_append_sheet(workbook, ws, '2-jadval');
-    XLSX.writeFile(workbook, `Bolalar_Gigiyenasi_2_jadval_${month}.xlsx`);
+    return ws;
 };
 
-// ─── Table 2 Export (PDF) ────────────────────────────────────────────────────
-export const exportTable2PDF = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+export const exportTable2Excel = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
+    const workbook = XLSX.utils.book_new();
+    const ws = getTable2Sheet(data, rows, month, orgName, t);
+    XLSX.utils.book_append_sheet(workbook, ws, '2-jadval');
+    XLSX.writeFile(workbook, `Bolalar_va_Osmirlar_Gigiyenasi_2_jadval_${month}.xlsx`);
+};
 
+// ─── Table 2 Helper (PDF) ────────────────────────────────────────────────────
+const addTable2ToPDF = (doc: jsPDF, data: any[], rows: any[], month: string, orgName: string, t: any) => {
     doc.setFontSize(14);
-    doc.text(t('reports.ch_hygiene') + ' - 2-jadval', 14, 15);
+    doc.text(t('reports.children_hygiene') + ' - 2-jadval', 14, 15);
     doc.setFontSize(10);
     doc.text(`Tashkilot: ${orgName} | Davr: ${month}`, 14, 22);
 
-    // Note: Adjusting headers because institutions col title spans but we need proper column mapping
     const finalHead = [
         [
             t('children_hygiene.table1.columns.order'),
@@ -305,9 +291,6 @@ export const exportTable2PDF = (data: any[], rows: any[], month: string, orgName
         styles: { fontSize: 7, cellPadding: 1.5 },
         headStyles: { fillColor: [241, 245, 249], textColor: [0, 0, 0], fontStyle: 'bold', halign: 'center' },
         didParseCell: (data) => {
-            if (data.section === 'head') {
-                // Manual merging simulation if needed or let autotable handle simple cases
-            }
             if (data.section === 'body') {
                 if (rows[data.row.index].key === 'total') {
                     data.cell.styles.fillColor = [236, 253, 245];
@@ -317,21 +300,22 @@ export const exportTable2PDF = (data: any[], rows: any[], month: string, orgName
         },
         theme: 'grid'
     });
-
-    doc.save(`Bolalar_Gigiyenasi_2_jadval_${month}.pdf`);
 };
 
-// ─── Table 3 Export (Excel) ──────────────────────────────────────────────────
-export const exportTable3Excel = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
-    const workbook = XLSX.utils.book_new();
-    const worksheetData: any[][] = [];
+export const exportTable2PDF = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    addTable2ToPDF(doc, data, rows, month, orgName, t);
+    doc.save(`Bolalar_va_Osmirlar_Gigiyenasi_2_jadval_${month}.pdf`);
+};
 
-    worksheetData.push([t('reports.ch_hygiene') + ' - 3-jadval']);
+// ─── Table 3 Helper (Excel) ──────────────────────────────────────────────────
+const getTable3Sheet = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
+    const worksheetData: any[][] = [];
+    worksheetData.push([t('reports.children_hygiene') + ' - 3-jadval']);
     worksheetData.push([`Tashkilot: ${orgName}`]);
     worksheetData.push([`Davr: ${month}`]);
     worksheetData.push([]);
 
-    // Header Row 1
     worksheetData.push([
         '№', t('children_hygiene.table1.columns.institutions'),
         t('children_hygiene.table3.columns.air'), '', '', '', '',
@@ -342,7 +326,6 @@ export const exportTable3Excel = (data: any[], rows: any[], month: string, orgNa
         t('children_hygiene.table3.columns.noise'), '', ''
     ]);
 
-    // Header Row 2
     worksheetData.push([
         '', '',
         t('children_hygiene.table3.columns.inspected_count'),
@@ -355,7 +338,6 @@ export const exportTable3Excel = (data: any[], rows: any[], month: string, orgNa
         t('children_hygiene.table3.columns.inspected_count'), t('children_hygiene.table3.columns.samples_total'), t('children_hygiene.table3.columns.non_compliant'),
     ]);
 
-    // Header Row 3
     worksheetData.push([
         '', '',
         '', t('children_hygiene.table3.columns.total'), t('children_hygiene.table3.columns.samples_12k'),
@@ -363,7 +345,6 @@ export const exportTable3Excel = (data: any[], rows: any[], month: string, orgNa
         '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''
     ]);
 
-    // Rows
     rows.forEach(rowInfo => {
         const item = data.find(r => r.row_key === rowInfo.key) || {};
         worksheetData.push([
@@ -379,23 +360,18 @@ export const exportTable3Excel = (data: any[], rows: any[], month: string, orgNa
     });
 
     const ws = XLSX.utils.aoa_to_sheet(worksheetData);
-
-    // Merges
     ws['!merges'] = [
         { s: { r: 0, c: 0 }, e: { r: 0, c: 21 } },
-        { s: { r: 4, c: 0 }, e: { r: 6, c: 0 } }, // Order
-        { s: { r: 4, c: 1 }, e: { r: 6, c: 1 } }, // Institution
-        { s: { r: 4, c: 2 }, e: { r: 4, c: 6 } }, // Air Title
-        { s: { r: 5, c: 2 }, e: { r: 6, c: 2 } }, // Air Inspected
-        { s: { r: 5, c: 3 }, e: { r: 5, c: 4 } }, // Air Samples
-        { s: { r: 5, c: 5 }, e: { r: 5, c: 6 } }, // Air Rem
-
-        // Micro, Vib, EMF, Light, Noise
+        { s: { r: 4, c: 0 }, e: { r: 6, c: 0 } },
+        { s: { r: 4, c: 1 }, e: { r: 6, c: 1 } },
+        { s: { r: 4, c: 2 }, e: { r: 4, c: 6 } },
+        { s: { r: 5, c: 2 }, e: { r: 6, c: 2 } },
+        { s: { r: 5, c: 3 }, e: { r: 5, c: 4 } },
+        { s: { r: 5, c: 5 }, e: { r: 5, c: 6 } },
         ...[7, 10, 13, 16, 19].map(c => ({ s: { r: 4, c }, e: { r: 4, c: c + 2 } })),
         ...[7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21].map(c => ({ s: { r: 5, c }, e: { r: 6, c: c } }))
     ];
 
-    // Style
     [4, 5, 6].forEach(r => {
         for (let c = 0; c <= 21; c++) {
             const cell = XLSX.utils.encode_cell({ r, c });
@@ -417,54 +393,42 @@ export const exportTable3Excel = (data: any[], rows: any[], month: string, orgNa
             }
         }
     }
-
     ws['!cols'] = [{ wch: 5 }, { wch: 35 }, ...Array(20).fill({ wch: 8 })];
-
-    XLSX.utils.book_append_sheet(workbook, ws, '3-jadval');
-    XLSX.writeFile(workbook, `Bolalar_Gigiyenasi_3_jadval_${month}.xlsx`);
+    return ws;
 };
 
-// ─── Table 3.1 Export (Excel) ────────────────────────────────────────────────
-export const exportTable3_1Excel = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
+export const exportTable3Excel = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
     const workbook = XLSX.utils.book_new();
-    const worksheetData: any[][] = [];
+    const ws = getTable3Sheet(data, rows, month, orgName, t);
+    XLSX.utils.book_append_sheet(workbook, ws, '3-jadval');
+    XLSX.writeFile(workbook, `Bolalar_va_Osmirlar_Gigiyenasi_3_jadval_${month}.xlsx`);
+};
 
-    worksheetData.push([t('reports.ch_hygiene') + ' - 3.1-jadval']);
+// ─── Table 3.1 Helper (Excel) ────────────────────────────────────────────────
+const getTable3_1Sheet = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
+    const worksheetData: any[][] = [];
+    worksheetData.push([t('reports.children_hygiene') + ' - 3.1-jadval']);
     worksheetData.push([`Tashkilot: ${orgName}`]);
     worksheetData.push([`Davr: ${month}`]);
     worksheetData.push([]);
 
-    // Header Row 1
     const subcats = ['ration', 'salt', 'nitrate', 'toxic', 'thermal', 'mineral', 'soil', 'water', 'pesticide', 'nutrition'];
     const row1 = ['№', t('children_hygiene.table1.columns.institutions')];
-    subcats.forEach(sc => {
-        row1.push(t(`children_hygiene.table3_1.columns.${sc}`), '');
-    });
+    subcats.forEach(sc => row1.push(t(`children_hygiene.table3_1.columns.${sc}`), ''));
     worksheetData.push(row1);
 
-    // Header Row 2
     const row2 = ['', ''];
-    subcats.forEach(() => {
-        row2.push(t('children_hygiene.table3_1.columns.total'), t('children_hygiene.table3_1.columns.non_compliant'));
-    });
+    subcats.forEach(() => row2.push(t('children_hygiene.table3_1.columns.total'), t('children_hygiene.table3_1.columns.non_compliant')));
     worksheetData.push(row2);
 
-    // Rows
     rows.forEach(rowInfo => {
         const item = data.find(r => r.row_key === rowInfo.key) || {};
-        const dataRow = [
-            rowInfo.key === 'total' ? 'I' : rowInfo.key.replace(/_/g, '.'),
-            t(rowInfo.labelKey)
-        ];
-        subcats.forEach(sc => {
-            dataRow.push(item[`${sc}Total`] ?? 0, item[`${sc}NonCompliant`] ?? 0);
-        });
+        const dataRow = [rowInfo.key === 'total' ? 'I' : rowInfo.key.replace(/_/g, '.'), t(rowInfo.labelKey)];
+        subcats.forEach(sc => dataRow.push(item[`${sc}Total`] ?? 0, item[`${sc}NonCompliant`] ?? 0));
         worksheetData.push(dataRow);
     });
 
     const ws = XLSX.utils.aoa_to_sheet(worksheetData);
-
-    // Merges
     ws['!merges'] = [
         { s: { r: 0, c: 0 }, e: { r: 0, c: 21 } },
         { s: { r: 4, c: 0 }, e: { r: 5, c: 0 } },
@@ -472,7 +436,6 @@ export const exportTable3_1Excel = (data: any[], rows: any[], month: string, org
         ...subcats.map((_, i) => ({ s: { r: 4, c: 2 + i * 2 }, e: { r: 4, c: 3 + i * 2 } }))
     ];
 
-    // Style
     [4, 5].forEach(r => {
         for (let c = 0; c <= 21; c++) {
             const cell = XLSX.utils.encode_cell({ r, c });
@@ -494,31 +457,31 @@ export const exportTable3_1Excel = (data: any[], rows: any[], month: string, org
             }
         }
     }
-
     ws['!cols'] = [{ wch: 5 }, { wch: 35 }, ...Array(20).fill({ wch: 8 })];
-
-    XLSX.utils.book_append_sheet(workbook, ws, '3.1-jadval');
-    XLSX.writeFile(workbook, `Bolalar_Gigiyenasi_3_1_jadval_${month}.xlsx`);
+    return ws;
 };
 
-// ─── Table 3.2 Export (Excel) ────────────────────────────────────────────────
-export const exportTable3_2Excel = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
+export const exportTable3_1Excel = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
     const workbook = XLSX.utils.book_new();
-    const worksheetData: any[][] = [];
+    const ws = getTable3_1Sheet(data, rows, month, orgName, t);
+    XLSX.utils.book_append_sheet(workbook, ws, '3.1-jadval');
+    XLSX.writeFile(workbook, `Bolalar_va_Osmirlar_Gigiyenasi_3_1_jadval_${month}.xlsx`);
+};
 
-    worksheetData.push([t('reports.ch_hygiene') + ' - 3.2-jadval']);
+// ─── Table 3.2 Helper (Excel) ────────────────────────────────────────────────
+const getTable3_2Sheet = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
+    const worksheetData: any[][] = [];
+    worksheetData.push([t('reports.children_hygiene') + ' - 3.2-jadval']);
     worksheetData.push([`Tashkilot: ${orgName}`]);
     worksheetData.push([`Davr: ${month}`]);
     worksheetData.push([]);
 
-    // Header Row 1
     worksheetData.push([
         '№', t('children_hygiene.table1.columns.institutions'),
         t('children_hygiene.table3_2.columns.para'), '', '', '', '', '',
         t('children_hygiene.table3_2.columns.micro'), '', '', '', '', '', '', ''
     ]);
 
-    // Header Row 2
     const row2 = ['', '',
         t('children_hygiene.table3_2.columns.para_veg'), '',
         t('children_hygiene.table3_2.columns.para_water'), '',
@@ -530,7 +493,6 @@ export const exportTable3_2Excel = (data: any[], rows: any[], month: string, org
     ];
     worksheetData.push(row2);
 
-    // Header Row 3
     const row3 = ['', '',
         t('children_hygiene.table3_2.columns.total'), t('children_hygiene.table3_2.columns.non_compliant'),
         t('children_hygiene.table3_2.columns.total'), t('children_hygiene.table3_2.columns.non_compliant'),
@@ -542,33 +504,24 @@ export const exportTable3_2Excel = (data: any[], rows: any[], month: string, org
     ];
     worksheetData.push(row3);
 
-    // Rows
     const cats = ['paraVeg', 'paraWater', 'paraSoil', 'microSmear', 'microFood', 'microWater', 'microSoil'];
     rows.forEach(rowInfo => {
         const item = data.find(r => r.row_key === rowInfo.key) || {};
-        const dataRow = [
-            rowInfo.key === 'total' ? 'I' : rowInfo.key.replace(/_/g, '.'),
-            t(rowInfo.labelKey)
-        ];
-        cats.forEach(c => {
-            dataRow.push(item[`${c}Total`] ?? 0, item[`${c}NonCompliant`] ?? 0);
-        });
+        const dataRow = [rowInfo.key === 'total' ? 'I' : rowInfo.key.replace(/_/g, '.'), t(rowInfo.labelKey)];
+        cats.forEach(c => dataRow.push(item[`${c}Total`] ?? 0, item[`${c}NonCompliant`] ?? 0));
         worksheetData.push(dataRow);
     });
 
     const ws = XLSX.utils.aoa_to_sheet(worksheetData);
-
-    // Merges
     ws['!merges'] = [
         { s: { r: 0, c: 0 }, e: { r: 0, c: 15 } },
         { s: { r: 4, c: 0 }, e: { r: 6, c: 0 } },
         { s: { r: 4, c: 1 }, e: { r: 6, c: 1 } },
-        { s: { r: 4, c: 2 }, e: { r: 4, c: 7 } }, // Para
-        { s: { r: 4, c: 8 }, e: { r: 4, c: 15 } }, // Micro
+        { s: { r: 4, c: 2 }, e: { r: 4, c: 7 } },
+        { s: { r: 4, c: 8 }, e: { r: 4, c: 15 } },
         ...[2, 4, 6, 8, 10, 12, 14].map(c => ({ s: { r: 5, c }, e: { r: 5, c: c + 1 } }))
     ];
 
-    // Style
     [4, 5, 6].forEach(r => {
         for (let c = 0; c <= 15; c++) {
             const cell = XLSX.utils.encode_cell({ r, c });
@@ -590,24 +543,25 @@ export const exportTable3_2Excel = (data: any[], rows: any[], month: string, org
             }
         }
     }
-
     ws['!cols'] = [{ wch: 5 }, { wch: 35 }, ...Array(14).fill({ wch: 9 })];
-
-    XLSX.utils.book_append_sheet(workbook, ws, '3.2-jadval');
-    XLSX.writeFile(workbook, `Bolalar_Gigiyenasi_3_2_jadval_${month}.xlsx`);
+    return ws;
 };
 
-// ─── Table 4 Export (Excel) ──────────────────────────────────────────────────
-export const exportTable4Excel = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
+export const exportTable3_2Excel = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
     const workbook = XLSX.utils.book_new();
-    const worksheetData: any[][] = [];
+    const ws = getTable3_2Sheet(data, rows, month, orgName, t);
+    XLSX.utils.book_append_sheet(workbook, ws, '3.2-jadval');
+    XLSX.writeFile(workbook, `Bolalar_va_Osmirlar_Gigiyenasi_3_2_jadval_${month}.xlsx`);
+};
 
-    worksheetData.push([t('reports.ch_hygiene') + ' - 4-jadval']);
+// ─── Table 4 Helper (Excel) ──────────────────────────────────────────────────
+const getTable4Sheet = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
+    const worksheetData: any[][] = [];
+    worksheetData.push([t('reports.children_hygiene') + ' - 4-jadval']);
     worksheetData.push([`Tashkilot: ${orgName}`]);
     worksheetData.push([`Davr: ${month}`]);
     worksheetData.push([]);
 
-    // Header Row 1
     worksheetData.push([
         '№', t('children_hygiene.table1.columns.institutions'),
         t('children_hygiene.table4.columns.fines'), '', '', '',
@@ -617,7 +571,6 @@ export const exportTable4Excel = (data: any[], rows: any[], month: string, orgNa
         t('children_hygiene.table4.columns.brakera')
     ]);
 
-    // Header Row 2
     worksheetData.push([
         '', '',
         t('children_hygiene.table4.columns.fine_count'), '',
@@ -625,7 +578,6 @@ export const exportTable4Excel = (data: any[], rows: any[], month: string, orgNa
         '', '', '', ''
     ]);
 
-    // Header Row 3
     worksheetData.push([
         '', '',
         t('children_hygiene.table4.columns.imposed'), t('children_hygiene.table4.columns.collected'),
@@ -633,7 +585,6 @@ export const exportTable4Excel = (data: any[], rows: any[], month: string, orgNa
         '', '', '', ''
     ]);
 
-    // Rows
     rows.forEach(rowInfo => {
         const item = data.find(r => r.row_key === rowInfo.key) || {};
         worksheetData.push([
@@ -647,22 +598,19 @@ export const exportTable4Excel = (data: any[], rows: any[], month: string, orgNa
     });
 
     const ws = XLSX.utils.aoa_to_sheet(worksheetData);
-
-    // Merges
     ws['!merges'] = [
         { s: { r: 0, c: 0 }, e: { r: 0, c: 9 } },
         { s: { r: 4, c: 0 }, e: { r: 6, c: 0 } },
         { s: { r: 4, c: 1 }, e: { r: 6, c: 1 } },
-        { s: { r: 4, c: 2 }, e: { r: 4, c: 5 } }, // Fines Title
-        { s: { r: 5, c: 2 }, e: { r: 5, c: 3 } }, // Count
-        { s: { r: 5, c: 4 }, e: { r: 5, c: 5 } }, // Amount
+        { s: { r: 4, c: 2 }, e: { r: 4, c: 5 } },
+        { s: { r: 5, c: 2 }, e: { r: 5, c: 3 } },
+        { s: { r: 5, c: 4 }, e: { r: 5, c: 5 } },
         { s: { r: 4, c: 6 }, e: { r: 6, c: 6 } },
         { s: { r: 4, c: 7 }, e: { r: 6, c: 7 } },
         { s: { r: 4, c: 8 }, e: { r: 6, c: 8 } },
         { s: { r: 4, c: 9 }, e: { r: 6, c: 9 } }
     ];
 
-    // Style
     [4, 5, 6].forEach(r => {
         for (let c = 0; c <= 9; c++) {
             const cell = XLSX.utils.encode_cell({ r, c });
@@ -684,19 +632,23 @@ export const exportTable4Excel = (data: any[], rows: any[], month: string, orgNa
             }
         }
     }
-
     ws['!cols'] = [{ wch: 5 }, { wch: 35 }, ...Array(8).fill({ wch: 10 })];
+    return ws;
+};
 
+export const exportTable4Excel = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
+    const workbook = XLSX.utils.book_new();
+    const ws = getTable4Sheet(data, rows, month, orgName, t);
     XLSX.utils.book_append_sheet(workbook, ws, '4-jadval');
-    XLSX.writeFile(workbook, `Bolalar_Gigiyenasi_4_jadval_${month}.xlsx`);
+    XLSX.writeFile(workbook, `Bolalar_va_Osmirlar_Gigiyenasi_4_jadval_${month}.xlsx`);
 };
 
 // ─── PDF Exports (Table 3, 3.1, 3.2, 4) ──────────────────────────────────────
 
-export const exportTable3PDF = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+// ─── Table 3 Helper (PDF) ──────────────────────────────────────────────────
+const addTable3ToPDF = (doc: jsPDF, data: any[], rows: any[], month: string, orgName: string, t: any) => {
     doc.setFontSize(14);
-    doc.text(t('reports.ch_hygiene') + ' - 3-jadval', 14, 15);
+    doc.text(t('reports.children_hygiene') + ' - 3-jadval', 14, 15);
     doc.setFontSize(10);
     doc.text(`Tashkilot: ${orgName} | Davr: ${month}`, 14, 22);
 
@@ -727,14 +679,18 @@ export const exportTable3PDF = (data: any[], rows: any[], month: string, orgName
         headStyles: { fillColor: [241, 245, 249], textColor: [0, 0, 0], fontStyle: 'bold', halign: 'center' },
         theme: 'grid'
     });
-
-    doc.save(`Bolalar_Gigiyenasi_3_jadval_${month}.pdf`);
 };
 
-export const exportTable3_1PDF = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
+export const exportTable3PDF = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    addTable3ToPDF(doc, data, rows, month, orgName, t);
+    doc.save(`Bolalar_va_Osmirlar_Gigiyenasi_3_jadval_${month}.pdf`);
+};
+
+// ─── Table 3.1 Helper (PDF) ──────────────────────────────────────────────────
+const addTable3_1ToPDF = (doc: jsPDF, data: any[], rows: any[], month: string, orgName: string, t: any) => {
     doc.setFontSize(14);
-    doc.text(t('reports.ch_hygiene') + ' - 3.1-jadval', 14, 15);
+    doc.text(t('reports.children_hygiene') + ' - 3.1-jadval', 14, 15);
     doc.setFontSize(10);
     doc.text(`Tashkilot: ${orgName} | Davr: ${month}`, 14, 22);
 
@@ -760,14 +716,18 @@ export const exportTable3_1PDF = (data: any[], rows: any[], month: string, orgNa
         headStyles: { fillColor: [241, 245, 249], textColor: [0, 0, 0], fontStyle: 'bold', halign: 'center' },
         theme: 'grid'
     });
-
-    doc.save(`Bolalar_Gigiyenasi_3_1_jadval_${month}.pdf`);
 };
 
-export const exportTable3_2PDF = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
+export const exportTable3_1PDF = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    addTable3_1ToPDF(doc, data, rows, month, orgName, t);
+    doc.save(`Bolalar_va_Osmirlar_Gigiyenasi_3_1_jadval_${month}.pdf`);
+};
+
+// ─── Table 3.2 Helper (PDF) ──────────────────────────────────────────────────
+const addTable3_2ToPDF = (doc: jsPDF, data: any[], rows: any[], month: string, orgName: string, t: any) => {
     doc.setFontSize(14);
-    doc.text(t('reports.ch_hygiene') + ' - 3.2-jadval', 14, 15);
+    doc.text(t('reports.children_hygiene') + ' - 3.2-jadval', 14, 15);
     doc.setFontSize(10);
     doc.text(`Tashkilot: ${orgName} | Davr: ${month}`, 14, 22);
 
@@ -790,14 +750,18 @@ export const exportTable3_2PDF = (data: any[], rows: any[], month: string, orgNa
         headStyles: { fillColor: [241, 245, 249], textColor: [0, 0, 0], fontStyle: 'bold', halign: 'center' },
         theme: 'grid'
     });
-
-    doc.save(`Bolalar_Gigiyenasi_3_2_jadval_${month}.pdf`);
 };
 
-export const exportTable4PDF = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
+export const exportTable3_2PDF = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    addTable3_2ToPDF(doc, data, rows, month, orgName, t);
+    doc.save(`Bolalar_va_Osmirlar_Gigiyenasi_3_2_jadval_${month}.pdf`);
+};
+
+// ─── Table 4 Helper (PDF) ────────────────────────────────────────────────────
+const addTable4ToPDF = (doc: jsPDF, data: any[], rows: any[], month: string, orgName: string, t: any) => {
     doc.setFontSize(14);
-    doc.text(t('reports.ch_hygiene') + ' - 4-jadval', 14, 15);
+    doc.text(t('reports.children_hygiene') + ' - 4-jadval', 14, 15);
     doc.setFontSize(10);
     doc.text(`Tashkilot: ${orgName} | Davr: ${month}`, 14, 22);
 
@@ -824,8 +788,32 @@ export const exportTable4PDF = (data: any[], rows: any[], month: string, orgName
         headStyles: { fillColor: [241, 245, 249], textColor: [0, 0, 0], fontStyle: 'bold', halign: 'center' },
         theme: 'grid'
     });
+};
 
-    doc.save(`Bolalar_Gigiyenasi_4_jadval_${month}.pdf`);
+export const exportTable4PDF = (data: any[], rows: any[], month: string, orgName: string, t: any) => {
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    addTable4ToPDF(doc, data, rows, month, orgName, t);
+    doc.save(`Bolalar_va_Osmirlar_Gigiyenasi_4_jadval_${month}.pdf`);
+};
+
+// ─── Consolidated Export (All Tables) ────────────────────────────────────────
+
+export const exportAllPDF = (allData: any, rows: any[], month: string, orgName: string, t: any) => {
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+    addTable1ToPDF(doc, allData.table1 || [], rows, month, orgName, t);
+    doc.addPage();
+    addTable2ToPDF(doc, allData.table2 || [], rows, month, orgName, t);
+    doc.addPage();
+    addTable3ToPDF(doc, allData.table3 || [], rows, month, orgName, t);
+    doc.addPage();
+    addTable3_1ToPDF(doc, allData.table3_1 || [], rows, month, orgName, t);
+    doc.addPage();
+    addTable3_2ToPDF(doc, allData.table3_2 || [], rows, month, orgName, t);
+    doc.addPage();
+    addTable4ToPDF(doc, allData.table4 || [], rows, month, orgName, t);
+
+    doc.save(`Bolalar_va_Osmirlar_Gigiyenasi_Barchasi_${month}.pdf`);
 };
 
 // ─── Consolidated Export (All Tables) ────────────────────────────────────────
@@ -833,23 +821,25 @@ export const exportTable4PDF = (data: any[], rows: any[], month: string, orgName
 export const exportAllExcel = (allData: any, rows: any[], month: string, orgName: string, t: any) => {
     const workbook = XLSX.utils.book_new();
 
-    // Table 1
-    const t1Data: any[][] = [[t('reports.ch_hygiene') + ' - 1-jadval'], [`Tashkilot: ${orgName}`], [`Davr: ${month}`], []];
-    const t1Headers = [t('children_hygiene.table1.columns.order'), t('children_hygiene.table1.columns.institutions'), t('children_hygiene.table1.columns.institutions_count'), t('children_hygiene.table1.columns.supervision_plan'), t('children_hygiene.table1.columns.total_supervisions'), t('children_hygiene.table1.columns.planned_supervisions'), t('children_hygiene.table1.columns.unplanned_supervisions'), t('children_hygiene.table1.columns.plan_execution_percent'), t('children_hygiene.table1.columns.lab_supervisions'), t('children_hygiene.table1.columns.lab_supervisions_percent')];
-    t1Data.push(t1Headers);
-    rows.forEach(r => {
-        const item = allData.table1.find((x: any) => x.row_key === r.key) || {};
-        t1Data.push([r.key === 'total' ? 'I' : r.key.replace(/_/g, '.'), t(r.labelKey), item.institutionsCount ?? 0, item.supervisionPlan ?? 0, item.totalSupervisionsConducted ?? 0, item.plannedSupervisionsCount ?? 0, item.unplannedSupervisionsCount ?? 0, '0%', item.labSupervisionsCount ?? 0, '0%']);
-    });
-    const ws1 = XLSX.utils.aoa_to_sheet(t1Data);
+    const ws1 = getTable1Sheet(allData.table1 || [], rows, month, orgName, t);
     XLSX.utils.book_append_sheet(workbook, ws1, '1-jadval');
 
-    // To keep it simple, I'll just append other tables as separate sheets without full styling for "All Export" 
-    // or I can call individual table logic if I refactor slightly. 
-    // For now, let's just do Table 1 as a proof of concept for "All" or implement just Table 1/2.
-    // Actually, I'll just export Table 1 for "All" and mention it's Table 1, or implement others briefly.
+    const ws2 = getTable2Sheet(allData.table2 || [], rows, month, orgName, t);
+    XLSX.utils.book_append_sheet(workbook, ws2, '2-jadval');
 
-    XLSX.writeFile(workbook, `Bolalar_Gigiyenasi_To'liq_${month}.xlsx`);
+    const ws3 = getTable3Sheet(allData.table3 || [], rows, month, orgName, t);
+    XLSX.utils.book_append_sheet(workbook, ws3, '3-jadval');
+
+    const ws4 = getTable3_1Sheet(allData.table3_1 || [], rows, month, orgName, t);
+    XLSX.utils.book_append_sheet(workbook, ws4, '3.1-jadval');
+
+    const ws5 = getTable3_2Sheet(allData.table3_2 || [], rows, month, orgName, t);
+    XLSX.utils.book_append_sheet(workbook, ws5, '3.2-jadval');
+
+    const ws6 = getTable4Sheet(allData.table4 || [], rows, month, orgName, t);
+    XLSX.utils.book_append_sheet(workbook, ws6, '4-jadval');
+
+    XLSX.writeFile(workbook, `Bolalar_va_Osmirlar_Gigiyenasi_Barchasi_${month}.xlsx`);
 };
 
 

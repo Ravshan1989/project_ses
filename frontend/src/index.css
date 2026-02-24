@@ -39,7 +39,7 @@ body {
     /* Mobile Container */
     .dashboard-container {
         padding: 16px !important;
-        background: #0f172a !important;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
         min-height: 100vh;
         padding-bottom: 80px !important;
         /* Space for Bottom Nav */
@@ -47,8 +47,8 @@ body {
 
     .login-container {
         flex-direction: column !important;
-        background: #0f172a !important;
-        /* Slate-900 */
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+        /* Slate-900/800 */
     }
 
     /* Hide Left Panel (Slogan) */

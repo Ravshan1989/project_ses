@@ -1,4 +1,9 @@
 ﻿{
+    "admin": {
+        "organizations": {
+            "select_org": "Select organization"
+        }
+    },
     "auth": {
         "success_login": "Welcome!",
         "error_login": "Invalid username or password",
@@ -204,9 +209,13 @@
         "epidemiology": "Sanitary Control",
         "diarrhea": "Diarrheal Diseases",
         "unified": "Unified Daily Reports",
-        "kg_water": "Communal Hygiene (Water)",
-        "ch_hygiene": "Children Hygiene",
-        "monthly_reports": "Monthly Reports"
+        "kommunal_hygiene": "Communal Hygiene",
+        "children_hygiene": "Hygiene of Children and Youth",
+        "monthly_reports": "Monthly Reports",
+        "appeals": "Exec. Discipline & Appeals",
+        "inspections": "Inspections Coordination",
+        "flu": "Flu and ARI",
+        "ari": "ARI Reports"
     },
     "kommunal_hygiene": {
         "title": "Communal Hygiene",
@@ -595,5 +604,20 @@
                 "brakera": "Brakerash"
             }
         }
+    },
+    "inspections": {
+        "title": "Inspections Coordination",
+        "document_title": "Information on inspection documents sent to prosecutor's offices by Tashkent Regional SES during {{year}}, month {{month}}",
+        "info_label": "INFORMATION",
+        "add_row": "Add Row",
+        "delete_confirm": "Are you sure you want to delete this record?",
+        "no_records": "No data. Click 'Add Row' to create a new entry.",
+        "col_object": "Territory and the object/persons whose case was transferred to the prosecutor's office",
+        "col_date": "Date transferred to the prosecutor's office",
+        "col_reason": "Description of the situation that caused the transfer to the prosecutor's office",
+        "col_measures": "Measures applied by the prosecutor's office",
+        "tab1_label": "Sent to Prosecutor (Table 1)",
+        "tab2_label": "Business Inspections (Table 2)",
+        "tab3_label": "Measures Taken (Table 3)"
     }
 }

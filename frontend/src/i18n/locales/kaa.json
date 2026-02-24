@@ -199,7 +199,9 @@
         "covid": "COVID-19",
         "epidemiology": "Sanitariya qadag'alawı",
         "diarrhea": "Diariya kesellikleri",
-        "unified": "Birden-bir kúndelikli esabatlar"
+        "unified": "Birden-bir kúndelikli esabatlar",
+        "kg_water": "Kommunal Gigiyena (Suw)",
+        "children_hygiene": "Bolalar va o'smirlar gigiyenasi"
     },
     "daily_reports": {
         "actions": {

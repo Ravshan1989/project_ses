@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, DatePicker, Select, Space, Spin, Card, Tabs } from 'antd';
-import { SaveOutlined, ReloadOutlined, FileExcelOutlined, FilePdfOutlined, ExportOutlined } from '@ant-design/icons';
+import { SaveOutlined, ReloadOutlined, FileExcelOutlined, FilePdfOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import GlassLayout from '../../components/layout/GlassLayout';
 import PermissionGate from '../../components/PermissionGate';
@@ -12,6 +12,7 @@ import { thStyle, tdStyle } from './components/HygieneStyles';
 import IndicatorCards from './components/IndicatorCards';
 import DistrictStatusTable from './components/DistrictStatusTable';
 import { useHygieneData } from './hooks/useHygieneData';
+import { childrenHygieneApi } from '../../services/api';
 import { T1_ROWS } from './components/HygieneConstants';
 
 const { TabPane } = Tabs;
@@ -188,22 +189,34 @@ const ChildrenHygienePage: React.FC = () => {
                         PDF
                     </Button>
                     {isRegionalAdmin && (
-                        <Button
-                            icon={<ExportOutlined />}
-                            onClick={() => {
-                                const currentOrg = organizations.find((o: Organization) => o.id === effectiveOrgId)?.name || '---';
-                                exportService.exportAllExcel({
-                                    table1: activeTab === '1' ? localData : [],
-                                    table2: activeTab === '2' ? localData : [],
-                                    table3: activeTab === '3' ? localData : [],
-                                    table3_1: activeTab === '4' ? localData : [],
-                                    table3_2: activeTab === '5' ? localData : [],
-                                    table4: activeTab === '6' ? localData : []
-                                }, T1_ROWS, month, currentOrg, t);
-                            }}
-                        >
-                            {t('common.export_all')}
-                        </Button>
+                        <Space>
+                            <Button
+                                icon={<FileExcelOutlined />}
+                                onClick={async () => {
+                                    if (!effectiveOrgId) return;
+                                    const currentOrgSelection = organizations.find((o: Organization) => o.id === effectiveOrgId)?.name || '---';
+                                    const allData = await childrenHygieneApi.getAllTables(month, effectiveOrgId);
+                                    exportService.exportAllExcel(allData, T1_ROWS, month, currentOrgSelection, t);
+                                }}
+                                className="glass-button"
+                                style={{ borderColor: '#10b981', color: '#059669' }}
+                            >
+                                {t('common.export_all')} (Excel)
+                            </Button>
+                            <Button
+                                icon={<FilePdfOutlined />}
+                                onClick={async () => {
+                                    if (!effectiveOrgId) return;
+                                    const currentOrgSelection = organizations.find((o: Organization) => o.id === effectiveOrgId)?.name || '---';
+                                    const allData = await childrenHygieneApi.getAllTables(month, effectiveOrgId);
+                                    exportService.exportAllPDF(allData, T1_ROWS, month, currentOrgSelection, t);
+                                }}
+                                className="glass-button"
+                                style={{ borderColor: '#ef4444', color: '#dc2626' }}
+                            >
+                                {t('common.export_all')} (PDF)
+                            </Button>
+                        </Space>
                     )}
                 </Space>
             </Card>

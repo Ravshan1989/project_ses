@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Space, Switch, Typography, Layout } from 'antd';
+import { Button, Space, Switch, Typography } from 'antd';
 import { ClockCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { useTranslation } from 'react-i18next';
 
 const { Title, Text } = Typography;
-const { Content } = Layout;
 
 interface GlassLayoutProps {
     children: React.ReactNode;
@@ -15,7 +13,6 @@ interface GlassLayoutProps {
 }
 
 const GlassLayout: React.FC<GlassLayoutProps> = ({ children, title, subtitle, headerButtons }) => {
-    const { t } = useTranslation();
     // Initialize dark mode from localStorage if available, else false
     const [isDarkMode, setIsDarkMode] = useState(() => {
         const saved = localStorage.getItem('isDarkMode');
@@ -49,7 +46,7 @@ const GlassLayout: React.FC<GlassLayoutProps> = ({ children, title, subtitle, he
             transition: all 0.5s ease;
         }
         .dashboard-container.dark-mode {
-            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
         }
         .glass-card {
             background: rgba(255, 255, 255, 0.7);
@@ -61,9 +58,10 @@ const GlassLayout: React.FC<GlassLayoutProps> = ({ children, title, subtitle, he
             transition: all 0.3s ease;
         }
         .dashboard-container.dark-mode .glass-card {
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             color: #fff;
+            backdrop-filter: blur(16px);
         }
         .glass-card:hover {
             transform: translateY(-5px);

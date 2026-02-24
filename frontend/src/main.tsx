@@ -24,4 +24,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </QueryClientProvider>
     </React.StrictMode>,
 )
-console.log('PWA Version: Mobile Nav Update 1.1');
+console.log('PWA Version: Inspections Table 3 Update 1.0');

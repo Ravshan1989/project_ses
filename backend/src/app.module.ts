@@ -19,6 +19,9 @@ import { UpdatesModule } from "./modules/updates/updates.module";
 import { SeedingModule } from "./modules/seeding/seeding.module";
 import { KommunalHygieneModule } from "./modules/kommunal-hygiene/kommunal-hygiene.module";
 import { ChildrenHygieneModule } from "./modules/children-hygiene/children-hygiene.module";
+import { AppealsModule } from "./modules/appeals/appeals.module";
+import { NutritionHygieneModule } from "./modules/nutrition-hygiene/nutrition-hygiene.module";
+import { InspectionsModule } from "./modules/inspections/inspections.module";
 
 import { AuthModule } from "./modules/auth/auth.module";
 import { DepartmentsModule } from "./modules/departments/departments.module";
@@ -69,6 +72,9 @@ import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core"; // UZ: Global interce
     SeedingModule, // UZ: Avtomatik ma'lumotlarni to'ldirish (Auto-fix)
     KommunalHygieneModule, // UZ: Kommunal gigiyena oylik hisobotlari
     ChildrenHygieneModule, // UZ: Bolalar va o'smirlar gigiyenasi
+    AppealsModule, // UZ: Ijro intizomi va murojaatlar bilan ishlash
+    NutritionHygieneModule, // UZ: Ovqatlanish gigiyenasi oylik hisobotlari
+    InspectionsModule, // UZ: Nazoratlarni muvofiqlashtirish
 
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, "..", "public"),
@@ -82,4 +88,4 @@ import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core"; // UZ: Global interce
     { provide: APP_INTERCEPTOR, useClass: NotificationInterceptor }, // UZ: Bildirishnomalar uchun interceptor
   ],
 })
-export class AppModule {}
+export class AppModule { }
