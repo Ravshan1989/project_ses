@@ -41,6 +41,7 @@ const InspectionsPage: React.FC = () => {
         createRecord, updateRecord, deleteRecord,
         table2Data, isLoadingTable2, isSavingTable2, saveTable2,
         table3Data, isLoadingTable3, isSavingTable3, saveTable3,
+        table4Data, isLoadingTable4, isSavingTable4, saveTable4,
         refresh,
     } = useInspectionsData(month, effectiveOrgId, activeTab);
 
@@ -100,20 +101,21 @@ const InspectionsPage: React.FC = () => {
     const getT3Val = (key: string, field: keyof InspectionTable3Row): number => {
         if (field === 'row_key') return 0;
         const local = t3State[key]?.[field];
-        if (local !== undefined) return local as number;
+        if (local !== undefined) return Number(local) || 0;
         const sv = table3Data.find(r => r.row_key === key);
-        return sv ? (sv[field] as number) : 0;
+        return sv ? (Number(sv[field]) || 0) : 0;
     };
     const setT3Val = (key: string, field: keyof InspectionTable3Row, v: number) =>
         setT3State(p => ({ ...p, [key]: { ...p[key], [field]: v } }));
 
     const t3Jami = useMemo(() => {
-        return T3_FIELDS.reduce((a, f) => {
-            a[f as string] = INSPECTION_T2_ROWS.reduce((s, r) => s + getT3Val(r.key, f), 0);
-            return a;
-        }, {} as Record<string, number>);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        const res: Record<string, number> = {};
+        T3_FIELDS.forEach(f => {
+            res[f] = INSPECTION_T2_ROWS.reduce((acc, row) => acc + (Number(getT3Val(row.key, f)) || 0), 0);
+        });
+        return res;
     }, [t3State, table3Data]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
 
     const handleSaveTable3 = () => {
         const rows: InspectionTable3Row[] = INSPECTION_T2_ROWS.map(r => ({
@@ -138,6 +140,51 @@ const InspectionsPage: React.FC = () => {
         setT3State({});
     };
 
+    // ─── Table 4 helpers ──────────────────────────────────────────────────
+    const [t4State, setT4State] = useState<Record<string, Partial<InspectionTable3Row>>>({});
+
+    const getT4Val = (key: string, field: keyof InspectionTable3Row): number => {
+        if (field === 'row_key') return 0;
+        const local = t4State[key]?.[field];
+        if (local !== undefined) return Number(local) || 0;
+        const sv = table4Data.find(r => r.row_key === key);
+        return sv ? (Number(sv[field]) || 0) : 0;
+    };
+    const setT4Val = (key: string, field: keyof InspectionTable3Row, v: number) =>
+        setT4State(p => ({ ...p, [key]: { ...p[key], [field]: v } }));
+
+    const t4Jami = useMemo(() => {
+        const res: Record<string, number> = {};
+        T3_FIELDS.forEach(f => {
+            res[f] = INSPECTION_T2_ROWS.reduce((acc, row) => acc + (Number(getT4Val(row.key, f)) || 0), 0);
+        });
+        return res;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [t4State, table4Data]);
+
+    const handleSaveTable4 = () => {
+        const rows: InspectionTable3Row[] = INSPECTION_T2_ROWS.map(r => ({
+            row_key: r.key,
+            inspections_count: getT4Val(r.key, 'inspections_count'),
+            defects_count: getT4Val(r.key, 'defects_count'),
+            measure_suspend: getT4Val(r.key, 'measure_suspend'),
+            measure_admin: getT4Val(r.key, 'measure_admin'),
+            measure_license: getT4Val(r.key, 'measure_license'),
+            measure_tavdinaoma: getT4Val(r.key, 'measure_tavdinaoma'),
+            measure_warning: getT4Val(r.key, 'measure_warning'),
+            measure_conclusion: getT4Val(r.key, 'measure_conclusion'),
+            measure_tmb: getT4Val(r.key, 'measure_tmb'),
+            others: getT4Val(r.key, 'others'),
+            fine_count: getT4Val(r.key, 'fine_count'),
+            fine_amount: getT4Val(r.key, 'fine_amount'),
+            court_economic: getT4Val(r.key, 'court_economic'),
+            court_civil: getT4Val(r.key, 'court_civil'),
+            court_admin: getT4Val(r.key, 'court_admin'),
+        }));
+        saveTable4(rows);
+        setT4State({});
+    };
+
     // ─── Controls ─────────────────────────────────────────────────────────
     const controls = (
         <Card size="small" style={{ marginBottom: 12 }}>
@@ -150,7 +197,7 @@ const InspectionsPage: React.FC = () => {
                         options={organizations.map((o: Organization) => ({ label: o.name, value: o.id }))}
                         showSearch allowClear />
                 )}
-                <Button icon={<ReloadOutlined />} onClick={refresh} loading={isLoadingRecords || isLoadingTable2 || isLoadingTable3}>
+                <Button icon={<ReloadOutlined />} onClick={refresh} loading={isLoadingRecords || isLoadingTable2 || isLoadingTable3 || isLoadingTable4}>
                     {t('common.refresh')}
                 </Button>
             </Space>
@@ -247,34 +294,36 @@ const InspectionsPage: React.FC = () => {
     ];
 
     // ─── Table 3 columns ──────────────────────────────────────────────────
-    const t3n = (key: string, field: keyof InspectionTable3Row, step = 1) => (
-        <InputNumber min={0} step={step} value={getT3Val(key, field)} onChange={v => setT3Val(key, field, v ?? 0)} style={{ width: 65 }} size="small" />
+    const t3n = (key: string, field: keyof InspectionTable3Row, step = 1, isT4 = false) => (
+        <InputNumber min={0} step={step} value={isT4 ? getT4Val(key, field) : getT3Val(key, field)} onChange={v => isT4 ? setT4Val(key, field, v ?? 0) : setT3Val(key, field, v ?? 0)} style={{ width: 65 }} size="small" />
     );
 
-    const t3Cols: Col[] = [
+    const getT3Cols = (isT4 = false): Col[] => [
         { title: '№', key: 'no', width: 40, align: 'center', render: (_: any, __: TRow, i?: number) => (i !== undefined && i < INSPECTION_T2_ROWS.length) ? i + 1 : '' },
         { title: 'Ҳудудлар', key: 'label', width: 140, render: (_: any, r: TRow) => <span style={{ fontWeight: r.isTotal ? 700 : 400 }}>{r.label}</span> },
-        { title: 'Хабардор этиш тартибида ўтказилган текширишлар', key: 'ic', width: 80, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{t3Jami['inspections_count']}</b> : t3n(r.key, 'inspections_count') },
-        { title: 'Аниқланган камчиликлар', key: 'dc', width: 80, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{t3Jami['defects_count']}</b> : t3n(r.key, 'defects_count') },
+        { title: isT4 ? 'Келишилган тартибда ўтказилган текширишлар (24 соат)' : 'Хабардор этиш тартибида ўтказилган текширишлар', key: 'ic', width: 80, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{isT4 ? t4Jami['inspections_count'] : t3Jami['inspections_count']}</b> : t3n(r.key, 'inspections_count', 1, isT4) },
+        { title: 'Аниқланган камчиликлар', key: 'dc', width: 80, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{isT4 ? t4Jami['defects_count'] : t3Jami['defects_count']}</b> : t3n(r.key, 'defects_count', 1, isT4) },
         {
             title: 'Қўлланилган чоралар', key: 'measures', align: 'center', children: [
-                { title: 'Фаолиятини тўхтатиш', key: 'ms', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{t3Jami['measure_suspend']}</b> : t3n(r.key, 'measure_suspend') },
-                { title: 'Маъмурий жавобгарлик', key: 'ma', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{t3Jami['measure_admin']}</b> : t3n(r.key, 'measure_admin') },
-                { title: 'Лицензияни бекор қилиш', key: 'ml', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{t3Jami['measure_license']}</b> : t3n(r.key, 'measure_license') },
-                { title: 'Тавдинома', key: 'mt', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{t3Jami['measure_tavdinaoma']}</b> : t3n(r.key, 'measure_tavdinaoma') },
-                { title: 'Огоҳлантириш (кўрсатма)', key: 'mw', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{t3Jami['measure_warning']}</b> : t3n(r.key, 'measure_warning') },
-                { title: 'Хулоса', key: 'mc', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{t3Jami['measure_conclusion']}</b> : t3n(r.key, 'measure_conclusion') },
-                { title: 'ТМБ олиб қўйиш', key: 'mb', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{t3Jami['measure_tmb']}</b> : t3n(r.key, 'measure_tmb') },
+                { title: 'Фаолиятини тўхтатиш', key: 'ms', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{isT4 ? t4Jami['measure_suspend'] : t3Jami['measure_suspend']}</b> : t3n(r.key, 'measure_suspend', 1, isT4) },
+                { title: 'Маъмурий жавобгарлик', key: 'ma', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{isT4 ? t4Jami['measure_admin'] : t3Jami['measure_admin']}</b> : t3n(r.key, 'measure_admin', 1, isT4) },
+                { title: 'Лицензияни бекор қилиш', key: 'ml', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{isT4 ? t4Jami['measure_license'] : t3Jami['measure_license']}</b> : t3n(r.key, 'measure_license', 1, isT4) },
+                { title: 'Тавдинома', key: 'mt', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{isT4 ? t4Jami['measure_tavdinaoma'] : t3Jami['measure_tavdinaoma']}</b> : t3n(r.key, 'measure_tavdinaoma', 1, isT4) },
+                { title: 'Огоҳлантириш (кўрсатма)', key: 'mw', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{isT4 ? t4Jami['measure_warning'] : t3Jami['measure_warning']}</b> : t3n(r.key, 'measure_warning', 1, isT4) },
+                { title: 'Хулоса', key: 'mc', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{isT4 ? t4Jami['measure_conclusion'] : t3Jami['measure_conclusion']}</b> : t3n(r.key, 'measure_conclusion', 1, isT4) },
+                { title: 'ТМБ олиб қўйиш', key: 'mb', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{isT4 ? t4Jami['measure_tmb'] : t3Jami['measure_tmb']}</b> : t3n(r.key, 'measure_tmb', 1, isT4) },
             ]
         },
-        { title: 'Бошқалар', key: 'oth', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{t3Jami['others']}</b> : t3n(r.key, 'others') },
+        { title: 'Бошқалар', key: 'oth', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{isT4 ? t4Jami['others'] : t3Jami['others']}</b> : t3n(r.key, 'others', 1, isT4) },
         {
             title: 'Молиявий жарималар', key: 'fines', align: 'center', children: [
-                { title: 'Сони', key: 'fc', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{t3Jami['fine_count']}</b> : t3n(r.key, 'fine_count') },
-                { title: 'Суммаси (млн.сўм)', key: 'fa', width: 80, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{t3Jami['fine_amount']}</b> : t3n(r.key, 'fine_amount', 0.01) },
+                { title: 'Сони', key: 'fc', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{(isT4 ? t4Jami['fine_count'] : t3Jami['fine_count']) || 0}</b> : t3n(r.key, 'fine_count', 1, isT4) },
+                { title: 'Суммаси (млн.сўм)', key: 'fa', width: 80, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{((isT4 ? t4Jami['fine_amount'] : t3Jami['fine_amount']) || 0).toFixed(2)}</b> : t3n(r.key, 'fine_amount', 0.01, isT4) },
                 {
                     title: 'Жами', key: 'ft', width: 65, align: 'center', render: (_: any, r: TRow) => {
-                        const v = r.isTotal ? (Number(t3Jami['fine_count']) || 0) + (Number(t3Jami['fine_amount']) || 0) : (Number(getT3Val(r.key, 'fine_count')) || 0) + (Number(getT3Val(r.key, 'fine_amount')) || 0);
+                        const v = r.isTotal
+                            ? (Number(isT4 ? t4Jami['fine_count'] : t3Jami['fine_count']) || 0) + (Number(isT4 ? t4Jami['fine_amount'] : t3Jami['fine_amount']) || 0)
+                            : (Number(isT4 ? getT4Val(r.key, 'fine_count') : getT3Val(r.key, 'fine_count')) || 0) + (Number(isT4 ? getT4Val(r.key, 'fine_amount') : getT3Val(r.key, 'fine_amount')) || 0);
                         return <span style={{ fontWeight: r.isTotal ? 700 : 400 }}>{Number(v).toFixed(2)}</span>;
                     }
                 },
@@ -282,9 +331,9 @@ const InspectionsPage: React.FC = () => {
         },
         {
             title: 'Қўзғатилган даъволар', key: 'courts', align: 'center', children: [
-                { title: 'Иқтисодий судга', key: 'ce', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{t3Jami['court_economic']}</b> : t3n(r.key, 'court_economic') },
-                { title: 'Фуқаролик судга', key: 'cc', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{t3Jami['court_civil']}</b> : t3n(r.key, 'court_civil') },
-                { title: 'Маъмурий судга', key: 'ca', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{t3Jami['court_admin']}</b> : t3n(r.key, 'court_admin') },
+                { title: 'Иқтисодий судга', key: 'ce', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{isT4 ? t4Jami['court_economic'] : t3Jami['court_economic']}</b> : t3n(r.key, 'court_economic', 1, isT4) },
+                { title: 'Фуқаролик судга', key: 'cc', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{isT4 ? t4Jami['court_civil'] : t3Jami['court_civil']}</b> : t3n(r.key, 'court_civil', 1, isT4) },
+                { title: 'Маъмурий судга', key: 'ca', width: 65, align: 'center', render: (_: any, r: TRow) => r.isTotal ? <b>{isT4 ? t4Jami['court_admin'] : t3Jami['court_admin']}</b> : t3n(r.key, 'court_admin', 1, isT4) },
             ]
         },
     ];
@@ -326,8 +375,13 @@ const InspectionsPage: React.FC = () => {
                 },
                 {
                     key: '3', label: t('inspections.tab3_label') || 'Таъсир чоралари (Жадвал 3)',
-                    children: tableWrap(isLoadingTable3, t3Cols, handleSaveTable3, isSavingTable3,
+                    children: tableWrap(isLoadingTable3, getT3Cols(false), handleSaveTable3, isSavingTable3,
                         'хабардор этиш тартибида ўтказилган текширишлар натижасида тадбиркорлик субъектларга нисбатан қўлланилган таъсир чоралари тўғрисида')
+                },
+                {
+                    key: '4', label: t('inspections.tab4_label') || 'Таъсир чоралари (24 соат) (Жадвал 4)',
+                    children: tableWrap(isLoadingTable4, getT3Cols(true), handleSaveTable4, isSavingTable4,
+                        '24 соатдан сўнг хабардор этиш тартибида ўтказилган текширишlar натижасида тадбиркорлик субъектларга нисбатан қўлланилган таъсир чоралари тўғрисида')
                 },
                 {
                     key: '1', label: t('inspections.tab1_label') || 'Прокурaturaga юборилганлар (Жадвал 1)',

@@ -54,4 +54,14 @@ export class InspectionsController {
     saveTable3(@Body() body: { month: string; organizationId: string; rows: any[] }) {
         return this.inspectionsService.saveTable3Data(body.month, body.organizationId, body.rows);
     }
+    // ===== Table 4 =====
+    @Get("table4")
+    getTable4(@Query("month") month: string, @Query("organizationId") organizationId: string) {
+        return this.inspectionsService.getTable4Data(month, organizationId);
+    }
+
+    @Post("table4")
+    saveTable4(@Body() body: { month: string; organizationId: string; rows: any[] }) {
+        return this.inspectionsService.saveTable4Data(body.month, body.organizationId, body.rows);
+    }
 }

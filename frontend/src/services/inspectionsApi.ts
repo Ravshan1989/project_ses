@@ -115,4 +115,21 @@ export const inspectionsApi = {
         const response = await api.post("/inspections/table3", { month, organizationId, rows });
         return response.data;
     },
+
+    // ─── Table 4: Measures applied during inspections AFTER 24h notification ───
+    getTable4Data: async (month: string, organizationId: string): Promise<InspectionTable3Row[]> => {
+        const response = await api.get("/inspections/table4", {
+            params: { month, organizationId },
+        });
+        return response.data;
+    },
+
+    saveTable4Data: async (
+        month: string,
+        organizationId: string,
+        rows: InspectionTable3Row[],
+    ): Promise<{ success: boolean }> => {
+        const response = await api.post("/inspections/table4", { month, organizationId, rows });
+        return response.data;
+    },
 };

@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 import { InspectionRecord } from "./entities/inspection-record.entity";
 import { InspectionTable2 } from "./entities/inspection-table2.entity";
 import { InspectionTable3 } from "./entities/inspection-table3.entity";
+import { InspectionTable4 } from "./entities/inspection-table4.entity";
 import { CreateInspectionRecordDto } from "./dto/create-inspection-record.dto";
 import { UpdateInspectionRecordDto } from "./dto/update-inspection-record.dto";
 
@@ -16,6 +17,8 @@ export class InspectionsService {
         private readonly table2Repo: Repository<InspectionTable2>,
         @InjectRepository(InspectionTable3)
         private readonly table3Repo: Repository<InspectionTable3>,
+        @InjectRepository(InspectionTable4)
+        private readonly table4Repo: Repository<InspectionTable4>,
     ) { }
 
     // ===== Table 1: Prosecutor transfer records (CRUD) =====
@@ -103,6 +106,35 @@ export class InspectionsService {
             } else {
                 await this.table3Repo.save(
                     this.table3Repo.create({ ...rowData, period_month: month, organization_id: organizationId })
+                );
+            }
+        }
+        return { success: true };
+    }
+    // ===== Table 4: Measures applied during inspections AFTER 24h notification =====
+
+    async getTable4Data(month: string, organizationId: string): Promise<InspectionTable4[]> {
+        return this.table4Repo.find({
+            where: { period_month: month, organization_id: organizationId },
+        });
+    }
+
+    async saveTable4Data(
+        month: string,
+        organizationId: string,
+        rows: Partial<InspectionTable4>[],
+    ): Promise<{ success: boolean }> {
+        const existing = await this.table4Repo.find({
+            where: { period_month: month, organization_id: organizationId },
+        });
+        const map = new Map(existing.map((r) => [r.row_key, r]));
+        for (const rowData of rows) {
+            if (map.has(rowData.row_key)) {
+                Object.assign(map.get(rowData.row_key), rowData);
+                await this.table4Repo.save(map.get(rowData.row_key));
+            } else {
+                await this.table4Repo.save(
+                    this.table4Repo.create({ ...rowData, period_month: month, organization_id: organizationId })
                 );
             }
         }

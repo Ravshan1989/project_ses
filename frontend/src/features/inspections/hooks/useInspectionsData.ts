@@ -99,6 +99,27 @@ export const useInspectionsData = (month: string, orgId: string | null, activeTa
         onError: () => notification.error({ message: t('common.error_save') }),
     });
 
+    // ─── Table 4 ────────────────────────────────────────────────────────────
+    const table4Query = useQuery({
+        queryKey: ['inspection-table4', month, orgId],
+        queryFn: async () => { if (!orgId) return []; return inspectionsApi.getTable4Data(month, orgId); },
+        enabled: !!orgId && !!month && activeTab === '4',
+        staleTime: 30000,
+        refetchOnWindowFocus: false,
+    });
+
+    const saveTable4Mutation = useMutation({
+        mutationFn: (rows: InspectionTable3Row[]) => {
+            if (!orgId) throw new Error('No org');
+            return inspectionsApi.saveTable4Data(month, orgId, rows);
+        },
+        onSuccess: () => {
+            notification.success({ message: t('common.success_save') });
+            queryClient.invalidateQueries({ queryKey: ['inspection-table4', month, orgId] });
+        },
+        onError: () => notification.error({ message: t('common.error_save') }),
+    });
+
     return {
         organizations: organizationsQuery.data || [],
         // Table 1
@@ -120,11 +141,17 @@ export const useInspectionsData = (month: string, orgId: string | null, activeTa
         isLoadingTable3: table3Query.isLoading,
         isSavingTable3: saveTable3Mutation.isPending,
         saveTable3: (rows: InspectionTable3Row[]) => saveTable3Mutation.mutate(rows),
+        // Table 4
+        table4Data: table4Query.data || [],
+        isLoadingTable4: table4Query.isLoading,
+        isSavingTable4: saveTable4Mutation.isPending,
+        saveTable4: (rows: InspectionTable3Row[]) => saveTable4Mutation.mutate(rows),
         // Common
         refresh: () => {
             queryClient.invalidateQueries({ queryKey: ['inspection-records'] });
             queryClient.invalidateQueries({ queryKey: ['inspection-table2'] });
             queryClient.invalidateQueries({ queryKey: ['inspection-table3'] });
+            queryClient.invalidateQueries({ queryKey: ['inspection-table4'] });
         },
     };
 };

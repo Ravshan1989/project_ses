@@ -322,7 +322,8 @@
         "col_measures": "Prokuratura organlari tomonidan qo'llanilgan ta'sir choralari",
         "tab1_label": "Prokuraturaga yuborilganlar (Jadval 1)",
         "tab2_label": "Tadbirkorlik tekshirishlari (Jadval 2)",
-        "tab3_label": "Ta'sir choralari (Jadval 3)"
+        "tab3_label": "Ta'sir choralari (Jadval 3)",
+        "tab4_label": "Ta'sir choralari (24 soat) (Jadval 4)"
     },
     "kommunal_hygiene": {
         "title": "Kommunal Gigiyena",

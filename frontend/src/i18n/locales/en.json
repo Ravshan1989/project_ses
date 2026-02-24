@@ -618,6 +618,7 @@
         "col_measures": "Measures applied by the prosecutor's office",
         "tab1_label": "Sent to Prosecutor (Table 1)",
         "tab2_label": "Business Inspections (Table 2)",
-        "tab3_label": "Measures Taken (Table 3)"
+        "tab3_label": "Measures Taken (Table 3)",
+        "tab4_label": "Measures Taken (24h) (Table 4)"
     }
 }
