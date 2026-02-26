@@ -48,7 +48,7 @@ const InspectionsPage: React.FC = () => {
     const year = dayjs(month).year();
     const monthNum = dayjs(month).month() + 1;
 
-    // ─── Table 2 helpers ──────────────────────────────────────────────────
+    // ─── 2-жадвал ёрдамчилари ─────────────────────────────────────────────
     const [t2State, setT2State] = useState<Record<string, Partial<InspectionTable2Row>>>({});
 
     const getT2Val = (key: string, field: keyof InspectionTable2Row): number => {
@@ -87,7 +87,7 @@ const InspectionsPage: React.FC = () => {
         setT2State({});
     };
 
-    // ─── Table 3 helpers ──────────────────────────────────────────────────
+    // ─── 3-жадвал ёрдамчилари ─────────────────────────────────────────────
     const T3_FIELDS: (keyof InspectionTable3Row)[] = [
         'inspections_count', 'defects_count',
         'measure_suspend', 'measure_admin', 'measure_license', 'measure_tavdinaoma',
@@ -140,7 +140,7 @@ const InspectionsPage: React.FC = () => {
         setT3State({});
     };
 
-    // ─── Table 4 helpers ──────────────────────────────────────────────────
+    // ─── 4-жадвал ёрдамчилари ─────────────────────────────────────────────
     const [t4State, setT4State] = useState<Record<string, Partial<InspectionTable3Row>>>({});
 
     const getT4Val = (key: string, field: keyof InspectionTable3Row): number => {
@@ -185,7 +185,7 @@ const InspectionsPage: React.FC = () => {
         setT4State({});
     };
 
-    // ─── Controls ─────────────────────────────────────────────────────────
+    // ─── Бошқарув унсурлари ───────────────────────────────────────────────
     const controls = (
         <Card size="small" style={{ marginBottom: 12 }}>
             <Space wrap>
@@ -204,7 +204,7 @@ const InspectionsPage: React.FC = () => {
         </Card>
     );
 
-    // ─── Table 1 columns ──────────────────────────────────────────────────
+    // ─── 1-жадвал устунлари ───────────────────────────────────────────────
     const handleFieldChange = (id: string, field: keyof InspectionRecord, value: string) =>
         setEditState(p => ({ ...p, [id]: { ...p[id], [field]: value } }));
 
@@ -250,7 +250,7 @@ const InspectionsPage: React.FC = () => {
         },
     ];
 
-    // ─── Generic helpers for fixed-row tables ─────────────────────────────
+    // ─── Рўйхатланган жадваллар учун умумий ёрдамчилар ────────────────────
     const numIn = (key: string, field: keyof InspectionTable2Row | keyof InspectionTable3Row, isT3 = false, step = 1) => (
         <InputNumber min={0} step={step}
             value={(isT3 ? getT3Val(key, field as keyof InspectionTable3Row) : getT2Val(key, field as keyof InspectionTable2Row)) as number}
@@ -264,7 +264,7 @@ const InspectionsPage: React.FC = () => {
 
     const tableRows: TRow[] = [...INSPECTION_T2_ROWS.map(r => ({ key: r.key, label: r.label })), { key: 'jami', label: 'Жами:', isTotal: true }];
 
-    // ─── Table 2 columns ──────────────────────────────────────────────────
+    // ─── 2-жадвал устунлари ───────────────────────────────────────────────
     interface Col { title: React.ReactNode; key: string; width?: number; align?: 'center' | 'left'; render?: (v: any, row: TRow, i?: number) => React.ReactNode; children?: Col[] }
 
     const t2Cols: Col[] = [
@@ -293,7 +293,7 @@ const InspectionsPage: React.FC = () => {
         },
     ];
 
-    // ─── Table 3 columns ──────────────────────────────────────────────────
+    // ─── 3-жадвал устунлари ───────────────────────────────────────────────
     const t3n = (key: string, field: keyof InspectionTable3Row, step = 1, isT4 = false) => (
         <InputNumber min={0} step={step} value={isT4 ? getT4Val(key, field) : getT3Val(key, field)} onChange={v => isT4 ? setT4Val(key, field, v ?? 0) : setT3Val(key, field, v ?? 0)} style={{ width: 65 }} size="small" />
     );
@@ -338,7 +338,7 @@ const InspectionsPage: React.FC = () => {
         },
     ];
 
-    // ─── Page ─────────────────────────────────────────────────────────────
+    // ─── Саҳифа ───────────────────────────────────────────────────────────
     const saveBtn = (loading: boolean, onClick: () => void) => (
         <div style={{ marginTop: 10, textAlign: 'right' }}>
             <Button type="primary" icon={<SaveOutlined />} loading={loading} disabled={!effectiveOrgId} onClick={onClick}>{t('common.save')}</Button>

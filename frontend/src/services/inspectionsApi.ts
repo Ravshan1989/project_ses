@@ -59,7 +59,7 @@ export interface InspectionTable3Row {
 }
 
 export const inspectionsApi = {
-    // ─── Table 1: Prosecutor records (CRUD) ───────────────────────────────
+    // ─── 1-жадвал: Прокуратура маълумотлари (CRUD) ───────────────────────
     getRecords: async (month: string, organizationId: string): Promise<InspectionRecord[]> => {
         const response = await api.get("/inspections/records", {
             params: { month, organizationId },
@@ -82,7 +82,7 @@ export const inspectionsApi = {
         return response.data;
     },
 
-    // ─── Table 2: Business inspections by district ────────────────────────
+    // ─── 2-жадвал: Туманлар кесимида тадбиркорлик текширишлари ─────────────
     getTable2Data: async (month: string, organizationId: string): Promise<InspectionTable2Row[]> => {
         const response = await api.get("/inspections/table2", {
             params: { month, organizationId },
@@ -99,7 +99,7 @@ export const inspectionsApi = {
         return response.data;
     },
 
-    // ─── Table 3: Measures against business entities ──────────────────────
+    // ─── 3-жадвал: Тадбиркорлик субъектларига таъсир чоралари ─────────────
     getTable3Data: async (month: string, organizationId: string): Promise<InspectionTable3Row[]> => {
         const response = await api.get("/inspections/table3", {
             params: { month, organizationId },
@@ -116,7 +116,7 @@ export const inspectionsApi = {
         return response.data;
     },
 
-    // ─── Table 4: Measures applied during inspections AFTER 24h notification ───
+    // ─── 4-жадвал: 24 соатлик хабарномадан СЎНГ қўлланилган чоралар ───────────
     getTable4Data: async (month: string, organizationId: string): Promise<InspectionTable3Row[]> => {
         const response = await api.get("/inspections/table4", {
             params: { month, organizationId },

@@ -20,7 +20,7 @@ export const useInspectionsData = (month: string, orgId: string | null, activeTa
         staleTime: 5 * 60 * 1000,
     });
 
-    // ─── Table 1 ────────────────────────────────────────────────────────────
+    // Умумий ─────────────────────────────────────────────────────────────
     const recordsQuery = useQuery({
         queryKey: ['inspection-records', month, orgId],
         queryFn: async () => { if (!orgId) return []; return inspectionsApi.getRecords(month, orgId); },
@@ -57,7 +57,7 @@ export const useInspectionsData = (month: string, orgId: string | null, activeTa
         onError: () => notification.error({ message: t('common.error_save') }),
     });
 
-    // ─── Table 2 ────────────────────────────────────────────────────────────
+    // ─── 2-жадвал ───────────────────────────────────────────────────────────
     const table2Query = useQuery({
         queryKey: ['inspection-table2', month, orgId],
         queryFn: async () => { if (!orgId) return []; return inspectionsApi.getTable2Data(month, orgId); },
@@ -78,7 +78,7 @@ export const useInspectionsData = (month: string, orgId: string | null, activeTa
         onError: () => notification.error({ message: t('common.error_save') }),
     });
 
-    // ─── Table 3 ────────────────────────────────────────────────────────────
+    // ─── 3-жадвал ───────────────────────────────────────────────────────────
     const table3Query = useQuery({
         queryKey: ['inspection-table3', month, orgId],
         queryFn: async () => { if (!orgId) return []; return inspectionsApi.getTable3Data(month, orgId); },
@@ -99,7 +99,7 @@ export const useInspectionsData = (month: string, orgId: string | null, activeTa
         onError: () => notification.error({ message: t('common.error_save') }),
     });
 
-    // ─── Table 4 ────────────────────────────────────────────────────────────
+    // ─── 4-жадвал ───────────────────────────────────────────────────────────
     const table4Query = useQuery({
         queryKey: ['inspection-table4', month, orgId],
         queryFn: async () => { if (!orgId) return []; return inspectionsApi.getTable4Data(month, orgId); },

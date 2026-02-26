@@ -21,7 +21,7 @@ export class InspectionsService {
         private readonly table4Repo: Repository<InspectionTable4>,
     ) { }
 
-    // ===== Table 1: Prosecutor transfer records (CRUD) =====
+    // ===== 1-жадвал: Прокуратурага юборилган маълумотлар (CRUD) =====
 
     async getRecords(month: string, organizationId: string): Promise<InspectionRecord[]> {
         return this.recordRepo.find({
@@ -52,7 +52,7 @@ export class InspectionsService {
         return { success: true };
     }
 
-    // ===== Table 2: Business inspections by district =====
+    // ===== 2-жадвал: Туманлар кесимида тадбиркорлик текширишлари =====
 
     async getTable2Data(month: string, organizationId: string): Promise<InspectionTable2[]> {
         return this.table2Repo.find({
@@ -82,7 +82,7 @@ export class InspectionsService {
         return { success: true };
     }
 
-    // ===== Table 3: Measures applied during notification-order inspections =====
+    // ===== 3-жадвал: Хабарнома тартибидаги текширишларда қўлланилган чоралар =====
 
     async getTable3Data(month: string, organizationId: string): Promise<InspectionTable3[]> {
         return this.table3Repo.find({
@@ -111,7 +111,7 @@ export class InspectionsService {
         }
         return { success: true };
     }
-    // ===== Table 4: Measures applied during inspections AFTER 24h notification =====
+    // ===== 4-жадвал: 24 соатлик хабарномадан СЎНГ қўлланилган чоралар =====
 
     async getTable4Data(month: string, organizationId: string): Promise<InspectionTable4[]> {
         return this.table4Repo.find({

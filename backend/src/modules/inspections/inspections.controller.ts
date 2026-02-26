@@ -12,7 +12,7 @@ import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 export class InspectionsController {
     constructor(private readonly inspectionsService: InspectionsService) { }
 
-    // ===== Table 1 =====
+    // ===== 1-жадвал =====
     @Get("records")
     getRecords(@Query("month") month: string, @Query("organizationId") organizationId: string) {
         return this.inspectionsService.getRecords(month, organizationId);
@@ -33,7 +33,7 @@ export class InspectionsController {
         return this.inspectionsService.deleteRecord(id);
     }
 
-    // ===== Table 2 =====
+    // ===== 2-жадвал =====
     @Get("table2")
     getTable2(@Query("month") month: string, @Query("organizationId") organizationId: string) {
         return this.inspectionsService.getTable2Data(month, organizationId);
@@ -44,7 +44,7 @@ export class InspectionsController {
         return this.inspectionsService.saveTable2Data(body.month, body.organizationId, body.rows);
     }
 
-    // ===== Table 3 =====
+    // ===== 3-жадвал =====
     @Get("table3")
     getTable3(@Query("month") month: string, @Query("organizationId") organizationId: string) {
         return this.inspectionsService.getTable3Data(month, organizationId);
@@ -54,7 +54,7 @@ export class InspectionsController {
     saveTable3(@Body() body: { month: string; organizationId: string; rows: any[] }) {
         return this.inspectionsService.saveTable3Data(body.month, body.organizationId, body.rows);
     }
-    // ===== Table 4 =====
+    // ===== 4-жадвал =====
     @Get("table4")
     getTable4(@Query("month") month: string, @Query("organizationId") organizationId: string) {
         return this.inspectionsService.getTable4Data(month, organizationId);
