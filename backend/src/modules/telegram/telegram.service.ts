@@ -66,16 +66,13 @@ export class TelegramService implements OnModuleInit {
     }
 
     this.setupHandlers();
-    this.setupReportingHandlers();
 
-    // Set bot commands menu
+    // UZ: Faqat ro'yxatga olish uchun buyruqlar
     this.bot.telegram.setMyCommands([
-      { command: "start", description: "Botni ishga tushirish / Menyuni ochish" },
-      { command: "report", description: "Yangi hisobot yuborish" },
-      { command: "help", description: "Yordam olish" },
+      { command: "start", description: "Botni ishga tushirish" },
+      { command: "help", description: "Yordam" },
     ]);
 
-    // UZ: Webhookni o'chirish (agar oldin o'rnatilgan bo'lsa) va Pollingni boshlash
     this.bot.telegram
       .deleteWebhook()
       .then(() => {
@@ -83,11 +80,11 @@ export class TelegramService implements OnModuleInit {
           .launch()
           .then(() => {
             this.logger.log(
-              "Telegram bot polling rejimda ishga tushdi (Webhook o'chirildi).",
+              "Ro'yxatga olish boti polling rejimda ishga tushdi.",
             );
           })
           .catch((err) => {
-            this.logger.error("Telegram bot ishga tushirishda xatolik:", err);
+            this.logger.error("Bot ishga tushirishda xatolik:", err);
           });
       })
       .catch((err) => {
@@ -133,15 +130,6 @@ export class TelegramService implements OnModuleInit {
     });
 
     // Listen for menu buttons
-    this.bot.hears("📊 Yangi hisobot", async (ctx) => {
-      return ctx.reply("Hisobot yuborishni boshlash uchun /report buyrug'ini bosing yoki quyidagi tugmani bosing.",
-        Markup.inlineKeyboard([[Markup.button.callback("Start Reporting", "start_report")]]));
-    });
-
-    this.bot.hears("📅 Bugungi statistika", async (ctx) => {
-      return this.dailyReportsService.generateAutomatedDailyReport();
-    });
-
     // Handle phone number verification
     this.bot.on("contact", async (ctx) => {
       const contact = ctx.message.contact;
@@ -175,19 +163,6 @@ export class TelegramService implements OnModuleInit {
       }
     });
 
-    this.bot.action("get_hep", (ctx) => this.handleReportRequest(ctx, "hep"));
-    this.bot.action("get_covid", (ctx) => this.handleReportRequest(ctx, "covid"));
-    this.bot.action("get_flu", (ctx) => this.handleReportRequest(ctx, "flu"));
-    this.bot.action("get_ari", (ctx) => this.handleReportRequest(ctx, "ari"));
-    this.bot.action("get_epi", (ctx) => this.handleReportRequest(ctx, "epi"));
-    this.bot.action("get_sanitary", (ctx) => this.handleReportRequest(ctx, "sanitary"));
-
-    this.bot.action("verify_phone", async (ctx) => {
-      await ctx.reply(`Davom etish uchun telefon raqamingizni tasdiqlang.`,
-        Markup.keyboard([[Markup.button.contactRequest("📞 Telefon raqamni yuborish")]]).resize(),
-      );
-    });
-
     this.bot.action(/^approve_/, (ctx) => {
       const userId = ctx.match[0].replace("approve_", "");
       return this.handleApproval(ctx, userId);
@@ -201,10 +176,8 @@ export class TelegramService implements OnModuleInit {
 
   private async showMainMenu(ctx: any) {
     return ctx.reply(
-      "Assalomu alaykum! SMART SES tizimining rasmiy botiga xush kelibsiz. Kerakli bo'limni tanlang:",
+      "Assalomu alaykum! Bu SMART SES ro'yxatga olish botidir.\n\nSiz ushbu bot orqali tizimga ro'yxatdan o'tishingiz va login/parolingizni olishingiz mumkin.",
       Markup.keyboard([
-        ["📊 Yangi hisobot"],
-        ["📅 Bugungi statistika", "🏢 Ma'lumotlarim"],
         ["📞 Aloqa"]
       ]).resize()
     );
