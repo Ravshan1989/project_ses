@@ -63,6 +63,12 @@ const AppealsPage: React.FC = () => {
         monitoringQuery,
         createRecordMutation
     } = useAppealsData(month, effectiveOrgId, activeTab);
+    
+    // Determine if regional or district
+    const currentOrg = organizations.find((o: any) => o.id === effectiveOrgId);
+    // In our system, Level 2 (Region) has a parent (Republic/Root) or we can check its properties.
+    // Based on seeding, Toshkent viloyati is top-level (parent is null)
+    const isRegionalOrg = currentOrg ? !currentOrg.parent_id && !currentOrg.parent : false;
 
     const [localData, setLocalData] = useState<any[]>([]);
 
@@ -83,6 +89,17 @@ const AppealsPage: React.FC = () => {
     };
 
     const getVal = (rowKey: string, field: string): number => {
+        // UZ: Agar avtomatik hisobot ma'lumotlari bo'lsa, ularni qaytaradi (faqat joriy yil/davr uchun)
+        if (activeTab !== 'journal' && autoReportsQuery.data) {
+            const data = autoReportsQuery.data;
+            if (activeTab === '1') return data.table1?.[rowKey]?.[field] || 0;
+            if (activeTab === '2') return data.table2?.[field] || 0; // Table 2 aggregations
+            if (activeTab === '3') return data.table3?.[field] || 0;
+            if (activeTab === '4') return data.table4?.[rowKey]?.[field] || 0;
+            if (activeTab === '5') return data.table5?.[field] || 0;
+            if (activeTab === '6') return data.table6?.[field] || 0;
+            if (activeTab === '7') return data.table7?.[field] || 0;
+        }
         return localData.find(r => r.row_key === rowKey)?.[field] || 0;
     };
 
@@ -105,15 +122,28 @@ const AppealsPage: React.FC = () => {
                 </tr>
             </thead>
             <tbody>
-                {APPEALS_T1_ROWS.map((row, ridx) => (
-                    <tr key={row.key}>
-                        <td style={tdStyle}>{ridx + 1}</td>
-                        <td style={{ ...tdStyle, textAlign: 'left' }}>{t(row.labelKey)}</td>
-                        {['total_prev', 'total_curr', 'oral_prev', 'oral_curr', 'written_prev', 'written_curr', 'electronic_prev', 'electronic_curr'].map((f, fidx) => (
-                            <td key={f} style={tdStyle}><EditCell value={getVal(row.key, f)} onChange={v => updateCell(row.key, f, v)} rowIdx={ridx} colIdx={fidx} disabled={isSaving} /></td>
-                        ))}
-                    </tr>
-                ))}
+                {APPEALS_T1_ROWS.map((row, ridx) => {
+                    let labelKey = row.labelKey;
+                    if (isRegionalOrg && row.key === 'deputy_epid') labelKey = 'appeals.table1.rows.deputy_epid_reg';
+                    if (isRegionalOrg && row.key === 'deputy_san') labelKey = 'appeals.table1.rows.deputy_san_reg';
+                    
+                    return (
+                        <tr key={row.key}>
+                            <td style={tdStyle}>{ridx + 1}</td>
+                            <td style={{ ...tdStyle, textAlign: 'left' }}>{t(labelKey)}</td>
+                            {/* UZ: Kelgusida barcha ustunlarni avtomatlashtirish mumkin, hozircha faqat _curr bilan tugaydiganlar avtomat */}
+                            {['total_prev', 'total_curr', 'oral_prev', 'oral_curr', 'written_prev', 'written_curr', 'electronic_prev', 'electronic_curr'].map((f, fidx) => (
+                                <td key={f} style={tdStyle}>
+                                    {f.endsWith('_curr') ? (
+                                        <span style={{ fontWeight: 600, color: '#1890ff' }}>{getVal(row.key, f)}</span>
+                                    ) : (
+                                        <EditCell value={getVal(row.key, f)} onChange={v => updateCell(row.key, f, v)} rowIdx={ridx} colIdx={fidx} disabled={isSaving} />
+                                    )}
+                                </td>
+                            ))}
+                        </tr>
+                    );
+                })}
             </tbody>
         </table>
     );
@@ -136,13 +166,19 @@ const AppealsPage: React.FC = () => {
             </thead>
             <tbody>
                 {APPEALS_SUBJECT_ROWS.map((row, ridx) => (
-                    <tr key={row.key}>
-                        <td style={tdStyle}>{ridx + 1}</td>
-                        <td style={{ ...tdStyle, textAlign: 'left' }}>{t(row.labelKey)}</td>
-                        {['total_prev', 'total_curr', 'measures_taken', 'explained', 'rejected', 'being_considered', 'repeated', 'overdue'].map((f, fidx) => (
-                            <td key={f} style={tdStyle}><EditCell value={getVal(row.key, f)} onChange={v => updateCell(row.key, f, v)} rowIdx={ridx} colIdx={fidx} disabled={isSaving} /></td>
-                        ))}
-                    </tr>
+                        <tr key={row.key}>
+                            <td style={tdStyle}>{ridx + 1}</td>
+                            <td style={{ ...tdStyle, textAlign: 'left' }}>{t(row.labelKey)}</td>
+                            {['total_prev', 'total_curr', 'measures_taken', 'explained', 'rejected', 'being_considered', 'repeated', 'overdue'].map((f) => (
+                                <td key={f} style={tdStyle}>
+                                    {!f.endsWith('_prev') ? (
+                                        <span style={{ fontWeight: 600, color: '#1890ff' }}>{getVal(row.key, f)}</span>
+                                    ) : (
+                                        <EditCell value={getVal(row.key, f)} onChange={v => updateCell(row.key, f, v)} rowIdx={ridx} colIdx={fidx} disabled={isSaving} />
+                                    )}
+                                </td>
+                            ))}
+                        </tr>
                 ))}
             </tbody>
         </table>
@@ -170,8 +206,14 @@ const AppealsPage: React.FC = () => {
             <tbody>
                 <tr key="total">
                     <td style={{ ...tdStyle, fontWeight: 'bold' }}>Tuman hisoboti</td>
-                    {['total_prev', 'total_curr', 'phys_prev', 'phys_curr', 'legal_prev', 'legal_curr', 'written', 'electronic', 'oral_total', 'oral_leader', 'oral_staff', 'oral_phone'].map((f, fidx) => (
-                        <td key={f} style={tdStyle}><EditCell value={getVal('total', f)} onChange={v => updateCell('total', f, v)} rowIdx={0} colIdx={fidx} disabled={isSaving} /></td>
+                    {['total_prev', 'total_curr', 'phys_prev', 'phys_curr', 'legal_prev', 'legal_curr', 'written', 'electronic', 'oral_total', 'oral_leader', 'oral_staff', 'oral_phone'].map((f) => (
+                        <td key={f} style={tdStyle}>
+                            {!f.endsWith('_prev') ? (
+                                <span style={{ fontWeight: 600, color: '#1890ff' }}>{getVal('total', f)}</span>
+                            ) : (
+                                <EditCell value={getVal('total', f)} onChange={v => updateCell('total', f, v)} rowIdx={0} colIdx={fidx} disabled={isSaving} />
+                            )}
+                        </td>
                     ))}
                 </tr>
             </tbody>
@@ -192,7 +234,9 @@ const AppealsPage: React.FC = () => {
                     <tr key={row.key}>
                         <td style={{ ...tdStyle, textAlign: 'left' }}>{t(row.labelKey)}</td>
                         <td style={tdStyle}><EditCell value={getVal(row.key, 'count_prev')} onChange={v => updateCell(row.key, 'count_prev', v)} rowIdx={ridx} colIdx={0} disabled={isSaving} /></td>
-                        <td style={tdStyle}><EditCell value={getVal(row.key, 'count_curr')} onChange={v => updateCell(row.key, 'count_curr', v)} rowIdx={ridx} colIdx={1} disabled={isSaving} /></td>
+                        <td style={tdStyle}>
+                            <span style={{ fontWeight: 600, color: '#1890ff' }}>{getVal(row.key, 'count_curr')}</span>
+                        </td>
                     </tr>
                 ))}
             </tbody>
@@ -217,8 +261,14 @@ const AppealsPage: React.FC = () => {
             <tbody>
                 <tr key="total">
                     <td style={tdStyle}>Murojaat turlari</td>
-                    {['total_prev', 'total_curr', 'phys_total_curr', 'phys_ariza_curr', 'phys_shikoyat_curr', 'phys_taklif_curr', 'legal_total_curr', 'legal_ariza_curr', 'legal_shikoyat_curr', 'legal_taklif_curr'].map((f, fidx) => (
-                        <td key={f} style={tdStyle}><EditCell value={getVal('total', f)} onChange={v => updateCell('total', f, v)} rowIdx={0} colIdx={fidx} disabled={isSaving} /></td>
+                    {['total_prev', 'total_curr', 'phys_total_curr', 'phys_ariza_curr', 'phys_shikoyat_curr', 'phys_taklif_curr', 'legal_total_curr', 'legal_ariza_curr', 'legal_shikoyat_curr', 'legal_taklif_curr'].map((f) => (
+                        <td key={f} style={tdStyle}>
+                            {!f.endsWith('_prev') ? (
+                                <span style={{ fontWeight: 600, color: '#1890ff' }}>{getVal('total', f)}</span>
+                            ) : (
+                                <EditCell value={getVal('total', f)} onChange={v => updateCell('total', f, v)} rowIdx={0} colIdx={fidx} disabled={isSaving} />
+                            )}
+                        </td>
                     ))}
                 </tr>
             </tbody>
@@ -241,8 +291,10 @@ const AppealsPage: React.FC = () => {
             <tbody>
                 <tr key="total">
                     <td style={tdStyle}>Soni</td>
-                    {['people_total', 'people_satisfied', 'people_explained', 'people_rejected', 'virtual_total', 'virtual_satisfied', 'virtual_explained', 'virtual_rejected'].map((f, fidx) => (
-                        <td key={f} style={tdStyle}><EditCell value={getVal('total', f)} onChange={v => updateCell('total', f, v)} rowIdx={0} colIdx={fidx} disabled={isSaving} /></td>
+                    {['people_total', 'people_satisfied', 'people_explained', 'people_rejected', 'virtual_total', 'virtual_satisfied', 'virtual_explained', 'virtual_rejected'].map((f) => (
+                        <td key={f} style={tdStyle}>
+                            <span style={{ fontWeight: 600, color: '#1890ff' }}>{getVal('total', f)}</span>
+                        </td>
                     ))}
                 </tr>
             </tbody>
@@ -267,13 +319,19 @@ const AppealsPage: React.FC = () => {
             </thead>
             <tbody>
                 {APPEALS_T7_ROWS.map((row, ridx) => (
-                    <tr key={row.key}>
-                        <td style={tdStyle}>{ridx + 1}</td>
-                        <td style={{ ...tdStyle, textAlign: 'left' }}>{t(row.labelKey)}</td>
-                        {['fine_prev', 'fine_curr', 'reprimand_prev', 'reprimand_curr', 'dismissal_prev', 'dismissal_curr'].map((f, fidx) => (
-                            <td key={f} style={tdStyle}><EditCell value={getVal(row.key, f)} onChange={v => updateCell(row.key, f, v)} rowIdx={ridx} colIdx={fidx} disabled={isSaving} /></td>
-                        ))}
-                    </tr>
+                        <tr key={row.key}>
+                            <td style={tdStyle}>{ridx + 1}</td>
+                            <td style={{ ...tdStyle, textAlign: 'left' }}>{t(row.labelKey)}</td>
+                            {['fine_prev', 'fine_curr', 'reprimand_prev', 'reprimand_curr', 'dismissal_prev', 'dismissal_curr'].map((f, fidx) => (
+                                <td key={f} style={tdStyle}>
+                                    {f.endsWith('_curr') ? (
+                                        <span style={{ fontWeight: 600, color: '#1890ff' }}>{getVal(row.key, f)}</span>
+                                    ) : (
+                                        <EditCell value={getVal(row.key, f)} onChange={v => updateCell(row.key, f, v)} rowIdx={ridx} colIdx={fidx} disabled={isSaving} />
+                                    )}
+                                </td>
+                            ))}
+                        </tr>
                 ))}
             </tbody>
         </table>
@@ -292,6 +350,7 @@ const AppealsPage: React.FC = () => {
                     isLoading={recordsQuery.isLoading}
                     onCreate={(v) => createRecordMutation.mutate(v)}
                     isCreating={createRecordMutation.isPending}
+                    isRegionalOrg={isRegionalOrg}
                 />
             )
         },

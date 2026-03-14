@@ -13,6 +13,7 @@ interface MasterAppealsJournalProps {
     isLoading: boolean;
     onCreate: (values: any) => void;
     isCreating: boolean;
+    isRegionalOrg: boolean;
 }
 
 const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
@@ -22,7 +23,8 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
     autoReports,
     isLoading,
     onCreate,
-    isCreating
+    isCreating,
+    isRegionalOrg
 }) => {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [form] = Form.useForm();
@@ -187,8 +189,14 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                             <Form.Item name="recipient" label="Kimga yuborildi (Table 1 uchun)" rules={[{ required: true }]}>
                                 <Select options={[
                                     { label: 'Rahbariyat', value: 'head' },
-                                    { label: 'Epidemiologiya o\'rinbosari', value: 'deputy_epid' },
-                                    { label: 'Sanitariya o\'rinbosari', value: 'deputy_san' },
+                                    { 
+                                        label: isRegionalOrg ? 'Epidemiologiya o\'rinbosari' : 'Epidemiologiya bo\'lim mudiri', 
+                                        value: 'deputy_epid' 
+                                    },
+                                    { 
+                                        label: isRegionalOrg ? 'Sanitariya o\'rinbosari' : 'Sanitariya bo\'lim mudiri', 
+                                        value: 'deputy_san' 
+                                    },
                                 ]} />
                             </Form.Item>
                         </Col>

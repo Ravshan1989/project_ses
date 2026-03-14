@@ -302,7 +302,9 @@
             "rows": {
                 "head": "Sanepidxizmat bo'limi boshlig'i",
                 "deputy_epid": "Epidemiologiya bo'limi mudiri",
-                "deputy_san": "Sanitariya bo'limi mudiri"
+                "deputy_san": "Sanitariya bo'limi mudiri",
+                "deputy_epid_reg": "Epidemiologiya bo'limi boshlig'i o'rinbosari",
+                "deputy_san_reg": "Sanitariya bo'limi boshlig'i o'rinbosari"
             }
         },
         "subjects": {
