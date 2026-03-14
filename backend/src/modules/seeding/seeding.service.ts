@@ -37,8 +37,44 @@ export class SeedingService implements OnModuleInit {
     await this.seedPermissions();
     await this.seedDepartmentPermissions();
     await this.seedAdmin(); // UZ: Admin foydalanuvchisini tekshirish va yaratish
+    await this.seedHR(); // UZ: Test HR foydalanuvchisini yaratish
     await this.seedTestTrio();
     this.logger.log("Seeding check complete.");
+  }
+
+  private async seedHR() {
+    const hrUsername = "kadr_chirchiq";
+    const existingHR = await this.usersService.findOneByUsername(hrUsername);
+
+    if (existingHR) return;
+
+    const chirchiq = await this.orgRepo.findOne({ where: { name: "Chirchiq sh" } });
+    if (!chirchiq) return;
+
+    let dept = await this.deptRepo.findOne({ where: { name: "Boshqaruv (Admin)" } });
+    if (!dept) {
+      dept = await this.deptRepo.save(this.deptRepo.create({
+        name: "Boshqaruv (Admin)",
+        level: 1,
+        isActive: true,
+      }));
+    }
+
+    const salt = await bcrypt.genSalt();
+    const passwordHash = await bcrypt.hash("ses12345", salt);
+
+    await this.usersService.create({
+      username: hrUsername,
+      passwordHash,
+      role: UserRole.HR,
+      organizationId: chirchiq.id,
+      departmentId: dept.id,
+      isActive: true,
+      firstName: "Chirchiq",
+      lastName: "Kadri",
+    });
+
+    this.logger.log(`HR user created: ${hrUsername} / ses12345`);
   }
 
   private async seedAdmin() {
