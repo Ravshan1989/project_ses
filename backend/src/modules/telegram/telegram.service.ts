@@ -133,15 +133,27 @@ export class TelegramService implements OnModuleInit {
     // Handle phone number verification
     this.bot.on("contact", async (ctx) => {
       const contact = ctx.message.contact;
-      const phoneNumber = contact.phone_number;
+      const rawPhone = contact.phone_number;
 
-      this.logger.log(`Received phone number: ${phoneNumber} from ${ctx.from.id}`);
+      this.logger.log(`Received phone number: ${rawPhone} from ${ctx.from.id}`);
+
+      // UZ: Telefon raqamni turli formatlar bilan qidiramiz
+      const digitsOnly = rawPhone.replace(/\D/g, ""); // 99807736812
+      const withPlus = `+${digitsOnly}`;               // +99807736812
 
       try {
-        const user = await this.userRepository.findOne({
-          where: { phoneNumber: phoneNumber.replace(/\D/g, "") },
+        // UZ: Avval +XXX formatda qidiramiz, keyin raqam bilan
+        let user = await this.userRepository.findOne({
+          where: { phoneNumber: withPlus },
           relations: ["organization"],
         });
+
+        if (!user) {
+          user = await this.userRepository.findOne({
+            where: { phoneNumber: digitsOnly },
+            relations: ["organization"],
+          });
+        }
 
         if (user) {
           user.telegramChatId = ctx.from.id.toString();
