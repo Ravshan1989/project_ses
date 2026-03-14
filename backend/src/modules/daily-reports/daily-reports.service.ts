@@ -631,17 +631,9 @@ export class DailyReportsService {
 
   async cleanupTest() {
     await this.reportRepo.delete({});
-    await this.fluRepo.delete({});
-    await this.ariRepo.delete({});
-    await this.epiRepo.delete({});
-    await this.covidRepo.delete({});
-    await this.diarrheaRepo.delete({});
-    await this.sanitaryRepo.delete({});
-    // Safely delete submissions using repo
-    await this.reportRepo.manager.getRepository(Submission).delete({});
     return {
       success: true,
-      message: "Barcha ma'lumotlar muvaffaqiyatli o'chirildi (Full Wipe)",
+      message: "Gepatit ma'lumotlari o'chirildi",
     };
   }
 
