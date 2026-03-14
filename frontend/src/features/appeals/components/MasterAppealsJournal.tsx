@@ -41,6 +41,12 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
 
     const columns = [
         { title: 'Sana', dataIndex: 'registration_date', key: 'registration_date' },
+        { 
+            title: 'Hudud', 
+            dataIndex: ['organization', 'name'], 
+            key: 'organization',
+            render: (name: string) => <Tag color="orange">{name || 'Noma\'lum'}</Tag>
+        },
         { title: 'F.I.O / Nom', dataIndex: 'applicant_name', key: 'applicant_name' },
         {
             title: 'Turi',
