@@ -24,7 +24,6 @@ import { TelegramService } from "../telegram/telegram.service";
 import { SubmissionsService } from "../submissions/submissions.service";
 import { ExportsService } from "../exports/exports.service";
 import { FieldInspectionType } from "../submissions/entities/field-inspection.entity";
-import { Submission } from "../submissions/entities/submission.entity";
 
 @Injectable()
 export class DailyReportsService {
@@ -630,20 +629,17 @@ export class DailyReportsService {
   }
 
   async cleanupTest() {
-    try {
-      await this.reportRepo.query(
-        "TRUNCATE TABLE hepatitis_daily_reports, flu_daily_reports, ari_daily_reports, epidemiology_daily_reports, covid_daily_reports, diarrhea_daily_reports, sanitary_daily_reports, submissions CASCADE",
-      );
-      return {
-        success: true,
-        message: "Barcha ma'lumotlar muvaffaqiyatli tozalandi (TRUNCATE CASCADE)",
-      };
-    } catch (err) {
-      return {
-        success: false,
-        error: err.message,
-      };
-    }
+    await this.reportRepo.delete({ isTest: true });
+    await this.fluRepo.delete({ isTest: true });
+    await this.ariRepo.delete({ isTest: true });
+    await this.epiRepo.delete({ isTest: true });
+    await this.covidRepo.delete({ isTest: true });
+    await this.diarrheaRepo.delete({ isTest: true });
+    await this.sanitaryRepo.delete({ isTest: true });
+    return {
+      success: true,
+      message: "Test ma'lumotlari muvaffaqiyatli o'chirildi",
+    };
   }
 
   async getMonthlyAggregation(
