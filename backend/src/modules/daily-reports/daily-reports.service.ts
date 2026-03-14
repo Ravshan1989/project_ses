@@ -629,16 +629,18 @@ export class DailyReportsService {
   }
 
   async cleanupTest() {
-    await this.reportRepo.delete({ isTest: true });
-    await this.fluRepo.delete({ isTest: true });
-    await this.ariRepo.delete({ isTest: true });
-    await this.epiRepo.delete({ isTest: true });
-    await this.covidRepo.delete({ isTest: true });
-    await this.diarrheaRepo.delete({ isTest: true });
-    await this.sanitaryRepo.delete({ isTest: true });
+    await this.reportRepo.delete({});
+    await this.fluRepo.delete({});
+    await this.ariRepo.delete({});
+    await this.epiRepo.delete({});
+    await this.covidRepo.delete({});
+    await this.diarrheaRepo.delete({});
+    await this.sanitaryRepo.delete({});
+    // Also delete submissions via manager
+    await this.reportRepo.manager.query("DELETE FROM submission");
     return {
       success: true,
-      message: "Test ma'lumotlari muvaffaqiyatli o'chirildi",
+      message: "Barcha ma'lumotlar muvaffaqiyatli o'chirildi (Full Wipe)",
     };
   }
 
