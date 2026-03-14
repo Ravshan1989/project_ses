@@ -39,6 +39,7 @@ const AppealsPage: React.FC = () => {
     const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('journal');
 
+    const userRole = localStorage.getItem('user_role');
     const isRegion = userRole === 'REGION_HEAD' || userRole === 'LEAD_SPECIALIST';
 
     const isAdmin = localStorage.getItem('user_role') === 'ADMIN' || localStorage.getItem('user_role') === 'EXECUTIVE';

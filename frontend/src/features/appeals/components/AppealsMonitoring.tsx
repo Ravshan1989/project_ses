@@ -1,6 +1,5 @@
 import React from 'react';
 import { Table, Tag, Card, Row, Col, Statistic, Progress } from 'antd';
-import { useTranslation } from 'react-i18next';
 import { CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 
 interface MonitoringData {
