@@ -8,12 +8,26 @@ const { Title } = Typography;
 interface AppealsDashboardProps {
     data: any;
     month: string;
+    isLoading?: boolean;
+    orgId?: string | null;
 }
 
-const AppealsDashboard: React.FC<AppealsDashboardProps> = ({ data, month }) => {
+const AppealsDashboard: React.FC<AppealsDashboardProps> = ({ data, month, isLoading, orgId }) => {
     const { t } = useTranslation();
 
-    if (!data) return <div style={{ padding: 20 }}>Ma'lumotlar yuklanmoqda...</div>;
+    if (!orgId) {
+        return (
+            <div style={{ padding: 40, textAlign: 'center' }}>
+                <Typography.Title level={4} style={{ color: '#8c8c8c' }}>
+                    Tahlilni ko'rish uchun tashkilotni tanlang
+                </Typography.Title>
+            </div>
+        );
+    }
+
+    if (isLoading || !data) {
+        return <div style={{ padding: 20 }}>Ma'lumotlar yuklanmoqda...</div>;
+    }
 
     // 1. Data for Appeal Types (Ariza, Shikoyat, Taklif)
     const typeData = [

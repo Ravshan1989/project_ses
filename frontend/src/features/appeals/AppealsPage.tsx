@@ -374,7 +374,12 @@ const AppealsPage: React.FC = () => {
         {
             key: 'dashboard',
             label: <span style={{ fontWeight: 'bold', color: '#52c41a' }}>Tahliliy Dashboard</span>,
-            children: <AppealsDashboard data={autoReportsQuery.data} month={month} />
+            children: <AppealsDashboard 
+                data={autoReportsQuery.data} 
+                month={month} 
+                isLoading={autoReportsQuery.isLoading} 
+                orgId={effectiveOrgId} 
+            />
         },
         { key: '1', label: t('appeals.tabs.t1'), children: <Spin spinning={isLoadingTable}><div className="table-container">{renderTable1()}</div></Spin> },
         { key: '2', label: t('appeals.tabs.t2'), children: <Spin spinning={isLoadingTable}><div className="table-container">{renderTable2()}</div></Spin> },

@@ -228,37 +228,129 @@ export class AppealsService {
         
         const workbook = new ExcelJS.Workbook();
         
+        const headerFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } };
+        const borderStyle: Partial<ExcelJS.Borders> = {
+            top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' }
+        };
+
+        const setupSheet = (name: string, title: string, headers: string[], widths: number[]) => {
+            const sheet = workbook.addWorksheet(name);
+            const titleRow = sheet.addRow([title]);
+            titleRow.font = { bold: true, size: 14 };
+            sheet.mergeCells(1, 1, 1, headers.length);
+            sheet.addRow([]); // empty row
+
+            const headerRow = sheet.addRow(headers);
+            headerRow.eachCell((cell) => {
+                cell.fill = headerFill;
+                cell.font = { bold: true };
+                cell.border = borderStyle;
+                cell.alignment = { horizontal: 'center' };
+            });
+
+            widths.forEach((w, i) => {
+                sheet.getColumn(i + 1).width = w;
+            });
+            return sheet;
+        };
+
         // 1. Sheet: Table 1
-        const s1 = workbook.addWorksheet("1-Jadval");
-        s1.addRow(["Rahbarlar tomonidan murojaatlar ko'rib chiqilishi"]);
-        s1.addRow(["Rahbar", "Jami", "Yozma", "Elektron", "Og'zaki"]);
-        const t1Data = reports.table1;
-        s1.addRow(["Bo'lim boshlig'i", t1Data.head.total_curr, t1Data.head.written_curr, t1Data.head.electronic_curr, t1Data.head.oral_curr]);
-        s1.addRow(["Epidemiologiya mudiri", t1Data.deputy_epid.total_curr, t1Data.deputy_epid.written_curr, t1Data.deputy_epid.electronic_curr, t1Data.deputy_epid.oral_curr]);
-        s1.addRow(["Sanitariya mudiri", t1Data.deputy_san.total_curr, t1Data.deputy_san.written_curr, t1Data.deputy_san.electronic_curr, t1Data.deputy_san.oral_curr]);
+        const s1 = setupSheet("1-Jadval", "Rahbarlar tomonidan murojaatlar ko'rib chiqilishi", 
+            ["Rahbar", "Jami", "Yozma", "Elektron", "Og'zaki"], [25, 10, 10, 10, 10]);
+        const t1 = reports.table1;
+        [
+            ["Bo'lim boshlig'i", t1.head.total_curr, t1.head.written_curr, t1.head.electronic_curr, t1.head.oral_curr],
+            ["Epidemiologiya mudiri", t1.deputy_epid.total_curr, t1.deputy_epid.written_curr, t1.deputy_epid.electronic_curr, t1.deputy_epid.oral_curr],
+            ["Sanitariya mudiri", t1.deputy_san.total_curr, t1.deputy_san.written_curr, t1.deputy_san.electronic_curr, t1.deputy_san.oral_curr]
+        ].forEach(row => {
+            const r = s1.addRow(row);
+            r.eachCell(c => c.border = borderStyle);
+        });
 
-        // 2. Sheet: Table 3 (Simplified implementation for brevity, can be expanded)
-        const s3 = workbook.addWorksheet("3-Jadval");
-        s3.addRow(["Murojaatlar turlari bo'yicha"]);
-        s3.addRow(["Ko'rsatkich", "Qiymat"]);
-        s3.addRow(["Jami", reports.table3.total_curr]);
-        s3.addRow(["Jismoniy shaxslar", reports.table3.phys_curr]);
-        s3.addRow(["Yuridik shaxslar", reports.table3.legal_curr]);
+        // 2. Sheet: Table 2
+        const s2 = setupSheet("2-Jadval", "Murojaatlar ijrosi va nazorati", 
+            ["Ko'rsatkich", "Soni"], [40, 15]);
+        const t2 = reports.table2;
+        [
+            ["Jami murojaatlar", t2.total_curr],
+            ["Yozma", t2.written_curr],
+            ["Elektron", t2.electronic_curr],
+            ["Og'zaki", t2.oral_curr],
+            ["Qanoatlantirildi", t2.measures_taken],
+            ["Tushuntirildi", t2.explained],
+            ["Rad etildi", t2.rejected],
+            ["Ko'rib chiqilmoqda", t2.being_considered],
+            ["Takroriy", t2.repeated],
+            ["Muddati o'tgan", t2.overdue]
+        ].forEach(row => {
+            const r = s2.addRow(row);
+            r.eachCell(c => c.border = borderStyle);
+        });
 
-        // 3. Sheet: Table 5
-        const s5 = workbook.addWorksheet("5-Jadval");
-        s5.addRow(["Murojaat mazmuni"]);
-        s5.addRow(["Turi", "Jami", "Ariza", "Shikoyat", "Taklif"]);
-        s5.addRow(["Jismoniy", reports.table5.phys_total_curr, reports.table5.phys_ariza_curr, reports.table5.phys_shikoyat_curr, reports.table5.phys_taklif_curr]);
-        s5.addRow(["Yuridik", reports.table5.legal_total_curr, reports.table5.legal_ariza_curr, reports.table5.legal_shikoyat_curr, reports.table5.legal_taklif_curr]);
+        // 3. Sheet: Table 3
+        const s3 = setupSheet("3-Jadval", "Murojaatlar turlari va kanallari", 
+            ["Ko'rsatkich", "Qiymat"], [30, 15]);
+        const t3 = reports.table3;
+        [
+            ["Jami murojaatlar", t3.total_curr],
+            ["Jismoniy shaxslar", t3.phys_curr],
+            ["Yuridik shaxslar", t3.legal_curr],
+            ["Yozma", t3.written],
+            ["Elektron", t3.electronic],
+            ["Og'zaki", t3.oral_total]
+        ].forEach(row => {
+            const r = s3.addRow(row);
+            r.eachCell(c => c.border = borderStyle);
+        });
 
-        // 4. Sheet: Table 7
-        const s7 = workbook.addWorksheet("7-Jadval");
-        s7.addRow(["Choralar"]);
-        s7.addRow(["Chora turi", "Soni"]);
-        s7.addRow(["Jarima", reports.table7.fine_curr]);
-        s7.addRow(["Hayfsan", reports.table7.reprimand_curr]);
-        s7.addRow(["Ishdan bo'shatish", reports.table7.dismissal_curr]);
+        // 4. Sheet: Table 4
+        const s4 = setupSheet("4-Jadval", "Murojaat mazmuni (Mavzular)", 
+            ["Mavzu kodi", "Soni"], [20, 15]);
+        Object.entries(reports.table4).forEach(([key, val]: [string, any]) => {
+            const r = s4.addRow([key, val.count_curr]);
+            r.eachCell(c => c.border = borderStyle);
+        });
+
+        // 5. Sheet: Table 5
+        const s5 = setupSheet("5-Jadval", "Murojaat turi (Ariza, Shikoyat, Taklif)", 
+            ["Shaxs turi", "Jami", "Ariza", "Shikoyat", "Taklif"], [15, 10, 10, 10, 10]);
+        const t5 = reports.table5;
+        [
+            ["Jismoniy", t5.phys_total_curr, t5.phys_ariza_curr, t5.phys_shikoyat_curr, t5.phys_taklif_curr],
+            ["Yuridik", t5.legal_total_curr, t5.legal_ariza_curr, t5.legal_shikoyat_curr, t5.legal_taklif_curr]
+        ].forEach(row => {
+            const r = s5.addRow(row);
+            r.eachCell(c => c.border = borderStyle);
+        });
+
+        // 6. Sheet: Table 6
+        const s6 = setupSheet("6-Jadval", "Xalq va Virtual qabulxonalar", 
+            ["Turi", "Jami", "Qanoatlantirildi", "Tushuntirildi", "Rad etildi"], [20, 10, 15, 15, 15]);
+        const t6 = reports.table6;
+        [
+            ["Xalq qabulxonasi", t6.people_total, t6.people_satisfied, t6.people_explained, t6.people_rejected],
+            ["Virtual qabulxona", t6.virtual_total, t6.virtual_satisfied, t6.virtual_explained, t6.virtual_rejected]
+        ].forEach(row => {
+            const r = s6.addRow(row);
+            r.eachCell(c => c.border = borderStyle);
+        });
+
+        // 7. Sheet: Table 7
+        const s7 = setupSheet("7-Jadval", "Intizomiy va ma'muriy choralar", 
+            ["Chora turi", "Soni"], [30, 15]);
+        const t7 = reports.table7;
+        [
+            ["Jami choralar", t7.grand_total_curr],
+            ["Intizomiy choralar (jami)", t7.disciplinary_total_curr],
+            ["Jarima", t7.fine_curr],
+            ["Hayfsan", t7.reprimand_curr],
+            ["Ishdan bo'shatish", t7.dismissal_curr],
+            ["Ma'muriy chora", t7.administrative_curr],
+            ["Jinoiy javobgarlik", t7.criminal_curr]
+        ].forEach(row => {
+            const r = s7.addRow(row);
+            r.eachCell(c => c.border = borderStyle);
+        });
 
         res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         res.setHeader("Content-Disposition", `attachment; filename=Appeals_Report_${month}_${org?.name || 'export'}.xlsx`);
