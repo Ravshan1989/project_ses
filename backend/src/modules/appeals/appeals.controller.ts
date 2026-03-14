@@ -46,4 +46,12 @@ export class AppealsController {
     ) {
         return this.appealsService.generateReportsFromRecords(organizationId, month);
     }
+
+    @Get("monitoring")
+    async getMonitoring(
+        @Query("organizationId") organizationId: string,
+        @Query("month") month: string,
+    ) {
+        return this.appealsService.getMonitoringData(organizationId, month);
+    }
 }

@@ -42,5 +42,12 @@ export const appealsApi = {
         });
         return response.data;
     },
+
+    getMonitoring: async (organizationId: string, month: string) => {
+        const response = await api.get(`/appeals/monitoring`, {
+            params: { organizationId, month },
+        });
+        return response.data;
+    },
 };
 

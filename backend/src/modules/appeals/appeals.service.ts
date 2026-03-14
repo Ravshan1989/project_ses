@@ -200,6 +200,25 @@ export class AppealsService {
         return { success: true };
     }
 
+    async getMonitoringData(organizationId: string, month: string) {
+        const org = await this.orgRepo.findOne({ where: { id: organizationId }, relations: ['children'] });
+        if (!org || !org.children || org.children.length === 0) return [];
+
+        const monitoringResults = [];
+        for (const child of org.children) {
+            const count = await this.recordRepo.count({
+                where: { organization: { id: child.id }, period_month: month }
+            });
+            monitoringResults.push({
+                organizationId: child.id,
+                organizationName: child.name,
+                count,
+                status: count > 0 ? 'SUBMITTED' : 'PENDING'
+            });
+        }
+        return monitoringResults;
+    }
+
     private getRepo(tableNum: number): Repository<any> {
         switch (tableNum) {
             case 1: return this.table1Repo;

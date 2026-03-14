@@ -64,6 +64,12 @@ export const useAppealsData = (month: string, orgId: string | null, activeTab: s
             enabled: !!orgId && !!month,
         }),
 
+        monitoringQuery: useQuery({
+            queryKey: ['appeals-monitoring', month, orgId],
+            queryFn: () => appealsApi.getMonitoring(orgId!, month),
+            enabled: !!orgId && !!month && activeTab === 'monitoring',
+        }),
+
         createRecordMutation: useMutation({
             mutationFn: (data: any) => appealsApi.createRecord(data),
             onSuccess: () => {

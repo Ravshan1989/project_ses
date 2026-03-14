@@ -9,6 +9,7 @@ import EditCell from '../../components/common/EditCell';
 import { useAppealsData } from './hooks/useAppealsData';
 import { APPEALS_T1_ROWS, APPEALS_SUBJECT_ROWS, APPEALS_T7_ROWS } from './components/AppealsConstants';
 import MasterAppealsJournal from './components/MasterAppealsJournal';
+import AppealsMonitoring from './components/AppealsMonitoring';
 
 
 interface Organization {
@@ -38,6 +39,8 @@ const AppealsPage: React.FC = () => {
     const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('journal');
 
+    const isRegion = userRole === 'REGION_HEAD' || userRole === 'LEAD_SPECIALIST';
+
     const isAdmin = localStorage.getItem('user_role') === 'ADMIN' || localStorage.getItem('user_role') === 'EXECUTIVE';
     const userOrgId = localStorage.getItem('user_org_id');
     const effectiveOrgId = isAdmin ? selectedOrgId : userOrgId;
@@ -56,6 +59,7 @@ const AppealsPage: React.FC = () => {
         refresh,
         recordsQuery,
         autoReportsQuery,
+        monitoringQuery,
         createRecordMutation
     } = useAppealsData(month, effectiveOrgId, activeTab);
 
@@ -298,6 +302,19 @@ const AppealsPage: React.FC = () => {
         { key: '6', label: t('appeals.tabs.t6'), children: <Spin spinning={isLoadingTable}><div className="table-container">{renderTable6()}</div></Spin> },
         { key: '7', label: t('appeals.tabs.t7'), children: <Spin spinning={isLoadingTable}><div className="table-container">{renderTable7()}</div></Spin> },
     ];
+
+    if (isRegion) {
+        tabItems.push({
+            key: 'monitoring',
+            label: <span style={{ fontWeight: 'bold', color: '#fa8c16' }}>Monitoring (Tumanlar)</span>,
+            children: (
+                <AppealsMonitoring 
+                    data={monitoringQuery.data || []}
+                    isLoading={monitoringQuery.isLoading}
+                />
+            )
+        });
+    }
 
     return (
         <GlassLayout title={t('appeals.title')}>
