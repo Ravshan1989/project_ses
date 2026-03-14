@@ -2,21 +2,14 @@ import {
   Injectable,
   Logger,
   OnModuleInit,
-  Inject,
-  forwardRef,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Telegraf, Markup } from "telegraf";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import * as bcrypt from "bcrypt";
-import { DailyReportsService } from "../daily-reports/daily-reports.service";
 import { User } from "../users/entities/user.entity";
 import { UserRole } from "../../common/enums/role.enum";
-import { SubmissionsService } from "../submissions/submissions.service";
-import * as fs from "fs";
-import * as path from "path";
-import { FieldInspectionType, InspectionResult } from "../submissions/entities/field-inspection.entity";
 
 @Injectable()
 export class TelegramService implements OnModuleInit {
@@ -24,7 +17,6 @@ export class TelegramService implements OnModuleInit {
   private readonly logger = new Logger(TelegramService.name);
   private chatId: string;
   private adminChatId: string;
-  private systemUser: User;
   private userStates: Map<number, {
     step: string;
     data: any;
@@ -33,10 +25,6 @@ export class TelegramService implements OnModuleInit {
 
   constructor(
     private configService: ConfigService,
-    @Inject(forwardRef(() => DailyReportsService))
-    private dailyReportsService: DailyReportsService,
-    @Inject(forwardRef(() => SubmissionsService))
-    private submissionsService: SubmissionsService,
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {
@@ -47,12 +35,6 @@ export class TelegramService implements OnModuleInit {
     if (token) {
       this.bot = new Telegraf(token);
     }
-
-    // Mock admin user for data fetching
-    this.systemUser = {
-      role: UserRole.ADMIN,
-      organization: null,
-    } as User;
   }
 
   onModuleInit() {
@@ -175,12 +157,14 @@ export class TelegramService implements OnModuleInit {
       }
     });
 
-    this.bot.action(/^approve_/, (ctx) => {
+    this.bot.action(/^approve_/, async (ctx) => {
+      await ctx.answerCbQuery().catch(() => {});
       const userId = ctx.match[0].replace("approve_", "");
       return this.handleApproval(ctx, userId);
     });
 
-    this.bot.action(/^reject_/, (ctx) => {
+    this.bot.action(/^reject_/, async (ctx) => {
+      await ctx.answerCbQuery().catch(() => {});
       const userId = ctx.match[0].replace("reject_", "");
       return this.handleRejection(ctx, userId);
     });
@@ -196,144 +180,7 @@ export class TelegramService implements OnModuleInit {
   }
 
 
-  private async handleReportRequest(ctx: any, type: string) {
-    // UZ: Toshkent vaqti bilan bugungi sanani olish (UTC+5)
-    const now = new Date();
-    const tashkentOffset = 5 * 60 * 60 * 1000;
-    const today = new Date(now.getTime() + tashkentOffset)
-      .toISOString()
-      .split("T")[0];
-
-    let message = `📅 *${today}* holatiga ko'ra tumanlar statistikasi:\n\n`;
-
-    try {
-      if (type === "hep") {
-        const data = await this.dailyReportsService.getByDate(
-          today,
-          this.systemUser,
-        );
-        if (data.length === 0) message += "Ma'lumot topilmadi.";
-        data.forEach((r) => {
-          const orgName = this.escapeMarkdown(r.organization?.name || "");
-          message += `🏢 *${orgName}:* Jami: ${r.total_cases}, Musbat: ${r.lab_positive}\n`;
-        });
-      } else if (type === "covid") {
-        const data = await this.dailyReportsService.getCovidByDate(
-          today,
-          this.systemUser,
-        );
-        if (data.length === 0) message += "Ma'lumot topilmadi.";
-        data.forEach((r) => {
-          const orgName = this.escapeMarkdown(r.organization?.name || "");
-          message += `🏢 *${orgName}:* Jami: ${r.total_cases}, Hospital: ${r.hospitalized_count}\n`;
-        });
-      } else if (type === "flu") {
-        const data = await this.dailyReportsService.getFluByDate(
-          today,
-          this.systemUser,
-        );
-        if (data.length === 0) message += "Ma'lumot topilmadi.";
-        data.forEach((r) => {
-          const orgName = this.escapeMarkdown(r.organization?.name || "");
-          message += `🏢 *${orgName}:* O'RVI: ${r.ari_total}, Gripp: ${r.flu_total}\n`;
-        });
-      } else if (type === "ari") {
-        const data = await this.dailyReportsService.getAriByDate(
-          today,
-          this.systemUser,
-        );
-        if (data.length === 0) message += "Ma'lumot topilmadi.";
-        data.forEach((r) => {
-          const orgName = this.escapeMarkdown(r.organization?.name || "");
-          message += `🏢 *${orgName}:* O'RVI: ${r.ari}\n`;
-        });
-      } else if (type === "epi") {
-        const data = await this.dailyReportsService.getEpidemiologyByDate(
-          today,
-          this.systemUser,
-        );
-        if (data.length === 0) message += "Ma'lumot topilmadi.";
-        data.forEach((r) => {
-          const orgName = this.escapeMarkdown(r.organization?.name || "");
-          message += `🏢 *${orgName}:* Holati: ${r.status}\n`;
-        });
-      } else if (type === "sanitary") {
-        const data = await this.dailyReportsService.getSanitaryByDate(
-          today,
-          this.systemUser,
-        );
-        if (data.length === 0) message += "Ma'lumot topilmadi.";
-        data.forEach((r) => {
-          const orgName = this.escapeMarkdown(r.organization?.name || "");
-          message += `🏢 *${orgName}:* Tekshirildi: ${r.inspected_total}, Jarima: ${r.fines_total}\n`;
-        });
-      }
-
-      await ctx.editMessageText(message, { parse_mode: "Markdown" });
-      // Restore keyboard
-      await ctx.reply(
-        "Yana biror ma'lumot kerakmi?",
-        Markup.inlineKeyboard([
-          [
-            Markup.button.callback("🟡 Gepatit", "get_hep"),
-            Markup.button.callback("🔴 Covid", "get_covid"),
-          ],
-          [
-            Markup.button.callback("🔵 Gripp (Batafsil)", "get_flu"),
-            Markup.button.callback("🟢 O'RVI", "get_ari"),
-          ],
-          [
-            Markup.button.callback("🟣 Epidemiologiya", "get_epi"),
-            Markup.button.callback("🏥 Sanitariya", "get_sanitary"),
-          ],
-          [
-            Markup.button.callback(
-              "🔐 Ro'yxatdan o'tishni tasdiqlash",
-              "verify_phone",
-            ),
-          ],
-        ]),
-      );
-    } catch (error) {
-      this.logger.error("Ma'lumot olishda xatolik:", error);
-      await ctx.reply("Kechirasiz, ma'lumotlarni olishda xatolik yuz berdi.");
-    }
-  }
-
-  async sendReportNotification(
-    type: string,
-    organizationName: string,
-    date: string,
-    details: string,
-  ) {
-    if (!this.bot || !this.chatId) {
-      return;
-    }
-
-    const escapedOrg = this.escapeMarkdown(organizationName);
-    const escapedType = this.escapeMarkdown(type);
-    const escapedDetails = this.escapeMarkdown(details);
-    try {
-      const message = `
-🔔 *Yangi kunlik hisobot*
-🏷 *Turi:* ${escapedType}
-🏢 *Tashkilot:* ${escapedOrg}
-📅 *Sana:* ${date}
-
-📊 *Ma'lumotlar:*
-${escapedDetails}
-    `;
-
-      await this.bot.telegram.sendMessage(this.chatId, message, {
-        parse_mode: "Markdown",
-      });
-      this.logger.log(
-        `Telegram xabarnomasi yuborildi: ${type} - ${organizationName}`,
-      );
-    } catch (error) {
-      this.logger.error("Telegram xabarnomasini yuborishda xatolik:", error);
-    }
-  }
+  // UZ: Faqat ro'yxatga olish bilan bog'liq xabarnomalar qoldirildi
 
   // Registration notification and approval methods
   async sendRegistrationNotification(user: User): Promise<void> {
@@ -486,14 +333,17 @@ ${escapedDetails}
 <i>Foydalanuvchiga ma'lumotlar yuborildi.</i>
       `.trim();
 
-      await ctx.editMessageText(approvalMessage, { parse_mode: "HTML" });
+      await ctx.editMessageText(approvalMessage, { parse_mode: "HTML" }).catch(e => {
+        this.logger.warn("Could not edit message, might be already edited");
+      });
 
       this.logger.log(
         `User approved: ${username} / ${password} (User ID: ${userId})`,
       );
     } catch (error) {
-      this.logger.error("Failed to approve user", error);
-      await ctx.editMessageText("❌ Xatolik yuz berdi");
+      this.logger.error("Failed to approve user:", error);
+      // Only reply if we haven't succeeded with the main logic
+      await ctx.reply("❌ Tasdiqlashda xatolik yuz berdi").catch(() => {});
     }
   }
 
@@ -517,11 +367,14 @@ ${escapedDetails}
 <i>Foydalanuvchi ma'lumotlar bazasidan o'chirildi.</i>
       `.trim();
 
-      await ctx.editMessageText(rejectionMessage, { parse_mode: "HTML" });
+      await ctx.editMessageText(rejectionMessage, { parse_mode: "HTML" }).catch(e => {
+        this.logger.warn("Could not edit message, might be already edited");
+      });
 
       this.logger.log(`User rejected and deleted: ${userId}`);
     } catch (error) {
-      this.logger.error("Failed to reject user", error);
+      this.logger.error("Failed to reject user:", error);
+      await ctx.reply("❌ Rad etishda xatolik yuz berdi").catch(() => {});
     }
   }
 
@@ -635,202 +488,6 @@ Login/Parol Adminga yuborilmoqda:
         error,
       );
     }
-  }
-
-  async sendDailyReportWithFiles(text: string, pdfPath: string, excelPath: string) {
-    if (!this.adminChatId) {
-      this.logger.warn("Admin chat ID not set, skipping daily report.");
-      return;
-    }
-
-    try {
-      if (text) {
-        await this.bot.telegram.sendMessage(this.adminChatId, text, {
-          parse_mode: "Markdown",
-        });
-      }
-
-      const files = [];
-      if (excelPath && fs.existsSync(excelPath)) {
-        files.push({ source: excelPath, filename: path.basename(excelPath) });
-      }
-
-      for (const file of files) {
-        await this.bot.telegram.sendDocument(this.adminChatId, file);
-      }
-    } catch (error) {
-      this.logger.error("Kunlik hisobotni yuborishda xatolik:", error);
-    }
-  }
-
-  private setupReportingHandlers() {
-    // Action for inline button from menu
-    this.bot.action("start_report", (ctx) => {
-      return (this.bot as any).handleUpdate({
-        message: { text: "/report", from: ctx.from, chat: ctx.chat },
-      });
-    });
-
-    // 1. Start command /report
-    this.bot.command("report", async (ctx) => {
-      const user = await this.userRepository.findOne({
-        where: { telegramChatId: ctx.from.id.toString() },
-        relations: ["organization"],
-      });
-
-      if (!user) {
-        return ctx.reply(
-          "Siz tizimda ro'yxatdan o'tmagansiz. Iltimos /start buyrug'ini bosing.",
-        );
-      }
-
-      this.userStates.set(ctx.from.id, {
-        step: "TYPE",
-        data: { inspector: user, organization: user.organization },
-      });
-
-      return ctx.reply(
-        "Hisobot turini tanlang:",
-        Markup.inlineKeyboard([
-          [
-            Markup.button.callback("🏫 Maktab", "type_SCHOOL"),
-            Markup.button.callback("🎈 Bog'cha", "type_KINDERGARTEN"),
-          ],
-          [Markup.button.callback("⚠️ Muammo", "type_PROBLEM")],
-        ]),
-      );
-    });
-
-    // 2. Handle type selection
-    this.bot.action(/^type_/, async (ctx) => {
-      const type = ctx.match[0].replace("type_", "");
-      const state = this.userStates.get(ctx.from.id);
-      if (!state) return;
-
-      state.data.type = type;
-      state.step = "OBJECT_NAME";
-
-      await ctx.answerCbQuery();
-      return ctx.editMessageText("Ob'ekt nomini kiriting (masalan: 12-maktab):");
-    });
-
-    // 3. Handle messages (Object name, Photo)
-    this.bot.on("text", async (ctx, next) => {
-      const state = this.userStates.get(ctx.from.id);
-      if (!state || state.step !== "OBJECT_NAME") return next();
-
-      state.data.objectName = ctx.message.text;
-      state.step = "LOCATION";
-
-      return ctx.reply(
-        "📍 Joylashuvingizni yuboring (GPS):",
-        Markup.keyboard([
-          Markup.button.locationRequest("📍 Manzilni yuborish"),
-        ]).resize(),
-      );
-    });
-
-    // 4. Handle location
-    this.bot.on("location", async (ctx) => {
-      const state = this.userStates.get(ctx.from.id);
-      if (!state || state.step !== "LOCATION") return;
-
-      state.data.latitude = ctx.message.location.latitude;
-      state.data.longitude = ctx.message.location.longitude;
-      state.step = "PHOTO";
-
-      return ctx.reply(
-        "📸 Ob'ektdan rasm yuboring (yoki /skip buyrug'ini bosing):",
-        Markup.removeKeyboard(),
-      );
-    });
-
-    this.bot.command("skip", async (ctx) => {
-      const state = this.userStates.get(ctx.from.id);
-      if (!state || state.step !== "PHOTO") return;
-
-      state.step = "RESULT";
-      return ctx.reply(
-        "Tekshiruv natijasini tanlang:",
-        Markup.inlineKeyboard([
-          [
-            Markup.button.callback("🟢 Yaxshi", "res_GOOD"),
-            Markup.button.callback("🟠 Qoniqarli", "res_SATISFACTORY"),
-          ],
-          [Markup.button.callback("🔴 Qoniqarsiz", "res_UNSATISFACTORY")],
-        ]),
-      );
-    });
-
-    // 5. Handle photo
-    this.bot.on("photo", async (ctx) => {
-      const state = this.userStates.get(ctx.from.id);
-      if (!state || state.step !== "PHOTO") return;
-
-      const photo = ctx.message.photo[ctx.message.photo.length - 1];
-      const link = await this.bot.telegram.getFileLink(photo.file_id);
-      state.data.photoUrl = link.href;
-
-      state.step = "RESULT";
-      return ctx.reply(
-        "Tekshiruv natijasini tanlang:",
-        Markup.inlineKeyboard([
-          [
-            Markup.button.callback("🟢 Yaxshi", "res_GOOD"),
-            Markup.button.callback("🟠 Qoniqarli", "res_SATISFACTORY"),
-          ],
-          [Markup.button.callback("🔴 Qoniqarsiz", "res_UNSATISFACTORY")],
-        ]),
-      );
-    });
-
-    // 6. Handle result selection
-    this.bot.action(/^res_/, async (ctx) => {
-      const result = ctx.match[0].replace("res_", "");
-      const state = this.userStates.get(ctx.from.id);
-      if (!state) return;
-
-      state.data.result = result;
-      state.step = "MEASURES";
-
-      await ctx.answerCbQuery();
-      return ctx.editMessageText(
-        "Ma'muriy chora qo'llanilganmi?",
-        Markup.inlineKeyboard([
-          [
-            Markup.button.callback("✅ Ha", "meas_true"),
-            Markup.button.callback("❌ Yo'q", "meas_false"),
-          ],
-        ]),
-      );
-    });
-
-    // 7. Handle administrative measures
-    this.bot.action(/^meas_/, async (ctx) => {
-      const hasMeasures = ctx.match[0].replace("meas_", "") === "true";
-      const state = this.userStates.get(ctx.from.id);
-      if (!state) return;
-
-      state.data.hasAdministrativeMeasures = hasMeasures;
-
-      try {
-        const inspector = state.data.inspector as User;
-        await this.submissionsService.saveFieldInspection({
-          ...state.data,
-          inspectorName: `${inspector.firstName} ${inspector.lastName} `,
-          districtName: inspector.organization?.name || "Noma'lum",
-        });
-
-        this.userStates.delete(ctx.from.id);
-        await ctx.answerCbQuery();
-        return ctx.editMessageText(
-          "✅ Hisobot muvaffaqiyatli saqlandi! Rahmat.",
-        );
-      } catch (error) {
-        this.logger.error("Hisobotni saqlashda xatolik:", error);
-        return ctx.reply("❌ Xatolik yuz berdi. Iltimos qaytadan urinib ko'ring.");
-      }
-    });
   }
 
   private escapeMarkdown(text: string): string {
