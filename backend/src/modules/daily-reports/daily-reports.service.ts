@@ -636,8 +636,7 @@ export class DailyReportsService {
     await this.covidRepo.delete({});
     await this.diarrheaRepo.delete({});
     await this.sanitaryRepo.delete({});
-    // Also delete submissions via manager
-    await this.reportRepo.manager.query("DELETE FROM submission");
+    await this.reportRepo.manager.query("DELETE FROM submissions");
     return {
       success: true,
       message: "Barcha ma'lumotlar muvaffaqiyatli o'chirildi (Full Wipe)",
