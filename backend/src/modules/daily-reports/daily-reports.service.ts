@@ -630,11 +630,19 @@ export class DailyReportsService {
   }
 
   async cleanupTest() {
-    await this.reportRepo.delete({});
-    return {
-      success: true,
-      message: "Gepatit ma'lumotlari o'chirildi",
-    };
+    try {
+      await this.reportRepo.delete({});
+      return {
+        success: true,
+        message: "Gepatit ma'lumotlari o'chirildi",
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: err.message,
+        stack: err.stack,
+      };
+    }
   }
 
   async getMonthlyAggregation(
