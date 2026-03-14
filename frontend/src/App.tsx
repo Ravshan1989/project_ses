@@ -53,6 +53,7 @@ import NutritionHygienePage from './features/nutrition-hygiene/NutritionHygieneP
 import LanguageSwitcher from './components/LanguageSwitcher';
 import MobileBottomNav from './components/layout/MobileBottomNav';
 import { useTranslation } from 'react-i18next';
+import { useInactivityTimeout } from './hooks/useInactivityTimeout';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
@@ -71,6 +72,9 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         localStorage.removeItem('user_role');
         navigate('/login');
     };
+
+    // UZ: 15 minutdan so'ng avtomatik chiqib ketish (inactivity timeout)
+    useInactivityTimeout(handleLogout, 15 * 60 * 1000);
 
     const hasRole = (allowedRoles: string[]) => {
         if (!userRole) return false;
