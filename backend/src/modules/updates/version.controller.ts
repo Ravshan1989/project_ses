@@ -34,7 +34,7 @@ export class VersionController {
     return {
       version: "1.0.0",
       downloadUrl:
-        "https://projectses-production.up.railway.app/public/app-release.apk",
+        "https://project-ses.onrender.com/public/app-release.apk",
       notes: "Jadvallar va Mudir tahlili yangilanishi",
     };
   }

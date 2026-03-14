@@ -12,7 +12,7 @@
       "backgroundColor": "#ffffff"
     },
     "updates": {
-      "url": "https://projectses-production.up.railway.app/api/v1/updates/manifest",
+      "url": "https://project-ses.onrender.com/api/v1/updates/manifest",
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0
     },
