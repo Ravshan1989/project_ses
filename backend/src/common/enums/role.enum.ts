@@ -16,6 +16,9 @@ export enum UserRole {
   SANITARY_HEAD = "SANITARY_HEAD", // Tuman Sanitariya bo'limi mudiri
   SANITARY_SPECIALIST = "SANITARY_SPECIALIST", // Sanitar vrach
   SANITARY_OPERATOR = "SANITARY_OPERATOR", // Sanitar yordamchisi
+
+  // UZ: Ijro intizomi bo'limi uchun yangi rol
+  LEAD_SPECIALIST = "LEAD_SPECIALIST", // Yetakchi mutaxassis
 }
 
 /**

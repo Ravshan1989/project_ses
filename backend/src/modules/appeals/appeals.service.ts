@@ -8,6 +8,7 @@ import { AppealsTable4 } from "./entities/appeals-table-4.entity";
 import { AppealsTable5 } from "./entities/appeals-table-5.entity";
 import { AppealsTable6 } from "./entities/appeals-table-6.entity";
 import { AppealsTable7 } from "./entities/appeals-table-7.entity";
+import { Organization } from "../organizations/entities/organization.entity";
 import { CreateAppealsTable1Dto } from "./dto/create-appeals-table-1.dto";
 import { CreateAppealsTable2Dto } from "./dto/create-appeals-table-2.dto";
 import { CreateAppealsTable3Dto } from "./dto/create-appeals-table-3.dto";
@@ -37,6 +38,8 @@ export class AppealsService {
         private readonly table7Repo: Repository<AppealsTable7>,
         @InjectRepository(AppealRecord)
         private readonly recordRepo: Repository<AppealRecord>,
+        @InjectRepository(Organization)
+        private readonly orgRepo: Repository<Organization>,
     ) { }
 
     async createRecord(dto: CreateAppealRecordDto, userId: string) {
@@ -49,19 +52,27 @@ export class AppealsService {
     }
 
     async getRecords(organizationId: string, month: string) {
-        return await this.recordRepo.find({
-            where: { organization: { id: organizationId }, period_month: month },
-            order: { registration_date: "DESC" },
-        });
+        const org = await this.orgRepo.findOne({ where: { id: organizationId }, relations: ['children'] });
+        if (!org) return [];
+
+        const orgIds = [organizationId];
+        if (org.children && org.children.length > 0) {
+            orgIds.push(...org.children.map(c => c.id));
+        }
+
+        return await this.recordRepo.createQueryBuilder('record')
+            .leftJoinAndSelect('record.organization', 'organization')
+            .where('record.organization_id IN (:...orgIds)', { orgIds })
+            .andWhere('record.period_month = :month', { month })
+            .orderBy('record.registration_date', 'DESC')
+            .getMany();
     }
 
     /**
      * UZ: Bitta jurnaldan 7 xil hisobotni avtomatik generatsiya qilish
      */
     async generateReportsFromRecords(organizationId: string, month: string) {
-        const records = await this.recordRepo.find({
-            where: { organization: { id: organizationId }, period_month: month },
-        });
+        const records = await this.getRecords(organizationId, month);
 
         // 1. Table 1 Aggregation (Group by Recipient)
         const getTable1Row = (rec: string) => ({

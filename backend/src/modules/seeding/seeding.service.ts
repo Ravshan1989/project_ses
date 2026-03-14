@@ -378,6 +378,16 @@ export class SeedingService implements OnModuleInit {
         level: 3,
         description: "Sanitar Yordamchisi",
       },
+      {
+        name: UserRole.LEAD_SPECIALIST,
+        level: 2, // Viloyat
+        description: "Viloyat Yetakchi Mutaxassisi",
+      },
+      {
+        name: UserRole.LEAD_SPECIALIST,
+        level: 3, // Tuman
+        description: "Tuman Yetakchi Mutaxassisi",
+      },
     ];
 
     for (const r of rolesToSeed) {
@@ -472,6 +482,17 @@ export class SeedingService implements OnModuleInit {
         canCreate: false,
         canEdit: false,
         canApprove: true,
+        canDownload: true,
+      },
+      {
+        role: UserRole.LEAD_SPECIALIST,
+        perms: [
+          "VIEW_APPEALS",
+          "EDIT_APPEALS",
+        ],
+        canCreate: true,
+        canEdit: true,
+        canApprove: false,
         canDownload: true,
       },
     ];

@@ -97,7 +97,7 @@ const RegisterPage: React.FC = () => {
                 ]);
             } else if (selectedDepartment.name === "Ijro intizomi va murojaatlar bilan ishlash bo'limi") {
                 setAvailableRoles([
-                    { value: "STAFF", label: "Mutaxassis (Ijro intizomi)" },
+                    { value: "LEAD_SPECIALIST", label: "Yetakchi mutaxassis (Ijro intizomi)" },
                     { value: "DEPARTMENT_HEAD", label: "Bo'lim mudiri" }
                 ]);
             } else {
@@ -107,13 +107,20 @@ const RegisterPage: React.FC = () => {
             }
         } else {
             // Default roles for Region/Republic
-            setAvailableRoles([
-                { value: "STAFF", label: "Xodim" },
-                { value: "DEPARTMENT_HEAD", label: "Bo'lim mudiri" },
-                { value: "REGION_HEAD", label: "Viloyat mudiri" },
-                { value: "REPUBLIC_HEAD", label: "Respublika mudiri" },
-                { value: "LAB_HEAD", label: "Laboratoriya mudiri" }
-            ]);
+            if (selectedDepartment?.name === "Ijro intizomi va murojaatlar bilan ishlash bo'limi") {
+                setAvailableRoles([
+                    { value: "LEAD_SPECIALIST", label: "Yetakchi mutaxassis" },
+                    { value: "DEPARTMENT_HEAD", label: "Bo'lim mudiri" }
+                ]);
+            } else {
+                setAvailableRoles([
+                    { value: "STAFF", label: "Xodim" },
+                    { value: "DEPARTMENT_HEAD", label: "Bo'lim mudiri" },
+                    { value: "REGION_HEAD", label: "Viloyat mudiri" },
+                    { value: "REPUBLIC_HEAD", label: "Respublika mudiri" },
+                    { value: "LAB_HEAD", label: "Laboratoriya mudiri" }
+                ]);
+            }
         }
     };
 
