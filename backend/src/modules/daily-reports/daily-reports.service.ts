@@ -24,6 +24,7 @@ import { TelegramService } from "../telegram/telegram.service";
 import { SubmissionsService } from "../submissions/submissions.service";
 import { ExportsService } from "../exports/exports.service";
 import { FieldInspectionType } from "../submissions/entities/field-inspection.entity";
+import { Submission } from "../submissions/entities/submission.entity";
 
 @Injectable()
 export class DailyReportsService {
@@ -636,7 +637,8 @@ export class DailyReportsService {
     await this.covidRepo.delete({});
     await this.diarrheaRepo.delete({});
     await this.sanitaryRepo.delete({});
-    await this.reportRepo.manager.query("DELETE FROM submissions");
+    // Safely delete submissions using repo
+    await this.reportRepo.manager.getRepository(Submission).delete({});
     return {
       success: true,
       message: "Barcha ma'lumotlar muvaffaqiyatli o'chirildi (Full Wipe)",
