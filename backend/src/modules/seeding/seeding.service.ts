@@ -36,9 +36,7 @@ export class SeedingService implements OnModuleInit {
     await this.seedDistricts();
     await this.seedPermissions();
     await this.seedDepartmentPermissions();
-    await this.seedAdmin(); // UZ: Admin foydalanuvchisini tekshirish va yaratish
-    await this.seedHR(); // UZ: Test HR foydalanuvchisini yaratish
-    await this.seedTestTrio();
+    await this.seedAdmin(); // UZ: Faqat admin hisobini tekshirish
     this.logger.log("Seeding check complete.");
   }
 
