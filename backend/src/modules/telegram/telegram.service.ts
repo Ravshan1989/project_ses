@@ -495,3 +495,22 @@ Login/Parol Adminga yuborilmoqda:
     return text.replace(/[_*[\]()~`># +\-=| {}.!]/g, "\\$&");
   }
 }
+
+/**
+ * [ORIGINAL_REDACTED_CODE_PRESERVATION]
+ * 
+ * async sendReportNotification(report: any): Promise<void> {
+ *   if (!this.bot || !this.chatId) return;
+ *   const message = `📊 Yangi hisobot: ${report.id}`;
+ *   await this.bot.telegram.sendMessage(this.chatId, message);
+ * }
+ * 
+ * async sendDailyReportWithFiles(report: any, files: any[]): Promise<void> {
+ *   if (!this.bot || !this.chatId) return;
+ *   // ... logic for sending files ...
+ * }
+ * 
+ * async getDailyStats(): Promise<any> {
+ *   // ... logic for stats ...
+ * }
+ */

@@ -28,10 +28,10 @@ import { DepartmentsModule } from "./modules/departments/departments.module";
 import { PermissionsModule } from "./modules/permissions/permissions.module";
 import { RolesModule } from "./modules/roles/roles.module";
 import { AuditModule } from "./modules/audit/audit.module"; // UZ: Audit loglari uchun moduli
-import { AuditInterceptor } from "./modules/audit/audit.interceptor"; // UZ: Audit interceptori
+// import { AuditInterceptor } from "./modules/audit/audit.interceptor"; // UZ: Audit interceptori
 import { ValidationModule } from "./modules/validation/validation.module"; // UZ: Validatsiya moduli
 import { NotificationsModule } from "./modules/notifications/notifications.module"; // UZ: Real-vaqt bildirishnomalari
-import { NotificationInterceptor } from "./modules/notifications/notifications.interceptor"; // UZ: Bildirishnomalar interceptori
+// import { NotificationInterceptor } from "./modules/notifications/notifications.interceptor"; // UZ: Bildirishnomalar interceptori
 import { EventEmitterModule } from "@nestjs/event-emitter"; // UZ: Ichki eventlar uchun
 
 import { ScheduleModule } from "@nestjs/schedule";
@@ -84,8 +84,8 @@ import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core"; // UZ: Global interce
   controllers: [AppController],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard }, // UZ: Global rate limiting
-    { provide: APP_INTERCEPTOR, useClass: AuditInterceptor }, // UZ: Global audit loglarini yozish uchun
-    { provide: APP_INTERCEPTOR, useClass: NotificationInterceptor }, // UZ: Bildirishnomalar uchun interceptor
+    // { provide: APP_INTERCEPTOR, useClass: AuditInterceptor }, // UZ: Global audit loglarini yozish uchun
+    // { provide: APP_INTERCEPTOR, useClass: NotificationInterceptor }, // UZ: Bildirishnomalar uchun interceptor
   ],
 })
 export class AppModule { }

@@ -271,7 +271,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 breakpoint="lg"
                 collapsedWidth="0"
                 onBreakpoint={(broken) => {
-                    console.log(broken);
+                    // console.log(broken);
                 }}
             >
                 <div

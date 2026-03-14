@@ -982,10 +982,18 @@ export class DailyReportsService {
 
 /**
  * [ORIGINAL_REDACTED_CODE_PRESERVATION]
- *
+ * 
+ * Original methods used to call telegramService:
+ * 
+ * async upsertHepatitis(dto: CreateHepatitisDto) {
+ *   const report = this.reportRepo.create(dto);
+ *   const saved = await this.reportRepo.save(report);
+ *   await this.telegramService.sendReportNotification(saved); // REMOVED FOR OPTIMIZATION
+ *   return saved;
+ * }
+ * 
  * Modified methods in DailyReportsService:
- * - upsertEpidemiology (Removed sanitary fields from telegram notification)
+ * - upsertEpidemiology (Removed telegram notification)
  * - bulkUpsertBatch (Split epi and sanitary logic)
  * - cleanupTest, getRepoByType (Added sanitaryRepo)
- * - getSanitaryByDate, upsertSanitary (New methods)
  */
