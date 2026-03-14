@@ -24,10 +24,7 @@ api.interceptors.response.use(
     (error) => {
         if (error.response?.status === 401) {
             // UZ: Ruxsat berilmagan bo'lsa (token eskirgan yoki noto'g'ri bo'lsa) loginga haydaymiz
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('user_role');
-            localStorage.removeItem('user_name');
-            localStorage.removeItem('user_org_id');
+            localStorage.clear(); // UZ: Barcha keshni tozalash (401 xatolarni oldini olish uchun)
             window.location.href = '/login';
         }
         return Promise.reject(error);

@@ -1,4 +1,4 @@
-﻿import { Injectable, OnModuleInit, Logger } from "@nestjs/common";
+import { Injectable, OnModuleInit, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Role } from "../roles/entities/role.entity";
@@ -36,8 +36,55 @@ export class SeedingService implements OnModuleInit {
     await this.seedDistricts();
     await this.seedPermissions();
     await this.seedDepartmentPermissions();
+    await this.seedAdmin(); // UZ: Admin foydalanuvchisini tekshirish va yaratish
     await this.seedTestTrio();
     this.logger.log("Seeding check complete.");
+  }
+
+  private async seedAdmin() {
+    const adminUsername = "admin";
+    const existingAdmin = await this.usersService.findOneByUsername(adminUsername);
+
+    if (existingAdmin) {
+      this.logger.log("Admin user already exists.");
+      return;
+    }
+
+    // Get/Create Department
+    let dept = await this.deptRepo.findOne({ where: { name: "Boshqaruv (Admin)" } });
+    if (!dept) {
+      dept = await this.deptRepo.save(this.deptRepo.create({
+        name: "Boshqaruv (Admin)",
+        description: "Sistem Administrator",
+        level: 1,
+        isActive: true,
+      }));
+    }
+
+    // Get/Create Viloyat Organization
+    let viloyat = await this.orgRepo.findOne({ where: { name: "Toshkent viloyati" } });
+    if (!viloyat) {
+      viloyat = await this.orgRepo.save(this.orgRepo.create({
+        name: "Toshkent viloyati",
+        population: 3000000,
+      }));
+    }
+
+    const salt = await bcrypt.genSalt();
+    const passwordHash = await bcrypt.hash("admin1234", salt);
+
+    await this.usersService.create({
+      username: adminUsername,
+      passwordHash,
+      role: UserRole.ADMIN,
+      organizationId: viloyat.id,
+      departmentId: dept.id,
+      isActive: true,
+      firstName: "System",
+      lastName: "Administrator",
+    });
+
+    this.logger.log(`Admin user created: ${adminUsername} / admin1234`);
   }
 
   private async seedDistricts() {
