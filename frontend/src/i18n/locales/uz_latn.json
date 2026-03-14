@@ -1,4 +1,9 @@
-﻿{
+{
+    "admin": {
+        "organizations": {
+            "select_org": "Tashkilotni tanlang"
+        }
+    },
     "executive": {
         "title": "Rahbar Paneli",
         "subtitle": "Viloyat bo'yicha tezkor svodka",
@@ -265,6 +270,8 @@
         "pneu_flu_ari": "O'RI, Gripp va Pnevmoniya",
         "ari": "O'RI, Gripp va Pnevmoniya",
         "weekly_flu": "Haftalik Gripp hisoboti",
+        "covid": "Koronavirus",
+        "diarrhea": "O'tkir diareya",
         "epidemiology": "Epidemiologiya tadbirlari",
         "sanitary": "Sanitariya tadbirlari",
         "sanitary_daily": "Kunlik (Sanitariya)",
@@ -287,7 +294,8 @@
             "t4": "Mavzular (Matritsa)",
             "t5": "Murojaat turlari",
             "t6": "Qabulxonalar",
-            "t7": "Intizomiy choralar"
+            "t7": "Intizomiy choralar",
+            "journal": "Master Jurnal (Yangi)"
         },
         "table1": {
             "title": "Rahbarlar tomonidan murojaatlar ko'rib chiqilishi",
@@ -307,6 +315,17 @@
             "disinfection": "Dezinfeksiya ishlari",
             "fines": "Jarimalar",
             "other": "Boshqa masalalar"
+        },
+        "table7": {
+            "columns": {
+                "action_type": "Chora turi",
+                "fine": "Jarima",
+                "reprimand": "Hayfsan",
+                "dismissal": "Ozod etish"
+            },
+            "rows": {
+                "total": "Jami"
+            }
         }
     },
     "inspections": {
@@ -824,7 +843,9 @@
         "Yangiyo'l sh": "Yangiyo'l sh",
         "Yangiyo'l t": "Yangiyo'l t",
         "Yuqori Chirchiq t": "Yuqori Chirchiq t",
-        "Zangiota t": "Zangiota t"
+        "Zangiota t": "Zangiota t",
+        "Boshqarma": "Boshqarma",
+        "Jami": "Jami"
     },
     "form1": {
         "title": "Shakl 1: Oylik Hisobot",
@@ -1018,12 +1039,56 @@
             "total": "Tuman hisoboti"
         },
         "tabs": {
+            "journal": "Yagona Jurnal",
             "t1": "Nazorat va xabardor etish",
             "t2": "Tibbiy ko'rik",
             "t3": "Iste'moldan olingan mahsulotlar",
-            "t4": "Iodlangan tuz",
+            "t4": "Yodlangan tuz",
             "t5": "Vitaminlangan un",
             "t6": "Dehqon bozorlari"
+        },
+        "form": {
+            "title": "Ovqatlanish Gigiyenasi Yagona Jurnali",
+            "entity_type": "Kiritish turi",
+            "object_type": "Ob'ekt turi",
+            "object_name": "Ob'ekt nomi",
+            "product_category": "Mahsulot turi",
+            "amount": "Tegishli miqdor (kg/litr/va hk)",
+            "lab_result": "Laboratoriya natijasi",
+            "violation_found": "Qoida buzilishi aniqlandimi?",
+            "measure_type": "Ko'rilgan chora",
+            "fine_sum": "Jarima miqdori",
+            "is_sent_to_court": "Sudga oshirildimi?",
+            "is_sent_to_prosecutor": "Prokuraturaga oshirildimi?",
+            "notes": "Qo'shimcha izoh"
+        },
+        "enums": {
+            "entry_type": {
+                "INSPECTION": "Nazorat o'tkazildi",
+                "LAB_SAMPLE": "Laboratoriya namunasi"
+            },
+            "object_type": {
+                "PRODUCTION": "Oziq-ovqat ishlab chiqaruvchi",
+                "CATERING": "Umumiy ovqatlanish joyi",
+                "TRADE": "Savdo shoxobchasi",
+                "MARKET": "Dehqon bozori",
+                "ENT_SALT": "Tuzni qayta ishlash korxonasi",
+                "ENT_FLOUR": "Tegirmon/Un yoyish"
+            },
+            "lab_result": {
+                "NOT_TESTED": "Tekshirilmagan",
+                "MEETS": "Talabga javob beradi",
+                "NOT_MEETS": "Talabga javob bermaydi"
+            },
+            "measure": {
+                "NONE": "Chora ko'rilmadi",
+                "FINE": "Jarima qo'llanildi",
+                "SUSPENSION": "Ishdan vaqtincha chetlatish",
+                "DISMISSAL_PROPOSAL": "Ishdan bo'shatish bo'yicha taklif",
+                "DISMISSAL_ACTUAL": "Ishdan bo'shatildi",
+                "PROTOCOL": "Bayonnoma tuzildi",
+                "STOP_OPERATION": "Ob'ekt ishi to'xtatildi"
+            }
         },
         "t3": {
             "meat": "Go'sht va go'sht mahsulotlari",

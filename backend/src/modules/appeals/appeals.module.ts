@@ -9,6 +9,7 @@ import { AppealsTable4 } from "./entities/appeals-table-4.entity";
 import { AppealsTable5 } from "./entities/appeals-table-5.entity";
 import { AppealsTable6 } from "./entities/appeals-table-6.entity";
 import { AppealsTable7 } from "./entities/appeals-table-7.entity";
+import { AppealRecord } from "./entities/appeal-record.entity";
 
 @Module({
     imports: [
@@ -20,6 +21,7 @@ import { AppealsTable7 } from "./entities/appeals-table-7.entity";
             AppealsTable5,
             AppealsTable6,
             AppealsTable7,
+            AppealRecord,
         ]),
     ],
     providers: [AppealsService],

@@ -22,4 +22,25 @@ export const appealsApi = {
         });
         return response.data;
     },
+
+    // --- NEW SINGLE ENTRY SYSTEM ---
+    getRecords: async (organizationId: string, month: string) => {
+        const response = await api.get(`/appeals/records`, {
+            params: { organizationId, month },
+        });
+        return response.data;
+    },
+
+    createRecord: async (data: any) => {
+        const response = await api.post(`/appeals/records`, data);
+        return response.data;
+    },
+
+    getAutoReports: async (organizationId: string, month: string) => {
+        const response = await api.get(`/appeals/auto-reports`, {
+            params: { organizationId, month },
+        });
+        return response.data;
+    },
 };
+

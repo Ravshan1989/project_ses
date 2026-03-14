@@ -14,35 +14,35 @@ export class NutritionHygieneTable2 {
     @Column()
     row_key: string;
 
-    // Food production objects
+    // Production
     @Column({ type: "int", default: 0 })
-    production_total: number;
+    prod_inspected_count: number;
 
     @Column({ type: "int", default: 0 })
-    production_required: number;
+    prod_medical_required: number;
 
     @Column({ type: "int", default: 0 })
-    production_passed: number; // passed checkup
+    prod_medical_failed: number;
 
-    // Catering objects
+    // Catering
     @Column({ type: "int", default: 0 })
-    catering_total: number;
-
-    @Column({ type: "int", default: 0 })
-    catering_required: number;
+    cat_inspected_count: number;
 
     @Column({ type: "int", default: 0 })
-    catering_passed: number;
-
-    // Trade objects
-    @Column({ type: "int", default: 0 })
-    trade_total: number;
+    cat_medical_required: number;
 
     @Column({ type: "int", default: 0 })
-    trade_required: number;
+    cat_medical_failed: number;
+
+    // Trade
+    @Column({ type: "int", default: 0 })
+    trade_inspected_count: number;
 
     @Column({ type: "int", default: 0 })
-    trade_passed: number;
+    trade_medical_required: number;
+
+    @Column({ type: "int", default: 0 })
+    trade_medical_failed: number;
 
     // Measures
     @Column({ type: "int", default: 0 })
@@ -52,7 +52,10 @@ export class NutritionHygieneTable2 {
     dismissed_employees: number;
 
     @Column({ type: "int", default: 0 })
-    health_protocols: number;
+    medical_checked_after_proposal: number;
+
+    @Column({ type: "int", default: 0 })
+    protocols_count: number;
 
     @CreateDateColumn()
     created_at: Date;

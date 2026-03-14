@@ -15,6 +15,8 @@ import { CreateAppealsTable4Dto } from "./dto/create-appeals-table-4.dto";
 import { CreateAppealsTable5Dto } from "./dto/create-appeals-table-5.dto";
 import { CreateAppealsTable6Dto } from "./dto/create-appeals-table-6.dto";
 import { CreateAppealsTable7Dto } from "./dto/create-appeals-table-7.dto";
+import { AppealRecord, AppealChannel, ApplicantType, AppealType, AppealStatus, DisciplinaryMeasure } from "./entities/appeal-record.entity";
+import { CreateAppealRecordDto } from "./dto/create-appeal-record.dto";
 
 @Injectable()
 export class AppealsService {
@@ -33,7 +35,128 @@ export class AppealsService {
         private readonly table6Repo: Repository<AppealsTable6>,
         @InjectRepository(AppealsTable7)
         private readonly table7Repo: Repository<AppealsTable7>,
+        @InjectRepository(AppealRecord)
+        private readonly recordRepo: Repository<AppealRecord>,
     ) { }
+
+    async createRecord(dto: CreateAppealRecordDto, userId: string) {
+        const record = this.recordRepo.create({
+            ...dto,
+            organization: { id: dto.organization_id } as any,
+            createdBy: { id: userId } as any,
+        });
+        return await this.recordRepo.save(record);
+    }
+
+    async getRecords(organizationId: string, month: string) {
+        return await this.recordRepo.find({
+            where: { organization: { id: organizationId }, period_month: month },
+            order: { registration_date: "DESC" },
+        });
+    }
+
+    /**
+     * UZ: Bitta jurnaldan 7 xil hisobotni avtomatik generatsiya qilish
+     */
+    async generateReportsFromRecords(organizationId: string, month: string) {
+        const records = await this.recordRepo.find({
+            where: { organization: { id: organizationId }, period_month: month },
+        });
+
+        // 1. Table 1 Aggregation (Group by Recipient)
+        const getTable1Row = (rec: string) => ({
+            oral_curr: records.filter(r => r.recipient === rec && r.channel === AppealChannel.ORAL).length,
+            written_curr: records.filter(r => r.recipient === rec && r.channel === AppealChannel.WRITTEN).length,
+            electronic_curr: records.filter(r => r.recipient === rec && r.channel === AppealChannel.ELECTRONIC).length,
+            total_curr: records.filter(r => r.recipient === rec).length,
+        });
+
+        const table1 = {
+            head: getTable1Row("head"),
+            deputy_epid: getTable1Row("deputy_epid"),
+            deputy_san: getTable1Row("deputy_san"),
+        };
+
+        // 2. Table 2 Aggregation (Status & Control)
+        const table2 = {
+            total_curr: records.length,
+            written_curr: records.filter(r => r.channel === AppealChannel.WRITTEN).length,
+            electronic_curr: records.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
+            oral_curr: records.filter(r => r.channel === AppealChannel.ORAL).length,
+            measures_taken: records.filter(r => r.status === AppealStatus.SATISFIED).length,
+            explained: records.filter(r => r.status === AppealStatus.EXPLAINED).length,
+            rejected: records.filter(r => r.status === AppealStatus.REJECTED).length,
+            being_considered: records.filter(r => r.status === AppealStatus.BEING_CONSIDERED).length,
+            repeated: records.filter(r => r.is_repeated).length,
+            overdue: records.filter(r => r.is_overdue).length,
+        };
+
+        // 3. Table 3 Aggregation (Phys/Legal & Channels)
+        const table3 = {
+            total_curr: records.length,
+            phys_curr: records.filter(r => r.applicant_type === ApplicantType.PHYSICAL).length,
+            legal_curr: records.filter(r => r.applicant_type === ApplicantType.LEGAL).length,
+            written: records.filter(r => r.channel === AppealChannel.WRITTEN).length,
+            electronic: records.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
+            oral_total: records.filter(r => r.channel === AppealChannel.ORAL).length,
+        };
+
+        // 4. Table 4 Aggregation (Subjects)
+        const table4: any = {};
+        const subjects = ["san_epid", "coronavirus", "labor", "medical", "complaint_leader", "staff_behavior", "disinfection", "fines", "other"];
+        subjects.forEach(s => {
+            table4[s] = {
+                count_curr: records.filter(r => r.subject_key === s).length
+            };
+        });
+
+        // 5. Table 5 Aggregation (Ariza, Shikoyat, Taklif)
+        const table5 = {
+            total_curr: records.length,
+            phys_total_curr: records.filter(r => r.applicant_type === ApplicantType.PHYSICAL).length,
+            phys_ariza_curr: records.filter(r => r.applicant_type === ApplicantType.PHYSICAL && r.appeal_type === AppealType.ARIZA).length,
+            phys_shikoyat_curr: records.filter(r => r.applicant_type === ApplicantType.PHYSICAL && r.appeal_type === AppealType.SHIKOYAT).length,
+            phys_taklif_curr: records.filter(r => r.applicant_type === ApplicantType.PHYSICAL && r.appeal_type === AppealType.TAKLIF).length,
+            legal_total_curr: records.filter(r => r.applicant_type === ApplicantType.LEGAL).length,
+            legal_ariza_curr: records.filter(r => r.applicant_type === ApplicantType.LEGAL && r.appeal_type === AppealType.ARIZA).length,
+            legal_shikoyat_curr: records.filter(r => r.applicant_type === ApplicantType.LEGAL && r.appeal_type === AppealType.SHIKOYAT).length,
+            legal_taklif_curr: records.filter(r => r.applicant_type === ApplicantType.LEGAL && r.appeal_type === AppealType.TAKLIF).length,
+        };
+
+        // 6. Table 6 Aggregation (Receptions)
+        const table6 = {
+            people_total: records.filter(r => r.channel === AppealChannel.PEOPLES_RECEPTION).length,
+            people_satisfied: records.filter(r => r.channel === AppealChannel.PEOPLES_RECEPTION && r.status === AppealStatus.SATISFIED).length,
+            people_explained: records.filter(r => r.channel === AppealChannel.PEOPLES_RECEPTION && r.status === AppealStatus.EXPLAINED).length,
+            people_rejected: records.filter(r => r.channel === AppealChannel.PEOPLES_RECEPTION && r.status === AppealStatus.REJECTED).length,
+            virtual_total: records.filter(r => r.channel === AppealChannel.VIRTUAL_RECEPTION).length,
+            virtual_satisfied: records.filter(r => r.channel === AppealChannel.VIRTUAL_RECEPTION && r.status === AppealStatus.SATISFIED).length,
+            virtual_explained: records.filter(r => r.channel === AppealChannel.VIRTUAL_RECEPTION && r.status === AppealStatus.EXPLAINED).length,
+            virtual_rejected: records.filter(r => r.channel === AppealChannel.VIRTUAL_RECEPTION && r.status === AppealStatus.REJECTED).length,
+        };
+
+        // 7. Table 7 Aggregation (Consequences)
+        const table7: any = {
+            fine_curr: records.filter(r => r.consequence === DisciplinaryMeasure.FINE).length,
+            reprimand_curr: records.filter(r => r.consequence === DisciplinaryMeasure.REPRIMAND).length,
+            dismissal_curr: records.filter(r => r.consequence === DisciplinaryMeasure.DISMISSAL).length,
+            administrative_curr: records.filter(r => r.consequence === DisciplinaryMeasure.ADMINISTRATIVE).length,
+            criminal_curr: records.filter(r => r.consequence === DisciplinaryMeasure.CRIMINAL).length,
+        };
+        table7["disciplinary_total_curr"] = table7.fine_curr + table7.reprimand_curr + table7.dismissal_curr;
+        table7["grand_total_curr"] = table7.disciplinary_total_curr + table7.administrative_curr + table7.criminal_curr;
+
+        return {
+            table1,
+            table2,
+            table3,
+            table4,
+            table5,
+            table6,
+            table7,
+            records_count: records.length,
+        };
+    }
 
     async getTableData(tableNum: number, month: string, organizationId: string) {
         const repo = this.getRepo(tableNum);
@@ -79,3 +202,4 @@ export class AppealsService {
         }
     }
 }
+

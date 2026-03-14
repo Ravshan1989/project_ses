@@ -17,7 +17,27 @@ export const nutritionHygieneApi = {
         return response.data;
     },
 
+    getRecords: async (month: string, organizationId: string) => {
+        const response = await api.get(`${BASE_URL}/records`, {
+            params: { month, organizationId }
+        });
+        return response.data;
+    },
+
+    createRecord: async (data: any) => {
+        const response = await api.post(`${BASE_URL}/records`, data);
+        return response.data;
+    },
+
+    getAutoReports: async (month: string, organizationId: string) => {
+        const response = await api.get(`${BASE_URL}/auto-reports`, {
+            params: { month, organizationId }
+        });
+        return response.data;
+    },
+
     getOrganizations: async () => {
+
         const response = await api.get('/organizations');
         return response.data;
     },

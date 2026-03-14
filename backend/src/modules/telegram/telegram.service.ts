@@ -13,6 +13,10 @@ import * as bcrypt from "bcrypt";
 import { DailyReportsService } from "../daily-reports/daily-reports.service";
 import { User } from "../users/entities/user.entity";
 import { UserRole } from "../../common/enums/role.enum";
+import { SubmissionsService } from "../submissions/submissions.service";
+import * as fs from "fs";
+import * as path from "path";
+import { FieldInspectionType, InspectionResult } from "../submissions/entities/field-inspection.entity";
 
 @Injectable()
 export class TelegramService implements OnModuleInit {
@@ -21,11 +25,18 @@ export class TelegramService implements OnModuleInit {
   private chatId: string;
   private adminChatId: string;
   private systemUser: User;
+  private userStates: Map<number, {
+    step: string;
+    data: any;
+    timeout?: NodeJS.Timeout;
+  }> = new Map();
 
   constructor(
     private configService: ConfigService,
     @Inject(forwardRef(() => DailyReportsService))
     private dailyReportsService: DailyReportsService,
+    @Inject(forwardRef(() => SubmissionsService))
+    private submissionsService: SubmissionsService,
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {
@@ -55,6 +66,14 @@ export class TelegramService implements OnModuleInit {
     }
 
     this.setupHandlers();
+    this.setupReportingHandlers();
+
+    // Set bot commands menu
+    this.bot.telegram.setMyCommands([
+      { command: "start", description: "Botni ishga tushirish / Menyuni ochish" },
+      { command: "report", description: "Yangi hisobot yuborish" },
+      { command: "help", description: "Yordam olish" },
+    ]);
 
     // UZ: Webhookni o'chirish (agar oldin o'rnatilgan bo'lsa) va Pollingni boshlash
     this.bot.telegram
@@ -87,59 +106,40 @@ export class TelegramService implements OnModuleInit {
     this.bot.start(async (ctx) => {
       this.logger.log(`Bot /start buyrug'ini oldi: ${ctx.from.username}`);
 
-      // Check if user came from registration (has start parameter with user ID)
+      // Check if user came from registration
       const startPayload = ctx.startPayload;
       if (startPayload) {
         try {
-          const userId = startPayload;
           const user = await this.userRepository.findOne({
-            where: { id: userId },
+            where: { id: startPayload },
             relations: ["organization"],
           });
 
           if (user) {
-            // Request phone number for verification
-            await ctx.reply(
+            return ctx.reply(
               `Assalomu alaykum!\n\n` +
-                `Davom etish uchun telefon raqamingizni tasdiqlang.\n\n` +
-                `Quyidagi tugmani bosing:`,
+              `Davom etish uchun telefon raqamingizni tasdiqlang.`,
               Markup.keyboard([
-                Markup.button.contactRequest("📞 Telefon raqamni yuborish"),
+                [Markup.button.contactRequest("📞 Telefon raqamni yuborish")],
               ]).resize(),
             );
-
-            this.logger.log(`Requested phone verification for user ${userId}`);
-            return;
           }
         } catch (error) {
           this.logger.error("Error processing /start with payload:", error);
         }
       }
 
-      // Default /start response for report requests
-      return ctx.reply(
-        "Assalomu alaykum! Kerakli hisobot turini tanlang:",
-        Markup.inlineKeyboard([
-          [
-            Markup.button.callback("🟡 Gepatit", "get_hep"),
-            Markup.button.callback("🔴 Covid", "get_covid"),
-          ],
-          [
-            Markup.button.callback("🔵 Gripp (Batafsil)", "get_flu"),
-            Markup.button.callback("🟢 O'RVI", "get_ari"),
-          ],
-          [
-            Markup.button.callback("🟣 Epidemiologiya", "get_epi"),
-            Markup.button.callback("🏥 Sanitariya", "get_sanitary"),
-          ],
-          [
-            Markup.button.callback(
-              "🔐 Ro'yxatdan o'tishni tasdiqlash",
-              "verify_phone",
-            ),
-          ],
-        ]),
-      );
+      return this.showMainMenu(ctx);
+    });
+
+    // Listen for menu buttons
+    this.bot.hears("📊 Yangi hisobot", async (ctx) => {
+      return ctx.reply("Hisobot yuborishni boshlash uchun /report buyrug'ini bosing yoki quyidagi tugmani bosing.",
+        Markup.inlineKeyboard([[Markup.button.callback("Start Reporting", "start_report")]]));
+    });
+
+    this.bot.hears("📅 Bugungi statistika", async (ctx) => {
+      return this.dailyReportsService.generateAutomatedDailyReport();
     });
 
     // Handle phone number verification
@@ -147,101 +147,69 @@ export class TelegramService implements OnModuleInit {
       const contact = ctx.message.contact;
       const phoneNumber = contact.phone_number;
 
-      this.logger.log(
-        `Received phone number: ${phoneNumber} from ${ctx.from.id}`,
-      );
+      this.logger.log(`Received phone number: ${phoneNumber} from ${ctx.from.id}`);
 
       try {
-        // Find user by phone number
         const user = await this.userRepository.findOne({
           where: { phoneNumber: phoneNumber.replace(/\D/g, "") },
           relations: ["organization"],
         });
 
         if (user) {
-          // Save Telegram chat ID
           user.telegramChatId = ctx.from.id.toString();
           await this.userRepository.save(user);
 
           await ctx.reply(
             `✅ Tasdiqlandi!\n\n` +
-              `Assalomu alaykum, ${user.firstName}!\n\n` +
-              `Siz muvaffaqiyatli ro'yxatdan o'tdingiz.\n` +
-              `Ma'lumotlaringiz tekshirilmoqda.\n\n` +
-              `${user.organization?.name || "Tashkilot"} kadri tasdiqlashidan so'ng ` +
-              `login va parol shu yerga yuboriladi.`,
+            `Assalomu alaykum, ${user.firstName}!\n\n` +
+            `Siz muvaffaqiyatli ro'yxatdan o'tdingiz.\n` +
+            `Ma'mulotlaringiz tekshirilmoqda.\n\n` +
+            `${user.organization?.name || "Tashkilot"} kadri tasdiqlashidan so'ng login va parol yuboriladi.`,
             Markup.removeKeyboard(),
-          );
-          this.logger.log(
-            `Phone verified and chat ID saved for user ${user.id}`,
           );
         } else {
-          await ctx.reply(
-            `❌ Xatolik!\n\n` +
-              `Bu telefon raqam tizimda topilmadi.\n\n` +
-              `Iltimos, ro'yxatdan o'tishda kiritgan telefon raqamingizni yuboring.`,
-            Markup.removeKeyboard(),
-          );
-          this.logger.warn(`Phone number ${phoneNumber} not found in database`);
+          await ctx.reply(`❌ Xatolik! Bu telefon raqam tizimda topilmadi.`, Markup.removeKeyboard());
         }
       } catch (error) {
         this.logger.error("Error verifying phone number:", error);
-        await ctx.reply(
-          `❌ Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.`,
-          Markup.removeKeyboard(),
-        );
       }
     });
 
-    this.bot.action("get_hep", (ctx) => {
-      this.logger.log("Gepatit hisoboti so'raldi");
-      return this.handleReportRequest(ctx, "hep");
-    });
-    this.bot.action("get_covid", (ctx) => {
-      this.logger.log("Covid hisoboti so'raldi");
-      return this.handleReportRequest(ctx, "covid");
-    });
-    this.bot.action("get_flu", (ctx) => {
-      this.logger.log("Gripp hisoboti so'raldi");
-      return this.handleReportRequest(ctx, "flu");
-    });
-    this.bot.action("get_ari", (ctx) => {
-      this.logger.log("O'RVI hisoboti so'raldi");
-      return this.handleReportRequest(ctx, "ari");
-    });
-    this.bot.action("get_epi", (ctx) => {
-      this.logger.log("Epidemiologiya hisoboti so'raldi");
-      return this.handleReportRequest(ctx, "epi");
-    });
-    this.bot.action("get_sanitary", (ctx) => {
-      this.logger.log("Sanitariya hisoboti so'raldi");
-      return this.handleReportRequest(ctx, "sanitary");
-    });
+    this.bot.action("get_hep", (ctx) => this.handleReportRequest(ctx, "hep"));
+    this.bot.action("get_covid", (ctx) => this.handleReportRequest(ctx, "covid"));
+    this.bot.action("get_flu", (ctx) => this.handleReportRequest(ctx, "flu"));
+    this.bot.action("get_ari", (ctx) => this.handleReportRequest(ctx, "ari"));
+    this.bot.action("get_epi", (ctx) => this.handleReportRequest(ctx, "epi"));
+    this.bot.action("get_sanitary", (ctx) => this.handleReportRequest(ctx, "sanitary"));
 
-    // Manual phone verification trigger
     this.bot.action("verify_phone", async (ctx) => {
-      await ctx.reply(
-        `Davom etish uchun telefon raqamingizni tasdiqlang.\n\n` +
-          `Quyidagi tugmani bosing:`,
-        Markup.keyboard([
-          Markup.button.contactRequest("📞 Telefon raqamni yuborish"),
-        ]).resize(),
+      await ctx.reply(`Davom etish uchun telefon raqamingizni tasdiqlang.`,
+        Markup.keyboard([[Markup.button.contactRequest("📞 Telefon raqamni yuborish")]]).resize(),
       );
     });
 
-    // Registration approval handlers
     this.bot.action(/^approve_/, (ctx) => {
       const userId = ctx.match[0].replace("approve_", "");
-      this.logger.log(`User approval requested: ${userId}`);
       return this.handleApproval(ctx, userId);
     });
 
     this.bot.action(/^reject_/, (ctx) => {
       const userId = ctx.match[0].replace("reject_", "");
-      this.logger.log(`User rejection requested: ${userId}`);
       return this.handleRejection(ctx, userId);
     });
   }
+
+  private async showMainMenu(ctx: any) {
+    return ctx.reply(
+      "Assalomu alaykum! SMART SES tizimining rasmiy botiga xush kelibsiz. Kerakli bo'limni tanlang:",
+      Markup.keyboard([
+        ["📊 Yangi hisobot"],
+        ["📅 Bugungi statistika", "🏢 Ma'lumotlarim"],
+        ["📞 Aloqa"]
+      ]).resize()
+    );
+  }
+
 
   private async handleReportRequest(ctx: any, type: string) {
     // UZ: Toshkent vaqti bilan bugungi sanani olish (UTC+5)
@@ -684,8 +652,204 @@ Login/Parol Adminga yuborilmoqda:
     }
   }
 
+  async sendDailyReportWithFiles(text: string, pdfPath: string, excelPath: string) {
+    if (!this.adminChatId) {
+      this.logger.warn("Admin chat ID not set, skipping daily report.");
+      return;
+    }
+
+    try {
+      if (text) {
+        await this.bot.telegram.sendMessage(this.adminChatId, text, {
+          parse_mode: "Markdown",
+        });
+      }
+
+      const files = [];
+      if (excelPath && fs.existsSync(excelPath)) {
+        files.push({ source: excelPath, filename: path.basename(excelPath) });
+      }
+
+      for (const file of files) {
+        await this.bot.telegram.sendDocument(this.adminChatId, file);
+      }
+    } catch (error) {
+      this.logger.error("Kunlik hisobotni yuborishda xatolik:", error);
+    }
+  }
+
+  private setupReportingHandlers() {
+    // Action for inline button from menu
+    this.bot.action("start_report", (ctx) => {
+      return (this.bot as any).handleUpdate({
+        message: { text: "/report", from: ctx.from, chat: ctx.chat },
+      });
+    });
+
+    // 1. Start command /report
+    this.bot.command("report", async (ctx) => {
+      const user = await this.userRepository.findOne({
+        where: { telegramChatId: ctx.from.id.toString() },
+        relations: ["organization"],
+      });
+
+      if (!user) {
+        return ctx.reply(
+          "Siz tizimda ro'yxatdan o'tmagansiz. Iltimos /start buyrug'ini bosing.",
+        );
+      }
+
+      this.userStates.set(ctx.from.id, {
+        step: "TYPE",
+        data: { inspector: user, organization: user.organization },
+      });
+
+      return ctx.reply(
+        "Hisobot turini tanlang:",
+        Markup.inlineKeyboard([
+          [
+            Markup.button.callback("🏫 Maktab", "type_SCHOOL"),
+            Markup.button.callback("🎈 Bog'cha", "type_KINDERGARTEN"),
+          ],
+          [Markup.button.callback("⚠️ Muammo", "type_PROBLEM")],
+        ]),
+      );
+    });
+
+    // 2. Handle type selection
+    this.bot.action(/^type_/, async (ctx) => {
+      const type = ctx.match[0].replace("type_", "");
+      const state = this.userStates.get(ctx.from.id);
+      if (!state) return;
+
+      state.data.type = type;
+      state.step = "OBJECT_NAME";
+
+      await ctx.answerCbQuery();
+      return ctx.editMessageText("Ob'ekt nomini kiriting (masalan: 12-maktab):");
+    });
+
+    // 3. Handle messages (Object name, Photo)
+    this.bot.on("text", async (ctx, next) => {
+      const state = this.userStates.get(ctx.from.id);
+      if (!state || state.step !== "OBJECT_NAME") return next();
+
+      state.data.objectName = ctx.message.text;
+      state.step = "LOCATION";
+
+      return ctx.reply(
+        "📍 Joylashuvingizni yuboring (GPS):",
+        Markup.keyboard([
+          Markup.button.locationRequest("📍 Manzilni yuborish"),
+        ]).resize(),
+      );
+    });
+
+    // 4. Handle location
+    this.bot.on("location", async (ctx) => {
+      const state = this.userStates.get(ctx.from.id);
+      if (!state || state.step !== "LOCATION") return;
+
+      state.data.latitude = ctx.message.location.latitude;
+      state.data.longitude = ctx.message.location.longitude;
+      state.step = "PHOTO";
+
+      return ctx.reply(
+        "📸 Ob'ektdan rasm yuboring (yoki /skip buyrug'ini bosing):",
+        Markup.removeKeyboard(),
+      );
+    });
+
+    this.bot.command("skip", async (ctx) => {
+      const state = this.userStates.get(ctx.from.id);
+      if (!state || state.step !== "PHOTO") return;
+
+      state.step = "RESULT";
+      return ctx.reply(
+        "Tekshiruv natijasini tanlang:",
+        Markup.inlineKeyboard([
+          [
+            Markup.button.callback("🟢 Yaxshi", "res_GOOD"),
+            Markup.button.callback("🟠 Qoniqarli", "res_SATISFACTORY"),
+          ],
+          [Markup.button.callback("🔴 Qoniqarsiz", "res_UNSATISFACTORY")],
+        ]),
+      );
+    });
+
+    // 5. Handle photo
+    this.bot.on("photo", async (ctx) => {
+      const state = this.userStates.get(ctx.from.id);
+      if (!state || state.step !== "PHOTO") return;
+
+      const photo = ctx.message.photo[ctx.message.photo.length - 1];
+      const link = await this.bot.telegram.getFileLink(photo.file_id);
+      state.data.photoUrl = link.href;
+
+      state.step = "RESULT";
+      return ctx.reply(
+        "Tekshiruv natijasini tanlang:",
+        Markup.inlineKeyboard([
+          [
+            Markup.button.callback("🟢 Yaxshi", "res_GOOD"),
+            Markup.button.callback("🟠 Qoniqarli", "res_SATISFACTORY"),
+          ],
+          [Markup.button.callback("🔴 Qoniqarsiz", "res_UNSATISFACTORY")],
+        ]),
+      );
+    });
+
+    // 6. Handle result selection
+    this.bot.action(/^res_/, async (ctx) => {
+      const result = ctx.match[0].replace("res_", "");
+      const state = this.userStates.get(ctx.from.id);
+      if (!state) return;
+
+      state.data.result = result;
+      state.step = "MEASURES";
+
+      await ctx.answerCbQuery();
+      return ctx.editMessageText(
+        "Ma'muriy chora qo'llanilganmi?",
+        Markup.inlineKeyboard([
+          [
+            Markup.button.callback("✅ Ha", "meas_true"),
+            Markup.button.callback("❌ Yo'q", "meas_false"),
+          ],
+        ]),
+      );
+    });
+
+    // 7. Handle administrative measures
+    this.bot.action(/^meas_/, async (ctx) => {
+      const hasMeasures = ctx.match[0].replace("meas_", "") === "true";
+      const state = this.userStates.get(ctx.from.id);
+      if (!state) return;
+
+      state.data.hasAdministrativeMeasures = hasMeasures;
+
+      try {
+        const inspector = state.data.inspector as User;
+        await this.submissionsService.saveFieldInspection({
+          ...state.data,
+          inspectorName: `${inspector.firstName} ${inspector.lastName} `,
+          districtName: inspector.organization?.name || "Noma'lum",
+        });
+
+        this.userStates.delete(ctx.from.id);
+        await ctx.answerCbQuery();
+        return ctx.editMessageText(
+          "✅ Hisobot muvaffaqiyatli saqlandi! Rahmat.",
+        );
+      } catch (error) {
+        this.logger.error("Hisobotni saqlashda xatolik:", error);
+        return ctx.reply("❌ Xatolik yuz berdi. Iltimos qaytadan urinib ko'ring.");
+      }
+    });
+  }
+
   private escapeMarkdown(text: string): string {
     if (!text) return "";
-    return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, "\\$&");
+    return text.replace(/[_*[\]()~`># +\-=| {}.!]/g, "\\$&");
   }
 }

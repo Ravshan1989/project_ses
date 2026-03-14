@@ -16,6 +16,8 @@ import { VerificationService } from "../daily-reports/verification.service";
 import { DiseasesService } from "../diseases/diseases.service";
 import { Response } from "express";
 import { Organization } from "../organizations/entities/organization.entity";
+import * as fs from "fs";
+import * as path from "path";
 
 @Injectable()
 export class ExportsService {
@@ -41,7 +43,7 @@ export class ExportsService {
     private readonly orgRepo: Repository<Organization>,
     private readonly diseasesService: DiseasesService,
     private readonly verificationService: VerificationService,
-  ) {}
+  ) { }
 
   async getFluReports(
     startDate: string,
@@ -1277,5 +1279,46 @@ export class ExportsService {
       `attachment; filename=Form1_Report_${startDate}.xlsx`,
     );
     await workbook.xlsx.write(res);
+  }
+
+  async generateDailySummaryExcel(date: string, stats: any): Promise<string> {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Daily Summary");
+
+    worksheet.mergeCells("A1:C1");
+    worksheet.getCell("A1").value = `Kunlik Tezkor Hisobot - ${date}`;
+    worksheet.getCell("A1").font = { bold: true, size: 14 };
+    worksheet.getCell("A1").alignment = { horizontal: "center" };
+
+    worksheet.addRow([]);
+    worksheet.addRow(["Ko'rsatkich", "Qiymat"]);
+    worksheet.addRow(["Jami hisobotlar", stats.totalReports]);
+    worksheet.addRow(["Maktablar", stats.schools]);
+    worksheet.addRow(["Bog'chalar", stats.kindergartens]);
+    worksheet.addRow(["Muammolar", stats.problems]);
+
+    worksheet.addRow([]);
+    worksheet.addRow(["Tuman", "Hisobotlar soni"]);
+    Object.entries(stats.districtStats).forEach(([name, count]) => {
+      worksheet.addRow([name, count]);
+    });
+
+    const fileName = `Daily_Report_${date}.xlsx`;
+    const reportsDir = path.join(process.cwd(), "public", "reports");
+    const filePath = path.join(reportsDir, fileName);
+
+    // Ensure directory exists
+    if (!fs.existsSync(reportsDir)) {
+      fs.mkdirSync(reportsDir, { recursive: true });
+    }
+
+    await workbook.xlsx.writeFile(filePath);
+    return filePath;
+  }
+
+  async generateDailySummaryPdf(date: string, stats: any): Promise<string> {
+    // Placeholder as pdfkit is not installed
+    console.log("[ExportsService] PDF generation requested but skipped (pdfkit missing)");
+    return "";
   }
 }

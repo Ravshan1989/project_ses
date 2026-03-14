@@ -23,7 +23,7 @@ import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 @Controller("submissions")
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 export class SubmissionsController {
-  constructor(private readonly submissionsService: SubmissionsService) {}
+  constructor(private readonly submissionsService: SubmissionsService) { }
 
   @Post()
   @RequirePermission("EDIT_FORM1_TABLE1")
@@ -57,6 +57,12 @@ export class SubmissionsController {
       isTest === "true",
       req.user,
     );
+  }
+
+  @Get("field-inspections")
+  @RequirePermission("VIEW_FORM1_TABLE1")
+  findFieldInspections(@Query() query, @Request() req) {
+    return this.submissionsService.findFieldInspections(query, req.user);
   }
 
   @Get(":id")

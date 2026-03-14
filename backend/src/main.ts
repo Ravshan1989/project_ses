@@ -9,39 +9,19 @@ async function bootstrap() {
     logger: ["log", "error", "warn", "debug", "verbose"],
   });
 
-  app.use(helmet()); // UZ: Xavfsizlik sarlavhalarini o'rnatish
+  app.use(helmet({
+    crossOriginResourcePolicy: false,
+  })); // UZ: CORS xatolarini oldini olish uchun helmet sozlamasi
 
   app.use(json({ limit: "50mb" }));
   app.use(urlencoded({ limit: "50mb", extended: true }));
 
-  // Manual CORS Middleware (UZ: CORS xatolarini aniq hal qilish uchun)
-  app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    if (origin) {
-      res.header("Access-Control-Allow-Origin", origin);
-    } else {
-      res.header("Access-Control-Allow-Origin", "*");
-    }
-    res.header(
-      "Access-Control-Allow-Methods",
-      "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
-    );
-    res.header(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Accept, Authorization, X-Requested-With",
-    );
-    res.header("Access-Control-Allow-Credentials", "true");
-
-    if (req.method === "OPTIONS") {
-      return res.sendStatus(200);
-    }
-    next();
-  });
-
-  // Enable CORS for Frontend (Standard NestJS way as fallback)
+  // Enable CORS for Frontend (Standard NestJS way)
   app.enableCors({
-    origin: true,
+    origin: true, // Hamma origin'larga ruxsat berish yoki ro'yxatni kiritish
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
+    allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With',
   });
 
   // Enable Global Validation

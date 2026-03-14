@@ -7,11 +7,12 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Submission } from "./entities/submission.entity";
+import { FieldInspection } from "./entities/field-inspection.entity";
 import { CreateSubmissionDto } from "./dto/create-submission.dto";
 import { UpdateStatusDto } from "./dto/update-status.dto";
 import { SubmissionStatus } from "../../common/enums/status.enum";
-import { User } from "../../modules/users/entities/user.entity";
 import { UserRole } from "../../common/enums/role.enum";
+import { User } from "../../modules/users/entities/user.entity";
 import { getRoleLevel } from "../../common/utils/role.util";
 import { DailyReportsService } from "../daily-reports/daily-reports.service";
 import { DiseasesService } from "../diseases/diseases.service";
@@ -26,12 +27,44 @@ export class SubmissionsService {
   constructor(
     @InjectRepository(Submission)
     private submissionRepository: Repository<Submission>,
+    @InjectRepository(FieldInspection)
+    private fieldInspectionRepo: Repository<FieldInspection>,
     private dailyReportsService: DailyReportsService,
     private diseasesService: DiseasesService,
     private organizationsService: OrganizationsService,
     @InjectRepository(Template)
     private templateRepository: Repository<Template>,
-  ) {}
+  ) { }
+
+  async saveFieldInspection(data: Partial<FieldInspection>) {
+    const inspection = this.fieldInspectionRepo.create(data);
+    return this.fieldInspectionRepo.save(inspection);
+  }
+
+  async findFieldInspections(query: any, user: User) {
+    const level = getRoleLevel(user.role, user);
+    const where: any = {};
+
+    if (query.type) where.type = query.type;
+    if (query.result) where.result = query.result;
+
+    // Date filtering if provided
+    if (query.startDate && query.endDate) {
+      // Logic for date range
+    }
+
+    if (level === 3) {
+      where.organization = { id: user.organization.id };
+    } else if (level === 2) {
+      where.organization = { parent: { id: user.organization.id } };
+    }
+
+    return this.fieldInspectionRepo.find({
+      where,
+      relations: ["organization", "inspector"],
+      order: { createdAt: "DESC" },
+    });
+  }
 
   async create(createSubmissionDto: CreateSubmissionDto, user: User) {
     // Basic validation: User must belong to an organization

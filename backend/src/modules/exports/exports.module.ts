@@ -8,6 +8,7 @@ import { AriDailyReport } from "../daily-reports/entities/ari-daily-report.entit
 import { CovidDailyReport } from "../daily-reports/entities/covid-daily-report.entity";
 import { EpidemiologyDailyReport } from "../daily-reports/entities/epidemiology-daily-report.entity";
 import { Submission } from "../submissions/entities/submission.entity";
+import { FieldInspection } from "../submissions/entities/field-inspection.entity";
 import { VerificationService } from "../daily-reports/verification.service";
 import { DiseasesModule } from "../diseases/diseases.module";
 import { OrganizationsModule } from "../organizations/organizations.module";
@@ -21,11 +22,13 @@ import { OrganizationsModule } from "../organizations/organizations.module";
       CovidDailyReport,
       EpidemiologyDailyReport,
       Submission,
+      FieldInspection,
     ]),
     DiseasesModule,
     OrganizationsModule,
   ],
   controllers: [ExportsController],
   providers: [ExportsService, VerificationService],
+  exports: [ExportsService],
 })
-export class ExportsModule {}
+export class ExportsModule { }

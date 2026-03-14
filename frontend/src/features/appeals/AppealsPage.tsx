@@ -8,6 +8,7 @@ import PermissionGate from '../../components/PermissionGate';
 import EditCell from '../../components/common/EditCell';
 import { useAppealsData } from './hooks/useAppealsData';
 import { APPEALS_T1_ROWS, APPEALS_SUBJECT_ROWS, APPEALS_T7_ROWS } from './components/AppealsConstants';
+import MasterAppealsJournal from './components/MasterAppealsJournal';
 
 
 interface Organization {
@@ -35,7 +36,7 @@ const AppealsPage: React.FC = () => {
     const { t } = useTranslation();
     const [month, setMonth] = useState(dayjs().format('YYYY-MM'));
     const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState('1');
+    const [activeTab, setActiveTab] = useState('journal');
 
     const isAdmin = localStorage.getItem('user_role') === 'ADMIN' || localStorage.getItem('user_role') === 'EXECUTIVE';
     const userOrgId = localStorage.getItem('user_org_id');
@@ -52,7 +53,10 @@ const AppealsPage: React.FC = () => {
         isLoadingTable,
         isSaving,
         saveData,
-        refresh
+        refresh,
+        recordsQuery,
+        autoReportsQuery,
+        createRecordMutation
     } = useAppealsData(month, effectiveOrgId, activeTab);
 
     const [localData, setLocalData] = useState<any[]>([]);
@@ -245,10 +249,10 @@ const AppealsPage: React.FC = () => {
             <thead>
                 <tr>
                     <th style={thStyle} rowSpan={2}>№</th>
-                    <th style={{ ...thStyle, textAlign: 'left' }} rowSpan={2}>Chora turi</th>
-                    <th style={thStyle} colSpan={2}>Jarima</th>
-                    <th style={thStyle} colSpan={2}>Hayfsan</th>
-                    <th style={thStyle} colSpan={2}>Ozod etish</th>
+                    <th style={{ ...thStyle, textAlign: 'left' }} rowSpan={2}>{t('appeals.table7.columns.action_type')}</th>
+                    <th style={thStyle} colSpan={2}>{t('appeals.table7.columns.fine')}</th>
+                    <th style={thStyle} colSpan={2}>{t('appeals.table7.columns.reprimand')}</th>
+                    <th style={thStyle} colSpan={2}>{t('appeals.table7.columns.dismissal')}</th>
                 </tr>
                 <tr>
                     <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
@@ -271,6 +275,21 @@ const AppealsPage: React.FC = () => {
     );
 
     const tabItems = [
+        {
+            key: 'journal',
+            label: <span style={{ fontWeight: 'bold', color: '#1890ff' }}>{t('appeals.tabs.journal')}</span>,
+            children: (
+                <MasterAppealsJournal
+                    month={month}
+                    orgId={effectiveOrgId || ''}
+                    records={recordsQuery.data || []}
+                    autoReports={autoReportsQuery.data}
+                    isLoading={recordsQuery.isLoading}
+                    onCreate={(v) => createRecordMutation.mutate(v)}
+                    isCreating={createRecordMutation.isPending}
+                />
+            )
+        },
         { key: '1', label: t('appeals.tabs.t1'), children: <Spin spinning={isLoadingTable}><div className="table-container">{renderTable1()}</div></Spin> },
         { key: '2', label: t('appeals.tabs.t2'), children: <Spin spinning={isLoadingTable}><div className="table-container">{renderTable2()}</div></Spin> },
         { key: '3', label: t('appeals.tabs.t3'), children: <Spin spinning={isLoadingTable}><div className="table-container">{renderTable3()}</div></Spin> },

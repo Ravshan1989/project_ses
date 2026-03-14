@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, DatePicker, Select, Space, Spin, Card, Tabs } from 'antd';
+import { Button, DatePicker, Select, Space, Spin, Card, Tabs, Badge } from 'antd';
 import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import GlassLayout from '../../components/layout/GlassLayout';
 import PermissionGate from '../../components/PermissionGate';
 import EditCell from '../../components/common/EditCell';
 import { useNutritionHygieneData } from './hooks/useNutritionHygieneData';
+import MasterNutritionJournal from './components/MasterNutritionJournal';
 import { NUTRITION_HYGIENE_T3_PRODUCTS, NUTRITION_HYGIENE_DEFAULT_ROWS } from './components/NutritionHygieneConstants';
 
 interface Organization {
@@ -25,6 +26,14 @@ const thStyle: React.CSSProperties = {
     minWidth: '50px'
 };
 
+const verticalThStyle: React.CSSProperties = {
+    ...thStyle,
+    writingMode: 'vertical-rl',
+    transform: 'rotate(180deg)',
+    whiteSpace: 'nowrap',
+    height: '180px'
+};
+
 const tdStyle: React.CSSProperties = {
     padding: '4px',
     border: '1px solid #e2e8f0',
@@ -35,7 +44,7 @@ const NutritionHygienePage: React.FC = () => {
     const { t } = useTranslation();
     const [month, setMonth] = useState(dayjs().format('YYYY-MM'));
     const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState('1');
+    const [activeTab, setActiveTab] = useState('journal');
 
     const isAdmin = localStorage.getItem('user_role') === 'ADMIN' || localStorage.getItem('user_role') === 'EXECUTIVE';
     const userOrgId = localStorage.getItem('user_org_id');
@@ -47,14 +56,44 @@ const NutritionHygienePage: React.FC = () => {
         isLoadingTable,
         isSaving,
         saveData,
-        refresh
+        refresh,
+        records,
+        autoReports,
+        isLoadingJournal,
+        isCreating,
+        createRecord,
+        monitoringData,
     } = useNutritionHygieneData(month, effectiveOrgId, activeTab);
+
 
     const [localData, setLocalData] = useState<any[]>([]);
 
     useEffect(() => {
         setLocalData(tableData);
     }, [tableData]);
+
+    const userOrg = organizations?.find((o: any) => o.id === userOrgId);
+    const filteredRows = NUTRITION_HYGIENE_DEFAULT_ROWS.filter(row => {
+        if (isAdmin) return true;
+        if (row.key === 'total' || row.key === 'Boshqarma') return true;
+        if (userOrg && row.key === userOrg.name) return true;
+        return false;
+    });
+
+    const renderRowLabel = (row: any) => {
+        const isTotal = row.key === 'total' || row.key === 'Boshqarma';
+        if (isTotal) return t(row.labelKey);
+
+        const org = organizations?.find((o: any) => o.name === row.key);
+        const hasData = monitoringData?.find(m => m.orgId === org?.id)?.hasData;
+
+        return (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Badge status={hasData ? 'success' : 'error'} title={hasData ? 'Topshirilgan' : 'Topshirilmagan'} />
+                {t(row.labelKey)}
+            </span>
+        );
+    };
 
     const updateCell = (rowKey: string, field: string, val: number) => {
         setLocalData(prev => {
@@ -76,7 +115,8 @@ const NutritionHygienePage: React.FC = () => {
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
             <thead>
                 <tr>
-                    <th style={thStyle} rowSpan={2}>Hudud</th>
+                    <th style={thStyle} rowSpan={2}>№</th>
+                    <th style={{ ...thStyle, minWidth: '130px' }} rowSpan={2}>Hudud nomi</th>
                     <th style={thStyle} colSpan={3}>Korxonalar</th>
                     <th style={thStyle} colSpan={2}>Dispenserlar</th>
                     <th style={thStyle} rowSpan={2}>Kali iodat qoldig'i (kg)</th>
@@ -95,9 +135,10 @@ const NutritionHygienePage: React.FC = () => {
                 </tr>
             </thead>
             <tbody>
-                {NUTRITION_HYGIENE_DEFAULT_ROWS.map((row, ridx) => (
+                {filteredRows.map((row, ridx) => (
                     <tr key={row.key}>
-                        <td style={{ ...tdStyle, fontWeight: 'bold' }}>Tuman hisoboti</td>
+                        <td style={tdStyle}>{ridx + 1}</td>
+                        <td style={{ ...tdStyle, fontWeight: 'bold', textAlign: 'left', whiteSpace: 'nowrap' }}>{renderRowLabel(row)}</td>
                         {[
                             'ent_total', 'ent_period', 'ent_covered_lab', 'dispensers_total', 'dispensers_period',
                             'potassium_iodate_kg', 'samples_prod_total', 'samples_prod_not_meet', 'samples_trade_total',
@@ -116,7 +157,8 @@ const NutritionHygienePage: React.FC = () => {
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
             <thead>
                 <tr>
-                    <th style={thStyle} rowSpan={2}>Hudud</th>
+                    <th style={thStyle} rowSpan={2}>№</th>
+                    <th style={{ ...thStyle, minWidth: '130px' }} rowSpan={2}>Hudud nomi</th>
                     <th style={thStyle} colSpan={3}>Korxonalar</th>
                     <th style={thStyle} colSpan={2}>Dispenserlar</th>
                     <th style={thStyle} rowSpan={2}>Premiks qoldig'i (kg)</th>
@@ -135,9 +177,10 @@ const NutritionHygienePage: React.FC = () => {
                 </tr>
             </thead>
             <tbody>
-                {NUTRITION_HYGIENE_DEFAULT_ROWS.map((row, ridx) => (
+                {filteredRows.map((row, ridx) => (
                     <tr key={row.key}>
-                        <td style={{ ...tdStyle, fontWeight: 'bold' }}>Tuman hisoboti</td>
+                        <td style={tdStyle}>{ridx + 1}</td>
+                        <td style={{ ...tdStyle, fontWeight: 'bold', textAlign: 'left', whiteSpace: 'nowrap' }}>{renderRowLabel(row)}</td>
                         {[
                             'ent_total', 'ent_period', 'ent_covered_lab', 'dispensers_total', 'dispensers_period',
                             'premix_amount_kg', 'samples_prod_total', 'samples_prod_not_meet', 'samples_trade_total',
@@ -156,7 +199,8 @@ const NutritionHygienePage: React.FC = () => {
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
             <thead>
                 <tr>
-                    <th style={thStyle} rowSpan={2}>Hudud</th>
+                    <th style={thStyle} rowSpan={2}>№</th>
+                    <th style={{ ...thStyle, minWidth: '130px' }} rowSpan={2}>Hudud nomi</th>
                     <th style={thStyle} rowSpan={2}>Ishlayotgan bozorlar</th>
                     <th style={thStyle} colSpan={8}>Kamchiliklar</th>
                     <th style={thStyle} rowSpan={2}>Tekshiruvlar</th>
@@ -175,9 +219,10 @@ const NutritionHygienePage: React.FC = () => {
                 </tr>
             </thead>
             <tbody>
-                {NUTRITION_HYGIENE_DEFAULT_ROWS.map((row, ridx) => (
+                {filteredRows.map((row, ridx) => (
                     <tr key={row.key}>
-                        <td style={{ ...tdStyle, fontWeight: 'bold' }}>Tuman hisoboti</td>
+                        <td style={tdStyle}>{ridx + 1}</td>
+                        <td style={{ ...tdStyle, fontWeight: 'bold', textAlign: 'left', whiteSpace: 'nowrap' }}>{renderRowLabel(row)}</td>
                         {[
                             'operating_markets', 'no_water', 'no_sewage', 'no_meat_pavilion', 'no_milk_pavilion',
                             'no_vse_lab', 'no_toilet', 'no_waste_area', 'no_disinfection_contract', 'inspections_total',
@@ -193,112 +238,145 @@ const NutritionHygienePage: React.FC = () => {
     );
 
     const renderTable1 = () => (
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-            <thead>
-                <tr>
-                    <th style={thStyle} rowSpan={2}>Hudud</th>
-                    <th style={thStyle} colSpan={3}>Xabardor etish</th>
-                    <th style={thStyle} rowSpan={2}>Ruxsat buyurtma</th>
-                    <th style={thStyle} rowSpan={2}>Jami ruxsat</th>
-                    <th style={thStyle} rowSpan={2}>Sudga</th>
-                    <th style={thStyle} rowSpan={2}>Prokuraturaga</th>
-                    <th style={thStyle} colSpan={2}>Sud jarimasi</th>
-                    <th style={thStyle} colSpan={2}>Undirilgan (Sud)</th>
-                    <th style={thStyle} colSpan={2}>Sanepid jarima</th>
-                    <th style={thStyle} colSpan={2}>Undirilgan (Sanepid)</th>
-                    <th style={thStyle} rowSpan={2}>Faoliyat to'xt.</th>
-                    <th style={thStyle} rowSpan={2}>Chetlatish taklif</th>
-                    <th style={thStyle} rowSpan={2}>Chetlatilgan xodim</th>
-                </tr>
-                <tr>
-                    <th style={thStyle}>I.Ch.</th><th style={thStyle}>Ovqat.</th><th style={thStyle}>Savdo</th>
-                    <th style={thStyle}>Soni</th><th style={thStyle}>Summa</th>
-                    <th style={thStyle}>Soni</th><th style={thStyle}>Summa</th>
-                    <th style={thStyle}>Soni</th><th style={thStyle}>Summa</th>
-                    <th style={thStyle}>Soni</th><th style={thStyle}>Summa</th>
-                </tr>
-            </thead>
-            <tbody>
-                {NUTRITION_HYGIENE_DEFAULT_ROWS.map((row, ridx) => (
-                    <tr key={row.key}>
-                        <td style={{ ...tdStyle, fontWeight: 'bold' }}>{t(row.labelKey)}</td>
-                        {[
-                            'production_notif', 'catering_notif', 'trade_notif', 'order_permission', 'total_permission',
-                            'sent_to_court', 'sent_to_prosecutor', 'court_fine_count', 'court_fine_sum',
-                            'recovered_fine_count', 'recovered_fine_sum', 'sanitary_fine_count', 'sanitary_fine_sum',
-                            'sanitary_recovered_count', 'sanitary_recovered_sum', 'suspension_count',
-                            'dismissal_proposals', 'dismissed_employees'
-                        ].map((f, fidx) => (
-                            <td key={f} style={tdStyle}>
-                                <EditCell value={getVal(row.key, f)} onChange={v => updateCell(row.key, f, v)} rowIdx={ridx} colIdx={fidx} disabled={isSaving} />
-                            </td>
-                        ))}
+        <div style={{ overflowX: 'auto' }}>
+            <table style={{ borderCollapse: 'collapse', width: 'max-content', minWidth: '100%' }}>
+                <thead>
+                    <tr>
+                        <th style={thStyle} rowSpan={3}>№</th>
+                        <th style={{ ...thStyle, minWidth: '130px' }} rowSpan={3}>Hudud nomi</th>
+                        <th style={thStyle}>Ishlab chiqarish</th>
+                        <th style={thStyle}>Umumiy ovqatlanish</th>
+                        <th style={thStyle}>Savdo</th>
+                        <th style={{ ...thStyle, fontSize: '10px' }}>O'RPxTs XvaQmxkv<br />berilgan buyurtmalar</th>
+                        <th style={thStyle} colSpan={11}>Ko'rilgan choralar</th>
                     </tr>
-                ))}
-            </tbody>
-        </table>
+                    <tr>
+                        <th style={verticalThStyle} rowSpan={2}>xabardor etish</th>
+                        <th style={verticalThStyle} rowSpan={2}>xabardor etish</th>
+                        <th style={verticalThStyle} rowSpan={2}>xabardor etish</th>
+                        <th style={verticalThStyle} rowSpan={2}>Tekshirishga ruxsat<br />olinganlari jami</th>
+                        <th style={verticalThStyle} rowSpan={2}>Sudga yuborilgani</th>
+                        <th style={verticalThStyle} rowSpan={2}>Prokuratura organlariga<br />o'tkazilgan ishlar</th>
+                        <th style={verticalThStyle} rowSpan={2}>Sud tomonidan<br />qo'llanilgan jarimalar</th>
+                        <th style={verticalThStyle} rowSpan={2}>Undirilgan jarimalar</th>
+                        <th style={thStyle} colSpan={2}>Hududiy Sanepidbo'limi<br />tomonidan qo'llanilgan<br />jarimalar (fuqarolarga)</th>
+                        <th style={thStyle} colSpan={2}>Undirilgan jarimalar</th>
+                        <th style={verticalThStyle} rowSpan={2}>Faoliyati<br />to'xtatilganlar</th>
+                        <th style={verticalThStyle} rowSpan={2}>Ishdan chetlashtirish<br />uchun kiritilgan<br />takliflar soni</th>
+                        <th style={verticalThStyle} rowSpan={2}>Taklif asosida<br />ishdan chetlatilgan<br />xodimlar soni</th>
+                    </tr>
+                    <tr>
+                        <th style={thStyle}>soni</th>
+                        <th style={thStyle}>summasi</th>
+                        <th style={thStyle}>soni</th>
+                        <th style={thStyle}>summasi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {filteredRows.map((row, ridx) => (
+                        <tr key={row.key}>
+                            <td style={tdStyle}>{ridx + 1}</td>
+                            <td style={{ ...tdStyle, fontWeight: 'bold', textAlign: 'left', whiteSpace: 'nowrap' }}>{renderRowLabel(row)}</td>
+                            {[
+                                'production_notif', 'catering_notif', 'trade_notif', 'total_permission',
+                                'sent_to_court', 'sent_to_prosecutor', 'court_fine_count', 'recovered_fine_count',
+                                'sanitary_fine_count', 'sanitary_fine_sum', 'sanitary_recovered_count', 'sanitary_recovered_sum',
+                                'suspension_count', 'dismissal_proposals', 'dismissed_employees'
+                            ].map((f, fidx) => (
+                                <td key={f} style={tdStyle}>
+                                    <EditCell value={getVal(row.key, f)} onChange={v => updateCell(row.key, f, v)} rowIdx={ridx} colIdx={fidx} disabled={isSaving} />
+                                </td>
+                            ))}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
     );
 
     const renderTable2 = () => (
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-            <thead>
-                <tr>
-                    <th style={thStyle} rowSpan={2}>Hudud</th>
-                    <th style={thStyle} colSpan={4}>I.Ch. ob'ektlari</th>
-                    <th style={thStyle} colSpan={4}>Umumiy ovqat.</th>
-                    <th style={thStyle} colSpan={4}>Savdo ob'ektlari</th>
-                    <th style={thStyle} colSpan={3}>Choralar</th>
-                </tr>
-                <tr>
-                    <th style={thStyle}>Jami</th><th style={thStyle}>Kerek</th><th style={thStyle}>O'tdi</th><th style={thStyle}>%</th>
-                    <th style={thStyle}>Jami</th><th style={thStyle}>Kerek</th><th style={thStyle}>O'tdi</th><th style={thStyle}>%</th>
-                    <th style={thStyle}>Jami</th><th style={thStyle}>Kerek</th><th style={thStyle}>O'tdi</th><th style={thStyle}>%</th>
-                    <th style={thStyle}>Taklif</th><th style={thStyle}>Chetla.</th><th style={thStyle}>Protokol</th>
-                </tr>
-            </thead>
-            <tbody>
-                {NUTRITION_HYGIENE_DEFAULT_ROWS.map((row, ridx) => {
-                    const prodP = getVal(row.key, 'production_required') ? (getVal(row.key, 'production_passed') / getVal(row.key, 'production_required') * 100).toFixed(1) : '0';
-                    const catP = getVal(row.key, 'catering_required') ? (getVal(row.key, 'catering_passed') / getVal(row.key, 'catering_required') * 100).toFixed(1) : '0';
-                    const tradeP = getVal(row.key, 'trade_required') ? (getVal(row.key, 'trade_passed') / getVal(row.key, 'trade_required') * 100).toFixed(1) : '0';
-                    return (
-                        <tr key={row.key}>
-                            <td style={{ ...tdStyle, fontWeight: 'bold' }}>{t(row.labelKey)}</td>
-                            {[
-                                'production_total', 'production_required', 'production_passed'
-                            ].map((f, fidx) => (
-                                <td key={f} style={tdStyle}><EditCell value={getVal(row.key, f)} onChange={v => updateCell(row.key, f, v)} rowIdx={ridx} colIdx={fidx} disabled={isSaving} /></td>
-                            ))}
-                            <td style={tdStyle}>{prodP}%</td>
-                            {[
-                                'catering_total', 'catering_required', 'catering_passed'
-                            ].map((f, fidx) => (
-                                <td key={f} style={tdStyle}><EditCell value={getVal(row.key, f)} onChange={v => updateCell(row.key, f, v)} rowIdx={ridx} colIdx={fidx + 3} disabled={isSaving} /></td>
-                            ))}
-                            <td style={tdStyle}>{catP}%</td>
-                            {[
-                                'trade_total', 'trade_required', 'trade_passed'
-                            ].map((f, fidx) => (
-                                <td key={f} style={tdStyle}><EditCell value={getVal(row.key, f)} onChange={v => updateCell(row.key, f, v)} rowIdx={ridx} colIdx={fidx + 6} disabled={isSaving} /></td>
-                            ))}
-                            <td style={tdStyle}>{tradeP}%</td>
-                            {[
-                                'dismissal_proposals', 'dismissed_employees', 'health_protocols'
-                            ].map((f, fidx) => (
-                                <td key={f} style={tdStyle}><EditCell value={getVal(row.key, f)} onChange={v => updateCell(row.key, f, v)} rowIdx={ridx} colIdx={fidx + 9} disabled={isSaving} /></td>
-                            ))}
-                        </tr>
-                    );
-                })}
-            </tbody>
-        </table>
+        <div style={{ overflowX: 'auto' }}>
+            <table style={{ borderCollapse: 'collapse', width: 'max-content', minWidth: '100%' }}>
+                <thead>
+                    <tr>
+                        <th style={thStyle} rowSpan={2}>№</th>
+                        <th style={{ ...thStyle, minWidth: '130px' }} rowSpan={2}>Hudud nomi</th>
+                        <th style={thStyle} colSpan={4}>Oziq-ovqat ishlab chiqarish obyektlari</th>
+                        <th style={thStyle} colSpan={4}>Umumiy ovqatlanish obyektlari</th>
+                        <th style={thStyle} colSpan={4}>Oziq-ovqat savdo obyektlari</th>
+                        <th style={thStyle} colSpan={4}>Ko'rilgan choralar</th>
+                    </tr>
+                    <tr>
+                        {/* Prod */}
+                        <th style={verticalThStyle}>tekshirishi o'tkazilgan<br />obyektlar soni</th>
+                        <th style={verticalThStyle}>jami tibbiy<br />ko'rikdan o'tishi<br />lozim xodimlar soni</th>
+                        <th style={verticalThStyle}>tibbiy ko'rikdan<br />o'tmaganlar xodimlar<br />soni</th>
+                        <th style={thStyle}>%</th>
+                        {/* Catering */}
+                        <th style={verticalThStyle}>tekshirishi o'tkazilgan<br />obyektlar soni</th>
+                        <th style={verticalThStyle}>jami tibbiy<br />ko'rikdan o'tishi<br />lozim xodimlar soni</th>
+                        <th style={verticalThStyle}>tibbiy ko'rikdan<br />o'tmaganlar xodimlar<br />soni</th>
+                        <th style={thStyle}>%</th>
+                        {/* Trade */}
+                        <th style={verticalThStyle}>tekshirishi o'tkazilgan<br />obyektlar soni</th>
+                        <th style={verticalThStyle}>jami tibbiy<br />ko'rikdan o'tishi<br />lozim xodimlar soni</th>
+                        <th style={verticalThStyle}>tibbiy ko'rikdan<br />o'tmaganlar xodimlar<br />soni</th>
+                        <th style={thStyle}>%</th>
+                        {/* Measures */}
+                        <th style={verticalThStyle}>ishdan chetlashtirish<br />uchun kiritilgan<br />takliflar soni</th>
+                        <th style={verticalThStyle}>taklif asosida ishdan<br />chetlashtirilgan xodimlar<br />soni</th>
+                        <th style={verticalThStyle}>taklif bo'yicha tibbiy<br />ko'rikdan o'tganlar<br />soni</th>
+                        <th style={verticalThStyle}>tuzilgan ma'muriy<br />bayonnomalar soni</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {filteredRows.map((row, ridx) => {
+                        const getPct = (req: number, failed: number) => {
+                            if (!req) return '0';
+                            return ((failed / req) * 100).toFixed(1);
+                        };
+                        const prodPct = getPct(getVal(row.key, 'prod_medical_required'), getVal(row.key, 'prod_medical_failed'));
+                        const catPct = getPct(getVal(row.key, 'cat_medical_required'), getVal(row.key, 'cat_medical_failed'));
+                        const tradePct = getPct(getVal(row.key, 'trade_medical_required'), getVal(row.key, 'trade_medical_failed'));
+
+                        return (
+                            <tr key={row.key}>
+                                <td style={tdStyle}>{ridx + 1}</td>
+                                <td style={{ ...tdStyle, fontWeight: 'bold', textAlign: 'left', whiteSpace: 'nowrap' }}>{renderRowLabel(row)}</td>
+                                {/* Prod */}
+                                <td style={tdStyle}><EditCell value={getVal(row.key, 'prod_inspected_count')} onChange={v => updateCell(row.key, 'prod_inspected_count', v)} rowIdx={ridx} colIdx={0} disabled={isSaving} /></td>
+                                <td style={tdStyle}><EditCell value={getVal(row.key, 'prod_medical_required')} onChange={v => updateCell(row.key, 'prod_medical_required', v)} rowIdx={ridx} colIdx={1} disabled={isSaving} /></td>
+                                <td style={tdStyle}><EditCell value={getVal(row.key, 'prod_medical_failed')} onChange={v => updateCell(row.key, 'prod_medical_failed', v)} rowIdx={ridx} colIdx={2} disabled={isSaving} /></td>
+                                <td style={tdStyle}>{prodPct}%</td>
+                                {/* Catering */}
+                                <td style={tdStyle}><EditCell value={getVal(row.key, 'cat_inspected_count')} onChange={v => updateCell(row.key, 'cat_inspected_count', v)} rowIdx={ridx} colIdx={3} disabled={isSaving} /></td>
+                                <td style={tdStyle}><EditCell value={getVal(row.key, 'cat_medical_required')} onChange={v => updateCell(row.key, 'cat_medical_required', v)} rowIdx={ridx} colIdx={4} disabled={isSaving} /></td>
+                                <td style={tdStyle}><EditCell value={getVal(row.key, 'cat_medical_failed')} onChange={v => updateCell(row.key, 'cat_medical_failed', v)} rowIdx={ridx} colIdx={5} disabled={isSaving} /></td>
+                                <td style={tdStyle}>{catPct}%</td>
+                                {/* Trade */}
+                                <td style={tdStyle}><EditCell value={getVal(row.key, 'trade_inspected_count')} onChange={v => updateCell(row.key, 'trade_inspected_count', v)} rowIdx={ridx} colIdx={6} disabled={isSaving} /></td>
+                                <td style={tdStyle}><EditCell value={getVal(row.key, 'trade_medical_required')} onChange={v => updateCell(row.key, 'trade_medical_required', v)} rowIdx={ridx} colIdx={7} disabled={isSaving} /></td>
+                                <td style={tdStyle}><EditCell value={getVal(row.key, 'trade_medical_failed')} onChange={v => updateCell(row.key, 'trade_medical_failed', v)} rowIdx={ridx} colIdx={8} disabled={isSaving} /></td>
+                                <td style={tdStyle}>{tradePct}%</td>
+                                {/* Measures */}
+                                <td style={tdStyle}><EditCell value={getVal(row.key, 'dismissal_proposals')} onChange={v => updateCell(row.key, 'dismissal_proposals', v)} rowIdx={ridx} colIdx={9} disabled={isSaving} /></td>
+                                <td style={tdStyle}><EditCell value={getVal(row.key, 'dismissed_employees')} onChange={v => updateCell(row.key, 'dismissed_employees', v)} rowIdx={ridx} colIdx={10} disabled={isSaving} /></td>
+                                <td style={tdStyle}><EditCell value={getVal(row.key, 'medical_checked_after_proposal')} onChange={v => updateCell(row.key, 'medical_checked_after_proposal', v)} rowIdx={ridx} colIdx={11} disabled={isSaving} /></td>
+                                <td style={tdStyle}><EditCell value={getVal(row.key, 'protocols_count')} onChange={v => updateCell(row.key, 'protocols_count', v)} rowIdx={ridx} colIdx={12} disabled={isSaving} /></td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
+        </div>
     );
 
     const renderTable3 = () => (
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
             <thead>
                 <tr>
-                    <th style={thStyle} rowSpan={2}>Hudud</th>
+                    <th style={thStyle} rowSpan={2}>№</th>
+                    <th style={{ ...thStyle, minWidth: '130px' }} rowSpan={2}>Hudud nomi</th>
                     <th style={thStyle} colSpan={13}>Mahsulotlar (tn)</th>
                     <th style={thStyle} rowSpan={2}>Jami namunalar</th>
                     <th style={thStyle} colSpan={3}>Savdo tarmog'ida</th>
@@ -312,9 +390,10 @@ const NutritionHygienePage: React.FC = () => {
                 </tr>
             </thead>
             <tbody>
-                {NUTRITION_HYGIENE_DEFAULT_ROWS.map((row, ridx) => (
+                {filteredRows.map((row, ridx) => (
                     <tr key={row.key}>
-                        <td style={{ ...tdStyle, fontWeight: 'bold' }}>Tuman hisoboti</td>
+                        <td style={tdStyle}>{ridx + 1}</td>
+                        <td style={{ ...tdStyle, fontWeight: 'bold', textAlign: 'left', whiteSpace: 'nowrap' }}>{renderRowLabel(row)}</td>
                         {NUTRITION_HYGIENE_T3_PRODUCTS.map((p, fidx) => (
                             <td key={p.key} style={tdStyle}><EditCell value={getVal(row.key, p.key)} onChange={v => updateCell(row.key, p.key, v)} rowIdx={ridx} colIdx={fidx} disabled={isSaving} /></td>
                         ))}
@@ -331,6 +410,21 @@ const NutritionHygienePage: React.FC = () => {
     );
 
     const tabItems = [
+        {
+            key: 'journal',
+            label: <span style={{ fontWeight: 'bold', color: '#0958d9' }}>{t('nutrition.tabs.journal')} 🚀</span>,
+            children: (
+                <MasterNutritionJournal
+                    month={month}
+                    orgId={effectiveOrgId || ''}
+                    records={records}
+                    autoReports={autoReports}
+                    isLoading={isLoadingJournal}
+                    isCreating={isCreating}
+                    onCreate={createRecord}
+                />
+            )
+        },
         { key: '1', label: t('nutrition.tabs.t1'), children: <Spin spinning={isLoadingTable}><div className="table-container">{renderTable1()}</div></Spin> },
         { key: '2', label: t('nutrition.tabs.t2'), children: <Spin spinning={isLoadingTable}><div className="table-container">{renderTable2()}</div></Spin> },
         { key: '3', label: t('nutrition.tabs.t3'), children: <Spin spinning={isLoadingTable}><div className="table-container">{renderTable3()}</div></Spin> },
@@ -338,6 +432,7 @@ const NutritionHygienePage: React.FC = () => {
         { key: '5', label: t('nutrition.tabs.t5'), children: <Spin spinning={isLoadingTable}><div className="table-container">{renderTable5()}</div></Spin> },
         { key: '6', label: t('nutrition.tabs.t6'), children: <Spin spinning={isLoadingTable}><div className="table-container">{renderTable6()}</div></Spin> },
     ];
+
 
     return (
         <GlassLayout title={t('nutrition.title')}>

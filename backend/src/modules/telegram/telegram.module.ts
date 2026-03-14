@@ -8,10 +8,13 @@ import { DataExportService } from "./data-export.service";
 import { BackupBotService } from "./backup-bot.service";
 import { SosBotService } from "./sos-bot.service";
 
+import { SubmissionsModule } from "../submissions/submissions.module";
+
 @Global()
 @Module({
   imports: [
     forwardRef(() => DailyReportsModule),
+    forwardRef(() => SubmissionsModule),
     TypeOrmModule.forFeature([User]),
   ],
   providers: [

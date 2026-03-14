@@ -1,6 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject, forwardRef } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, FindOptionsWhere } from "typeorm";
+import { Cron } from "@nestjs/schedule";
 import { HepatitisDailyReport } from "./entities/hepatitis-daily-report.entity";
 import { CreateHepatitisReportDto } from "./dto/create-report.dto";
 import { FluDailyReport } from "./entities/flu-daily-report.entity";
@@ -19,9 +20,10 @@ import { ReportStatus } from "../../common/enums/report-status.enum";
 import { Organization } from "../organizations/entities/organization.entity";
 import { User } from "../users/entities/user.entity";
 import { getRoleLevel } from "../../common/utils/role.util";
-import { FindOptionsWhere } from "typeorm";
 import { TelegramService } from "../telegram/telegram.service";
-import { Inject, forwardRef } from "@nestjs/common";
+import { SubmissionsService } from "../submissions/submissions.service";
+import { ExportsService } from "../exports/exports.service";
+import { FieldInspectionType } from "../submissions/entities/field-inspection.entity";
 
 @Injectable()
 export class DailyReportsService {
@@ -44,7 +46,70 @@ export class DailyReportsService {
     private orgRepo: Repository<Organization>,
     @Inject(forwardRef(() => TelegramService))
     private telegramService: TelegramService,
-  ) {}
+    @Inject(forwardRef(() => SubmissionsService))
+    private submissionsService: SubmissionsService,
+    @Inject(forwardRef(() => ExportsService))
+    private exportsService: ExportsService,
+  ) { }
+
+  @Cron("0 20 * * *") // Every day at 20:00
+  async handleDailyCron() {
+    console.log("[DailyReportsService] Running cron job at 20:00...");
+    await this.generateAutomatedDailyReport();
+  }
+
+  async generateAutomatedDailyReport() {
+    const todayStr = new Date().toISOString().split("T")[0];
+
+    // 1. Fetch data for today
+    const fieldInspections = await this.submissionsService.findFieldInspections(
+      { startDate: todayStr, endDate: todayStr },
+      { role: "ADMIN", organization: null } as any
+    );
+
+    // 2. Calculate Stats
+    const totalReports = fieldInspections.length;
+    const schools = fieldInspections.filter(i => i.type === FieldInspectionType.SCHOOL).length;
+    const kindergartens = fieldInspections.filter(i => i.type === FieldInspectionType.KINDERGARTEN).length;
+    const problems = fieldInspections.filter(i => i.type === FieldInspectionType.PROBLEM).length;
+
+    // District ranking logic
+    const districtStats = {};
+    fieldInspections.forEach(i => {
+      const d = i.districtName || "Noma'lum";
+      districtStats[d] = (districtStats[d] || 0) + 1;
+    });
+
+    const summaryText = `📅 *Kunlik Tezkor Xulosa (${todayStr})*\n\n` +
+      `📊 *Umumiy statistika:*\n` +
+      `✅ Jami hisobotlar: ${totalReports}\n` +
+      `🏫 Maktablar: ${schools}\n` +
+      `🎈 Bog'chalar: ${kindergartens}\n` +
+      `⚠️ Aniqlangan muammolar: ${problems}\n\n` +
+      `🏢 *Tumanlar faolligi:*\n` +
+      Object.entries(districtStats)
+        .sort((a: any, b: any) => b[1] - a[1])
+        .map(([name, count]) => `📍 ${name}: ${count} ta`)
+        .join("\n");
+
+    try {
+      // 3. Generate Files
+      // Note: We'll need to implement these methods in ExportsService
+      const pdfPath = await this.exportsService.generateDailySummaryPdf(todayStr, {
+        totalReports, schools, kindergartens, problems, districtStats
+      });
+      const excelPath = await this.exportsService.generateDailySummaryExcel(todayStr, {
+        totalReports, schools, kindergartens, problems, districtStats
+      });
+
+      // 4. Send to Telegram
+      await this.telegramService.sendDailyReportWithFiles(summaryText, pdfPath, excelPath);
+
+      console.log("[DailyReportsService] Automated report sent successfully.");
+    } catch (error) {
+      console.error("[DailyReportsService] Error generating/sending automated report:", error);
+    }
+  }
 
   private validateIsolation(user: User, organizationId: string) {
     if (!user || !user.organization) return; // Should not happen with JwtGuard

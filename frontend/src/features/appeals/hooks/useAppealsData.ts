@@ -19,11 +19,11 @@ export const useAppealsData = (month: string, orgId: string | null, activeTab: s
     const tableDataQuery = useQuery({
         queryKey: ['appeals-table', activeTab, month, orgId],
         queryFn: async () => {
-            if (!orgId) return [];
+            if (!orgId || activeTab === 'journal') return [];
             const res = await appealsApi.getTableData(parseInt(activeTab), month, orgId);
             return res || [];
         },
-        enabled: !!orgId && !!month,
+        enabled: !!orgId && !!month && activeTab !== 'journal',
         staleTime: 30000,
         refetchOnWindowFocus: false,
     });
@@ -31,7 +31,7 @@ export const useAppealsData = (month: string, orgId: string | null, activeTab: s
     // Save Mutation
     const saveMutation = useMutation({
         mutationFn: async ({ tab, data }: { tab: string, data: any[] }) => {
-            if (!orgId) return;
+            if (!orgId || tab === 'journal') return;
             return appealsApi.saveTableData(parseInt(tab), month, orgId, data);
         },
         onSuccess: () => {
@@ -50,7 +50,34 @@ export const useAppealsData = (month: string, orgId: string | null, activeTab: s
         isLoadingTable: tableDataQuery.isLoading,
         isSaving: saveMutation.isPending,
         saveData: (data: any[]) => saveMutation.mutate({ tab: activeTab, data }),
+
+        // --- NEW SINGLE ENTRY SYSTEM ---
+        recordsQuery: useQuery({
+            queryKey: ['appeals-records', month, orgId],
+            queryFn: () => appealsApi.getRecords(orgId!, month),
+            enabled: !!orgId && !!month,
+        }),
+
+        autoReportsQuery: useQuery({
+            queryKey: ['appeals-auto-reports', month, orgId],
+            queryFn: () => appealsApi.getAutoReports(orgId!, month),
+            enabled: !!orgId && !!month,
+        }),
+
+        createRecordMutation: useMutation({
+            mutationFn: (data: any) => appealsApi.createRecord(data),
+            onSuccess: () => {
+                notification.success({ message: t('common.success_save') });
+                queryClient.invalidateQueries({ queryKey: ['appeals-records'] });
+                queryClient.invalidateQueries({ queryKey: ['appeals-auto-reports'] });
+            },
+            onError: () => {
+                notification.error({ message: t('common.error_save') });
+            }
+        }),
+
         refresh: () => {
+
             queryClient.invalidateQueries({ queryKey: ['appeals-table'] });
         }
     };

@@ -8,6 +8,7 @@ import { NutritionHygieneTable3 } from "./entities/nutrition-hygiene-table-3.ent
 import { NutritionHygieneTable4 } from "./entities/nutrition-hygiene-table-4.entity";
 import { NutritionHygieneTable5 } from "./entities/nutrition-hygiene-table-5.entity";
 import { NutritionHygieneTable6 } from "./entities/nutrition-hygiene-table-6.entity";
+import { NutritionActionRecord } from "./entities/nutrition-action-record.entity";
 
 @Module({
     imports: [
@@ -18,8 +19,10 @@ import { NutritionHygieneTable6 } from "./entities/nutrition-hygiene-table-6.ent
             NutritionHygieneTable4,
             NutritionHygieneTable5,
             NutritionHygieneTable6,
+            NutritionActionRecord,
         ]),
     ],
+
     controllers: [NutritionHygieneController],
     providers: [NutritionHygieneService],
     exports: [NutritionHygieneService],
