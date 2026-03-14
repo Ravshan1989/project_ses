@@ -103,11 +103,12 @@ export class DailyReportsService {
       });
 
       // 4. Send to Telegram
-      await this.telegramService.sendDailyReportWithFiles(summaryText, pdfPath, excelPath);
+      // UZ: Bot faqat ro'yxatga olish uchun qoldirilgan, hisobot xabarnomalari o'chirildi
+      // await this.telegramService.sendDailyReportWithFiles(summaryText, pdfPath, excelPath);
 
-      console.log("[DailyReportsService] Automated report sent successfully.");
+      console.log("[DailyReportsService] Automated report generated successfully.");
     } catch (error) {
-      console.error("[DailyReportsService] Error generating/sending automated report:", error);
+      console.error("[DailyReportsService] Error generating automated report:", error);
     }
   }
 
@@ -159,15 +160,7 @@ export class DailyReportsService {
       });
     }
     const saved = await this.reportRepo.save(report);
-    if (!dto.isTest) {
-      const details = `Jami: ${saved.total_cases}\nMusbat: ${saved.lab_positive}`;
-      this.telegramService.sendReportNotification(
-        "Gepatit",
-        user.organization?.name || "Tuman",
-        saved.reportDate,
-        details,
-      );
-    }
+    // UZ: Bot faqat ro'yxatga olish uchun qoldirilgan
     return saved;
   }
 
@@ -224,16 +217,8 @@ export class DailyReportsService {
         isTest: dto.isTest || false,
       });
     }
-    const saved = await this.fluRepo.save(report);
-    if (!dto.isTest) {
-      const details = `O'RI: ${saved.ari_total}\nZotiljam: ${saved.pneu_total}\nGripp: ${saved.flu_total}\nSARI: ${saved.sari_total}\nVafot: ${saved.death_total}`;
-      this.telegramService.sendReportNotification(
-        "Gripp va O'RVI (Batafsil)",
-        user.organization?.name || "Tuman",
-        saved.reportDate,
-        details,
-      );
-    }
+    const saved = await this.reportRepo.save(report);
+    // UZ: Bot faqat ro'yxatga olish uchun qoldirilgan
     return saved;
   }
 
@@ -288,15 +273,7 @@ export class DailyReportsService {
       });
     }
     const saved = await this.ariRepo.save(report);
-    if (!dto.isTest) {
-      const details = `O'RI: ${saved.ari}\nZotiljam: ${saved.pneumonia}\nGrippsimon: ${saved.gk}`;
-      this.telegramService.sendReportNotification(
-        "O'RVI (Qisqa)",
-        user.organization?.name || "Tuman",
-        saved.reportDate,
-        details,
-      );
-    }
+    // UZ: Bot faqat ro'yxatga olish uchun qoldirilgan
     return saved;
   }
 
@@ -351,15 +328,7 @@ export class DailyReportsService {
       });
     }
     const saved = await this.epiRepo.save(report);
-    if (!dto.isTest) {
-      const details = `Epidemiologik holat yangilandi`;
-      this.telegramService.sendReportNotification(
-        "Epidemiologiya",
-        user.organization?.name || "Tuman",
-        saved.reportDate,
-        details,
-      );
-    }
+    // UZ: Bot faqat ro'yxatga olish uchun qoldirilgan
     return saved;
   }
 
@@ -634,15 +603,7 @@ export class DailyReportsService {
       });
     }
     const saved = await this.sanitaryRepo.save(report);
-    if (!dto.isTest) {
-      const details = `Tekshirildi: ${saved.inspected_total}\nKamchiliklar: ${saved.defects_total}\nJarima: ${saved.fines_total}`;
-      this.telegramService.sendReportNotification(
-        "Sanitariya",
-        user.organization?.name || "Tuman",
-        saved.reportDate,
-        details,
-      );
-    }
+    // UZ: Bot faqat ro'yxatga olish uchun qoldirilgan
     return saved;
   }
 
