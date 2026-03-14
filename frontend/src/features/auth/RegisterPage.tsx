@@ -112,13 +112,15 @@ const RegisterPage: React.FC = () => {
 
     const onFinish = async (values: any) => {
         setLoading(true);
+        // UZ: +998 prefiksi bilan to'liq raqam yaratish
+        const fullPhone = `+998${values.phoneNumber.replace(/\D/g, '')}`;
         try {
             const response = await fetch(`${API_BASE_URL}/auth/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(values),
+                body: JSON.stringify({ ...values, phoneNumber: fullPhone }),
             });
 
             const data = await response.json();
@@ -290,11 +292,15 @@ const RegisterPage: React.FC = () => {
                             <Form.Item
                                 name="phoneNumber"
                                 label={t('user.phone_number', 'Telefon raqami')}
-                                rules={[{ required: true, message: t('user.error_phone_number', 'Telefon raqamingizni kiriting') }]}
+                                rules={[
+                                    { required: true, message: t('user.error_phone_number', 'Telefon raqamingizni kiriting') },
+                                    { pattern: /^[0-9]{9}$/, message: '9 ta raqam kiriting (masalan: 901234567)' }
+                                ]}
                             >
                                 <Input
-                                    placeholder="+998 90 123 45 67"
-                                    prefix={<span style={{ color: 'rgba(0,0,0,.25)', marginRight: 4 }}>📞</span>}
+                                    addonBefore="+998"
+                                    placeholder="90 123 45 67"
+                                    maxLength={9}
                                 />
                             </Form.Item>
 
