@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, DatePicker, Select, Space, Spin, Card, Tabs } from 'antd';
-import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
+import { SaveOutlined, ReloadOutlined, FileExcelOutlined, FilePdfOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import GlassLayout from '../../components/layout/GlassLayout';
 import PermissionGate from '../../components/PermissionGate';
 import EditCell from '../../components/common/EditCell';
 import { useAppealsData } from './hooks/useAppealsData';
+import { API_BASE_URL } from '../../config';
 import { APPEALS_T1_ROWS, APPEALS_SUBJECT_ROWS, APPEALS_T7_ROWS } from './components/AppealsConstants';
 import MasterAppealsJournal from './components/MasterAppealsJournal';
 import AppealsMonitoring from './components/AppealsMonitoring';
+import AppealsDashboard from './components/AppealsDashboard';
 
 
 interface Organization {
@@ -103,6 +105,18 @@ const AppealsPage: React.FC = () => {
         return localData.find(r => r.row_key === rowKey)?.[field] || 0;
     };
 
+    const handleExportExcel = () => {
+        if (!effectiveOrgId) return;
+        window.open(`${API_BASE_URL}/appeals/export-excel?organizationId=${effectiveOrgId}&month=${month}`, '_blank');
+    };
+
+    const handleExportPdf = () => {
+        if (!effectiveOrgId) return;
+        window.open(`${API_BASE_URL}/appeals/export-pdf?organizationId=${effectiveOrgId}&month=${month}`, '_blank'); // Will implement shortly
+    };
+
+    const saveDataAction = () => saveData(localData);
+
     const renderTable1 = () => (
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
             <thead>
@@ -124,8 +138,11 @@ const AppealsPage: React.FC = () => {
             <tbody>
                 {APPEALS_T1_ROWS.map((row, ridx) => {
                     let labelKey = row.labelKey;
-                    if (isRegionalOrg && row.key === 'deputy_epid') labelKey = 'appeals.table1.rows.deputy_epid_reg';
-                    if (isRegionalOrg && row.key === 'deputy_san') labelKey = 'appeals.table1.rows.deputy_san_reg';
+                    if (isRegionalOrg) {
+                        if (row.key === 'head') labelKey = 'appeals.table1.rows.head_reg';
+                        if (row.key === 'deputy_epid') labelKey = 'appeals.table1.rows.deputy_epid_reg';
+                        if (row.key === 'deputy_san') labelKey = 'appeals.table1.rows.deputy_san_reg';
+                    }
                     
                     return (
                         <tr key={row.key}>
@@ -169,7 +186,7 @@ const AppealsPage: React.FC = () => {
                         <tr key={row.key}>
                             <td style={tdStyle}>{ridx + 1}</td>
                             <td style={{ ...tdStyle, textAlign: 'left' }}>{t(row.labelKey)}</td>
-                            {['total_prev', 'total_curr', 'measures_taken', 'explained', 'rejected', 'being_considered', 'repeated', 'overdue'].map((f) => (
+                            {['total_prev', 'total_curr', 'measures_taken', 'explained', 'rejected', 'being_considered', 'repeated', 'overdue'].map((f, fidx) => (
                                 <td key={f} style={tdStyle}>
                                     {!f.endsWith('_prev') ? (
                                         <span style={{ fontWeight: 600, color: '#1890ff' }}>{getVal(row.key, f)}</span>
@@ -206,7 +223,7 @@ const AppealsPage: React.FC = () => {
             <tbody>
                 <tr key="total">
                     <td style={{ ...tdStyle, fontWeight: 'bold' }}>Tuman hisoboti</td>
-                    {['total_prev', 'total_curr', 'phys_prev', 'phys_curr', 'legal_prev', 'legal_curr', 'written', 'electronic', 'oral_total', 'oral_leader', 'oral_staff', 'oral_phone'].map((f) => (
+                    {['total_prev', 'total_curr', 'phys_prev', 'phys_curr', 'legal_prev', 'legal_curr', 'written', 'electronic', 'oral_total', 'oral_leader', 'oral_staff', 'oral_phone'].map((f, fidx) => (
                         <td key={f} style={tdStyle}>
                             {!f.endsWith('_prev') ? (
                                 <span style={{ fontWeight: 600, color: '#1890ff' }}>{getVal('total', f)}</span>
@@ -261,7 +278,7 @@ const AppealsPage: React.FC = () => {
             <tbody>
                 <tr key="total">
                     <td style={tdStyle}>Murojaat turlari</td>
-                    {['total_prev', 'total_curr', 'phys_total_curr', 'phys_ariza_curr', 'phys_shikoyat_curr', 'phys_taklif_curr', 'legal_total_curr', 'legal_ariza_curr', 'legal_shikoyat_curr', 'legal_taklif_curr'].map((f) => (
+                    {['total_prev', 'total_curr', 'phys_total_curr', 'phys_ariza_curr', 'phys_shikoyat_curr', 'phys_taklif_curr', 'legal_total_curr', 'legal_ariza_curr', 'legal_shikoyat_curr', 'legal_taklif_curr'].map((f, fidx) => (
                         <td key={f} style={tdStyle}>
                             {!f.endsWith('_prev') ? (
                                 <span style={{ fontWeight: 600, color: '#1890ff' }}>{getVal('total', f)}</span>
@@ -354,6 +371,11 @@ const AppealsPage: React.FC = () => {
                 />
             )
         },
+        {
+            key: 'dashboard',
+            label: <span style={{ fontWeight: 'bold', color: '#52c41a' }}>Tahliliy Dashboard</span>,
+            children: <AppealsDashboard data={autoReportsQuery.data} month={month} />
+        },
         { key: '1', label: t('appeals.tabs.t1'), children: <Spin spinning={isLoadingTable}><div className="table-container">{renderTable1()}</div></Spin> },
         { key: '2', label: t('appeals.tabs.t2'), children: <Spin spinning={isLoadingTable}><div className="table-container">{renderTable2()}</div></Spin> },
         { key: '3', label: t('appeals.tabs.t3'), children: <Spin spinning={isLoadingTable}><div className="table-container">{renderTable3()}</div></Spin> },
@@ -398,15 +420,20 @@ const AppealsPage: React.FC = () => {
                             allowClear
                         />
                     )}
+                    <Space>
                     <Button icon={<ReloadOutlined />} onClick={refresh} loading={isLoadingTable}>
                         {t('common.refresh')}
                     </Button>
-
-                    <PermissionGate permission="EDIT_APPEALS">
-                        <Button type="primary" icon={<SaveOutlined />} onClick={() => saveData(localData)} loading={isSaving}>
-                            {t('common.save')}
-                        </Button>
-                    </PermissionGate>
+                    <Button icon={<FileExcelOutlined />} onClick={handleExportExcel} type="primary" ghost>Excel</Button>
+                    <Button icon={<FilePdfOutlined />} onClick={handleExportPdf} danger ghost>PDF</Button>
+                    {activeTab !== 'journal' && activeTab !== 'monitoring' && activeTab !== 'dashboard' && (
+                        <PermissionGate permission="EDIT_APPEALS" action="edit">
+                            <Button type="primary" icon={<SaveOutlined />} loading={isSaving} onClick={saveDataAction}>
+                                {t('common.save')}
+                            </Button>
+                        </PermissionGate>
+                    )}
+                </Space>
                 </Space>
             </Card>
 

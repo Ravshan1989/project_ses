@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Query, UseGuards, Req } from "@nestjs/common";
+import { Controller, Get, Post, Body, Query, UseGuards, Req, Res } from "@nestjs/common";
 import { AppealsService } from "./appeals.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { CreateAppealRecordDto } from "./dto/create-appeal-record.dto";
+import { Response } from "express";
 
 @Controller("appeals")
 @UseGuards(JwtAuthGuard)
@@ -53,5 +54,23 @@ export class AppealsController {
         @Query("month") month: string,
     ) {
         return this.appealsService.getMonitoringData(organizationId, month);
+    }
+
+    @Get("export-excel")
+    async exportExcel(
+        @Query("organizationId") organizationId: string,
+        @Query("month") month: string,
+        @Res() res: Response,
+    ) {
+        return this.appealsService.exportExcel(res, organizationId, month);
+    }
+
+    @Get("export-pdf")
+    async exportPdf(
+        @Query("organizationId") organizationId: string,
+        @Query("month") month: string,
+        @Res() res: Response,
+    ) {
+        return this.appealsService.exportPdf(res, organizationId, month);
     }
 }

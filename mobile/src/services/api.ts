@@ -74,3 +74,12 @@ export const analysisApi = {
     getDistrictDetails: (id: string) => api.get(`/analysis/executive/district/${id}`),
     getDistrictExecutiveSummary: (id: string) => api.get(`/analysis/executive/district-summary/${id}`), // UZ: Tuman svodkasi
 };
+
+// UZ: Ijro intizomi (Murojaatlar) API
+export const appealsApi = {
+    getRecords: (month: string, organizationId?: string) =>
+        api.get(`/appeals/records?month=${month}${organizationId ? `&organizationId=${organizationId}` : ''}`),
+    createRecord: (data: any) => api.post('/appeals/records', data),
+    getAutoReports: (month: string, organizationId?: string) =>
+        api.get(`/appeals/auto-reports?month=${month}${organizationId ? `&organizationId=${organizationId}` : ''}`),
+};

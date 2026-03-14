@@ -300,7 +300,8 @@
         "table1": {
             "title": "Rahbarlar tomonidan murojaatlar ko'rib chiqilishi",
             "rows": {
-                "head": "Sanepidxizmat bo'limi boshlig'i",
+                "head": "Bo'lim boshlig'i",
+                "head_reg": "Boshqarma boshlig'i",
                 "deputy_epid": "Epidemiologiya bo'limi mudiri",
                 "deputy_san": "Sanitariya bo'limi mudiri",
                 "deputy_epid_reg": "Epidemiologiya bo'limi boshlig'i o'rinbosari",

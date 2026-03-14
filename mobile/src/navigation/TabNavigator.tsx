@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { LayoutDashboard, FileText, User, BarChart2 } from 'lucide-react-native';
+import { LayoutDashboard, FileText, User, BarChart2, ClipboardList } from 'lucide-react-native';
 import { View, ActivityIndicator } from 'react-native';
 
 import DashboardScreen from '../screens/DashboardScreen';
@@ -10,6 +10,8 @@ import ReportEntryScreen from '../screens/ReportEntryScreen';
 import ReportsHistoryScreen from '../screens/ReportsHistoryScreen';
 import ReportDetailScreen from '../screens/ReportDetailScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import AppealsJournalScreen from '../screens/AppealsJournalScreen';
+import AppealEntryScreen from '../screens/AppealEntryScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { authApi } from '../services/api';
 
@@ -26,6 +28,13 @@ const ReportsStack = () => (
 );
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const AppealsStack = () => (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="AppealsJournal" component={AppealsJournalScreen} />
+        <Stack.Screen name="AppealEntry" component={AppealEntryScreen} />
+    </Stack.Navigator>
+);
 
 const TabNavigator = ({ onLogout }: { onLogout: () => void }) => {
     const insets = useSafeAreaInsets();
@@ -64,6 +73,8 @@ const TabNavigator = ({ onLogout }: { onLogout: () => void }) => {
                         return isRegionHead ? <BarChart2 size={size} color={color} /> : <LayoutDashboard size={size} color={color} />;
                     } else if (route.name === 'Hisobotlar') {
                         return <FileText size={size} color={color} />;
+                    } else if (route.name === 'Ijro') {
+                        return <ClipboardList size={size} color={color} />;
                     } else if (route.name === 'Profil') {
                         return <User size={size} color={color} />;
                     }
@@ -100,7 +111,10 @@ const TabNavigator = ({ onLogout }: { onLogout: () => void }) => {
             />
 
             {!isRegionHead && (
-                <Tab.Screen name="Hisobotlar" component={ReportsStack} options={{ title: 'Hisobotlar' }} />
+                <>
+                    <Tab.Screen name="Hisobotlar" component={ReportsStack} options={{ title: 'Hisobotlar' }} />
+                    <Tab.Screen name="Ijro" component={AppealsStack} options={{ title: 'Ijro Intizomi' }} />
+                </>
             )}
 
             <Tab.Screen name="Profil" options={{ title: 'Profil' }}>

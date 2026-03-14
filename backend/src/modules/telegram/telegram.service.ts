@@ -494,6 +494,19 @@ Login/Parol Adminga yuborilmoqda:
     if (!text) return "";
     return text.replace(/[_*[\]()~`># +\-=| {}.!]/g, "\\$&");
   }
+
+  async sendMessageToUser(user: User, message: string): Promise<void> {
+    if (!this.bot || !user.telegramChatId) return;
+
+    try {
+      await this.bot.telegram.sendMessage(user.telegramChatId, message, {
+        parse_mode: "HTML",
+      });
+      this.logger.log(`Message sent to user ${user.username} (${user.telegramChatId})`);
+    } catch (error) {
+      this.logger.error(`Failed to send message to user ${user.username}`, error);
+    }
+  }
 }
 
 /**

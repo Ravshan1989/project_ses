@@ -188,7 +188,10 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                         <Col span={12}>
                             <Form.Item name="recipient" label="Kimga yuborildi (Table 1 uchun)" rules={[{ required: true }]}>
                                 <Select options={[
-                                    { label: 'Rahbariyat', value: 'head' },
+                                    { 
+                                        label: isRegionalOrg ? 'Boshqarma boshlig\'i' : 'Bo\'lim boshlig\'i', 
+                                        value: 'head' 
+                                    },
                                     { 
                                         label: isRegionalOrg ? 'Epidemiologiya o\'rinbosari' : 'Epidemiologiya bo\'lim mudiri', 
                                         value: 'deputy_epid' 

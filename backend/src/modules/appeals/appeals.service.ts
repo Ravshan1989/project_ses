@@ -1,6 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
+import * as ExcelJS from "exceljs";
+import { Response } from "express";
+import * as PDFDocument from "pdfkit";
 import { AppealsTable1 } from "./entities/appeals-table-1.entity";
 import { AppealsTable2 } from "./entities/appeals-table-2.entity";
 import { AppealsTable3 } from "./entities/appeals-table-3.entity";
@@ -217,6 +220,99 @@ export class AppealsService {
             });
         }
         return monitoringResults;
+    }
+
+    async exportExcel(res: Response, organizationId: string, month: string) {
+        const reports = await this.generateReportsFromRecords(organizationId, month);
+        const org = await this.orgRepo.findOne({ where: { id: organizationId } });
+        
+        const workbook = new ExcelJS.Workbook();
+        
+        // 1. Sheet: Table 1
+        const s1 = workbook.addWorksheet("1-Jadval");
+        s1.addRow(["Rahbarlar tomonidan murojaatlar ko'rib chiqilishi"]);
+        s1.addRow(["Rahbar", "Jami", "Yozma", "Elektron", "Og'zaki"]);
+        const t1Data = reports.table1;
+        s1.addRow(["Bo'lim boshlig'i", t1Data.head.total_curr, t1Data.head.written_curr, t1Data.head.electronic_curr, t1Data.head.oral_curr]);
+        s1.addRow(["Epidemiologiya mudiri", t1Data.deputy_epid.total_curr, t1Data.deputy_epid.written_curr, t1Data.deputy_epid.electronic_curr, t1Data.deputy_epid.oral_curr]);
+        s1.addRow(["Sanitariya mudiri", t1Data.deputy_san.total_curr, t1Data.deputy_san.written_curr, t1Data.deputy_san.electronic_curr, t1Data.deputy_san.oral_curr]);
+
+        // 2. Sheet: Table 3 (Simplified implementation for brevity, can be expanded)
+        const s3 = workbook.addWorksheet("3-Jadval");
+        s3.addRow(["Murojaatlar turlari bo'yicha"]);
+        s3.addRow(["Ko'rsatkich", "Qiymat"]);
+        s3.addRow(["Jami", reports.table3.total_curr]);
+        s3.addRow(["Jismoniy shaxslar", reports.table3.phys_curr]);
+        s3.addRow(["Yuridik shaxslar", reports.table3.legal_curr]);
+
+        // 3. Sheet: Table 5
+        const s5 = workbook.addWorksheet("5-Jadval");
+        s5.addRow(["Murojaat mazmuni"]);
+        s5.addRow(["Turi", "Jami", "Ariza", "Shikoyat", "Taklif"]);
+        s5.addRow(["Jismoniy", reports.table5.phys_total_curr, reports.table5.phys_ariza_curr, reports.table5.phys_shikoyat_curr, reports.table5.phys_taklif_curr]);
+        s5.addRow(["Yuridik", reports.table5.legal_total_curr, reports.table5.legal_ariza_curr, reports.table5.legal_shikoyat_curr, reports.table5.legal_taklif_curr]);
+
+        // 4. Sheet: Table 7
+        const s7 = workbook.addWorksheet("7-Jadval");
+        s7.addRow(["Choralar"]);
+        s7.addRow(["Chora turi", "Soni"]);
+        s7.addRow(["Jarima", reports.table7.fine_curr]);
+        s7.addRow(["Hayfsan", reports.table7.reprimand_curr]);
+        s7.addRow(["Ishdan bo'shatish", reports.table7.dismissal_curr]);
+
+        res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        res.setHeader("Content-Disposition", `attachment; filename=Appeals_Report_${month}_${org?.name || 'export'}.xlsx`);
+        await workbook.xlsx.write(res);
+    }
+
+    async exportPdf(res: Response, organizationId: string, month: string) {
+        const reports = await this.generateReportsFromRecords(organizationId, month);
+        const org = await this.orgRepo.findOne({ where: { id: organizationId } });
+
+        const doc = new PDFDocument({ margin: 50 });
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", `attachment; filename=Appeals_Report_${month}.pdf`);
+
+        doc.pipe(res);
+
+        // Header
+        doc.fontSize(16).text(`IJRO INTIZOMI HISOBOTI`, { align: 'center' });
+        doc.fontSize(12).text(`${org?.name} - ${month}`, { align: 'center' });
+        doc.moveDown();
+
+        // 1-Jadval
+        doc.fontSize(12).text("1-Jadval: Rahbarlar tomonidan murojaatlar ko'rib chiqilishi", { underline: true });
+        doc.moveDown(0.5);
+        const t1 = reports.table1;
+        doc.fontSize(10).text(`Bo'lim boshlig'i: Jami: ${t1.head.total_curr}, Yozma: ${t1.head.written_curr}, Elektron: ${t1.head.electronic_curr}, Og'zaki: ${t1.head.oral_curr}`);
+        doc.text(`Epidemiologiya mudiri: Jami: ${t1.deputy_epid.total_curr}, Yozma: ${t1.deputy_epid.written_curr}, Elektron: ${t1.deputy_epid.electronic_curr}, Og'zaki: ${t1.deputy_epid.oral_curr}`);
+        doc.text(`Sanitariya mudiri: Jami: ${t1.deputy_san.total_curr}, Yozma: ${t1.deputy_san.written_curr}, Elektron: ${t1.deputy_san.electronic_curr}, Og'zaki: ${t1.deputy_san.oral_curr}`);
+        doc.moveDown();
+
+        // 3-Jadval
+        doc.fontSize(12).text("3-Jadval: Murojaatlar turlari bo'yicha", { underline: true });
+        doc.moveDown(0.5);
+        doc.fontSize(10).text(`Jami: ${reports.table3.total_curr}`);
+        doc.text(`Jismoniy shaxslar: ${reports.table3.phys_curr}`);
+        doc.text(`Yuridik shaxslar: ${reports.table3.legal_curr}`);
+        doc.moveDown();
+
+        // 5-Jadval
+        doc.fontSize(12).text("5-Jadval: Murojaat mazmuni", { underline: true });
+        doc.moveDown(0.5);
+        const t5 = reports.table5;
+        doc.fontSize(10).text(`Jismoniy: Jami: ${t5.phys_total_curr}, Ariza: ${t5.phys_ariza_curr}, Shikoyat: ${t5.phys_shikoyat_curr}, Taklif: ${t5.phys_taklif_curr}`);
+        doc.text(`Yuridik: Jami: ${t5.legal_total_curr}, Ariza: ${t5.legal_ariza_curr}, Shikoyat: ${t5.legal_shikoyat_curr}, Taklif: ${t5.legal_taklif_curr}`);
+        doc.moveDown();
+
+        // 7-Jadval
+        doc.fontSize(12).text("7-Jadval: Intizomiy choralar", { underline: true });
+        doc.moveDown(0.5);
+        doc.fontSize(10).text(`Jarima: ${reports.table7.fine_curr}`);
+        doc.text(`Hayfsan: ${reports.table7.reprimand_curr}`);
+        doc.text(`Ishdan bo'shatish: ${reports.table7.dismissal_curr}`);
+
+        doc.end();
     }
 
     private getRepo(tableNum: number): Repository<any> {
