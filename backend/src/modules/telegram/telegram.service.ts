@@ -1,7 +1,8 @@
-import {
+  Inject,
   Injectable,
   Logger,
   OnModuleInit,
+  forwardRef,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Telegraf, Markup } from "telegraf";
@@ -27,6 +28,8 @@ export class TelegramService implements OnModuleInit {
     private configService: ConfigService,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @Inject(forwardRef(() => UsersService))
+    private usersService: UsersService,
   ) {
     const token = this.configService.get<string>("TELEGRAM_BOT_TOKEN");
     this.chatId = this.configService.get<string>("TELEGRAM_CHAT_ID");
@@ -297,50 +300,22 @@ export class TelegramService implements OnModuleInit {
 
   private async handleApproval(ctx: any, userId: string) {
     try {
-      // Logic is now centralized in UsersService
-      // Wait, we need to inject UsersService into TelegramService or vice-versa.
-      // But they already have a dependency. Let's check constructor.
-      // Oh, TelegramService doesn't have UsersService injected.
-      // I'll stick to the manual logic in TelegramService for now but make sure it MATCHES the service.
-      
-      const user = await this.userRepository.findOne({
-        where: { id: userId },
-        relations: ["organization", "department"],
-      });
+      const result = await this.usersService.approveUser(userId);
 
-      if (!user) {
+      if (!result) {
         await ctx.editMessageText("❌ Foydalanuvchi topilmadi");
         return;
       }
 
-      // Check if already active
-      if (user.isActive && user.username) {
-        await ctx.editMessageText("✅ Bu foydalanuvchi allaqachon faollashtirilgan.");
-        return;
-      }
-
-      const username = await this.generateUniqueUsername(user);
-      const password = this.generatePassword();
-      const salt = await bcrypt.genSalt();
-      const passwordHash = await bcrypt.hash(password, salt);
-
-      user.username = username;
-      user.passwordHash = passwordHash;
-      user.isActive = true;
-      user.approvedAt = new Date();
-
-      await this.userRepository.save(user);
-
-      // Send credentials to user
-      await this.sendActivationNotification(user, password);
+      const { user, password } = result;
 
       // Update admin message
       const approvalMessage = `
 ✅ <b>Tasdiqlandi!</b>
 
 👤 <b>Foydalanuvchi:</b> ${user.lastName} ${user.firstName}
-🔐 <b>Login:</b> <code>${username}</code>
-🔑 <b>Parol:</b> <code>${password}</code>
+🔐 <b>Login:</b> <code>${user.username}</code>
+🔑 <b>Parol:</b> <code>${password || "********"}</code>
 
 <i>Foydalanuvchiga ma'lumotlar yuborildi.</i>
       `.trim();
@@ -349,7 +324,7 @@ export class TelegramService implements OnModuleInit {
         this.logger.warn("Could not edit message, might be already edited");
       });
 
-      this.logger.log(`User approved via Telegram: ${username} (User ID: ${userId})`);
+      this.logger.log(`User approved via Telegram: ${user.username} (User ID: ${userId})`);
     } catch (error) {
       this.logger.error("Failed to approve user via Telegram:", error);
       await ctx.reply("❌ Tasdiqlashda xatolik yuz berdi").catch(() => {});
@@ -387,44 +362,6 @@ export class TelegramService implements OnModuleInit {
     }
   }
 
-  private async generateUniqueUsername(user: User): Promise<string> {
-    const firstName =
-      user.firstName?.toLowerCase().replace(/[^a-z0-9]/g, "") || "user";
-    const lastName =
-      user.lastName?.toLowerCase().replace(/[^a-z0-9]/g, "") || "";
-
-    let baseUsername = `${firstName}.${lastName}`;
-    if (!lastName) baseUsername = firstName;
-
-    // Check if base username exists
-    const exists = await this.userRepository.findOne({
-      where: { username: baseUsername },
-    });
-    if (!exists) return baseUsername;
-
-    // If exists, append random number
-    let isUnique = false;
-    let newUsername = baseUsername;
-    while (!isUnique) {
-      const randomSuffix = Math.floor(100 + Math.random() * 900); // 3 digit random (matching service)
-      newUsername = `${baseUsername}${randomSuffix}`;
-      const check = await this.userRepository.findOne({
-        where: { username: newUsername },
-      });
-      if (!check) isUnique = true;
-    }
-
-    return newUsername;
-  }
-
-  private generatePassword(): string {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-    let password = "";
-    for (let i = 0; i < 10; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return password;
-  }
 
   private getRoleLabel(role: string): string {
     const roleLabels = {
