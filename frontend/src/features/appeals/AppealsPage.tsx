@@ -98,6 +98,18 @@ const AppealsPage: React.FC = () => {
 
     const saveDataAction = () => saveData(localData);
 
+    const getUzMonth = (m: string) => {
+        const months = {
+            'January': 'Yanvar', 'February': 'Fevral', 'March': 'Mart', 'April': 'Aprel',
+            'May': 'May', 'June': 'Iyun', 'July': 'Iyul', 'August': 'Avgust',
+            'September': 'Sentabr', 'October': 'Oktabr', 'November': 'Noyabr', 'December': 'Dekabr'
+        };
+        const engMonth = dayjs(m).format('MMMM');
+        return (months as any)[engMonth] || engMonth;
+    };
+
+    const orgName = currentOrg?.name || (isRegionalOrg ? "Toshkent viloyati boshqarmasi" : "Tuman (shahar) bo'limi");
+
     const renderTable1 = () => {
         const t1 = autoReportsQuery.data?.table1 || { head: {}, deputy_epid: {}, deputy_san: {} };
         
@@ -124,8 +136,8 @@ const AppealsPage: React.FC = () => {
                 <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', fontWeight: 'bold' }}>
                     {t('appeals.table1.title', { 
                         year: currYear, 
-                        month: dayjs(month).format('MMMM'), 
-                        org: currentOrg?.name || t('common.committee') 
+                        month: getUzMonth(month), 
+                        org: orgName 
                     })}
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
@@ -201,8 +213,8 @@ const AppealsPage: React.FC = () => {
                 <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', lineHeight: '1.6', fontWeight: 'bold', maxWidth: '1000px', margin: '0 auto 20px' }}>
                     {t('appeals.table2.title', { 
                         year: currYear,
-                        month: dayjs(month).format('MMMM'), 
-                        org: currentOrg?.name || t('common.committee') 
+                        month: getUzMonth(month), 
+                        org: orgName 
                     })}
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
@@ -325,7 +337,7 @@ const AppealsPage: React.FC = () => {
         return (
             <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', lineHeight: '1.6', fontWeight: 'bold', maxWidth: '1000px', margin: '0 auto 20px' }}>
-                    {currYear} йилнинг {dayjs(month).format('MMMM')} ойida {currentOrg?.name || 'Санитария-эпидемиологик осойишталик ва жамоат саломатligi'}» қўмитасига жисмоний ва юридик шахслардан келиб тушган мурожаатларнинг вилоятлар бўйича таққослама таҳлили тўғрисида маълумот
+                    {currYear} yilning {getUzMonth(month)} oyida {orgName}ga kelib tushgan murojaatlarning viloyatlar bo'yicha taqqoslama tahlili to'g'risida ma'lumot
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
                 <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1800, border: '1px solid #000' }}>
@@ -455,8 +467,8 @@ const AppealsPage: React.FC = () => {
                 <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', fontWeight: 'bold' }}>
                     {t('appeals.table4.title', { 
                         year: currYear, 
-                        month: dayjs(month).format('MMMM'), 
-                        org: currentOrg?.name || t('common.committee') 
+                        month: getUzMonth(month), 
+                        org: orgName 
                     })}
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
@@ -530,7 +542,7 @@ const AppealsPage: React.FC = () => {
                 <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', fontWeight: 'bold' }}>
                     {t('appeals.table5.title', { 
                         year: currYear, 
-                        month: dayjs(month).format('MMMM') 
+                        month: getUzMonth(month) 
                     })}
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
@@ -614,7 +626,10 @@ const AppealsPage: React.FC = () => {
         return (
             <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', fontWeight: 'bold' }}>
-                    {t('appeals.table6.title')}
+                    {t('appeals.table6.title', { 
+                        year: currYear, 
+                        month: getUzMonth(month) 
+                    })}
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1400, border: '1px solid #000' }}>
@@ -674,24 +689,27 @@ const AppealsPage: React.FC = () => {
         return (
             <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', fontWeight: 'bold' }}>
-                    {currYear} йилнинг {dayjs(month).format('MMMM')} ойида мурожаатларни кўриб чиқиш жараёнида <span style={{ color: '#1890ff' }}>қўлланилган чоралар</span> тўғрисида маълумот
+                    {t('appeals.table7.title', { 
+                        year: currYear, 
+                        month: getUzMonth(month) 
+                    })}
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ borderCollapse: 'collapse', width: '100%', border: '1px solid #000' }}>
                         <thead>
                             <tr>
                                 <th style={thStyleWithColor(headerColors.num_name)} rowSpan={3}>№</th>
-                                <th style={{ ...thStyleWithColor(headerColors.num_name), textAlign: 'left', minWidth: 200 }} rowSpan={3}>Ҳудудлар</th>
-                                <th style={thStyleWithColor(headerColors.disciplinary)} colSpan={8}>Интизомий жавобгарлик</th>
-                                <th style={thStyleWithColor(headerColors.measures)} colSpan={2} rowSpan={2}>Маъмурий жавобгарлик</th>
-                                <th style={thStyleWithColor(headerColors.measures)} colSpan={2} rowSpan={2}>Жиноий жавобгарлик</th>
-                                <th style={thStyleWithColor(headerColors.measures)} colSpan={2} rowSpan={2}>Жами</th>
+                                <th style={{ ...thStyleWithColor(headerColors.num_name), textAlign: 'left', minWidth: 200 }} rowSpan={3}>Hududlar</th>
+                                <th style={thStyleWithColor(headerColors.disciplinary)} colSpan={8}>Intizomiy javobgarlik</th>
+                                <th style={thStyleWithColor(headerColors.measures)} colSpan={2} rowSpan={2}>Ma'muriy javobgarlik</th>
+                                <th style={thStyleWithColor(headerColors.measures)} colSpan={2} rowSpan={2}>Jinoiy javobgarlik</th>
+                                <th style={thStyleWithColor(headerColors.measures)} colSpan={2} rowSpan={2}>Jami</th>
                             </tr>
                             <tr>
-                                <th style={thStyleWithColor(headerColors.disciplinary)} colSpan={2}>Жарима</th>
-                                <th style={thStyleWithColor(headerColors.disciplinary)} colSpan={2}>Ҳайфсан</th>
-                                <th style={thStyleWithColor(headerColors.disciplinary)} colSpan={2}>Лавозимидан озод этиш</th>
-                                <th style={thStyleWithColor(headerColors.disciplinary)} colSpan={2}>Жами</th>
+                                <th style={thStyleWithColor(headerColors.disciplinary)} colSpan={2}>Jarima</th>
+                                <th style={thStyleWithColor(headerColors.disciplinary)} colSpan={2}>Hayfsan</th>
+                                <th style={thStyleWithColor(headerColors.disciplinary)} colSpan={2}>Lavozimidan ozod etish</th>
+                                <th style={thStyleWithColor(headerColors.disciplinary)} colSpan={2}>Jami</th>
                             </tr>
                             <tr>
                                 <th style={thStyleWithColor(headerColors.disciplinary)}>{prevYearShort}</th><th style={thStyleWithColor(headerColors.disciplinary)}>{currYearShort}</th>
@@ -721,7 +739,7 @@ const AppealsPage: React.FC = () => {
                                 );
                             })}
                             <tr style={{ background: '#f1f5f9', fontWeight: 'bold' }}>
-                                <td style={tdStyle} colSpan={2}>Жами</td>
+                                <td style={tdStyle} colSpan={2}>Jami</td>
                                 <td style={tdStyle}>{t7.summary.disciplinary.fine.prev || 0}</td><td style={tdStyle}>{t7.summary.disciplinary.fine.curr || 0}</td>
                                 <td style={tdStyle}>{t7.summary.disciplinary.reprimand.prev || 0}</td><td style={tdStyle}>{t7.summary.disciplinary.reprimand.curr || 0}</td>
                                 <td style={tdStyle}>{t7.summary.disciplinary.dismissal.prev || 0}</td><td style={tdStyle}>{t7.summary.disciplinary.dismissal.curr || 0}</td>

@@ -387,6 +387,7 @@
             }
         },
         "table7": {
+            "title": "{{year}} yilning {{month}} oyida murojaatlarni ko'rib chiqish jarayonida qo'llanilgan choralar to'g'risida ma'lumot",
             "columns": {
                 "action_type": "Chora turi",
                 "fine": "Jarima",
