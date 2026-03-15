@@ -121,12 +121,12 @@ const AppealsPage: React.FC = () => {
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
             <thead>
                 <tr>
-                    <th style={thStyle} rowSpan={2}>№</th>
-                    <th style={{ ...thStyle, textAlign: 'left', minWidth: 200 }} rowSpan={2}>Rahbarlar</th>
-                    <th style={thStyle} colSpan={2}>Jami</th>
-                    <th style={thStyle} colSpan={2}>Og'zaki</th>
-                    <th style={thStyle} colSpan={2}>Yozma</th>
-                    <th style={thStyle} colSpan={2}>Elektron</th>
+                    <th style={thStyle} rowSpan={2}>{t('appeals.table1.columns.no')}</th>
+                    <th style={{ ...thStyle, textAlign: 'left', minWidth: 200 }} rowSpan={2}>{t('appeals.table1.columns.rahbar')}</th>
+                    <th style={thStyle} colSpan={2}>{t('appeals.table1.columns.jami')}</th>
+                    <th style={thStyle} colSpan={2}>Shaxsiy va sayyyor qabullar (Og'zaki)</th>
+                    <th style={thStyle} colSpan={2}>{t('appeals.table1.columns.written')}</th>
+                    <th style={thStyle} colSpan={2}>{t('appeals.table1.columns.electronic')}</th>
                 </tr>
                 <tr>
                     <th style={thStyle}>{prevYear}</th><th style={thStyle}>{currYear}</th>
@@ -139,9 +139,7 @@ const AppealsPage: React.FC = () => {
                 {APPEALS_T1_ROWS.map((row, ridx) => {
                     let labelKey = row.labelKey;
                     if (isRegionalOrg) {
-                        if (row.key === 'head') labelKey = 'appeals.table1.rows.head_reg';
-                        if (row.key === 'deputy_epid') labelKey = 'appeals.table1.rows.deputy_epid_reg';
-                        if (row.key === 'deputy_san') labelKey = 'appeals.table1.rows.deputy_san_reg';
+                        labelKey = `appeals.table1.rows.${row.key}_reg`;
                     }
                     
                     return (

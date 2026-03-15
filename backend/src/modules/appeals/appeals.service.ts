@@ -75,14 +75,24 @@ export class AppealsService {
      * UZ: Bitta jurnaldan 7 xil hisobotni avtomatik generatsiya qilish
      */
     async generateReportsFromRecords(organizationId: string, month: string) {
+        const [yearStr, mStr] = month.split('-');
+        const currentYear = parseInt(yearStr);
+        const prevYear = currentYear - 1;
+        const prevMonth = `${prevYear}-${mStr}`;
+
         const records = await this.getRecords(organizationId, month);
+        const prevRecords = await this.getRecords(organizationId, prevMonth);
 
         // 1. Table 1 Aggregation (Group by Recipient)
         const getTable1Row = (rec: string) => ({
             oral_curr: records.filter(r => r.recipient === rec && r.channel === AppealChannel.ORAL).length,
+            oral_prev: prevRecords.filter(r => r.recipient === rec && r.channel === AppealChannel.ORAL).length,
             written_curr: records.filter(r => r.recipient === rec && r.channel === AppealChannel.WRITTEN).length,
+            written_prev: prevRecords.filter(r => r.recipient === rec && r.channel === AppealChannel.WRITTEN).length,
             electronic_curr: records.filter(r => r.recipient === rec && r.channel === AppealChannel.ELECTRONIC).length,
+            electronic_prev: prevRecords.filter(r => r.recipient === rec && r.channel === AppealChannel.ELECTRONIC).length,
             total_curr: records.filter(r => r.recipient === rec).length,
+            total_prev: prevRecords.filter(r => r.recipient === rec).length,
         });
 
         const table1 = {
@@ -226,6 +236,10 @@ export class AppealsService {
         const reports = await this.generateReportsFromRecords(organizationId, month);
         const org = await this.orgRepo.findOne({ where: { id: organizationId } });
         
+        const [yearStr] = month.split('-');
+        const currYear = parseInt(yearStr);
+        const prevYear = currYear - 1;
+
         const workbook = new ExcelJS.Workbook();
         
         const headerFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } };
@@ -233,11 +247,11 @@ export class AppealsService {
             top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' }
         };
 
-        const setupSheet = (name: string, title: string, headers: string[], widths: number[]) => {
+        const setupSheet = (name: string, title: string, headers: string[], subHeaders: string[], widths: number[]) => {
             const sheet = workbook.addWorksheet(name);
             const titleRow = sheet.addRow([title]);
             titleRow.font = { bold: true, size: 14 };
-            sheet.mergeCells(1, 1, 1, headers.length);
+            sheet.mergeCells(1, 1, 1, subHeaders.length > 0 ? subHeaders.length : headers.length);
             sheet.addRow([]); // empty row
 
             const headerRow = sheet.addRow(headers);
@@ -245,8 +259,28 @@ export class AppealsService {
                 cell.fill = headerFill;
                 cell.font = { bold: true };
                 cell.border = borderStyle;
-                cell.alignment = { horizontal: 'center' };
+                cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
             });
+
+            if (subHeaders.length > 0) {
+                const subHeaderRow = sheet.addRow(subHeaders);
+                subHeaderRow.eachCell((cell) => {
+                    cell.fill = headerFill;
+                    cell.font = { bold: true };
+                    cell.border = borderStyle;
+                    cell.alignment = { horizontal: 'center' };
+                });
+
+                // Merging logic for Table 1 official format
+                if (name === "1-Jadval") {
+                    sheet.mergeCells(3, 1, 4, 1); // No
+                    sheet.mergeCells(3, 2, 4, 2); // Rahbar
+                    sheet.mergeCells(3, 3, 3, 4); // Jami
+                    sheet.mergeCells(3, 5, 3, 6); // Og'zaki
+                    sheet.mergeCells(3, 7, 3, 8); // Yozma
+                    sheet.mergeCells(3, 9, 3, 10); // Elektron
+                }
+            }
 
             widths.forEach((w, i) => {
                 sheet.getColumn(i + 1).width = w;
@@ -256,20 +290,44 @@ export class AppealsService {
 
         // 1. Sheet: Table 1
         const s1 = setupSheet("1-Jadval", "Rahbarlar tomonidan murojaatlar ko'rib chiqilishi", 
-            ["Rahbar", "Jami", "Yozma", "Elektron", "Og'zaki"], [25, 10, 10, 10, 10]);
+            ["№", "Rahbar va o'rinbosarlari", "Jami murojaatlar", "", "Shaxsiy va sayyor qabullar (Og'zaki)", "", "Yozma murojaatlar", "", "Elektron murojaatlar", ""],
+            ["", "", String(prevYear), String(currYear), String(prevYear), String(currYear), String(prevYear), String(currYear), String(prevYear), String(currYear)],
+            [5, 40, 10, 10, 15, 15, 15, 15, 15, 15]);
+        
         const t1 = reports.table1;
-        [
-            ["Bo'lim boshlig'i", t1.head.total_curr, t1.head.written_curr, t1.head.electronic_curr, t1.head.oral_curr],
-            ["Epidemiologiya mudiri", t1.deputy_epid.total_curr, t1.deputy_epid.written_curr, t1.deputy_epid.electronic_curr, t1.deputy_epid.oral_curr],
-            ["Sanitariya mudiri", t1.deputy_san.total_curr, t1.deputy_san.written_curr, t1.deputy_san.electronic_curr, t1.deputy_san.oral_curr]
-        ].forEach(row => {
+        const t1Rows = [
+            [1, "Boshqarama boshlig'i", t1.head.total_prev, t1.head.total_curr, t1.head.oral_prev, t1.head.oral_curr, t1.head.written_prev, t1.head.written_curr, t1.head.electronic_prev, t1.head.electronic_curr],
+            [2, "Boshliqning o'rinbosari (Epidemiologiya)", t1.deputy_epid.total_prev, t1.deputy_epid.total_curr, t1.deputy_epid.oral_prev, t1.deputy_epid.oral_curr, t1.deputy_epid.written_prev, t1.deputy_epid.written_curr, t1.deputy_epid.electronic_prev, t1.deputy_epid.electronic_curr],
+            [3, "Boshliqning o'rinbosari (Sanitariya)", t1.deputy_san.total_prev, t1.deputy_san.total_curr, t1.deputy_san.oral_prev, t1.deputy_san.oral_curr, t1.deputy_san.written_prev, t1.deputy_san.written_curr, t1.deputy_san.electronic_prev, t1.deputy_san.electronic_curr]
+        ];
+
+        t1Rows.forEach(row => {
             const r = s1.addRow(row);
-            r.eachCell(c => c.border = borderStyle);
+            r.eachCell(c => {
+                c.border = borderStyle;
+                c.alignment = { horizontal: c.address.includes('B') ? 'left' : 'center' };
+            });
         });
+        
+        // Add Total row
+        const t1Total = [
+            "", "Jami", 
+            t1Rows.reduce((a, b: any) => a + (b[2] || 0), 0),
+            t1Rows.reduce((a, b: any) => a + (b[3] || 0), 0),
+            t1Rows.reduce((a, b: any) => a + (b[4] || 0), 0),
+            t1Rows.reduce((a, b: any) => a + (b[5] || 0), 0),
+            t1Rows.reduce((a, b: any) => a + (b[6] || 0), 0),
+            t1Rows.reduce((a, b: any) => a + (b[7] || 0), 0),
+            t1Rows.reduce((a, b: any) => a + (b[8] || 0), 0),
+            t1Rows.reduce((a, b: any) => a + (b[9] || 0), 0),
+        ];
+        const t1TotalRow = s1.addRow(t1Total);
+        t1TotalRow.font = { bold: true };
+        t1TotalRow.eachCell(c => c.border = borderStyle);
 
         // 2. Sheet: Table 2
         const s2 = setupSheet("2-Jadval", "Murojaatlar ijrosi va nazorati", 
-            ["Ko'rsatkich", "Soni"], [40, 15]);
+            ["Ko'rsatkich", "Soni"], [], [40, 15]);
         const t2 = reports.table2;
         [
             ["Jami murojaatlar", t2.total_curr],
@@ -289,7 +347,7 @@ export class AppealsService {
 
         // 3. Sheet: Table 3
         const s3 = setupSheet("3-Jadval", "Murojaatlar turlari va kanallari", 
-            ["Ko'rsatkich", "Qiymat"], [30, 15]);
+            ["Ko'rsatkich", "Qiymat"], [], [30, 15]);
         const t3 = reports.table3;
         [
             ["Jami murojaatlar", t3.total_curr],
@@ -305,7 +363,7 @@ export class AppealsService {
 
         // 4. Sheet: Table 4
         const s4 = setupSheet("4-Jadval", "Murojaat mazmuni (Mavzular)", 
-            ["Mavzu kodi", "Soni"], [20, 15]);
+            ["Mavzu kodi", "Soni"], [], [20, 15]);
         Object.entries(reports.table4).forEach(([key, val]: [string, any]) => {
             const r = s4.addRow([key, val.count_curr]);
             r.eachCell(c => c.border = borderStyle);
@@ -313,7 +371,7 @@ export class AppealsService {
 
         // 5. Sheet: Table 5
         const s5 = setupSheet("5-Jadval", "Murojaat turi (Ariza, Shikoyat, Taklif)", 
-            ["Shaxs turi", "Jami", "Ariza", "Shikoyat", "Taklif"], [15, 10, 10, 10, 10]);
+            ["Shaxs turi", "Jami", "Ariza", "Shikoyat", "Taklif"], [], [15, 10, 10, 10, 10]);
         const t5 = reports.table5;
         [
             ["Jismoniy", t5.phys_total_curr, t5.phys_ariza_curr, t5.phys_shikoyat_curr, t5.phys_taklif_curr],
@@ -325,7 +383,7 @@ export class AppealsService {
 
         // 6. Sheet: Table 6
         const s6 = setupSheet("6-Jadval", "Xalq va Virtual qabulxonalar", 
-            ["Turi", "Jami", "Qanoatlantirildi", "Tushuntirildi", "Rad etildi"], [20, 10, 15, 15, 15]);
+            ["Turi", "Jami", "Qanoatlantirildi", "Tushuntirildi", "Rad etildi"], [], [20, 10, 15, 15, 15]);
         const t6 = reports.table6;
         [
             ["Xalq qabulxonasi", t6.people_total, t6.people_satisfied, t6.people_explained, t6.people_rejected],
@@ -337,7 +395,7 @@ export class AppealsService {
 
         // 7. Sheet: Table 7
         const s7 = setupSheet("7-Jadval", "Intizomiy va ma'muriy choralar", 
-            ["Chora turi", "Soni"], [30, 15]);
+            ["Chora turi", "Soni"], [], [30, 15]);
         const t7 = reports.table7;
         [
             ["Jami choralar", t7.grand_total_curr],
@@ -360,6 +418,10 @@ export class AppealsService {
     async exportPdf(res: Response, organizationId: string, month: string) {
         const reports = await this.generateReportsFromRecords(organizationId, month);
         const org = await this.orgRepo.findOne({ where: { id: organizationId } });
+        
+        const [yearStr] = month.split('-');
+        const currYear = parseInt(yearStr);
+        const prevYear = currYear - 1;
 
         const doc = new PDFDocument({ margin: 50 });
         res.setHeader("Content-Type", "application/pdf");
@@ -376,9 +438,19 @@ export class AppealsService {
         doc.fontSize(12).text("1-Jadval: Rahbarlar tomonidan murojaatlar ko'rib chiqilishi", { underline: true });
         doc.moveDown(0.5);
         const t1 = reports.table1;
-        doc.fontSize(10).text(`Bo'lim boshlig'i: Jami: ${t1.head.total_curr}, Yozma: ${t1.head.written_curr}, Elektron: ${t1.head.electronic_curr}, Og'zaki: ${t1.head.oral_curr}`);
-        doc.text(`Epidemiologiya mudiri: Jami: ${t1.deputy_epid.total_curr}, Yozma: ${t1.deputy_epid.written_curr}, Elektron: ${t1.deputy_epid.electronic_curr}, Og'zaki: ${t1.deputy_epid.oral_curr}`);
-        doc.text(`Sanitariya mudiri: Jami: ${t1.deputy_san.total_curr}, Yozma: ${t1.deputy_san.written_curr}, Elektron: ${t1.deputy_san.electronic_curr}, Og'zaki: ${t1.deputy_san.oral_curr}`);
+        
+        const renderT1Line = (label: string, data: any) => {
+            doc.fontSize(10).font('Helvetica-Bold').text(`${label}:`);
+            doc.fontSize(9).font('Helvetica').text(`  Jami: ${prevYear}: ${data.total_prev} | ${currYear}: ${data.total_curr}`);
+            doc.text(`  Og'zaki: ${prevYear}: ${data.oral_prev} | ${currYear}: ${data.oral_curr}`);
+            doc.text(`  Yozma: ${prevYear}: ${data.written_prev} | ${currYear}: ${data.written_curr}`);
+            doc.text(`  Elektron: ${prevYear}: ${data.electronic_prev} | ${currYear}: ${data.electronic_curr}`);
+            doc.moveDown(0.5);
+        };
+
+        renderT1Line("Boshqarma boshlig'i", t1.head);
+        renderT1Line("Boshliqning o'rinbosari (Epidemiologiya)", t1.deputy_epid);
+        renderT1Line("Boshliqning o'rinbosari (Sanitariya)", t1.deputy_san);
         doc.moveDown();
 
         // 3-Jadval
