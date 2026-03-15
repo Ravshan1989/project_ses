@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, DatePicker, Select, Space, Spin, Card, Tabs } from 'antd';
 import { SaveOutlined, ReloadOutlined, FileExcelOutlined, FilePdfOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import 'dayjs/locale/uz-latn';
 import GlassLayout from '../../components/layout/GlassLayout';
 import PermissionGate from '../../components/PermissionGate';
 import { useAppealsData } from './hooks/useAppealsData';
@@ -35,10 +36,18 @@ const tdStyle: React.CSSProperties = {
 };
 
 const AppealsPage: React.FC = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [month, setMonth] = useState(dayjs().format('YYYY-MM'));
     const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('journal');
+
+    useEffect(() => {
+        if (i18n.language === 'uz') {
+            dayjs.locale('uz-latn');
+        } else {
+            dayjs.locale(i18n.language);
+        }
+    }, [i18n.language]);
 
     const userRole = localStorage.getItem('user_role');
     const isRegion = userRole === 'REGION_HEAD' || userRole === 'LEAD_SPECIALIST';
@@ -102,32 +111,36 @@ const AppealsPage: React.FC = () => {
 
         const rows = isRegionalOrg 
             ? [
-                { key: 'head', label: 'Раҳбар (Бошлиқ)' },
-                { key: 'deputy_epid', label: 'Бошлиқнинг биринчи ўринбосари' },
-                { key: 'deputy_san', label: 'Бошлиқ ўринбосари' }
+                { key: 'head', label: t('appeals.table1.rows.head_reg') },
+                { key: 'deputy_epid', label: t('appeals.table1.rows.deputy_epid_reg') },
+                { key: 'deputy_san', label: t('appeals.table1.rows.deputy_san_reg') }
               ]
             : [
-                { key: 'head', label: 'Бўлим бошлиғи' }
+                { key: 'head', label: t('appeals.table1.rows.head') }
               ];
 
         return (
             <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', fontWeight: 'bold' }}>
-                    {currYear} йилнинг {dayjs(month).format('MMMM')} ойида {currentOrg?.name || 'Қўмита'}га келиб тушган мурожаатларнинг <span style={{ color: '#1890ff' }}>раҳбарият кесимидаги</span> таҳлили
+                    {t('appeals.table1.title', { 
+                        year: currYear, 
+                        month: dayjs(month).format('MMMM'), 
+                        org: currentOrg?.name || t('common.committee') 
+                    })}
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ borderCollapse: 'collapse', width: '100%', border: '1px solid #000' }}>
                         <thead>
                             <tr>
-                                <th style={thStyleWithColor(headerColors.head)} rowSpan={3}>№</th>
-                                <th style={{ ...thStyleWithColor(headerColors.head), textAlign: 'left', minWidth: 250 }} rowSpan={3}>Раҳбарият</th>
-                                <th style={thStyleWithColor(headerColors.metrics)} colSpan={2} rowSpan={2}>Жами келиб тушган</th>
-                                <th style={thStyleWithColor(headerColors.metrics)} colSpan={6}>Шундан</th>
+                                <th style={thStyleWithColor(headerColors.head)} rowSpan={3}>{t('appeals.table1.columns.no')}</th>
+                                <th style={{ ...thStyleWithColor(headerColors.head), textAlign: 'left', minWidth: 250 }} rowSpan={3}>{t('appeals.table1.columns.rahbar')}</th>
+                                <th style={thStyleWithColor(headerColors.metrics)} colSpan={2} rowSpan={2}>{t('appeals.table1.columns.jami')}</th>
+                                <th style={thStyleWithColor(headerColors.metrics)} colSpan={6}>{t('appeals.table1.columns.shundan')}</th>
                             </tr>
                             <tr>
-                                <th style={thStyleWithColor(headerColors.metrics)} colSpan={2}>Оғзаки</th>
-                                <th style={thStyleWithColor(headerColors.metrics)} colSpan={2}>Ёзма</th>
-                                <th style={thStyleWithColor(headerColors.metrics)} colSpan={2}>Электрон</th>
+                                <th style={thStyleWithColor(headerColors.metrics)} colSpan={2}>{t('appeals.table1.columns.oral')}</th>
+                                <th style={thStyleWithColor(headerColors.metrics)} colSpan={2}>{t('appeals.table1.columns.written')}</th>
+                                <th style={thStyleWithColor(headerColors.metrics)} colSpan={2}>{t('appeals.table1.columns.electronic')}</th>
                             </tr>
                             <tr>
                                 <th style={thStyleWithColor(headerColors.metrics)}>{prevYear}</th><th style={thStyleWithColor(headerColors.metrics)}>{currYear}</th>
@@ -186,7 +199,11 @@ const AppealsPage: React.FC = () => {
         return (
             <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', lineHeight: '1.6', fontWeight: 'bold', maxWidth: '1000px', margin: '0 auto 20px' }}>
-                    {t('appeals.table2.title', { year: currYear })}
+                    {t('appeals.table2.title', { 
+                        year: currYear,
+                        month: dayjs(month).format('MMMM'), 
+                        org: currentOrg?.name || t('common.committee') 
+                    })}
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
                 <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1600, border: '1px solid #000' }}>
@@ -436,15 +453,19 @@ const AppealsPage: React.FC = () => {
         return (
             <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', fontWeight: 'bold' }}>
-                    {currYear} йилнинг {dayjs(month).format('MMMM')} ойида {currentOrg?.name || 'Қўмита'}га келиб тушган мурожаатларнинг <span style={{ color: '#1890ff' }}>соҳалар ва туманлар</span> кесимидаги таҳлили
+                    {t('appeals.table4.title', { 
+                        year: currYear, 
+                        month: dayjs(month).format('MMMM'), 
+                        org: currentOrg?.name || t('common.committee') 
+                    })}
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1500, border: '1px solid #000' }}>
                         <thead>
                             <tr>
-                                <th style={thStyleWithColor(headerColors.num_name)} rowSpan={3}>№</th>
-                                <th style={{ ...thStyleWithColor(headerColors.num_name), textAlign: 'left', minWidth: 350 }} rowSpan={3}>Мурожаатларда кўтарилган масалалар</th>
-                                <th style={thStyleWithColor(headerColors.total)} colSpan={2} rowSpan={2}>Жами</th>
+                                <th style={thStyleWithColor(headerColors.num_name)} rowSpan={3}>{t('appeals.table4.columns.no')}</th>
+                                <th style={{ ...thStyleWithColor(headerColors.num_name), textAlign: 'left', minWidth: 350 }} rowSpan={3}>{t('appeals.table4.columns.subject')}</th>
+                                <th style={thStyleWithColor(headerColors.total)} colSpan={2} rowSpan={2}>{t('appeals.table4.columns.jami')}</th>
                                 {districtIds.map(id => (
                                     <th key={id} style={{ ...thStyleWithColor(headerColors.dist), minWidth: 100 }} colSpan={2}>{t4.regional[id].name}</th>
                                 ))}
@@ -507,21 +528,24 @@ const AppealsPage: React.FC = () => {
         return (
             <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', fontWeight: 'bold' }}>
-                    {currYear} йилнинг {dayjs(month).format('MMMM')} ойида келиб тушган мурожаатларнинг <span style={{ color: '#1890ff' }}>турлари ва шахс тоифаси</span> бўйича таҳлили
+                    {t('appeals.table5.title', { 
+                        year: currYear, 
+                        month: dayjs(month).format('MMMM') 
+                    })}
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1200, border: '1px solid #000' }}>
                         <thead>
                             <tr>
-                                <th style={thStyleWithColor(headerColors.num_name)} rowSpan={3}>№</th>
-                                <th style={{ ...thStyleWithColor(headerColors.num_name), textAlign: 'left', minWidth: 200 }} rowSpan={3}>Ҳудудлар nomi</th>
-                                <th style={thStyleWithColor(headerColors.total)} colSpan={2} rowSpan={2}>Жами мурожаатлар сони</th>
-                                <th style={thStyleWithColor(headerColors.phys)} colSpan={8}>Жисмоний шахслар бўйича</th>
-                                <th style={thStyleWithColor(headerColors.legal)} colSpan={8}>Юридик шахслар бўйича</th>
+                                <th style={thStyleWithColor(headerColors.num_name)} rowSpan={3}>{t('appeals.table5.columns.no')}</th>
+                                <th style={{ ...thStyleWithColor(headerColors.num_name), textAlign: 'left', minWidth: 200 }} rowSpan={3}>{t('appeals.table5.columns.regions')}</th>
+                                <th style={thStyleWithColor(headerColors.total)} colSpan={2} rowSpan={2}>{t('appeals.table5.columns.jami')}</th>
+                                <th style={thStyleWithColor(headerColors.phys)} colSpan={8}>{t('appeals.table5.columns.phys')}</th>
+                                <th style={thStyleWithColor(headerColors.legal)} colSpan={8}>{t('appeals.table5.columns.legal')}</th>
                             </tr>
                             <tr>
-                                <th style={thStyleWithColor(headerColors.phys)} colSpan={2}>Жами</th><th style={thStyleWithColor(headerColors.phys)} colSpan={2}>Ариза</th><th style={thStyleWithColor(headerColors.phys)} colSpan={2}>Шикоят</th><th style={thStyleWithColor(headerColors.phys)} colSpan={2}>Таклиф</th>
-                                <th style={thStyleWithColor(headerColors.legal)} colSpan={2}>Жами</th><th style={thStyleWithColor(headerColors.legal)} colSpan={2}>Ариза</th><th style={thStyleWithColor(headerColors.legal)} colSpan={2}>Шикоят</th><th style={thStyleWithColor(headerColors.legal)} colSpan={2}>Таклиф</th>
+                                <th style={thStyleWithColor(headerColors.phys)} colSpan={2}>{t('common.total')}</th><th style={thStyleWithColor(headerColors.phys)} colSpan={2}>{t('appeals.table5.columns.ariza')}</th><th style={thStyleWithColor(headerColors.phys)} colSpan={2}>{t('appeals.table5.columns.shikoyat')}</th><th style={thStyleWithColor(headerColors.phys)} colSpan={2}>{t('appeals.table5.columns.taklif')}</th>
+                                <th style={thStyleWithColor(headerColors.legal)} colSpan={2}>{t('common.total')}</th><th style={thStyleWithColor(headerColors.legal)} colSpan={2}>{t('appeals.table5.columns.ariza')}</th><th style={thStyleWithColor(headerColors.legal)} colSpan={2}>{t('appeals.table5.columns.shikoyat')}</th><th style={thStyleWithColor(headerColors.legal)} colSpan={2}>{t('appeals.table5.columns.taklif')}</th>
                             </tr>
                             <tr>
                                 <th style={thStyleWithColor(headerColors.total)}>{prevYear}</th><th style={thStyleWithColor(headerColors.total)}>{currYear}</th>
@@ -590,33 +614,33 @@ const AppealsPage: React.FC = () => {
         return (
             <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', fontWeight: 'bold' }}>
-                    Ўзбекистон Республикаси Президентининг <span style={{ color: '#1890ff' }}>Халқ ва Виртуал қабулхоналари</span> орқали келиб тушган мурожаатларнинг кўриб чиқилиши тўғрисида маълумот
+                    {t('appeals.table6.title')}
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1400, border: '1px solid #000' }}>
                         <thead>
                             <tr>
-                                <th style={thStyleWithColor(headerColors.people)} colSpan={8}>Халқ қабулхоналари орқали</th>
-                                <th style={thStyleWithColor(headerColors.virtual)} colSpan={8}>Виртуал қаabulхона орқали</th>
+                                <th style={thStyleWithColor(headerColors.people)} colSpan={8}>{t('appeals.table6.columns.people')}</th>
+                                <th style={thStyleWithColor(headerColors.virtual)} colSpan={8}>{t('appeals.table6.columns.virtual')}</th>
                             </tr>
                             <tr style={{ height: '80px' }}>
-                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Жами</div></th>
-                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Қаноатлантирилди</div></th>
-                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Тушунтирилди</div></th>
-                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Тегишлилиги бўйича</div></th>
-                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Рад этилди</div></th>
-                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Кўрмасдан қолдирилди</div></th>
-                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Кўриб чиқилмоқда</div></th>
-                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Муддати бузилган</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">{t('common.total')}</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">{t('appeals.table6.columns.satisfied')}</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">{t('appeals.table6.columns.explained')}</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">{t('appeals.table6.columns.referral')}</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">{t('appeals.table6.columns.rejected')}</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">{t('appeals.table6.columns.ignored')}</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">{t('appeals.table6.columns.pending')}</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">{t('appeals.table6.columns.overdue')}</div></th>
                                 
-                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Жами</div></th>
-                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Қаноатлантирилди</div></th>
-                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Тушунтирилди</div></th>
-                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Тегишлилиги бўйича</div></th>
-                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Рад этилди</div></th>
-                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Кўрмасдан қолдирилди</div></th>
-                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Кўриб чиқилмоқда</div></th>
-                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Муддати бузилган</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">{t('common.total')}</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">{t('appeals.table6.columns.satisfied')}</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">{t('appeals.table6.columns.explained')}</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">{t('appeals.table6.columns.referral')}</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">{t('appeals.table6.columns.rejected')}</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">{t('appeals.table6.columns.ignored')}</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">{t('appeals.table6.columns.pending')}</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">{t('appeals.table6.columns.overdue')}</div></th>
                             </tr>
                         </thead>
                         <tbody>

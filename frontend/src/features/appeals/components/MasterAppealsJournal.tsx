@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, DatePicker, Select, Input, Tag, Card, Row, Col, Statistic, Typography, Checkbox, Space, Popconfirm, message } from 'antd';
-import { PlusOutlined, CheckCircleOutlined, ClockCircleOutlined, UserOutlined } from '@ant-design/icons';
+import { Table, Button, Modal, Form, DatePicker, Select, Input, Tag, Card, Row, Col, Statistic, Typography, Checkbox, Space, message } from 'antd';
+import { PlusOutlined, CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
@@ -87,7 +87,7 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
 
     const columns = [
         { 
-            title: 'Sana', 
+            title: t('appeals.journal.columns.date'), 
             dataIndex: 'registration_date', 
             key: 'registration_date',
             render: (date: string, record: any) => (
@@ -95,33 +95,33 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                     <Text>{date}</Text>
                     {record.deadline_date && (
                         <Text type="secondary" style={{ fontSize: '10px' }}>
-                            Muddati: {record.deadline_date}
+                            {t('appeals.journal.columns.deadline')}: {record.deadline_date}
                         </Text>
                     )}
                 </Space>
             )
         },
         { 
-            title: 'Hudud', 
+            title: t('appeals.journal.columns.region'), 
             dataIndex: ['organization', 'name'], 
             key: 'organization',
-            render: (name: string) => <Tag color="orange">{name || 'Noma\'lum'}</Tag>
+            render: (name: string) => <Tag color="orange">{name || t('common.no_data')}</Tag>
         },
-        { title: 'F.I.O / Nom', dataIndex: 'applicant_name', key: 'applicant_name' },
+        { title: t('appeals.journal.columns.applicant'), dataIndex: 'applicant_name', key: 'applicant_name' },
         {
-            title: 'Turi',
+            title: t('appeals.journal.columns.type'),
             dataIndex: 'applicant_type',
             key: 'applicant_type',
-            render: (v: string) => v === 'PHYSICAL' ? <Tag color="blue">Jismoniy</Tag> : <Tag color="purple">Yuridik</Tag>
+            render: (v: string) => v === 'PHYSICAL' ? <Tag color="blue">{t('common.physical')}</Tag> : <Tag color="purple">{t('common.legal')}</Tag>
         },
         {
-            title: 'Kanal',
+            title: t('appeals.journal.columns.channel'),
             dataIndex: 'channel',
             key: 'channel',
             render: (v: string) => <Tag>{v}</Tag>
         },
         {
-            title: 'Holat / Muddati',
+            title: t('appeals.journal.columns.status'),
             key: 'status_deadline',
             render: (record: any) => {
                 const isClosed = record.closure_date;
@@ -129,11 +129,11 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                 
                 let statusTag;
                 if (isClosed) {
-                    statusTag = <Tag color="success" icon={<CheckCircleOutlined />}>Yopilgan ({record.closure_date})</Tag>;
+                    statusTag = <Tag color="success" icon={<CheckCircleOutlined />}>{t('appeals.journal.statuses.closed')} ({record.closure_date})</Tag>;
                 } else if (isOverdue) {
-                    statusTag = <Tag color="error" icon={<ClockCircleOutlined />}>Muddat o'tgan</Tag>;
+                    statusTag = <Tag color="error" icon={<ClockCircleOutlined />}>{t('appeals.journal.statuses.overdue')}</Tag>;
                 } else {
-                    statusTag = <Tag color="warning" icon={<ClockCircleOutlined />}>Ko'rilmoqda</Tag>;
+                    statusTag = <Tag color="warning" icon={<ClockCircleOutlined />}>{t('appeals.journal.statuses.pending')}</Tag>;
                 }
 
                 return (
@@ -145,7 +145,7 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
             }
         },
         {
-            title: 'Amallar',
+            title: t('appeals.journal.columns.actions'),
             key: 'actions',
             render: (record: any) => !record.closure_date && (
                 <Button 
@@ -156,7 +156,7 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                         setIsCloseModalVisible(true);
                     }}
                 >
-                    Yopish
+                    {t('appeals.table6.columns.pending')}
                 </Button>
             )
         }
@@ -166,19 +166,19 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
         <div style={{ padding: '20px 0' }}>
             <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
                 <Col span={24}>
-                    <Card size="small" className="glass-card" title="Avtomatik Hisobot Ko'rsatkichlari (Jurnal asosida)">
+                    <Card size="small" className="glass-card" title={t('appeals.journal.auto_report_title')}>
                         <Row gutter={16}>
                             <Col span={4}>
-                                <Statistic title="Jami Murojaatlar" value={autoReports?.records_count || 0} />
+                                <Statistic title={t('appeals.journal.fields.jami')} value={autoReports?.records_count || 0} />
                             </Col>
                             <Col span={4}>
-                                <Statistic title="Elektron" value={autoReports?.table1?.electronic_curr || 0} />
+                                <Statistic title={t('appeals.table2.columns.electronic')} value={autoReports?.table1?.electronic_curr || 0} />
                             </Col>
                             <Col span={4}>
-                                <Statistic title="Shikoyatlar" value={(autoReports?.table5?.phys_shikoyat_curr || 0) + (autoReports?.table5?.legal_shikoyat_curr || 0)} />
+                                <Statistic title={t('appeals.table5.columns.shikoyat')} value={(autoReports?.table5?.phys_shikoyat_curr || 0) + (autoReports?.table5?.legal_shikoyat_curr || 0)} />
                             </Col>
                             <Col span={4}>
-                                <Statistic title="Ko'rilmoqda" value={autoReports?.table2?.being_considered || 0} />
+                                <Statistic title={t('appeals.journal.statuses.pending')} value={autoReports?.table2?.being_considered || 0} />
                             </Col>
                         </Row>
                     </Card>
@@ -186,9 +186,9 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
             </Row>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <Title level={4}>Murojaatlar Ro'yxati (Jurnal)</Title>
+                <Title level={4}>{t('appeals.journal.title')}</Title>
                 <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>
-                    Murojaat Qo'shish
+                    {t('appeals.journal.add_btn')}
                 </Button>
             </div>
 
@@ -203,7 +203,7 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
 
             {/* NEW APPEAL MODAL */}
             <Modal
-                title="Yangi Murojaat Qo'shish"
+                title={t('appeals.journal.modal_add_title')}
                 open={isModalVisible}
                 onCancel={() => setIsModalVisible(false)}
                 onOk={() => form.submit()}
@@ -213,17 +213,17 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                 <Form form={form} layout="vertical" onFinish={handleCreate} initialValues={{ registration_date: dayjs(), consequence: 'NONE' }}>
                     <Row gutter={16}>
                         <Col span={8}>
-                            <Form.Item name="registration_date" label="Qabul sanasi" rules={[{ required: true }]}>
+                            <Form.Item name="registration_date" label={t('appeals.journal.fields.reg_date')} rules={[{ required: true }]}>
                                 <DatePicker style={{ width: '100%' }} />
                             </Form.Item>
                         </Col>
                         <Col span={8}>
-                            <Form.Item name="deadline_date" label="Muddat (Deadline)">
-                                <DatePicker style={{ width: '100%' }} placeholder="Standart 15 kun" />
+                            <Form.Item name="deadline_date" label={t('appeals.journal.fields.deadline')}>
+                                <DatePicker style={{ width: '100%' }} placeholder={t('appeals.journal.fields.deadline_placeholder')} />
                             </Form.Item>
                         </Col>
                         <Col span={8}>
-                            <Form.Item name="applicant_name" label="Murojaatchi F.I.O / Nom" rules={[{ required: true }]}>
+                            <Form.Item name="applicant_name" label={t('appeals.journal.fields.applicant_name')} rules={[{ required: true }]}>
                                 <Input placeholder="Eshmatov Toshmat..." />
                             </Form.Item>
                         </Col>
@@ -231,29 +231,29 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
 
                     <Row gutter={16}>
                         <Col span={8}>
-                            <Form.Item name="applicant_type" label="Murojaatchi turi" rules={[{ required: true }]}>
+                            <Form.Item name="applicant_type" label={t('appeals.journal.fields.applicant_type')} rules={[{ required: true }]}>
                                 <Select options={[
-                                    { label: 'Jismoniy shaxs', value: 'PHYSICAL' },
-                                    { label: 'Yuridik shaxs', value: 'LEGAL' },
+                                    { label: t('common.physical'), value: 'PHYSICAL' },
+                                    { label: t('common.legal'), value: 'LEGAL' },
                                 ]} />
                             </Form.Item>
                         </Col>
                         <Col span={8}>
-                            <Form.Item name="channel" label="Murojaat kanali" rules={[{ required: true }]}>
+                            <Form.Item name="channel" label={t('appeals.journal.fields.channel')} rules={[{ required: true }]}>
                                 <Select options={[
-                                    { label: 'Elektron', value: 'ELECTRONIC' },
-                                    { label: 'Og\'zaki', value: 'ORAL' },
-                                    { label: 'Yozma', value: 'WRITTEN' },
-                                    { label: 'Virtual qabulxona', value: 'VIRTUAL_RECEPTION' },
-                                    { label: 'Xalq qabulxonasi', value: 'PEOPLES_RECEPTION' },
+                                    { label: t('appeals.table2.columns.electronic'), value: 'ELECTRONIC' },
+                                    { label: t('appeals.table2.columns.oral'), value: 'ORAL' },
+                                    { label: t('appeals.table2.columns.written'), value: 'WRITTEN' },
+                                    { label: t('appeals.table6.columns.virtual'), value: 'VIRTUAL_RECEPTION' },
+                                    { label: t('appeals.table6.columns.people'), value: 'PEOPLES_RECEPTION' },
                                 ]} />
                             </Form.Item>
                         </Col>
                         <Col span={8}>
-                            <Form.Item name="responsible_user_id" label="Mas'ul xodim">
+                            <Form.Item name="responsible_user_id" label={t('appeals.journal.fields.responsible')}>
                                 <Select 
                                     showSearch
-                                    placeholder="Xodimni tanlang"
+                                    placeholder={t('admin.organizations.select_org')} 
                                     optionFilterProp="children"
                                     options={users.map(u => ({
                                         label: `${u.lastName} ${u.firstName}`,
@@ -266,28 +266,28 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
 
                     <Row gutter={16}>
                         <Col span={8}>
-                            <Form.Item name="appeal_type" label="Murojaat mavzusi" rules={[{ required: true }]}>
+                            <Form.Item name="appeal_type" label={t('appeals.journal.fields.appeal_type')} rules={[{ required: true }]}>
                                 <Select options={[
-                                    { label: 'Ariza', value: 'ARIZA' },
-                                    { label: 'Shikoyat', value: 'SHIKOYAT' },
-                                    { label: 'Taklif', value: 'TAKLIF' },
+                                    { label: t('appeals.table5.columns.ariza'), value: 'ARIZA' },
+                                    { label: t('appeals.table5.columns.shikoyat'), value: 'SHIKOYAT' },
+                                    { label: t('appeals.table5.columns.taklif'), value: 'TAKLIF' },
                                 ]} />
                             </Form.Item>
                         </Col>
                         <Col span={8}>
-                            <Form.Item name="recipient" label="Kimga (Table 1)" rules={[{ required: true }]}>
+                            <Form.Item name="recipient" label={t('appeals.journal.fields.recipient')} rules={[{ required: true }]}>
                                 <Select options={[
-                                    { label: isRegionalOrg ? 'Boshqarma boshlig\'i' : 'Bo\'lim boshlig\'i', value: 'head' },
-                                    { label: isRegionalOrg ? 'Epid. muovini' : 'Epid. mudiri', value: 'deputy_epid' },
-                                    { label: isRegionalOrg ? 'San. muovini' : 'San. mudiri', value: 'deputy_san' },
+                                    { label: isRegionalOrg ? t('appeals.table1.rows.head_reg') : t('appeals.table1.rows.head'), value: 'head' },
+                                    { label: isRegionalOrg ? t('appeals.table1.rows.deputy_epid_reg') : t('appeals.table1.rows.deputy_epid'), value: 'deputy_epid' },
+                                    { label: isRegionalOrg ? t('appeals.table1.rows.deputy_san_reg') : t('appeals.table1.rows.deputy_san'), value: 'deputy_san' },
                                 ]} />
                             </Form.Item>
                         </Col>
                         <Col span={8}>
-                            <Form.Item name="subject_key" label="Masala turi (Table 4)" rules={[{ required: true }]}>
+                            <Form.Item name="subject_key" label={t('appeals.journal.fields.subject')} rules={[{ required: true }]}>
                                 <Select 
                                     showSearch
-                                    placeholder="Masala turini tanlang"
+                                    placeholder={t('appeals.journal.fields.subject')}
                                     optionFilterProp="children"
                                     options={APPEALS_SUBJECT_ROWS.map(s => ({
                                         label: t(s.labelKey),
@@ -301,22 +301,22 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                     <Row gutter={[16, 0]}>
                         <Col span={6}>
                             <Form.Item name="is_repeated" valuePropName="checked">
-                                <Checkbox>Takroriy</Checkbox>
+                                <Checkbox>{t('appeals.journal.fields.is_repeated')}</Checkbox>
                             </Form.Item>
                         </Col>
                         <Col span={6}>
                             <Form.Item name="is_phone" valuePropName="checked">
-                                <Checkbox>Ishonch telefoni</Checkbox>
+                                <Checkbox>{t('appeals.journal.fields.is_phone')}</Checkbox>
                             </Form.Item>
                         </Col>
                         <Col span={6}>
                             <Form.Item name="is_field_meeting" valuePropName="checked">
-                                <Checkbox>Sayyor qabul</Checkbox>
+                                <Checkbox>{t('appeals.journal.fields.is_field')}</Checkbox>
                             </Form.Item>
                         </Col>
                         <Col span={6}>
                             <Form.Item name="is_overdue" valuePropName="checked">
-                                <Checkbox>Muddat buzilgan</Checkbox>
+                                <Checkbox>{t('appeals.journal.fields.is_overdue')}</Checkbox>
                             </Form.Item>
                         </Col>
                     </Row>
@@ -329,32 +329,32 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
 
             {/* CLOSE APPEAL MODAL */}
             <Modal
-                title="Murojaatni Yopish"
+                title={t('appeals.journal.modal_close_title')}
                 open={isCloseModalVisible}
                 onCancel={() => setIsCloseModalVisible(false)}
                 onOk={() => closeForm.submit()}
                 width={400}
             >
                 <Form form={closeForm} layout="vertical" onFinish={handleClose} initialValues={{ closure_date: dayjs(), status: 'SATISFIED', consequence: 'NONE' }}>
-                    <Form.Item name="closure_date" label="Yopilgan sana" rules={[{ required: true }]}>
+                    <Form.Item name="closure_date" label={t('appeals.journal.statuses.closed')} rules={[{ required: true }]}>
                         <DatePicker style={{ width: '100%' }} />
                     </Form.Item>
-                    <Form.Item name="status" label="Natija (Holati)" rules={[{ required: true }]}>
+                    <Form.Item name="status" label={t('common.status')} rules={[{ required: true }]}>
                         <Select options={[
-                            { label: 'Qanoatlantirildi', value: 'SATISFIED' },
-                            { label: 'Tushuntirildi', value: 'EXPLAINED' },
-                            { label: 'Rad etildi', value: 'REJECTED' },
-                            { label: 'Tegishliligi bo\'yicha yuborildi', value: 'ROUTED' },
+                            { label: t('appeals.table6.columns.satisfied'), value: 'SATISFIED' },
+                            { label: t('appeals.table6.columns.explained'), value: 'EXPLAINED' },
+                            { label: t('appeals.table6.columns.rejected'), value: 'REJECTED' },
+                            { label: t('appeals.table6.columns.referral'), value: 'ROUTED' },
                         ]} />
                     </Form.Item>
-                    <Form.Item name="consequence" label="Intizomiy chora (Table 7)">
+                    <Form.Item name="consequence" label={t('appeals.table7.columns.action_type')}>
                         <Select options={[
-                            { label: 'Chora qo\'llanilmagan', value: 'NONE' },
-                            { label: 'Jarima', value: 'FINE' },
-                            { label: 'Hayfsan', value: 'REPRIMAND' },
-                            { label: 'Lavozimdan ozod etish', value: 'DISMISSAL' },
-                            { label: 'Ma\'muriy javobgarlik', value: 'ADMINISTRATIVE' },
-                            { label: 'Jinoiy javobgarlik', value: 'CRIMINAL' },
+                            { label: t('appeals.journal.consequences.none'), value: 'NONE' },
+                            { label: t('appeals.journal.consequences.fine'), value: 'FINE' },
+                            { label: t('appeals.journal.consequences.reprimand'), value: 'REPRIMAND' },
+                            { label: t('appeals.journal.consequences.dismissal'), value: 'DISMISSAL' },
+                            { label: t('appeals.journal.consequences.administrative'), value: 'ADMINISTRATIVE' },
+                            { label: t('appeals.journal.consequences.criminal'), value: 'CRIMINAL' },
                         ]} />
                     </Form.Item>
                 </Form>

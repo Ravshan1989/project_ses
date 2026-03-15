@@ -123,6 +123,9 @@
         "total": "Jami",
         "status": "Holat",
         "no_data": "Ma'lumot mavjud emas",
+        "physical": "Jismoniy",
+        "legal": "Yuridik",
+        "committee": "Qo'mita",
         "refresh": "Yangilash",
         "export_all": "Hammasini eksport qilish"
     },
@@ -298,14 +301,15 @@
             "journal": "Master Jurnal (Yangi)"
         },
         "table1": {
-            "title": "Rahbarlar tomonidan murojaatlar ko'rib chiqilishi",
+            "title": "{{year}} yilning {{month}} oyida {{org}}ga kelib tushgan murojaatlarning rahbarlar kesimidagi tahlili",
             "columns": {
                 "no": "№",
-                "rahbar": "Rahbar va o'rinbosarlari",
-                "jami": "Jami murojaatlar",
-                "oral": "Shaxsiy va sayyor qabullar (Og'zaki murojaatlar)",
-                "written": "Yozma murojaatlar",
-                "electronic": "Elektron murojaatlar"
+                "rahbar": "Rahbariyat",
+                "jami": "Jami kelib tushgan",
+                "shundan": "Shundan",
+                "oral": "Og'zaki",
+                "written": "Yozma",
+                "electronic": "Elektron"
             },
             "rows": {
                 "head": "Bo'lim boshlig'i",
@@ -328,22 +332,58 @@
             "other": "Boshqa masalalar"
         },
         "table2": {
-            "title": "{{year}} yilning yanvar oyida O'zbekiston Respublikasi SÉOvaJS qo'mitasiga jismoniy va yuridik shaxslardan tushgan va nazoratga olingan murojaatlarni ko'rib chiqish natijalari to'g'risida ma'lumot",
+            "title": "{{year}} yilning {{month}} oyida «{{org}}»ga jismoniy va yuridik shaxslardan kelib tushgan murojaatlarning masalalar (sohalar) kesimidagi tahlili to'g'risida ma'lumot",
             "columns": {
                 "subjects": "Murojaatlarda ko'tarilgan masalalar",
                 "jami": "Jami murojaatlar soni",
                 "shakllari": "Murojaatlar shakllari",
                 "written": "Yozma murojaatlar",
                 "electronic": "Elektron murojaatlar",
-                "oral": "Og'zaki murojaatlar (shaxsiy qabul, sayyor qabul, mas'ul xodimlar qabuli va ishonch telefoni)",
-                "consideration_2026": "2026 yil bo'yicha murojaatlarni ko'rib chiqish holatlari",
+                "oral": "Og'zaki murojaatlar",
+                "consideration_2026": "{{year}} yil bo'yicha murojaatlarni ko'rib chiqish holatlari",
                 "monitored": "Nazoratga olinganlar",
                 "satisfied": "choralar ko'rildi",
                 "explained": "tushuntirildi",
                 "rejected": "rad etildi",
                 "pending": "ko'rib chiqilmoqda",
                 "repeated": "Takroriylar",
-                "expired": "Muddati buzilganlar"
+                "expired": "Muddati buzilganlar",
+                "jumladan": "Jumladan"
+            }
+        },
+        "table4": {
+            "title": "{{year}} yilning {{month}} oyida {{org}}ga kelib tushgan murojaatlarning sohalar va tumanlar kesimidagi tahlili",
+            "columns": {
+                "no": "№",
+                "subject": "Murojaatlarda ko'tarilgan masalalar",
+                "jami": "Jami"
+            }
+        },
+        "table5": {
+            "title": "{{year}} yilning {{month}} oyida kelib tushgan murojaatlarning turlari va shaxs toifasi bo'yicha tahlili",
+            "columns": {
+                "no": "№",
+                "regions": "Hududlar nomi",
+                "jami": "Jami murojaatlar soni",
+                "phys": "Jismoniy shaxslar bo'yicha",
+                "legal": "Yuridik shaxslar bo'yicha",
+                "ariza": "Ariza",
+                "shikoyat": "Shikoyat",
+                "taklif": "Taklif"
+            }
+        },
+        "table6": {
+            "title": "O'zbekiston Respublikasi Prezidentining Xalq va Virtual qabulxonalari orqali kelib tushgan murojaatlarning ko'rib chiqilishi to'g'risida ma'lumot",
+            "columns": {
+                "people": "Xalq qabulxonalari orqali",
+                "virtual": "Virtual qabulxona orqali",
+                "satisfied": "qanoatlantirildi",
+                "explained": "tushuntirildi",
+                "referral": "tegishliligi bo'yicha",
+                "rejected": "rad etildi",
+                "ignored": "ko'rmasdan qoldirildi",
+                "pending": "ko'rib chiqilmoqda",
+                "overdue": "muddati buzilgan"
             }
         },
         "table7": {
@@ -356,6 +396,74 @@
             "rows": {
                 "total": "Jami"
             }
+        },
+        "dashboard": {
+            "by_type": "Murojaat turi bo'yicha",
+            "by_status": "Murojaatlar holati",
+            "by_channel": "Murojaat kanallari taqsimoti",
+            "select_org": "Tahlilni ko'rish uchun tashkilotni tanlang",
+            "loading": "Ma'lumotlar yuklanmoqda...",
+            "no_data": "Ma'lumot yo'q"
+        },
+        "journal": {
+            "title": "Murojaatlar Ro'yxati (Jurnal)",
+            "add_btn": "Murojaat Qo'shish",
+            "auto_report_title": "Avtomatik Hisobot Ko'rsatkichlari (Jurnal asosida)",
+            "modal_add_title": "Yangi Murojaat Qo'shish",
+            "modal_close_title": "Murojaatni Yopish",
+            "columns": {
+                "date": "Sana",
+                "deadline": "Muddat",
+                "region": "Hudud",
+                "applicant": "F.I.O / Nom",
+                "type": "Turi",
+                "channel": "Kanal",
+                "status": "Holat",
+                "actions": "Amallar"
+            },
+            "fields": {
+                "reg_date": "Qabul sanasi",
+                "deadline": "Muddat (Deadline)",
+                "deadline_placeholder": "Standart 15 kun",
+                "applicant_name": "Murojaatchi F.I.O / Nom",
+                "applicant_type": "Murojaatchi turi",
+                "channel": "Murojaat kanali",
+                "responsible": "Mas'ul xodim",
+                "appeal_type": "Murojaat mavzusi",
+                "recipient": "Kimga (Table 1)",
+                "subject": "Masala turi (Table 4)",
+                "summary": "Qisqacha mazmuni",
+                "is_repeated": "Takroriy",
+                "is_phone": "Ishonch telefoni",
+                "is_field": "Sayyor qabul",
+                "is_overdue": "Muddat buzilgan"
+            },
+            "statuses": {
+                "closed": "Yopilgan",
+                "overdue": "Muddat o'tgan",
+                "pending": "Ko'rilmoqda"
+            },
+            "consequences": {
+                "none": "Chora qo'llanilmagan",
+                "fine": "Jarima",
+                "reprimand": "Hayfsan",
+                "dismissal": "Lavozimdan ozod etish",
+                "administrative": "Ma'muriy javobgarlik",
+                "criminal": "Jinoiy javobgarlik"
+            },
+            "success_closed": "Murojaat yopildi!",
+            "error_close": "Xatolik yuz berdi"
+        },
+        "monitoring": {
+            "title": "Tuman / Hudud",
+            "count": "Murojaatlar soni",
+            "status": "Holati",
+            "submitted": "TO'LDIRILGAN",
+            "pending": "KUTILMOQDA",
+            "total_regions": "Jami Tumanlar",
+            "submitted_count": "Topshirgan",
+            "overall_percentage": "UMUMIY TOPSHIRISH KO'RSATKICHI",
+            "unit": "ta"
         }
     },
     "inspections": {
