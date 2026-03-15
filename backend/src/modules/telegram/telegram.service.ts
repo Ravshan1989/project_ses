@@ -301,10 +301,12 @@ export class TelegramService implements OnModuleInit {
   }
 
   private async handleApproval(ctx: any, userId: string) {
+    this.logger.log(`Telegram approval request for User ID: ${userId}`);
     try {
       const result = await this.usersService.approveUser(userId);
 
       if (!result) {
+        this.logger.warn(`User not found for approval: ${userId}`);
         await ctx.editMessageText("❌ Foydalanuvchi topilmadi");
         return;
       }
@@ -323,12 +325,12 @@ export class TelegramService implements OnModuleInit {
       `.trim();
 
       await ctx.editMessageText(approvalMessage, { parse_mode: "HTML" }).catch(e => {
-        this.logger.warn("Could not edit message, might be already edited");
+        this.logger.warn(`Could not edit message for user ${userId}: ${e.message}`);
       });
 
-      this.logger.log(`User approved via Telegram: ${user.username} (User ID: ${userId})`);
+      this.logger.log(`User approved successfully via Telegram: ${user.username} (User ID: ${userId})`);
     } catch (error) {
-      this.logger.error("Failed to approve user via Telegram:", error);
+      this.logger.error(`Failed to approve user ${userId} via Telegram:`, error);
       await ctx.reply("❌ Tasdiqlashda xatolik yuz berdi").catch(() => {});
     }
   }

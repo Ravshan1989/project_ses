@@ -136,11 +136,17 @@ export class UsersService {
     const user = await this.findOne(id);
     if (!user) return null;
 
+    // UZ: Agar foydalanuvchi allaqachon faol bo'lsa va login reg_ bilan boshlanmasa - qaytaramiz
     if (user.isActive && user.username && !user.username.startsWith("reg_")) {
       return { user, password: null };
     }
 
-    const username = await this.generateUniqueUsername(user);
+    // UZ: Agar login reg_ bilan boshlansa yoki bo'sh bo'lsa - yangi login generatsiya qilamiz
+    const needsNewUsername = !user.username || user.username.startsWith("reg_");
+    const username = needsNewUsername 
+      ? await this.generateUniqueUsername(user)
+      : user.username;
+    
     const password = this.generatePassword();
     const salt = await bcrypt.genSalt();
     const passwordHash = await bcrypt.hash(password, salt);
@@ -171,10 +177,14 @@ export class UsersService {
     let baseUsername = `${firstName}.${lastName}`;
     if (!lastName) baseUsername = firstName;
 
-    const exists = await this.usersRepository.findOne({
+    // Check if the current user ALREADY has this baseUsername (e.g. they typed it during reg)
+    // Or if someone ELSE has it.
+    const existing = await this.usersRepository.findOne({
       where: { username: baseUsername },
     });
-    if (!exists) return baseUsername;
+
+    // If nobody has it, or ONLY the current user has it (it was their temp or set username)
+    if (!existing || existing.id === user.id) return baseUsername;
 
     let isUnique = false;
     let newUsername = baseUsername;
@@ -184,7 +194,8 @@ export class UsersService {
       const check = await this.usersRepository.findOne({
         where: { username: newUsername },
       });
-      if (!check) isUnique = true;
+      // Unique if nobody has it OR only the current user has it
+      if (!check || check.id === user.id) isUnique = true;
     }
     return newUsername;
   }
