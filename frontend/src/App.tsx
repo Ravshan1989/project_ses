@@ -140,7 +140,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 }
             ]
         }] : []),
-        ...(hasRole(['ADMIN', 'SANITARY_HEAD', 'SANITARY_SPECIALIST', 'SANITARY_OPERATOR', 'DISTRICT_OPERATOR', 'DEPARTMENT_HEAD']) ? [{
+        ...(hasRole(['ADMIN', 'SANITARY_HEAD', 'SANITARY_SPECIALIST', 'SANITARY_OPERATOR', 'DISTRICT_OPERATOR', 'DEPARTMENT_HEAD', 'LEAD_SPECIALIST']) ? [{
             key: 'grp_sanitary',
             icon: <ClusterOutlined />,
             label: t('common.sanitary_menu') || 'Sanitariya',
@@ -196,6 +196,12 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     { key: '/admin/users-management', icon: <TeamOutlined />, label: 'Xodimlar boshqaruvi', onClick: () => navigate('/admin/users-management') }
                 ] : [])
             ]
+        }] : []),
+        ...(hasRole(['LEAD_SPECIALIST']) ? [{
+            key: '/appeals',
+            icon: <FileTextOutlined />,
+            label: t('reports.appeals') || 'Murojaatlar Jurnali',
+            onClick: () => navigate('/appeals')
         }] : []),
         ...(!isRegionHeadOnly ? [{
             key: 'edo_ijro',
