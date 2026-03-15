@@ -155,12 +155,15 @@ export const AdminUsersPage: React.FC = () => {
             key: 'role',
             render: (role: string) => {
                 const roleLabels: Record<string, string> = {
-                    ADMIN: 'Administrator',
-                    HR: 'Kadr',
-                    STAFF: 'Xodim',
-                    DISTRICT_SPECIALIST: 'Tuman mutaxassisi',
+                    ADMIN: 'Tizim administratori',
+                    HR: 'Kadrlar bo\'limi',
+                    STAFF: 'Xodim / Vrach',
+                    DISTRICT_HEAD: 'Tuman (Shahar) boshlig\'i',
+                    REGION_HEAD: 'Viloyat boshlig\'i',
                     DEPARTMENT_HEAD: 'Bo\'lim mudiri',
-                    REGION_HEAD: 'Viloyat mudiri',
+                    LEAD_SPECIALIST: 'Yetakchi mutaxassis',
+                    DISTRICT_SPECIALIST: 'Tuman mutaxassisi',
+                    REPUBLIC_HEAD: 'Respublika rahbari',
                 };
                 return roleLabels[role] || role;
             }

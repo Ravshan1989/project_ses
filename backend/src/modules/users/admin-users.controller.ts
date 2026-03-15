@@ -70,25 +70,13 @@ export class AdminUsersController {
       throw new HttpException("Unauthorized", HttpStatus.FORBIDDEN);
     }
 
-    // Generate username and password
-    const username = this.generateUsername(user);
-    const password = this.generatePassword();
-    const salt = await bcrypt.genSalt();
-    const passwordHash = await bcrypt.hash(password, salt);
-
-    // Update user
-    user.username = username;
-    user.passwordHash = passwordHash;
-    user.isActive = true;
-    user.approvedAt = new Date();
-
-    await this.usersService.update(id, user);
+    const result = await this.usersService.approveUser(id);
 
     return {
       message: "User approved successfully",
-      username,
-      password,
-      user,
+      username: result.user.username,
+      password: result.password,
+      user: result.user,
     };
   }
 
@@ -202,12 +190,7 @@ export class AdminUsersController {
       throw new HttpException("Unauthorized", HttpStatus.FORBIDDEN);
     }
 
-    // Generate new password
-    const password = this.generatePassword();
-    const salt = await bcrypt.genSalt();
-    const passwordHash = await bcrypt.hash(password, salt);
-
-    await this.usersService.update(id, { passwordHash });
+    const { password } = await this.usersService.resetPassword(id);
 
     return {
       message: "Password reset successfully",
@@ -215,23 +198,4 @@ export class AdminUsersController {
     };
   }
 
-  private generateUsername(user: any): string {
-    const firstName = user.firstName?.toLowerCase().replace(/\s+/g, "") || "";
-    const lastName = user.lastName?.toLowerCase().replace(/\s+/g, "") || "";
-
-    if (firstName && lastName) {
-      return `${firstName}.${lastName}`;
-    } else {
-      return `user_${Date.now()}`;
-    }
-  }
-
-  private generatePassword(): string {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-    let password = "";
-    for (let i = 0; i < 10; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return password;
-  }
 }

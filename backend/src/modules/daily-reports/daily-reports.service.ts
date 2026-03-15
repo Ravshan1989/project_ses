@@ -157,7 +157,11 @@ export class DailyReportsService {
         ...dto,
         organization: { id: dto.organizationId },
         isTest: dto.isTest || false,
+        executor: { id: user.id },
       });
+    }
+    if (!report.executor) {
+      report.executor = { id: user.id } as any;
     }
     const saved = await this.reportRepo.save(report);
     // UZ: Bot faqat ro'yxatga olish uchun qoldirilgan
@@ -215,9 +219,13 @@ export class DailyReportsService {
         ...dto,
         organization: { id: dto.organizationId },
         isTest: dto.isTest || false,
+        executor: { id: user.id } as any,
       });
     }
-    const saved = await this.reportRepo.save(report);
+    if (!report.executor) {
+      report.executor = { id: user.id } as any;
+    }
+    const saved = await this.fluRepo.save(report);
     // UZ: Bot faqat ro'yxatga olish uchun qoldirilgan
     return saved;
   }
@@ -270,7 +278,11 @@ export class DailyReportsService {
         ...dto,
         organization: { id: dto.organizationId },
         isTest: dto.isTest || false,
+        executor: { id: user.id } as any,
       });
+    }
+    if (!report.executor) {
+      report.executor = { id: user.id } as any;
     }
     const saved = await this.ariRepo.save(report);
     // UZ: Bot faqat ro'yxatga olish uchun qoldirilgan
@@ -325,7 +337,11 @@ export class DailyReportsService {
         ...dto,
         organization: { id: dto.organizationId },
         isTest: dto.isTest || false,
+        executor: { id: user.id } as any,
       });
+    }
+    if (!report.executor) {
+      report.executor = { id: user.id } as any;
     }
     const saved = await this.epiRepo.save(report);
     // UZ: Bot faqat ro'yxatga olish uchun qoldirilgan
@@ -516,6 +532,7 @@ export class DailyReportsService {
       ...dto,
       organization: { id: dto.organizationId },
       isTest: !!dto.isTest,
+      executor: { id: user.id } as any,
     });
     return this.covidRepo.save(newReport);
   }
@@ -536,6 +553,7 @@ export class DailyReportsService {
       ...dto,
       organization: { id: dto.organizationId },
       isTest: !!dto.isTest,
+      executor: { id: user.id } as any,
     });
     return this.diarrheaRepo.save(newReport);
   }
@@ -600,7 +618,11 @@ export class DailyReportsService {
         ...dto,
         organization: { id: dto.organizationId },
         isTest: dto.isTest || false,
+        executor: { id: user.id } as any,
       });
+    }
+    if (!report.executor) {
+      report.executor = { id: user.id } as any;
     }
     const saved = await this.sanitaryRepo.save(report);
     // UZ: Bot faqat ro'yxatga olish uchun qoldirilgan
@@ -746,14 +768,20 @@ export class DailyReportsService {
               isTest,
             },
           });
-          if (report) Object.assign(report, data);
-          else
+          if (report) {
+            Object.assign(report, data);
+          } else {
             report = manager.create(HepatitisDailyReport, {
               ...data,
               reportDate,
               isTest,
               organization: { id: data.organizationId },
+              executor: { id: user.id },
             });
+          }
+          if (!report.executor) {
+            report.executor = { id: user.id } as any;
+          }
           await manager.save(report);
         }
       }

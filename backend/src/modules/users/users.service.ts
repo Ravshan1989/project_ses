@@ -95,7 +95,8 @@ export class UsersService {
 
   async findAll(): Promise<User[]> {
     return this.usersRepository.find({
-      relations: ["organization", "department", "dynamicRole"], // UZ: Barcha kerakli bog'liqliklar yuklanadi
+      relations: ["organization", "department", "dynamicRole"],
+      order: { isActive: "ASC", createdAt: "DESC" },
     });
   }
 
@@ -111,7 +112,6 @@ export class UsersService {
   }
   */
 
-  // UZ: Yangi kod (append) - barcha bog'liqliklarni (Bo'lim, Rol) inobatga oladi
   async update(id: string, userData: any): Promise<User> {
     this.validateUserMapping(userData);
     if (userData.organizationId) {
@@ -127,42 +127,87 @@ export class UsersService {
       delete userData.dynamicRoleId;
     }
 
-    // UZ: update() funksiyasi relationlarni to'g'ridan-to'g'ri yangilamaydi (TypeORM cheklovi)
-    // Shuning uchun save() ishlatamiz
+    await this.usersRepository.update(id, userData);
+    return this.findOne(id);
+  }
+
+  async approveUser(id: string): Promise<{ user: User; password: string }> {
     const user = await this.findOne(id);
     if (!user) return null;
 
-    // Check if activating user
-    const isActivating = !user.isActive && userData.isActive === true;
-
-    Object.assign(user, userData);
-
-    if (isActivating) {
-      // Generate credentials if missing or temporary
-      if (!user.username || user.username.startsWith("reg_")) {
-        const firstName =
-          user.firstName?.toLowerCase().replace(/\s+/g, "") || "";
-        const lastName = user.lastName?.toLowerCase().replace(/\s+/g, "") || "";
-        user.username = `${firstName}.${lastName}${Math.floor(Math.random() * 100)}`;
-      }
-
-      // Generate random password
-      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-      let password = "";
-      for (let i = 0; i < 8; i++) {
-        password += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-
-      const salt = await bcrypt.genSalt();
-      user.passwordHash = await bcrypt.hash(password, salt);
-      user.approvedAt = new Date();
-
-      // Send to Telegram
-      await this.telegramService.sendActivationNotification(user, password);
+    if (user.isActive && user.username && !user.username.startsWith("reg_")) {
+      return { user, password: null };
     }
 
+    const username = await this.generateUniqueUsername(user);
+    const password = this.generatePassword();
+    const salt = await bcrypt.genSalt();
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    user.username = username;
+    user.passwordHash = passwordHash;
+    user.isActive = true;
+    user.approvedAt = new Date();
+
     await this.usersRepository.save(user);
-    return this.findOne(id);
+
+    // Send to Telegram
+    try {
+      await this.telegramService.sendActivationNotification(user, password);
+    } catch (e) {
+      console.error("Failed to send telegram notification:", e);
+    }
+
+    return { user, password };
+  }
+
+  private async generateUniqueUsername(user: User): Promise<string> {
+    const firstName =
+      user.firstName?.toLowerCase().replace(/[^a-z0-9]/g, "") || "user";
+    const lastName =
+      user.lastName?.toLowerCase().replace(/[^a-z0-9]/g, "") || "";
+
+    let baseUsername = `${firstName}.${lastName}`;
+    if (!lastName) baseUsername = firstName;
+
+    const exists = await this.usersRepository.findOne({
+      where: { username: baseUsername },
+    });
+    if (!exists) return baseUsername;
+
+    let isUnique = false;
+    let newUsername = baseUsername;
+    while (!isUnique) {
+      const randomSuffix = Math.floor(100 + Math.random() * 900);
+      newUsername = `${baseUsername}${randomSuffix}`;
+      const check = await this.usersRepository.findOne({
+        where: { username: newUsername },
+      });
+      if (!check) isUnique = true;
+    }
+    return newUsername;
+  }
+
+  async resetPassword(id: string): Promise<{ password: string }> {
+    const user = await this.findOne(id);
+    if (!user) return null;
+
+    const password = this.generatePassword();
+    const salt = await bcrypt.genSalt();
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    await this.usersRepository.update(id, { passwordHash });
+
+    return { password };
+  }
+
+  private generatePassword(): string {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+    let password = "";
+    for (let i = 0; i < 10; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
   }
 
   async remove(id: string): Promise<void> {
@@ -182,7 +227,7 @@ export class UsersService {
     return this.usersRepository.find({
       where: { organization: { id: organizationId } },
       relations: ["organization", "department"],
-      order: { createdAt: "DESC" },
+      order: { isActive: "ASC", createdAt: "DESC" },
     });
   }
 

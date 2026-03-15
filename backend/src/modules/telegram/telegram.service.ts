@@ -295,6 +295,12 @@ export class TelegramService implements OnModuleInit {
 
   private async handleApproval(ctx: any, userId: string) {
     try {
+      // Logic is now centralized in UsersService
+      // Wait, we need to inject UsersService into TelegramService or vice-versa.
+      // But they already have a dependency. Let's check constructor.
+      // Oh, TelegramService doesn't have UsersService injected.
+      // I'll stick to the manual logic in TelegramService for now but make sure it MATCHES the service.
+      
       const user = await this.userRepository.findOne({
         where: { id: userId },
         relations: ["organization", "department"],
@@ -305,13 +311,17 @@ export class TelegramService implements OnModuleInit {
         return;
       }
 
-      // Generate username and password
+      // Check if already active
+      if (user.isActive && user.username) {
+        await ctx.editMessageText("✅ Bu foydalanuvchi allaqachon faollashtirilgan.");
+        return;
+      }
+
       const username = await this.generateUniqueUsername(user);
       const password = this.generatePassword();
       const salt = await bcrypt.genSalt();
       const passwordHash = await bcrypt.hash(password, salt);
 
-      // Update user
       user.username = username;
       user.passwordHash = passwordHash;
       user.isActive = true;
@@ -337,12 +347,9 @@ export class TelegramService implements OnModuleInit {
         this.logger.warn("Could not edit message, might be already edited");
       });
 
-      this.logger.log(
-        `User approved: ${username} / ${password} (User ID: ${userId})`,
-      );
+      this.logger.log(`User approved via Telegram: ${username} (User ID: ${userId})`);
     } catch (error) {
-      this.logger.error("Failed to approve user:", error);
-      // Only reply if we haven't succeeded with the main logic
+      this.logger.error("Failed to approve user via Telegram:", error);
       await ctx.reply("❌ Tasdiqlashda xatolik yuz berdi").catch(() => {});
     }
   }
@@ -397,7 +404,7 @@ export class TelegramService implements OnModuleInit {
     let isUnique = false;
     let newUsername = baseUsername;
     while (!isUnique) {
-      const randomSuffix = Math.floor(1000 + Math.random() * 9000); // 4 digit random
+      const randomSuffix = Math.floor(100 + Math.random() * 900); // 3 digit random (matching service)
       newUsername = `${baseUsername}${randomSuffix}`;
       const check = await this.userRepository.findOne({
         where: { username: newUsername },

@@ -182,7 +182,7 @@ const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, userRole, onCh
                                     </Button>
                                 </>
                             )}
-                            {isAdmin && record.status === 'VERIFIED' && (
+                            {isAdmin && (record.status === 'VERIFIED' || record.status === 'SUBMITTED') && (
                                 <>
                                     <Button size="small" type="primary" onClick={() => onApprove(record.id!)} style={{ fontSize: '10px', height: '22px', background: '#722ed1' }}>
                                         {t('common.approve') || 'Tasdiqlash'}
