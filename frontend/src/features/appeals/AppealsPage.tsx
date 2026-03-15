@@ -8,7 +8,7 @@ import PermissionGate from '../../components/PermissionGate';
 import EditCell from '../../components/common/EditCell';
 import { useAppealsData } from './hooks/useAppealsData';
 import { API_BASE_URL } from '../../config';
-import { APPEALS_T1_ROWS, APPEALS_SUBJECT_ROWS, APPEALS_T7_ROWS } from './components/AppealsConstants';
+import { APPEALS_T1_ROWS, APPEALS_SUBJECT_ROWS } from './components/AppealsConstants';
 import MasterAppealsJournal from './components/MasterAppealsJournal';
 import AppealsMonitoring from './components/AppealsMonitoring';
 import AppealsDashboard from './components/AppealsDashboard';
@@ -249,6 +249,8 @@ const AppealsPage: React.FC = () => {
                 </tr>
             </tbody>
         </table>
+    );
+
     const renderTable4 = () => {
         const t4 = autoReportsQuery.data?.table4 || { subjects: {}, regional: {} };
         const regionalIds = Object.keys(t4.regional || {});
