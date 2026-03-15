@@ -62,7 +62,8 @@ const RegisterPage: React.FC = () => {
             const districtDepts = allDepartments.filter(d =>
                 d.name === "Boshqaruv (Admin)" ||
                 d.name === "Epidemiologiya va immunoprofilaktika" ||
-                d.name === "Ijro intizomi va murojaatlar bilan ishlash bo'limi"
+                d.name === "Ijro intizomi va murojaatlar bilan ishlash bo'limi" ||
+                d.name === "Nazoratlarni muvofiqlashtirish bo'limi"
             ).map(d => ({
                 ...d,
                 // Rename "Boshqaruv (Admin)" to "Ma'muriyat" for display
@@ -99,6 +100,12 @@ const RegisterPage: React.FC = () => {
                 setAvailableRoles([
                     { value: "LEAD_SPECIALIST", label: "Yetakchi mutaxassis (Ijro intizomi)" },
                     { value: "DEPARTMENT_HEAD", label: "Bo'lim mudiri" }
+                ]);
+            } else if (selectedDepartment.name === "Nazoratlarni muvofiqlashtirish bo'limi") {
+                setAvailableRoles([
+                    { value: "DEPARTMENT_HEAD", label: "Bo'lim mudiri" },
+                    { value: "LEAD_SPECIALIST", label: "Yetakchi mutaxassis (Nazorat)" },
+                    { value: "STAFF", label: "Xodim" }
                 ]);
             } else {
                 setAvailableRoles([

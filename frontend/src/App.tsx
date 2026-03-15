@@ -152,15 +152,20 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             ]
         }] : []),
 
-        // UZ: Ijro intizomi va murojaatlar bo'limi (Yangi asosiy bo'lim)
+        // UZ: Ijro intizomi va murojaatlar bo'limi
         ...(hasDept(['Ijro intizomi', 'Boshqaruv', 'Ma\'muriyat']) ? [{
-            key: 'grp_appeals',
+            key: '/appeals',
             icon: <FileTextOutlined />,
-            label: 'Ijro Intizomi',
-            children: [
-                { key: '/appeals', label: t('appeals.tabs.journal') || 'Murojaatlar Jurnali', onClick: () => navigate('/appeals') },
-                { key: '/inspections', label: t('reports.inspections') || 'Nazoratlarni muvofiqlashtirish', onClick: () => navigate('/inspections') },
-            ]
+            label: t('reports.appeals') || 'Ijro Intizomi',
+            onClick: () => navigate('/appeals')
+        }] : []),
+
+        // UZ: Nazoratlarni muvofiqlashtirish bo'limi
+        ...(hasDept(['Nazorat', 'Boshqaruv', 'Ma\'muriyat']) ? [{
+            key: '/inspections',
+            icon: <DatabaseOutlined />,
+            label: t('reports.inspections') || 'Nazoratlarni muvofiqlashtirish',
+            onClick: () => navigate('/inspections')
         }] : []),
 
         // UZ: Sanitariya bo'limlari (Gigiyena turlari)
