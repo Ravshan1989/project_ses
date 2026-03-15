@@ -111,6 +111,8 @@ export class AppealsService {
         const org = await this.orgRepo.findOne({ where: { id: organizationId }, relations: ['children'] });
         if (!org) throw new Error("Organization not found");
 
+        const regionalOrgs = [org, ...(org.children || [])];
+
         const records = await this.getRecords(organizationId, month);
         const prevRecords = await this.getRecords(organizationId, prevMonth);
 
@@ -201,7 +203,6 @@ export class AppealsService {
 
         // 4. Table 4 Aggregation (Regional Subject Matrix YoY)
         const table4: any = { subjects: {}, regional: {} };
-        const regionalOrgs = [org, ...(org.children || [])];
         
         subjects.forEach(s => {
             table4.subjects[s.key] = {
