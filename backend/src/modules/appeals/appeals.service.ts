@@ -101,19 +101,32 @@ export class AppealsService {
             deputy_san: getTable1Row("deputy_san"),
         };
 
-        // 2. Table 2 Aggregation (Status & Control)
-        const table2 = {
-            total_curr: records.length,
-            written_curr: records.filter(r => r.channel === AppealChannel.WRITTEN).length,
-            electronic_curr: records.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
-            oral_curr: records.filter(r => r.channel === AppealChannel.ORAL).length,
-            measures_taken: records.filter(r => r.status === AppealStatus.SATISFIED).length,
-            explained: records.filter(r => r.status === AppealStatus.EXPLAINED).length,
-            rejected: records.filter(r => r.status === AppealStatus.REJECTED).length,
-            being_considered: records.filter(r => r.status === AppealStatus.BEING_CONSIDERED).length,
-            repeated: records.filter(r => r.is_repeated).length,
-            overdue: records.filter(r => r.is_overdue).length,
-        };
+        // 2. Table 2 Aggregation (Status & Control by Subject)
+        const table2: any = {};
+        const subjects = ["san_epid", "coronavirus", "labor", "medical", "complaint_leader", "staff_behavior", "disinfection", "fines", "other"];
+        
+        subjects.forEach(s => {
+            const sRecords = records.filter(r => r.subject_key === s);
+            const sPrevRecords = prevRecords.filter(r => r.subject_key === s);
+            
+            table2[s] = {
+                total_curr: sRecords.length,
+                total_prev: sPrevRecords.length,
+                written_curr: sRecords.filter(r => r.channel === AppealChannel.WRITTEN).length,
+                written_prev: sPrevRecords.filter(r => r.channel === AppealChannel.WRITTEN).length,
+                electronic_curr: sRecords.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
+                electronic_prev: sPrevRecords.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
+                oral_curr: sRecords.filter(r => r.channel === AppealChannel.ORAL).length,
+                oral_prev: sPrevRecords.filter(r => r.channel === AppealChannel.ORAL).length,
+                under_control: sRecords.filter(r => r.status === AppealStatus.BEING_CONSIDERED).length, // Nazoratda olinganlar
+                measures_taken: sRecords.filter(r => r.status === AppealStatus.SATISFIED).length,
+                explained: sRecords.filter(r => r.status === AppealStatus.EXPLAINED).length,
+                rejected: sRecords.filter(r => r.status === AppealStatus.REJECTED).length,
+                being_considered: sRecords.filter(r => r.status === AppealStatus.BEING_CONSIDERED).length,
+                repeated: sRecords.filter(r => r.is_repeated).length,
+                overdue: sRecords.filter(r => r.is_overdue).length,
+            };
+        });
 
         // 3. Table 3 Aggregation (Phys/Legal & Channels)
         const table3 = {
@@ -280,6 +293,19 @@ export class AppealsService {
                     sheet.mergeCells(3, 7, 3, 8); // Yozma
                     sheet.mergeCells(3, 9, 3, 10); // Elektron
                 }
+
+                if (name === "2-Jadval") {
+                    sheet.mergeCells(3, 1, 4, 1); // No
+                    sheet.mergeCells(3, 2, 4, 2); // Masalalar
+                    sheet.mergeCells(3, 3, 3, 4); // Jami
+                    sheet.mergeCells(3, 5, 3, 6); // Yozma
+                    sheet.mergeCells(3, 7, 3, 8); // Elektron
+                    sheet.mergeCells(3, 9, 3, 10); // Og'zaki
+                    sheet.mergeCells(3, 11, 4, 11); // Nazoratga olinganlar
+                    sheet.mergeCells(3, 12, 3, 15); // Jumladan (Natijalar)
+                    sheet.mergeCells(3, 16, 4, 16); // Takroriylar
+                    sheet.mergeCells(3, 17, 4, 17); // Muddati buzilganlar
+                }
             }
 
             widths.forEach((w, i) => {
@@ -327,23 +353,72 @@ export class AppealsService {
 
         // 2. Sheet: Table 2
         const s2 = setupSheet("2-Jadval", "Murojaatlar ijrosi va nazorati", 
-            ["Ko'rsatkich", "Soni"], [], [40, 15]);
+            ["№", "Murojaatlarda ko'tarilgan masalalar", "Jami murojaatlar soni", "", "Murojaatlar shakllari (Yozma)", "", "Murojaatlar shakllari (Elektron)", "", "Murojaatlar shakllari (Og'zaki)", "", "Nazoratga olinganlar", "Jumladan (2026 yil bo'yicha results)", "", "", "", "Takroriylar", "Muddati buzilganlar"],
+            ["", "", String(prevYear), String(currYear), String(prevYear), String(currYear), String(prevYear), String(currYear), String(prevYear), String(currYear), "", "Choralar ko'rildi", "Tushuntirildi", "Rad etildi", "Ko'rib chiqilmoqda", "", ""],
+            [5, 45, 10, 10, 10, 10, 10, 10, 10, 10, 15, 15, 15, 15, 15, 15, 15]);
+        
         const t2 = reports.table2;
-        [
-            ["Jami murojaatlar", t2.total_curr],
-            ["Yozma", t2.written_curr],
-            ["Elektron", t2.electronic_curr],
-            ["Og'zaki", t2.oral_curr],
-            ["Qanoatlantirildi", t2.measures_taken],
-            ["Tushuntirildi", t2.explained],
-            ["Rad etildi", t2.rejected],
-            ["Ko'rib chiqilmoqda", t2.being_considered],
-            ["Takroriy", t2.repeated],
-            ["Muddati o'tgan", t2.overdue]
-        ].forEach(row => {
-            const r = s2.addRow(row);
-            r.eachCell(c => c.border = borderStyle);
+        const subjects = [
+            { key: "san_epid", label: "sanitariya-epidemiologiya masalalari bo'yicha" },
+            { key: "coronavirus", label: "koronavirus bilan bog'liq muammolar bo'yicha" },
+            { key: "labor", label: "mehnat munosabatlari to'g'risida" },
+            { key: "medical", label: "tibbiy muassasalar faoliyati bilan bog'liq masalalar" },
+            { key: "complaint_leader", label: "Rahbar ustidan shikoyat" },
+            { key: "staff_behavior", label: "soha xodimlarining xatti-harakati yuzasidan" },
+            { key: "disinfection", label: "dezinfeksiya tadbirlari bilan bog'liq masalalar" },
+            { key: "fines", label: "qo'llanilgan jarimalardan norozilik" },
+            { key: "other", label: "Boshqa masalalar" }
+        ];
+
+        subjects.forEach((s, idx) => {
+            const val = t2[s.key] || {};
+            const r = s2.addRow([
+                idx + 1,
+                s.label,
+                val.total_prev || 0,
+                val.total_curr || 0,
+                val.written_prev || 0,
+                val.written_curr || 0,
+                val.electronic_prev || 0,
+                val.electronic_curr || 0,
+                val.oral_prev || 0,
+                val.oral_curr || 0,
+                val.under_control || 0,
+                val.measures_taken || 0,
+                val.explained || 0,
+                val.rejected || 0,
+                val.being_considered || 0,
+                val.repeated || 0,
+                val.overdue || 0
+            ]);
+            r.eachCell(c => {
+                c.border = borderStyle;
+                c.alignment = { horizontal: c.address.includes('B') ? 'left' : 'center', wrapText: true };
+            });
         });
+
+        // Add Total row for Table 2
+        const t2Total = [
+            "", "Jami",
+            Object.values(t2).reduce((a: any, b: any) => a + (b.total_prev || 0), 0),
+            Object.values(t2).reduce((a: any, b: any) => a + (b.total_curr || 0), 0),
+            Object.values(t2).reduce((a: any, b: any) => a + (b.written_prev || 0), 0),
+            Object.values(t2).reduce((a: any, b: any) => a + (b.written_curr || 0), 0),
+            Object.values(t2).reduce((a: any, b: any) => a + (b.electronic_prev || 0), 0),
+            Object.values(t2).reduce((a: any, b: any) => a + (b.electronic_curr || 0), 0),
+            Object.values(t2).reduce((a: any, b: any) => a + (b.oral_prev || 0), 0),
+            Object.values(t2).reduce((a: any, b: any) => a + (b.oral_curr || 0), 0),
+            Object.values(t2).reduce((a: any, b: any) => a + (b.under_control || 0), 0),
+            Object.values(t2).reduce((a: any, b: any) => a + (b.measures_taken || 0), 0),
+            Object.values(t2).reduce((a: any, b: any) => a + (b.explained || 0), 0),
+            Object.values(t2).reduce((a: any, b: any) => a + (b.rejected || 0), 0),
+            Object.values(t2).reduce((a: any, b: any) => a + (b.being_considered || 0), 0),
+            Object.values(t2).reduce((a: any, b: any) => a + (b.repeated || 0), 0),
+            Object.values(t2).reduce((a: any, b: any) => a + (b.overdue || 0), 0),
+        ];
+        const t2TotalRow = s2.addRow(t2Total);
+        t2TotalRow.font = { bold: true };
+        t2TotalRow.eachCell(c => c.border = borderStyle);
 
         // 3. Sheet: Table 3
         const s3 = setupSheet("3-Jadval", "Murojaatlar turlari va kanallari", 
@@ -451,6 +526,21 @@ export class AppealsService {
         renderT1Line("Boshqarma boshlig'i", t1.head);
         renderT1Line("Boshliqning o'rinbosari (Epidemiologiya)", t1.deputy_epid);
         renderT1Line("Boshliqning o'rinbosari (Sanitariya)", t1.deputy_san);
+        doc.moveDown();
+
+        // 2-Jadval
+        doc.fontSize(12).font('Helvetica-Bold').text("2-Jadval: Murojaatlar ijrosi va nazorati (Masalalar)", { underline: true });
+        doc.moveDown(0.5);
+        const t2 = reports.table2;
+        Object.entries(t2).forEach(([key, val]: [string, any]) => {
+            doc.fontSize(10).font('Helvetica-Bold').text(`${key}:`);
+            doc.fontSize(9).font('Helvetica').text(`  Jami: ${prevYear}: ${val.total_prev} | ${currYear}: ${val.total_curr}`);
+            doc.text(`  Yozma: ${prevYear}: ${val.written_prev} | ${currYear}: ${val.written_curr}`);
+            doc.text(`  Elektron: ${prevYear}: ${val.electronic_prev} | ${currYear}: ${val.electronic_curr}`);
+            doc.text(`  Og'zaki: ${prevYear}: ${val.oral_prev} | ${currYear}: ${val.oral_curr}`);
+            doc.text(`  Natijalar (2026): Nazoratda: ${val.under_control}, Chora: ${val.measures_taken}, Tushun.: ${val.explained}, Rad: ${val.rejected}`);
+            doc.moveDown(0.5);
+        });
         doc.moveDown();
 
         // 3-Jadval

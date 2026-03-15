@@ -317,14 +317,14 @@
             }
         },
         "subjects": {
-            "san_epid": "Sanitariya-epidemiologiya masalalari",
-            "coronavirus": "Koronavirus bilan bog'liq masalalar",
-            "labor": "Mehnat munosabatlari",
-            "medical": "Tibbiy muassasalar faoliyati",
-            "complaint_leader": "Rahbarning xatti-harakati",
-            "staff_behavior": "Xodimlarning odob-axloqi",
-            "disinfection": "Dezinfeksiya ishlari",
-            "fines": "Jarimalar",
+            "san_epid": "sanitariya-epidemiologik osoyishtalik masalalari bo'yicha",
+            "coronavirus": "koronavirus bilan bog'liq muammolar bo'yicha",
+            "labor": "mehnat munosabatlari to'g'risida",
+            "medical": "tibbiy muassasalarning faoliyati bilan bog'liq masalalar haqida",
+            "complaint_leader": "Rahbar ustidan shikoyat",
+            "staff_behavior": "soha xodimlarining xatti-harakati yuzasidan",
+            "disinfection": "dezinfeksiya tadbirlari bilan bog'liq masalalar bo'yicha",
+            "fines": "qo'llanilgan jarimalardan norozilik",
             "other": "Boshqa masalalar"
         },
         "table7": {

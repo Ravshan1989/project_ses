@@ -95,7 +95,7 @@ const AppealsPage: React.FC = () => {
         if (activeTab !== 'journal' && autoReportsQuery.data) {
             const data = autoReportsQuery.data;
             if (activeTab === '1') return data.table1?.[rowKey]?.[field] || 0;
-            if (activeTab === '2') return data.table2?.[field] || 0; // Table 2 aggregations
+            if (activeTab === '2') return data.table2?.[rowKey]?.[field] || 0;
             if (activeTab === '3') return data.table3?.[field] || 0;
             if (activeTab === '4') return data.table4?.[rowKey]?.[field] || 0;
             if (activeTab === '5') return data.table5?.[field] || 0;
@@ -168,15 +168,23 @@ const AppealsPage: React.FC = () => {
             <thead>
                 <tr>
                     <th style={thStyle} rowSpan={2}>№</th>
-                    <th style={{ ...thStyle, textAlign: 'left', minWidth: 200 }} rowSpan={2}>Masalalar</th>
+                    <th style={{ ...thStyle, textAlign: 'left', minWidth: 200 }} rowSpan={2}>Murojaatlarda ko'tarilgan masalalar</th>
                     <th style={thStyle} colSpan={2}>Jami</th>
-                    <th style={thStyle} colSpan={6}>Natijalar ({currYear})</th>
+                    <th style={thStyle} colSpan={2}>Yozma</th>
+                    <th style={thStyle} colSpan={2}>Elektron</th>
+                    <th style={thStyle} colSpan={2}>Og'zaki</th>
+                    <th style={thStyle} rowSpan={2}>Nazorat.</th>
+                    <th style={thStyle} colSpan={4}>Natijalar ({currYear})</th>
+                    <th style={thStyle} rowSpan={2}>Takror.</th>
+                    <th style={thStyle} rowSpan={2}>Muddati.</th>
                 </tr>
                 <tr>
                     <th style={thStyle}>{prevYear}</th><th style={thStyle}>{currYear}</th>
-                    <th style={thStyle}>Choralar</th><th style={thStyle}>Tushun.</th>
+                    <th style={thStyle}>{prevYear}</th><th style={thStyle}>{currYear}</th>
+                    <th style={thStyle}>{prevYear}</th><th style={thStyle}>{currYear}</th>
+                    <th style={thStyle}>{prevYear}</th><th style={thStyle}>{currYear}</th>
+                    <th style={thStyle}>Chora</th><th style={thStyle}>Tushun.</th>
                     <th style={thStyle}>Rad</th><th style={thStyle}>Ko'ril.</th>
-                    <th style={thStyle}>Takror.</th><th style={thStyle}>Muddati buz.</th>
                 </tr>
             </thead>
             <tbody>
@@ -184,9 +192,17 @@ const AppealsPage: React.FC = () => {
                         <tr key={row.key}>
                             <td style={tdStyle}>{ridx + 1}</td>
                             <td style={{ ...tdStyle, textAlign: 'left' }}>{t(row.labelKey)}</td>
-                            {['total_prev', 'total_curr', 'measures_taken', 'explained', 'rejected', 'being_considered', 'repeated', 'overdue'].map((f, fidx) => (
+                            {[
+                                'total_prev', 'total_curr', 
+                                'written_prev', 'written_curr', 
+                                'electronic_prev', 'electronic_curr', 
+                                'oral_prev', 'oral_curr',
+                                'under_control',
+                                'measures_taken', 'explained', 'rejected', 'being_considered',
+                                'repeated', 'overdue'
+                            ].map((f, fidx) => (
                                 <td key={f} style={tdStyle}>
-                                    {!f.endsWith('_prev') ? (
+                                    {!f.endsWith('_prev') && f !== 'under_control' && f !== 'measures_taken' && f !== 'explained' && f !== 'rejected' && f !== 'being_considered' && f !== 'repeated' && f !== 'overdue' ? (
                                         <span style={{ fontWeight: 600, color: '#1890ff' }}>{getVal(row.key, f)}</span>
                                     ) : (
                                         <EditCell value={getVal(row.key, f)} onChange={v => updateCell(row.key, f, v)} rowIdx={ridx} colIdx={fidx} disabled={isSaving} />
