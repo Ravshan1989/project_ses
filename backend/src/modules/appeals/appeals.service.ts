@@ -167,25 +167,37 @@ export class AppealsService {
             };
         });
 
-        // 3. Table 3 Aggregation (Phys/Legal & Channels YoY)
-        const table3 = {
-            total_curr: records.length,
-            total_prev: prevRecords.length,
-            phys_curr: records.filter(r => r.applicant_type === ApplicantType.PHYSICAL).length,
-            phys_prev: prevRecords.filter(r => r.applicant_type === ApplicantType.PHYSICAL).length,
-            legal_curr: records.filter(r => r.applicant_type === ApplicantType.LEGAL).length,
-            legal_prev: prevRecords.filter(r => r.applicant_type === ApplicantType.LEGAL).length,
-            written: records.filter(r => r.channel === AppealChannel.WRITTEN).length,
-            electronic: records.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
-            oral_total: records.filter(r => r.channel === AppealChannel.ORAL).length,
-            oral_leader_personal: records.filter(r => r.channel === AppealChannel.ORAL && r.recipient?.includes('head') && !r.is_field_meeting).length,
-            oral_leader_field: records.filter(r => r.channel === AppealChannel.ORAL && r.recipient?.includes('head') && r.is_field_meeting).length,
-            oral_staff: records.filter(r => r.channel === AppealChannel.ORAL && !r.recipient?.includes('head')).length,
-            oral_phone: records.filter(r => r.is_phone).length,
-            being_considered: records.filter(r => r.status === AppealStatus.BEING_CONSIDERED).length,
-            field_meetings_curr: records.filter(r => r.is_field_meeting).length,
-            field_meetings_prev: prevRecords.filter(r => r.is_field_meeting).length,
-        };
+        // 3. Table 3 Aggregation (Official 23-Column Regional Matrix)
+        const table3: any = { regional: {} };
+        regionalOrgs.forEach(ro => {
+            const roRecs = records.filter(r => r.organization?.id === ro.id || ro.children?.some(c => c.id === r.organization?.id));
+            const roPrevRecs = prevRecords.filter(r => r.organization?.id === ro.id || ro.children?.some(c => c.id === r.organization?.id));
+
+            table3.regional[ro.id] = {
+                name: ro.name,
+                count_prev: roPrevRecs.length,
+                count_curr: roRecs.length,
+                phys_prev: roPrevRecs.filter(r => r.applicant_type === ApplicantType.PHYSICAL).length,
+                phys_curr: roRecs.filter(r => r.applicant_type === ApplicantType.PHYSICAL).length,
+                legal_prev: roPrevRecs.filter(r => r.applicant_type === ApplicantType.LEGAL).length,
+                legal_curr: roRecs.filter(r => r.applicant_type === ApplicantType.LEGAL).length,
+                written: roRecs.filter(r => r.channel === AppealChannel.WRITTEN).length,
+                electronic: roRecs.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
+                oral_total: roRecs.filter(r => r.channel === AppealChannel.ORAL).length,
+                oral_personal: roRecs.filter(r => r.channel === AppealChannel.ORAL && r.recipient?.includes('head') && !r.is_field_meeting).length,
+                oral_field: roRecs.filter(r => r.channel === AppealChannel.ORAL && r.recipient?.includes('head') && r.is_field_meeting).length,
+                oral_staff: roRecs.filter(r => r.channel === AppealChannel.ORAL && !r.recipient?.includes('head')).length,
+                oral_phone: roRecs.filter(r => r.is_phone).length,
+                apparat_seen: 0, // Placeholder
+                referral_regional: 0, // Placeholder
+                referral_related: 0, // Placeholder
+                being_considered: roRecs.filter(r => r.status === AppealStatus.BEING_CONSIDERED).length,
+                vm_prev: 0, // Placeholder
+                vm_curr: 0, // Placeholder
+                field_meetings_prev: roPrevRecs.filter(r => r.is_field_meeting).length,
+                field_meetings_curr: roRecs.filter(r => r.is_field_meeting).length,
+            };
+        });
 
         // 4. Table 4 Aggregation (Regional Subject Matrix YoY)
         const table4: any = { subjects: {}, regional: {} };
@@ -532,34 +544,36 @@ export class AppealsService {
         t2TotalRow.font = { bold: true };
         t2TotalRow.eachCell(c => c.border = borderStyle);
 
-        // 3. Sheet: Table 3 - 23 Columns Alignment
+        // 3. Sheet: Table 3 - 23 Columns Alignment (Official Regional Matrix)
+        const t3 = reports.table3;
+        const t3RegionalIds = Object.keys(t3.regional || {});
+
         const s3 = setupSheet("3-Jadval", "Murojaatlarning viloyat bo'yicha tahlili", 
             ["№", "Viloyatlar", "Jami murojaatlar soni", "", "Murojaat etuvchilar toifasi", "", "", "", "2026 yilgi murojaatlar bo'yicha", "", "", "", "", "", "", "", "", "", "", "Vazirlar Mahkamasidan kelgan", "", "O'tkazilgan sayyor qabullar soni", ""],
-            ["", "", "2025", "2026", "Jismoniy shaxslar", "", "Yuridik shaxslar", "", "Yozma", "Elektron", "Og'zaki murojaatlar", "", "", "", "", "Vazirlik apparatida ko'rilgan", "Hududiy idoralarga yuborilgan", "Tegishli idora/hokimiyatga", "Ko'rib chiqilmoqda", "2025", "2026", "2025", "2026"],
+            ["", "", "2025", "2026", "Jismoniy shaxslar", "", "Yuridik shaxslar", "", "Yozma", "Elektron", "Og'zaki murojaatlar", "", "", "", "", "Аппаратда", "Hududiy idora", "Tegishli idora", "Ko'rib chiqilmoqda", "2025", "2026", "2025", "2026"],
             [5, 30, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 15, 15, 15, 15, 10, 10, 10, 10]);
         
-        // Add Sub-header for Table 3
         const s3SubHeader = s3.addRow(["", "", "", "", "2025", "2026", "2025", "2026", "", "", "Jami", "Shaxsiy qabul", "Sayyor qabul", "Xodimlar qabuli", "Ishonch telefoni", "", "", "", "", "", "", "", ""]);
         s3SubHeader.eachCell(c => { c.font = { bold: true }; c.border = borderStyle; c.alignment = { horizontal: 'center' }; });
 
-        const t3 = reports.table3;
-        // This usually maps to district results or 'total'. 
-        // For simplicity and "birga-bir", we'll use the aggregated values we have.
-        // In a real scenario, this would be a loop over organization districts.
-        const t3Row = s3.addRow([
-            1, "Boshqarma jami", 
-            t3.total_prev || 0, t3.total_curr || 0,
-            t3.phys_prev || 0, t3.phys_curr || 0,
-            t3.legal_prev || 0, t3.legal_curr || 0,
-            t3.written || 0, t3.electronic || 0,
-            t3.oral_total || 0, t3.oral_leader_personal || 0, t3.oral_leader_field || 0, t3.oral_staff || 0, t3.oral_phone || 0,
-            0, 0, 0, t3.being_considered || 0, // Placeholder for routing cols
-            0, 0, // VM columns
-            t3.field_meetings_prev || 0, t3.field_meetings_curr || 0
-        ]);
-        t3Row.eachCell(c => {
-            c.border = borderStyle;
-            c.alignment = { horizontal: c.address.includes('B') ? 'left' : 'center' };
+        t3RegionalIds.forEach((id, idx) => {
+            const reg = t3.regional[id];
+            const dr = s3.addRow([
+                idx + 1, reg.name,
+                reg.count_prev, reg.count_curr,
+                reg.phys_prev, reg.phys_curr,
+                reg.legal_prev, reg.legal_curr,
+                reg.written, reg.electronic,
+                reg.oral_total, reg.oral_personal, reg.oral_field, reg.oral_staff, reg.oral_phone,
+                reg.apparat_seen, reg.referral_regional, reg.referral_related, reg.being_considered,
+                reg.vm_prev, reg.vm_curr,
+                reg.field_meetings_prev, reg.field_meetings_curr
+            ]);
+            dr.eachCell(c => {
+                c.border = borderStyle;
+                c.alignment = { horizontal: c.address.includes('B') ? 'left' : 'center' };
+            });
+            if (idx === 0) dr.font = { bold: true };
         });
 
         // 4. Sheet: Table 4 - Regional Subjects Matrix YoY
@@ -714,17 +728,18 @@ export class AppealsService {
 
         // 3-Jadval
         doc.addPage();
-        doc.fontSize(12).font('Helvetica-Bold').text("3-Jadval: Murojaatlarning viloyat bo'yicha tahlili", { underline: true });
+        doc.fontSize(12).font('Helvetica-Bold').text("3-Jadval: Murojaatlarning viloyat bo'yicha tahlili (23-Column Layout)", { underline: true });
         doc.moveDown(0.5);
         const t3 = reports.table3;
-        doc.fontSize(10).font('Helvetica-Bold').text(`Boshqarma bo'yicha jami:`);
-        doc.fontSize(9).font('Helvetica').text(`  Jami murojaatlar: ${prevYear}: ${t3.total_prev || 0} | ${currYear}: ${t3.total_curr || 0}`);
-        doc.text(`  Jismoniy shaxslar: ${prevYear}: ${t3.phys_prev || 0} | ${currYear}: ${t3.phys_curr || 0}`);
-        doc.text(`  Yuridik shaxslar: ${prevYear}: ${t3.legal_prev || 0} | ${currYear}: ${t3.legal_curr || 0}`);
-        doc.text(`  2026 yil bo'yicha: Yozma: ${t3.written || 0}, Elektron: ${t3.electronic || 0}, Og'zaki: ${t3.oral_total || 0}`);
-        doc.text(`    - Shaxsiy qabul: ${t3.oral_leader_personal || 0}, Sayyor qabul: ${t3.oral_leader_field || 0}, Ishonch telefoni: ${t3.oral_phone || 0}`);
-        doc.text(`  Ko'rib chiqilmoqda: ${t3.being_considered || 0}`);
-        doc.text(`  Sayyor qabullar soni: ${prevYear}: ${t3.field_meetings_prev || 0} | ${currYear}: ${t3.field_meetings_curr || 0}`);
+        Object.values(t3.regional).forEach((reg: any) => {
+            doc.fontSize(10).font('Helvetica-Bold').text(`${reg.name}:`);
+            doc.fontSize(9).font('Helvetica').text(`  Jami: ${prevYear}: ${reg.count_prev} | ${currYear}: ${reg.count_curr}`);
+            doc.text(`  Toifa (2026): Jismoniy: ${reg.phys_curr}, Yuridik: ${reg.legal_curr}`);
+            doc.text(`  Shakli (2026): Yozma: ${reg.written}, Elektron: ${reg.electronic}, Og'zaki (Jami): ${reg.oral_total}`);
+            doc.text(`  Og'zaki Tafsilot: Shaxsiy: ${reg.oral_personal}, Sayyor: ${reg.oral_field}, Xodim: ${reg.oral_staff}, Tel: ${reg.oral_phone}`);
+            doc.text(`  Natija: Ko'rilmoqda: ${reg.being_considered}, Sayyor qabullar (2026): ${reg.field_meetings_curr}`);
+            doc.moveDown(0.5);
+        });
         doc.moveDown();
         // 4-Jadval - Themes
         doc.addPage();
@@ -732,8 +747,8 @@ export class AppealsService {
         doc.moveDown(0.5);
         const t4 = reports.table4;
         subjects.forEach(s => {
-            const countPrev = t4[s.key]?.count_prev || 0;
-            const countCurr = t4[s.key]?.count_curr || 0;
+            const countPrev = t4.subjects[s.key]?.count_prev || 0;
+            const countCurr = t4.subjects[s.key]?.count_curr || 0;
             doc.fontSize(10).font('Helvetica').text(`${s.key}: ${prevYear}: ${countPrev} | ${currYear}: ${countCurr}`);
         });
         doc.moveDown();

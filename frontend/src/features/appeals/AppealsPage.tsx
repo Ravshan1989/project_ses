@@ -215,41 +215,89 @@ const AppealsPage: React.FC = () => {
         </table>
     );
 
-    const renderTable3 = () => (
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-            <thead>
-                <tr>
-                    <th style={thStyle} rowSpan={2}>Hudud</th>
-                    <th style={thStyle} colSpan={2}>Jami</th>
-                    <th style={thStyle} colSpan={2}>Jismoniy</th>
-                    <th style={thStyle} colSpan={2}>Yuridik</th>
-                    <th style={thStyle}>Yozma</th><th style={thStyle}>Elek.</th>
-                    <th style={thStyle} colSpan={4}>Og'zaki</th>
-                </tr>
-                <tr>
-                    <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
-                    <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
-                    <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
-                    <th style={thStyle}>{currYearShort}</th><th style={thStyle}>{currYearShort}</th>
-                    <th style={thStyle}>Jami</th><th style={thStyle}>Rahbar</th><th style={thStyle}>Xodim</th><th style={thStyle}>Tel</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr key="total">
-                    <td style={{ ...tdStyle, fontWeight: 'bold' }}>Tuman hisoboti</td>
-                    {['total_prev', 'total_curr', 'phys_prev', 'phys_curr', 'legal_prev', 'legal_curr', 'written', 'electronic', 'oral_total', 'oral_leader', 'oral_staff', 'oral_phone'].map((f, fidx) => (
-                        <td key={f} style={tdStyle}>
-                            {!f.endsWith('_prev') ? (
-                                <span style={{ fontWeight: 600, color: '#1890ff' }}>{getVal('total', f)}</span>
-                            ) : (
-                                <EditCell value={getVal('total', f)} onChange={v => updateCell('total', f, v)} rowIdx={0} colIdx={fidx} disabled={isSaving} />
-                            )}
-                        </td>
-                    ))}
-                </tr>
-            </tbody>
-        </table>
-    );
+    const renderTable3 = () => {
+        const t3 = autoReportsQuery.data?.table3 || { regional: {} };
+        const regionalIds = Object.keys(t3.regional || {});
+
+        return (
+            <div style={{ overflowX: 'auto' }}>
+                <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1600 }}>
+                    <thead>
+                        <tr>
+                            <th style={thStyle} rowSpan={4}>№</th>
+                            <th style={{ ...thStyle, textAlign: 'left', minWidth: 180 }} rowSpan={4}>Вилоятлар</th>
+                            <th style={thStyle} colSpan={2}>Жами мурожаатлар сони</th>
+                            <th style={thStyle} colSpan={4}>Мурожаат этувчилар тоифаси</th>
+                            <th style={thStyle} colSpan={11}>Шу жумладан 2026 йилги мурожаатlar бўйича</th>
+                            <th style={thStyle} colSpan={2}>Вазирлар Махкамасиdan kelgan</th>
+                            <th style={thStyle} colSpan={2}>Ўтказилган сайёр қабулlar сони</th>
+                        </tr>
+                        <tr>
+                            <th style={thStyle} rowSpan={3}>2025</th>
+                            <th style={thStyle} rowSpan={3}>2026</th>
+                            <th style={thStyle} colSpan={2}>Жисмоний шахслар</th>
+                            <th style={thStyle} colSpan={2}>Юридик шахслар</th>
+                            <th style={thStyle} rowSpan={3}>Ёзма</th>
+                            <th style={thStyle} rowSpan={3}>Электрон</th>
+                            <th style={thStyle} colSpan={5}>Оғзаки мурожаатлар</th>
+                            <th style={thStyle} rowSpan={3}>Аппаратда кўрилган</th>
+                            <th style={thStyle} rowSpan={3}>Худудий идорага</th>
+                            <th style={thStyle} rowSpan={3}>Тегишли идорага</th>
+                            <th style={thStyle} rowSpan={3}>Кўриб чиқилмоқда</th>
+                            <th style={thStyle} rowSpan={3}>2025</th>
+                            <th style={thStyle} rowSpan={3}>2026</th>
+                            <th style={thStyle} rowSpan={3}>2025</th>
+                            <th style={thStyle} rowSpan={3}>2026</th>
+                        </tr>
+                        <tr>
+                            <th style={thStyle} rowSpan={2}>2025</th><th style={thStyle} rowSpan={2}>2026</th>
+                            <th style={thStyle} rowSpan={2}>2025</th><th style={thStyle} rowSpan={2}>2026</th>
+                            <th style={thStyle} colSpan={4}>Рахбарларнинг</th>
+                            <th style={thStyle} rowSpan={2}>Ишонч телефони</th>
+                        </tr>
+                        <tr>
+                            <th style={thStyle}>Жами</th>
+                            <th style={thStyle}>шахсий</th>
+                            <th style={thStyle}>сайёр</th>
+                            <th style={thStyle}>ходимлар</th>
+                        </tr>
+                        <tr>
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23].map(n => (
+                                <th key={n} style={{ ...thStyle, fontSize: '10px', padding: '4px', background: '#f8fafc' }}>{n}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {regionalIds.map((id, idx) => {
+                            const reg = t3.regional[id];
+                            return (
+                                <tr key={id}>
+                                    <td style={tdStyle}>{idx + 1}</td>
+                                    <td style={{ ...tdStyle, textAlign: 'left', fontWeight: idx === 0 ? 'bold' : 'normal' }}>{reg.name}</td>
+                                    <td style={tdStyle}>{reg.count_prev}</td><td style={{ ...tdStyle, fontWeight: 'bold' }}>{reg.count_curr}</td>
+                                    <td style={tdStyle}>{reg.phys_prev}</td><td style={tdStyle}>{reg.phys_curr}</td>
+                                    <td style={tdStyle}>{reg.legal_prev}</td><td style={tdStyle}>{reg.legal_curr}</td>
+                                    <td style={tdStyle}>{reg.written}</td>
+                                    <td style={tdStyle}>{reg.electronic}</td>
+                                    <td style={{ ...tdStyle, fontWeight: 'bold' }}>{reg.oral_total}</td>
+                                    <td style={tdStyle}>{reg.oral_personal}</td>
+                                    <td style={tdStyle}>{reg.oral_field}</td>
+                                    <td style={tdStyle}>{reg.oral_staff}</td>
+                                    <td style={tdStyle}>{reg.oral_phone}</td>
+                                    <td style={tdStyle}>{reg.apparat_seen}</td>
+                                    <td style={tdStyle}>{reg.referral_regional}</td>
+                                    <td style={tdStyle}>{reg.referral_related}</td>
+                                    <td style={{ ...tdStyle, color: '#fa8c16', fontWeight: 'bold' }}>{reg.being_considered}</td>
+                                    <td style={tdStyle}>{reg.vm_prev}</td><td style={tdStyle}>{reg.vm_curr}</td>
+                                    <td style={tdStyle}>{reg.field_meetings_prev}</td><td style={tdStyle}>{reg.field_meetings_curr}</td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+        );
+    };
 
     const renderTable4 = () => {
         const t4 = autoReportsQuery.data?.table4 || { subjects: {}, regional: {} };
