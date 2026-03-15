@@ -509,23 +509,11 @@ export class AppealsService {
             [5, 45, 10, 10, 10, 10, 10, 10, 10, 10, 15, 15, 15, 15, 15, 15, 15]);
         
         const t2 = reports.table2;
-        const subjects = [
-            { key: "san_epid", label: "sanitariya-epidemiologiya masalalari bo'yicha" },
-            { key: "coronavirus", label: "koronavirus bilan bog'liq muammolar bo'yicha" },
-            { key: "labor", label: "mehnat munosabatlari to'g'risida" },
-            { key: "medical", label: "tibbiy muassasalar faoliyati bilan bog'liq masalalar" },
-            { key: "complaint_leader", label: "Rahbar ustidan shikoyat" },
-            { key: "staff_behavior", label: "soha xodimlarining xatti-harakati yuzasidan" },
-            { key: "disinfection", label: "dezinfeksiya tadbirlari bilan bog'liq masalalar" },
-            { key: "fines", label: "qo'llanilgan jarimalardan norozilik" },
-            { key: "other", label: "Boshqa masalalar" }
-        ];
-
         subjects.forEach((s, idx) => {
             const val = t2[s.key] || {};
             const r = s2.addRow([
                 idx + 1,
-                s.label,
+                s.key, // Note: The Excel template might expect the key or label. Let's use key for now or a translated label if available.
                 val.total_prev || 0,
                 val.total_curr || 0,
                 val.written_prev || 0,

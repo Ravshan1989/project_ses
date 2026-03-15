@@ -3,7 +3,9 @@ import { Table, Button, Modal, Form, DatePicker, Select, Input, Tag, Card, Row, 
 import { PlusOutlined, CheckCircleOutlined, ClockCircleOutlined, UserOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 import { API_BASE_URL } from '../../../config';
+import { APPEALS_SUBJECT_ROWS } from './AppealsConstants';
 
 const { Title, Text } = Typography;
 
@@ -28,6 +30,7 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
     isCreating,
     isRegionalOrg
 }) => {
+    const { t } = useTranslation();
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isCloseModalVisible, setIsCloseModalVisible] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState<any>(null);
@@ -282,12 +285,15 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                         </Col>
                         <Col span={8}>
                             <Form.Item name="subject_key" label="Masala turi (Table 4)" rules={[{ required: true }]}>
-                                <Select options={[
-                                    { label: 'San-epid faoliyati', value: 'san_epid' },
-                                    { label: 'Koronavirus', value: 'coronavirus' },
-                                    { label: 'Mehnat munosabatlari', value: 'labor' },
-                                    { label: 'Boshqa masalalar', value: 'other' },
-                                ]} />
+                                <Select 
+                                    showSearch
+                                    placeholder="Masala turini tanlang"
+                                    optionFilterProp="children"
+                                    options={APPEALS_SUBJECT_ROWS.map(s => ({
+                                        label: t(s.labelKey),
+                                        value: s.key
+                                    }))} 
+                                />
                             </Form.Item>
                         </Col>
                     </Row>
