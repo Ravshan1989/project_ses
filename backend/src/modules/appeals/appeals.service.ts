@@ -214,8 +214,11 @@ export class AppealsService {
         regionalOrgs.forEach(ro => {
             table4.regional[ro.id] = { name: ro.name, data: {} };
             subjects.forEach(s => {
-                const sRecs = records.filter(r => r.subject_key === s.key && (r.organization?.id === ro.id || ro.children?.some(c => c.id === r.organization?.id)));
-                const sPrevRecs = prevRecords.filter(r => r.subject_key === s.key && (r.organization?.id === ro.id || ro.children?.some(c => c.id === r.organization?.id)));
+                // For the main organization, include all children. For children (districts), only include themselves.
+                const isMain = ro.id === organizationId;
+                const sRecs = records.filter(r => r.subject_key === s.key && (r.organization?.id === ro.id || (isMain && ro.children?.some(c => c.id === r.organization?.id))));
+                const sPrevRecs = prevRecords.filter(r => r.subject_key === s.key && (r.organization?.id === ro.id || (isMain && ro.children?.some(c => c.id === r.organization?.id))));
+                
                 table4.regional[ro.id].data[s.key] = {
                     curr: sRecs.length,
                     prev: sPrevRecs.length

@@ -352,22 +352,25 @@ const AppealsPage: React.FC = () => {
     const renderTable4 = () => {
         const t4 = autoReportsQuery.data?.table4 || { subjects: {}, regional: {} };
         const regionalIds = Object.keys(t4.regional || {});
+        // Find the main organization (Total) and the others (Districts)
+        const totalId = regionalIds.find(id => t4.regional[id].name === 'Жами' || id === 'total' || regionalIds.indexOf(id) === 0);
+        const districtIds = regionalIds.filter(id => id !== totalId);
 
         return (
-            <div style={{ overflowX: 'auto' }}>
-                <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 800 }}>
+            <div style={{ overflowX: 'auto', background: '#fff', padding: '15px' }}>
+                <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1200 }}>
                     <thead>
                         <tr>
                             <th style={thStyle} rowSpan={2}>№</th>
-                            <th style={{ ...thStyle, textAlign: 'left', minWidth: 300 }} rowSpan={2}>Murojaatlarda ko'tarilgan masalalar</th>
-                            <th style={thStyle} colSpan={2}>Jami murojaatlar</th>
-                            {regionalIds.map(id => (
-                                <th key={id} style={thStyle} colSpan={2}>{t4.regional[id].name}</th>
+                            <th style={{ ...thStyle, textAlign: 'left', minWidth: 350 }} rowSpan={2}>Мурожаатларда кўтарилган масалалар</th>
+                            <th style={thStyle} colSpan={2}>Жами мурожаатлар</th>
+                            {districtIds.map(id => (
+                                <th key={id} style={{ ...thStyle, minWidth: 100 }} colSpan={2}>{t4.regional[id].name}</th>
                             ))}
                         </tr>
                         <tr>
                             <th style={thStyle}>{prevYear}</th><th style={thStyle}>{currYear}</th>
-                            {regionalIds.map(id => (
+                            {districtIds.map(id => (
                                 <React.Fragment key={id}>
                                     <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
                                 </React.Fragment>
@@ -381,7 +384,7 @@ const AppealsPage: React.FC = () => {
                                 <td style={{ ...tdStyle, textAlign: 'left' }}>{t(s.labelKey)}</td>
                                 <td style={tdStyle}>{t4.subjects[s.key]?.count_prev || 0}</td>
                                 <td style={{ ...tdStyle, fontWeight: 'bold' }}>{t4.subjects[s.key]?.count_curr || 0}</td>
-                                {regionalIds.map(id => (
+                                {districtIds.map(id => (
                                     <React.Fragment key={id}>
                                         <td style={tdStyle}>{t4.regional[id].data[s.key]?.prev || 0}</td>
                                         <td style={tdStyle}>{t4.regional[id].data[s.key]?.curr || 0}</td>
