@@ -1,3 +1,4 @@
+import {
   Inject,
   Injectable,
   Logger,
@@ -11,6 +12,7 @@ import { Repository } from "typeorm";
 import * as bcrypt from "bcrypt";
 import { User } from "../users/entities/user.entity";
 import { UserRole } from "../../common/enums/role.enum";
+import { UsersService } from "../users/users.service";
 
 @Injectable()
 export class TelegramService implements OnModuleInit {
