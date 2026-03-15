@@ -99,13 +99,20 @@ const AppealsPage: React.FC = () => {
     const saveDataAction = () => saveData(localData);
 
     const getUzMonth = (m: string) => {
-        const months = {
-            'January': 'Yanvar', 'February': 'Fevral', 'March': 'Mart', 'April': 'Aprel',
-            'May': 'May', 'June': 'Iyun', 'July': 'Iyul', 'August': 'Avgust',
-            'September': 'Sentabr', 'October': 'Oktabr', 'November': 'Noyabr', 'December': 'Dekabr'
-        };
-        const engMonth = dayjs(m).format('MMMM');
-        return (months as any)[engMonth] || engMonth;
+        const uzMonths = [
+            'Yanvar', 'Fevral', 'Mart', 'Aprel',
+            'May', 'Iyun', 'Iyul', 'Avgust',
+            'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr'
+        ];
+        return uzMonths[dayjs(m).month()] || '';
+    };
+
+    const formatRegionName = (name: string) => {
+        if (!name) return name;
+        if (name === 'Жами' || name === 'Jami') return name;
+        return name
+            .replace(/\s+t\.?$/i, ' tumani')
+            .replace(/\s+sh\.?$/i, ' shahri');
     };
 
     const orgName = currentOrg?.name || (isRegionalOrg ? "Toshkent viloyati boshqarmasi" : "Tuman (shahar) bo'limi");
@@ -394,7 +401,7 @@ const AppealsPage: React.FC = () => {
                                     return (
                                         <tr key={id}>
                                             <td style={tdStyle}>{idx + 1}</td>
-                                            <td style={{ ...tdStyle, textAlign: 'left' }}>{reg.name}</td>
+                                            <td style={{ ...tdStyle, textAlign: 'left' }}>{formatRegionName(reg.name)}</td>
                                             <td style={tdStyle}>{reg.count_prev || 0}</td><td style={tdStyle}>{reg.count_curr || 0}</td>
                                             <td style={tdStyle}>{reg.phys_prev || 0}</td><td style={tdStyle}>{reg.phys_curr || 0}</td>
                                             <td style={tdStyle}>{reg.legal_prev || 0}</td><td style={tdStyle}>{reg.legal_curr || 0}</td>
@@ -479,7 +486,7 @@ const AppealsPage: React.FC = () => {
                                 <th style={{ ...thStyleWithColor(headerColors.num_name), textAlign: 'left', minWidth: 350 }} rowSpan={3}>{t('appeals.table4.columns.subject')}</th>
                                 <th style={thStyleWithColor(headerColors.total)} colSpan={2} rowSpan={2}>{t('appeals.table4.columns.jami')}</th>
                                 {districtIds.map(id => (
-                                    <th key={id} style={{ ...thStyleWithColor(headerColors.dist), minWidth: 100 }} colSpan={2}>{t4.regional[id].name}</th>
+                                    <th key={id} style={{ ...thStyleWithColor(headerColors.dist), minWidth: 100 }} colSpan={2}>{formatRegionName(t4.regional[id].name)}</th>
                                 ))}
                             </tr>
                             <tr>
@@ -579,7 +586,7 @@ const AppealsPage: React.FC = () => {
                                 return (
                                     <tr key={id}>
                                         <td style={tdStyle}>{idx + 1}</td>
-                                        <td style={{ ...tdStyle, textAlign: 'left', fontWeight: 'bold' }}>{reg.name}</td>
+                                        <td style={{ ...tdStyle, textAlign: 'left', fontWeight: 'bold' }}>{formatRegionName(reg.name)}</td>
                                         <td style={tdStyle}>{reg.total.prev}</td><td style={{ ...tdStyle, fontWeight: 'bold', color: '#1890ff' }}>{reg.total.curr}</td>
                                         {/* Phys */}
                                         <td style={tdStyle}>{reg.phys.prev.total}</td><td style={tdStyle}>{reg.phys.curr.total}</td>
