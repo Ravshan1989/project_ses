@@ -76,10 +76,20 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     // UZ: 15 minutdan so'ng avtomatik chiqib ketish (inactivity timeout)
     useInactivityTimeout(handleLogout, 15 * 60 * 1000);
 
+    const userDept = localStorage.getItem('user_department_name');
+
     const hasRole = (allowedRoles: string[]) => {
         if (!userRole) return false;
         if (userRole === 'ADMIN') return true;
         return allowedRoles.includes(userRole);
+    };
+
+    const hasDept = (allowedDepts: string[]) => {
+        if (!userRole) return false;
+        if (userRole === 'ADMIN' || userRole === 'REPUBLIC_HEAD' || userRole === 'REGION_HEAD') return true;
+        if (!userDept) return false;
+        // Check if any of the allowedDepts is a substring of userDept (to be flexible with naming)
+        return allowedDepts.some(dept => userDept.includes(dept));
     };
 
     const isAdmin = userRole === 'ADMIN';
@@ -107,7 +117,8 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             label: t('common.vaccination_entry'),
             onClick: () => navigate('/disease-entry')
         }] : []),
-        ...(hasRole(['REPUBLIC_HEAD', 'REGION_HEAD', 'DISTRICT_HEAD', 'DEPARTMENT_HEAD', 'LAB_HEAD', 'EPIDEMIOLOGIST', 'EPIDEMIOLOGIST_ASSISTANT', 'STAFF']) && !isRegionHeadOnly ? [{
+        // UZ: Epidemiologiya bo'limi (Forma-1 va Kunlik hisobotlar)
+        ...(hasDept(['Epidemiologiya']) ? [{
             key: 'grp_reports',
             icon: <FileTextOutlined />,
             label: t('common.reports'),
@@ -140,7 +151,20 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 }
             ]
         }] : []),
-        ...(hasRole(['ADMIN', 'SANITARY_HEAD', 'SANITARY_SPECIALIST', 'SANITARY_OPERATOR', 'DISTRICT_OPERATOR', 'DEPARTMENT_HEAD', 'LEAD_SPECIALIST']) ? [{
+
+        // UZ: Ijro intizomi va murojaatlar bo'limi (Yangi asosiy bo'lim)
+        ...(hasDept(['Ijro intizomi', 'Boshqaruv', 'Ma\'muriyat']) ? [{
+            key: 'grp_appeals',
+            icon: <FileTextOutlined />,
+            label: 'Ijro Intizomi',
+            children: [
+                { key: '/appeals', label: t('appeals.tabs.journal') || 'Murojaatlar Jurnali', onClick: () => navigate('/appeals') },
+                { key: '/inspections', label: t('reports.inspections') || 'Nazoratlarni muvofiqlashtirish', onClick: () => navigate('/inspections') },
+            ]
+        }] : []),
+
+        // UZ: Sanitariya bo'limlari (Gigiyena turlari)
+        ...(hasDept(['Sanitariya', 'gigiyena', 'Boshqaruv', 'Ma\'muriyat']) ? [{
             key: 'grp_sanitary',
             icon: <ClusterOutlined />,
             label: t('common.sanitary_menu') || 'Sanitariya',
@@ -159,8 +183,6 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         { key: '/kg-water', label: t('reports.kommunal_hygiene'), onClick: () => navigate('/kg-water') },
                         { key: '/ch-hygiene', label: t('reports.ch_hygiene'), onClick: () => navigate('/ch-hygiene') },
                         { key: '/nutrition-hygiene', label: t('reports.nutrition_hygiene') || 'Ovqatlanish gigiyenasi', onClick: () => navigate('/nutrition-hygiene') },
-                        { key: '/appeals', label: t('reports.appeals'), onClick: () => navigate('/appeals') },
-                        { key: '/inspections', label: t('reports.inspections') || 'Nazoratlarni muvofiqlashtirish', onClick: () => navigate('/inspections') },
                     ]
                 }
             ]
@@ -196,12 +218,6 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     { key: '/admin/users-management', icon: <TeamOutlined />, label: 'Xodimlar boshqaruvi', onClick: () => navigate('/admin/users-management') }
                 ] : [])
             ]
-        }] : []),
-        ...(hasRole(['LEAD_SPECIALIST']) ? [{
-            key: '/appeals',
-            icon: <FileTextOutlined />,
-            label: t('reports.appeals') || 'Murojaatlar Jurnali',
-            onClick: () => navigate('/appeals')
         }] : []),
         ...(!isRegionHeadOnly ? [{
             key: 'edo_ijro',
