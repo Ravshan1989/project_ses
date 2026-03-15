@@ -157,15 +157,17 @@ export class TelegramService implements OnModuleInit {
       }
     });
 
-    this.bot.action(/^approve_/, async (ctx) => {
+    this.bot.action(/^approve_/, async (ctx: any) => {
       await ctx.answerCbQuery().catch(() => {});
-      const userId = ctx.match[0].replace("approve_", "");
+      const data = ctx.callbackQuery.data;
+      const userId = data.replace("approve_", "");
       return this.handleApproval(ctx, userId);
     });
 
-    this.bot.action(/^reject_/, async (ctx) => {
+    this.bot.action(/^reject_/, async (ctx: any) => {
       await ctx.answerCbQuery().catch(() => {});
-      const userId = ctx.match[0].replace("reject_", "");
+      const data = ctx.callbackQuery.data;
+      const userId = data.replace("reject_", "");
       return this.handleRejection(ctx, userId);
     });
   }
