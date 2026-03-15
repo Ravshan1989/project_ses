@@ -214,13 +214,12 @@ const AppealsPage: React.FC = () => {
             </tbody>
         </table>
     );
-
     const renderTable3 = () => {
         const t3 = autoReportsQuery.data?.table3 || { regional: {} };
         const regionalIds = Object.keys(t3.regional || {});
-        // Move Total (identified as idx 0 or by key) to the end
-        const regularRegions = regionalIds.filter(id => id !== 'total' && t3.regional[id].name !== 'Жами');
-        const totalId = regionalIds.find(id => id === 'total' || t3.regional[id].name === 'Жами');
+        // Identification of Total row: By key, by name, or simply the first element retrieved (usually the parent org)
+        const totalId = regionalIds.find(id => id === 'total' || t3.regional[id].name === 'Жами' || regionalIds.indexOf(id) === 0);
+        const regularRegions = regionalIds.filter(id => id !== totalId);
 
         const headerColors = {
             c1_2: '#f1f5f9',
@@ -239,7 +238,7 @@ const AppealsPage: React.FC = () => {
         return (
             <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', lineHeight: '1.6', fontWeight: 'bold', maxWidth: '1000px', margin: '0 auto 20px' }}>
-                    2026 йилнинг январь ойида Ўзбекистон Республикаси СЭОваЖС қўмитасига жисмоний ва юридик шахслардан келиб тушган мурожаатларнинг вилоятлар бўйича таққослама таҳлили тўғрисида маълумот
+                    {currYear} йилнинг {dayjs(month).format('MMMM')} ойида Ўзбекистон Республикаси СЭОваЖС қўмитасига жисмоний ва юридик шахслардан келиб тушган мурожаатларнинг вилоятлар бўйича таққослама таҳлили тўғрисида маълумот
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
                 <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1800, border: '1px solid #000' }}>
@@ -249,13 +248,13 @@ const AppealsPage: React.FC = () => {
                             <th style={{ ...thStyleWithColor(headerColors.c1_2), textAlign: 'left', minWidth: 200 }} rowSpan={4}>Ҳудудлар</th>
                             <th style={thStyleWithColor(headerColors.c3_4)} colSpan={2}>Жами мурожаатлар сони</th>
                             <th style={thStyleWithColor(headerColors.c5_8)} colSpan={4}>Мурожаат этувчилар тоифаси</th>
-                            <th style={thStyleWithColor('#f8fafc')} colSpan={11}>Шу жумладан 2026 йилги мурожаатлар бўйича</th>
+                            <th style={thStyleWithColor('#f8fafc')} colSpan={11}>Шу жумладан {currYear} йилги мурожаатлар бўйича</th>
                             <th style={thStyleWithColor(headerColors.c20_21)} colSpan={2} rowSpan={2}>Вазирлар Маҳкамасидан келган</th>
                             <th style={thStyleWithColor(headerColors.c22_23)} colSpan={2} rowSpan={2}>Ўтказилган сайёр қабуллар сони</th>
                         </tr>
                         <tr>
-                            <th style={thStyleWithColor(headerColors.c3_4)} rowSpan={3}>2025</th>
-                            <th style={thStyleWithColor(headerColors.c3_4)} rowSpan={3}>2026</th>
+                            <th style={thStyleWithColor(headerColors.c3_4)} rowSpan={3}>{prevYear}</th>
+                            <th style={thStyleWithColor(headerColors.c3_4)} rowSpan={3}>{currYear}</th>
                             <th style={thStyleWithColor(headerColors.c5_8)} colSpan={2}>Жисмоний шахслар</th>
                             <th style={thStyleWithColor(headerColors.c5_8)} colSpan={2}>Юридик шахслар</th>
                             <th style={thStyleWithColor(headerColors.c9)} rowSpan={3}>Ёзма мурожаатлар</th>
@@ -263,16 +262,16 @@ const AppealsPage: React.FC = () => {
                             <th style={thStyleWithColor(headerColors.c11_15)} colSpan={5}>Оғзаки мурожаатлар</th>
                             <th style={thStyleWithColor(headerColors.c16_19)} rowSpan={3}>Вазирлик аппаратида кўрилган</th>
                             <th style={thStyleWithColor(headerColors.c16_19)} rowSpan={3}>Ҳудудий идорага юборилган</th>
-                            <th style={thStyleWithColor(headerColors.c16_19)} rowSpan={3}>Тегишли идора ва ҳокимиятларга юборилган</th>
+                            <th style={thStyleWithColor(headerColors.c16_19)} rowSpan={3}>Тегишли идора ва ҳокимиятларга юборилgan</th>
                             <th style={thStyleWithColor(headerColors.c16_19)} rowSpan={3}>Кўриб чиқилмоқда</th>
                         </tr>
                         <tr>
-                            <th style={thStyleWithColor(headerColors.c5_8)} rowSpan={2}>2025</th><th style={thStyleWithColor(headerColors.c5_8)} rowSpan={2}>2026</th>
-                            <th style={thStyleWithColor(headerColors.c5_8)} rowSpan={2}>2025</th><th style={thStyleWithColor(headerColors.c5_8)} rowSpan={2}>2026</th>
+                            <th style={thStyleWithColor(headerColors.c5_8)} rowSpan={2}>{prevYear}</th><th style={thStyleWithColor(headerColors.c5_8)} rowSpan={2}>{currYear}</th>
+                            <th style={thStyleWithColor(headerColors.c5_8)} rowSpan={2}>{prevYear}</th><th style={thStyleWithColor(headerColors.c5_8)} rowSpan={2}>{currYear}</th>
                             <th style={thStyleWithColor(headerColors.c11_15)} colSpan={4}>Раҳбарларнинг</th>
                             <th style={thStyleWithColor(headerColors.c11_15)} rowSpan={2}>ишонч телефони</th>
-                            <th style={thStyleWithColor(headerColors.c20_21)} rowSpan={2}>2025</th><th style={thStyleWithColor(headerColors.c20_21)} rowSpan={2}>2026</th>
-                            <th style={thStyleWithColor(headerColors.c22_23)} rowSpan={2}>2025</th><th style={thStyleWithColor(headerColors.c22_23)} rowSpan={2}>2026</th>
+                            <th style={thStyleWithColor(headerColors.c20_21)} rowSpan={2}>{prevYear}</th><th style={thStyleWithColor(headerColors.c20_21)} rowSpan={2}>{currYear}</th>
+                            <th style={thStyleWithColor(headerColors.c22_23)} rowSpan={2}>{prevYear}</th><th style={thStyleWithColor(headerColors.c22_23)} rowSpan={2}>{currYear}</th>
                         </tr>
                         <tr>
                             <th style={thStyleWithColor(headerColors.c11_15)}>Жами</th>
@@ -287,7 +286,7 @@ const AppealsPage: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {regularRegions.length === 0 ? (
+                        {regionalIds.length === 0 ? (
                             <tr><td colSpan={23} style={{ ...tdStyle, padding: '40px', color: '#94a3b8' }}>Yuklanmoqda...</td></tr>
                         ) : (
                             <>
