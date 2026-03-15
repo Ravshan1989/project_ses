@@ -249,17 +249,150 @@ const AppealsPage: React.FC = () => {
                 </tr>
             </tbody>
         </table>
-    );
-                                ) : (
-                                    <EditCell value={getVal('total', f)} onChange={v => updateCell('total', f, v)} rowIdx={idx} colIdx={fidx} disabled={isSaving} />
-                                )}
-                            </td>
+    const renderTable4 = () => {
+        const t4 = autoReportsQuery.data?.table4 || { subjects: {}, regional: {} };
+        const regionalIds = Object.keys(t4.regional || {});
+
+        return (
+            <div style={{ overflowX: 'auto' }}>
+                <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 800 }}>
+                    <thead>
+                        <tr>
+                            <th style={thStyle} rowSpan={2}>№</th>
+                            <th style={{ ...thStyle, textAlign: 'left', minWidth: 300 }} rowSpan={2}>Murojaatlarda ko'tarilgan masalalar</th>
+                            <th style={thStyle} colSpan={2}>Jami murojaatlar</th>
+                            {regionalIds.map(id => (
+                                <th key={id} style={thStyle} colSpan={2}>{t4.regional[id].name}</th>
+                            ))}
+                        </tr>
+                        <tr>
+                            <th style={thStyle}>{prevYear}</th><th style={thStyle}>{currYear}</th>
+                            {regionalIds.map(id => (
+                                <React.Fragment key={id}>
+                                    <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
+                                </React.Fragment>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {APPEALS_SUBJECT_ROWS.map((s, idx) => (
+                            <tr key={s.key}>
+                                <td style={tdStyle}>{idx + 1}</td>
+                                <td style={{ ...tdStyle, textAlign: 'left' }}>{t(s.labelKey)}</td>
+                                <td style={tdStyle}>{t4.subjects[s.key]?.count_prev || 0}</td>
+                                <td style={{ ...tdStyle, fontWeight: 'bold' }}>{t4.subjects[s.key]?.count_curr || 0}</td>
+                                {regionalIds.map(id => (
+                                    <React.Fragment key={id}>
+                                        <td style={tdStyle}>{t4.regional[id].data[s.key]?.prev || 0}</td>
+                                        <td style={tdStyle}>{t4.regional[id].data[s.key]?.curr || 0}</td>
+                                    </React.Fragment>
+                                ))}
+                            </tr>
                         ))}
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    );
+                    </tbody>
+                </table>
+            </div>
+        );
+    };
+
+    const renderTable5 = () => {
+        const t5 = autoReportsQuery.data?.table5 || { regional: {} };
+        const regionalIds = Object.keys(t5.regional || {});
+
+        return (
+            <div style={{ overflowX: 'auto' }}>
+                <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1000 }}>
+                    <thead>
+                        <tr>
+                            <th style={thStyle} rowSpan={3}>№</th>
+                            <th style={{ ...thStyle, textAlign: 'left' }} rowSpan={3}>Viloyatlar</th>
+                            <th style={thStyle} colSpan={2} rowSpan={2}>Jami murojaatlar</th>
+                            <th style={thStyle} colSpan={8}>Jismoniy shaxslar bo'yicha</th>
+                            <th style={thStyle} colSpan={8}>Yuridik shaxslar bo'yicha</th>
+                        </tr>
+                        <tr>
+                            <th style={thStyle} colSpan={2}>Jami</th><th style={thStyle} colSpan={2}>Ariza</th><th style={thStyle} colSpan={2}>Shikoyat</th><th style={thStyle} colSpan={2}>Taklif</th>
+                            <th style={thStyle} colSpan={2}>Jami</th><th style={thStyle} colSpan={2}>Ariza</th><th style={thStyle} colSpan={2}>Shikoyat</th><th style={thStyle} colSpan={2}>Taklif</th>
+                        </tr>
+                        <tr>
+                            <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
+                            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                                <React.Fragment key={i}>
+                                    <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
+                                </React.Fragment>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {regionalIds.map((id, idx) => {
+                            const reg = t5.regional[id];
+                            return (
+                                <tr key={id}>
+                                    <td style={tdStyle}>{idx + 1}</td>
+                                    <td style={{ ...tdStyle, textAlign: 'left', fontWeight: 'bold' }}>{reg.name}</td>
+                                    <td style={tdStyle}>{reg.total.prev}</td><td style={{ ...tdStyle, fontWeight: 'bold' }}>{reg.total.curr}</td>
+                                    {/* Phys */}
+                                    <td style={tdStyle}>{reg.phys.prev.total}</td><td style={tdStyle}>{reg.phys.curr.total}</td>
+                                    <td style={tdStyle}>{reg.phys.prev.ariza}</td><td style={tdStyle}>{reg.phys.curr.ariza}</td>
+                                    <td style={tdStyle}>{reg.phys.prev.shikoyat}</td><td style={tdStyle}>{reg.phys.curr.shikoyat}</td>
+                                    <td style={tdStyle}>{reg.phys.prev.taklif}</td><td style={tdStyle}>{reg.phys.curr.taklif}</td>
+                                    {/* Legal */}
+                                    <td style={tdStyle}>{reg.legal.prev.total}</td><td style={tdStyle}>{reg.legal.curr.total}</td>
+                                    <td style={tdStyle}>{reg.legal.prev.ariza}</td><td style={tdStyle}>{reg.legal.curr.ariza}</td>
+                                    <td style={tdStyle}>{reg.legal.prev.shikoyat}</td><td style={tdStyle}>{reg.legal.curr.shikoyat}</td>
+                                    <td style={tdStyle}>{reg.legal.prev.taklif}</td><td style={tdStyle}>{reg.legal.curr.taklif}</td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+        );
+    };
+
+    const renderTable6 = () => {
+        const t6 = autoReportsQuery.data?.table6 || { people: { curr: {} }, virtual: { curr: {} } };
+
+        const renderStatusCells = (typeData: any) => [
+            typeData.total || 0,
+            typeData.satisfied || 0,
+            typeData.explained || 0,
+            typeData.referral || 0,
+            typeData.rejected || 0,
+            typeData.anonymous || 0,
+            typeData.being_considered || 0,
+            typeData.overdue || 0,
+        ];
+
+        return (
+            <div style={{ overflowX: 'auto' }}>
+                <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1200 }}>
+                    <thead>
+                        <tr>
+                            <th style={thStyle} colSpan={8}>Xalq qabulxonalari orqali</th>
+                            <th style={thStyle} colSpan={8}>Virtual qabulxona orqali</th>
+                        </tr>
+                        <tr>
+                            <th style={thStyle}>Jami</th><th style={thStyle}>Qanoat.</th><th style={thStyle}>Tushun.</th><th style={thStyle}>Tegish.</th>
+                            <th style={thStyle}>Rad</th><th style={thStyle}>Anonim</th><th style={thStyle}>Ko'ril.</th><th style={thStyle}>Muddati.</th>
+                            <th style={thStyle}>Jami</th><th style={thStyle}>Qanoat.</th><th style={thStyle}>Tushun.</th><th style={thStyle}>Tegish.</th>
+                            <th style={thStyle}>Rad</th><th style={thStyle}>Anonim</th><th style={thStyle}>Ko'ril.</th><th style={thStyle}>Muddati.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            {renderStatusCells(t6.people.curr).map((v, i) => (
+                                <td key={`p-${i}`} style={{ ...tdStyle, fontWeight: i === 0 || i === 6 ? 'bold' : 'normal', borderRight: i === 7 ? '2px solid #e2e8f0' : tdStyle.border }}>{v}</td>
+                            ))}
+                            {renderStatusCells(t6.virtual.curr).map((v, i) => (
+                                <td key={`v-${i}`} style={{ ...tdStyle, fontWeight: i === 0 || i === 6 ? 'bold' : 'normal' }}>{v}</td>
+                            ))}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        );
+    };
 
     const renderTable7 = () => {
         const t7 = autoReportsQuery.data?.table7 || { disciplinary: { fine: {}, reprimand: {}, dismissal: {}, total: {} }, administrative: {}, criminal: {}, grand_total: {} };
