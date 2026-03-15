@@ -175,7 +175,7 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                                 <Statistic title="Elektron" value={autoReports?.table1?.electronic_curr || 0} />
                             </Col>
                             <Col span={4}>
-                                <Statistic title="Shikoyatlar" value={autoReports?.table5?.phys_shikoyat_curr + autoReports?.table5?.legal_shikoyat_curr || 0} />
+                                <Statistic title="Shikoyatlar" value={(autoReports?.table5?.phys_shikoyat_curr || 0) + (autoReports?.table5?.legal_shikoyat_curr || 0)} />
                             </Col>
                             <Col span={4}>
                                 <Statistic title="Ko'rilmoqda" value={autoReports?.table2?.being_considered || 0} />

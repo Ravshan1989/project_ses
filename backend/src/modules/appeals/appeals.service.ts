@@ -190,10 +190,18 @@ export class AppealsService {
       head: getTable1Metrics("head"),
       deputy_epid: getTable1Metrics("deputy_epid"),
       deputy_san: getTable1Metrics("deputy_san"),
+      // flattened for dashboard
+      electronic_curr: records.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
     };
 
     // 2. Table 2 Aggregation (Detailed Subject Matrix YoY)
     const table2: any = { subjects: {} };
+
+    // Dashboard summaries
+    table2.measures_taken = records.filter(r => r.status === AppealStatus.SATISFIED).length;
+    table2.explained = records.filter(r => r.status === AppealStatus.EXPLAINED).length;
+    table2.rejected = records.filter(r => r.status === AppealStatus.REJECTED).length;
+    table2.being_considered = records.filter(r => r.status === AppealStatus.BEING_CONSIDERED).length;
 
     subjects.forEach((s) => {
       const sRecs = records.filter((r) => r.subject_key === s.key);
@@ -252,7 +260,12 @@ export class AppealsService {
     });
 
     // 3. Table 3 Aggregation (Official 23-Column Regional Matrix)
-    const table3: any = { regional: {} };
+    const table3: any = { 
+      regional: {},
+      written: records.filter(r => r.channel === AppealChannel.WRITTEN).length,
+      electronic: records.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
+      oral_total: records.filter(r => r.channel === AppealChannel.ORAL).length,
+    };
     regionalOrgs.forEach((ro) => {
       const roRecs = records.filter(
         (r) =>
@@ -366,6 +379,13 @@ export class AppealsService {
     const table5: any = {
       total: { curr: records.length, prev: prevRecords.length },
       regional: {},
+      // Dashboard compatibility
+      phys_ariza_curr: records.filter(r => r.applicant_type === ApplicantType.PHYSICAL && r.appeal_type === AppealType.ARIZA).length,
+      phys_shikoyat_curr: records.filter(r => r.applicant_type === ApplicantType.PHYSICAL && r.appeal_type === AppealType.SHIKOYAT).length,
+      phys_taklif_curr: records.filter(r => r.applicant_type === ApplicantType.PHYSICAL && r.appeal_type === AppealType.TAKLIF).length,
+      legal_ariza_curr: records.filter(r => r.applicant_type === ApplicantType.LEGAL && r.appeal_type === AppealType.ARIZA).length,
+      legal_shikoyat_curr: records.filter(r => r.applicant_type === ApplicantType.LEGAL && r.appeal_type === AppealType.SHIKOYAT).length,
+      legal_taklif_curr: records.filter(r => r.applicant_type === ApplicantType.LEGAL && r.appeal_type === AppealType.TAKLIF).length,
     };
     regionalOrgs.forEach((ro) => {
       const roRecs = records.filter(

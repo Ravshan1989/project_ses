@@ -31,9 +31,9 @@ const AppealsDashboard: React.FC<AppealsDashboardProps> = ({ data, month, isLoad
 
     // 1. Data for Appeal Types (Ariza, Shikoyat, Taklif)
     const typeData = [
-        { type: 'Ariza', value: data.table5?.phys_ariza_curr + data.table5?.legal_ariza_curr || 0 },
-        { type: 'Shikoyat', value: data.table5?.phys_shikoyat_curr + data.table5?.legal_shikoyat_curr || 0 },
-        { type: 'Taklif', value: data.table5?.phys_taklif_curr + data.table5?.legal_taklif_curr || 0 },
+        { type: 'Ariza', value: (data.table5?.phys_ariza_curr || 0) + (data.table5?.legal_ariza_curr || 0) },
+        { type: 'Shikoyat', value: (data.table5?.phys_shikoyat_curr || 0) + (data.table5?.legal_shikoyat_curr || 0) },
+        { type: 'Taklif', value: (data.table5?.phys_taklif_curr || 0) + (data.table5?.legal_taklif_curr || 0) },
     ].filter(d => d.value > 0);
 
     const typeConfig = {
