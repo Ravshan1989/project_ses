@@ -321,15 +321,23 @@
             }
         },
         "subjects": {
-            "san_epid": "sanitariya-epidemiologik osoyishtalik masalalari bo'yicha",
+            "san_epid": "sanitariya-epidemiologiya masalalari bo'yicha",
             "coronavirus": "koronavirus bilan bog'liq muammolar bo'yicha",
-            "labor_relations": "mehnat munosabatlari to'g'risida",
-            "medical_activity": "tibbiy muassasalarning faoliyati bilan masalalar haqida",
-            "complaint_head": "Rahbar ustidan shikoyat",
-            "staff_conduct": "soha xodimlarining xatti-harakati yuzasidan",
-            "disinfection": "dezinfeksiya tadbirlari bilan bog'liq masalalar bo'yicha",
-            "fines_objection": "qo'llanilgan jarimalardan norozilik",
-            "other": "Boshqa masalalar"
+            "nutrition": "ovqatlanish gigiyenasi bo'yicha",
+            "child_hygiene": "bolalar va o'smirlar gigiyenasi bo'yicha",
+            "labor_hygiene": "mehnat gigiyenasi bo'yicha",
+            "communal_hygiene": "kommunal gigiyena bo'yicha",
+            "radiation_hygiene": "radiatsiya gigiyenasi bo'yicha",
+            "parasitology": "parazitologiya masalalari bo'yicha",
+            "epidemiology": "epidemiologiya masalalari bo'yicha",
+            "bacteriology": "bakteriologiya laboratoriyasi bo'yicha",
+            "virology": "virusologiya laboratoriyasi bo'yicha",
+            "disinfection": "dezinfeksiya tadbirlari bo'yicha",
+            "laborant": "laborantlar faoliyati bo'yicha",
+            "vacancies": "bo'sh ish o'rinlari haqida",
+            "ethics": "odob-axloq qoidalari buzilishi",
+            "corruption": "korrupsiya holatlari bo'yicha",
+            "other": "boshqa masalalar"
         },
         "table2": {
             "title": "{{year}} yilning {{month}} oyida «{{org}}»ga jismoniy va yuridik shaxslardan kelib tushgan murojaatlarning masalalar (sohalar) kesimidagi tahlili to'g'risida ma'lumot",
