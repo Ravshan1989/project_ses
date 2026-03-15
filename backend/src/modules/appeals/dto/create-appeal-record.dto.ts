@@ -50,5 +50,25 @@ export class CreateAppealRecordDto {
     @IsString()
     @IsOptional()
     subject_key?: string;
+
+    @IsDateString()
+    @IsOptional()
+    deadline_date?: string;
+
+    @IsDateString()
+    @IsOptional()
+    closure_date?: string;
+
+    @IsUUID()
+    @IsOptional()
+    responsible_user_id?: string;
+
+    @IsBoolean()
+    @IsOptional()
+    is_phone?: boolean;
+
+    @IsBoolean()
+    @IsOptional()
+    is_field_meeting?: boolean;
 }
 

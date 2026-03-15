@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 import * as ExcelJS from "exceljs";
 import { Response } from "express";
 import * as PDFDocument from "pdfkit";
+import * as dayjs from "dayjs";
 import { AppealsTable1 } from "./entities/appeals-table-1.entity";
 import { AppealsTable2 } from "./entities/appeals-table-2.entity";
 import { AppealsTable3 } from "./entities/appeals-table-3.entity";
@@ -74,11 +75,31 @@ export class AppealsService {
     ) { }
 
     async createRecord(dto: CreateAppealRecordDto, userId: string) {
+        const { responsible_user_id, ...rest } = dto;
         const record = this.recordRepo.create({
-            ...dto,
+            ...rest,
             organization: { id: dto.organization_id } as any,
             createdBy: { id: userId } as any,
+            responsibleUser: responsible_user_id ? { id: responsible_user_id } as any : undefined,
         });
+        return await this.recordRepo.save(record);
+    }
+
+    async closeRecord(id: string, status: AppealStatus, closureDate: string, consequence?: DisciplinaryMeasure) {
+        const record = await this.recordRepo.findOne({ where: { id } });
+        if (!record) throw new Error("Murojaat topilmadi");
+
+        record.status = status;
+        record.closure_date = closureDate;
+        if (consequence) {
+            record.consequence = consequence;
+        }
+
+        // Check if overdue
+        if (record.deadline_date && dayjs(closureDate).isAfter(dayjs(record.deadline_date))) {
+            record.is_overdue = true;
+        }
+
         return await this.recordRepo.save(record);
     }
 
@@ -116,22 +137,26 @@ export class AppealsService {
         const records = await this.getRecords(organizationId, month);
         const prevRecords = await this.getRecords(organizationId, prevMonth);
 
-        // 1. Table 1 Aggregation (Group by Recipient)
-        const getTable1Row = (rec: string) => ({
-            oral_curr: records.filter(r => r.recipient === rec && r.channel === AppealChannel.ORAL).length,
-            oral_prev: prevRecords.filter(r => r.recipient === rec && r.channel === AppealChannel.ORAL).length,
-            written_curr: records.filter(r => r.recipient === rec && r.channel === AppealChannel.WRITTEN).length,
-            written_prev: prevRecords.filter(r => r.recipient === rec && r.channel === AppealChannel.WRITTEN).length,
-            electronic_curr: records.filter(r => r.recipient === rec && r.channel === AppealChannel.ELECTRONIC).length,
-            electronic_prev: prevRecords.filter(r => r.recipient === rec && r.channel === AppealChannel.ELECTRONIC).length,
-            total_curr: records.filter(r => r.recipient === rec).length,
-            total_prev: prevRecords.filter(r => r.recipient === rec).length,
-        });
+        // 1. Table 1 Aggregation (Official Grouping by Recipient)
+        const getTable1Metrics = (rec: string) => {
+            const current = records.filter(r => r.recipient === rec);
+            const previous = prevRecords.filter(r => r.recipient === rec);
+            return {
+                total_curr: current.length,
+                total_prev: previous.length,
+                oral_curr: current.filter(r => r.channel === AppealChannel.ORAL).length,
+                oral_prev: previous.filter(r => r.channel === AppealChannel.ORAL).length,
+                written_curr: current.filter(r => r.channel === AppealChannel.WRITTEN).length,
+                written_prev: previous.filter(r => r.channel === AppealChannel.WRITTEN).length,
+                electronic_curr: current.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
+                electronic_prev: previous.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
+            };
+        };
 
         const table1 = {
-            head: getTable1Row("head"),
-            deputy_epid: getTable1Row("deputy_epid"),
-            deputy_san: getTable1Row("deputy_san"),
+            head: getTable1Metrics("head"),
+            deputy_epid: getTable1Metrics("deputy_epid"),
+            deputy_san: getTable1Metrics("deputy_san"),
         };
 
         // 2. Table 2 Aggregation (Detailed Subject Matrix YoY)

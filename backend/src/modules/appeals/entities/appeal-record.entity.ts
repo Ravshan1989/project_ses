@@ -122,6 +122,16 @@ export class AppealRecord {
     @Column({ default: false })
     is_field_meeting: boolean;
 
+    @Column({ type: "date", nullable: true })
+    deadline_date: string;
+
+    @Column({ type: "date", nullable: true })
+    closure_date: string;
+
+    @ManyToOne(() => User, { nullable: true })
+    @JoinColumn({ name: "responsible_user_id" })
+    responsibleUser: User;
+
     @CreateDateColumn({ type: "timestamp with time zone" })
     created_at: Date;
 

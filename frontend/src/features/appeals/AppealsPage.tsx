@@ -117,51 +117,67 @@ const AppealsPage: React.FC = () => {
 
     const saveDataAction = () => saveData(localData);
 
-    const renderTable1 = () => (
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-            <thead>
-                <tr>
-                    <th style={thStyle} rowSpan={2}>{t('appeals.table1.columns.no')}</th>
-                    <th style={{ ...thStyle, textAlign: 'left', minWidth: 200 }} rowSpan={2}>{t('appeals.table1.columns.rahbar')}</th>
-                    <th style={thStyle} colSpan={2}>{t('appeals.table1.columns.jami')}</th>
-                    <th style={thStyle} colSpan={2}>Shaxsiy va sayyyor qabullar (Og'zaki)</th>
-                    <th style={thStyle} colSpan={2}>{t('appeals.table1.columns.written')}</th>
-                    <th style={thStyle} colSpan={2}>{t('appeals.table1.columns.electronic')}</th>
-                </tr>
-                <tr>
-                    <th style={thStyle}>{prevYear}</th><th style={thStyle}>{currYear}</th>
-                    <th style={thStyle}>{prevYear}</th><th style={thStyle}>{currYear}</th>
-                    <th style={thStyle}>{prevYear}</th><th style={thStyle}>{currYear}</th>
-                    <th style={thStyle}>{prevYear}</th><th style={thStyle}>{currYear}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {APPEALS_T1_ROWS.map((row, ridx) => {
-                    let labelKey = row.labelKey;
-                    if (isRegionalOrg) {
-                        labelKey = `appeals.table1.rows.${row.key}_reg`;
-                    }
-                    
-                    return (
-                        <tr key={row.key}>
-                            <td style={tdStyle}>{ridx + 1}</td>
-                            <td style={{ ...tdStyle, textAlign: 'left' }}>{t(labelKey)}</td>
-                            {/* UZ: Kelgusida barcha ustunlarni avtomatlashtirish mumkin, hozircha faqat _curr bilan tugaydiganlar avtomat */}
-                            {['total_prev', 'total_curr', 'oral_prev', 'oral_curr', 'written_prev', 'written_curr', 'electronic_prev', 'electronic_curr'].map((f, fidx) => (
-                                <td key={f} style={tdStyle}>
-                                    {f.endsWith('_curr') ? (
-                                        <span style={{ fontWeight: 600, color: '#1890ff' }}>{getVal(row.key, f)}</span>
-                                    ) : (
-                                        <EditCell value={getVal(row.key, f)} onChange={v => updateCell(row.key, f, v)} rowIdx={ridx} colIdx={fidx} disabled={isSaving} />
-                                    )}
-                                </td>
+    const renderTable1 = () => {
+        const t1 = autoReportsQuery.data?.table1 || { head: {}, deputy_epid: {}, deputy_san: {} };
+        
+        const headerColors = {
+            bg: '#f8fafc',
+            head: '#f1f5f9',
+            metrics: '#ffffff'
+        };
+
+        const thStyleWithColor = (color: string) => ({ ...thStyle, backgroundColor: color, fontSize: '11px', padding: '8px 4px' });
+
+        const rows = [
+            { key: 'head', label: 'Қўмита раиси' },
+            { key: 'deputy_epid', label: 'Раиснинг биринчи ўринбосари (Эпидемиология)' },
+            { key: 'deputy_san', label: 'Раис ўринбосари (Санитария)' }
+        ];
+
+        return (
+            <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', fontWeight: 'bold' }}>
+                    {currYear} йилнинг {dayjs(month).format('MMMM')} ойида келиб тушган мурожаатларнинг <span style={{ color: '#1890ff' }}>раҳбарият кесимидаги</span> таҳлили
+                </h3>
+                <div style={{ overflowX: 'auto' }}>
+                    <table style={{ borderCollapse: 'collapse', width: '100%', border: '1px solid #000' }}>
+                        <thead>
+                            <tr>
+                                <th style={thStyleWithColor(headerColors.head)} rowSpan={3}>№</th>
+                                <th style={{ ...thStyleWithColor(headerColors.head), textAlign: 'left', minWidth: 250 }} rowSpan={3}>Раҳбарият</th>
+                                <th style={thStyleWithColor(headerColors.metrics)} colSpan={2} rowSpan={2}>Жами келиб тушган</th>
+                                <th style={thStyleWithColor(headerColors.metrics)} colSpan={6}>Шундан</th>
+                            </tr>
+                            <tr>
+                                <th style={thStyleWithColor(headerColors.metrics)} colSpan={2}>Оғзаки</th>
+                                <th style={thStyleWithColor(headerColors.metrics)} colSpan={2}>Ёзма</th>
+                                <th style={thStyleWithColor(headerColors.metrics)} colSpan={2}>Электрон</th>
+                            </tr>
+                            <tr>
+                                <th style={thStyleWithColor(headerColors.metrics)}>{prevYear}</th><th style={thStyleWithColor(headerColors.metrics)}>{currYear}</th>
+                                <th style={thStyleWithColor(headerColors.metrics)}>{prevYear}</th><th style={thStyleWithColor(headerColors.metrics)}>{currYear}</th>
+                                <th style={thStyleWithColor(headerColors.metrics)}>{prevYear}</th><th style={thStyleWithColor(headerColors.metrics)}>{currYear}</th>
+                                <th style={thStyleWithColor(headerColors.metrics)}>{prevYear}</th><th style={thStyleWithColor(headerColors.metrics)}>{currYear}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {rows.map((r, idx) => (
+                                <tr key={r.key}>
+                                    <td style={tdStyle}>{idx + 1}</td>
+                                    <td style={{ ...tdStyle, textAlign: 'left', fontWeight: 'bold' }}>{r.label}</td>
+                                    <td style={tdStyle}>{t1[r.key]?.total_prev || 0}</td>
+                                    <td style={{ ...tdStyle, fontWeight: 'bold', color: '#1890ff' }}>{t1[r.key]?.total_curr || 0}</td>
+                                    <td style={tdStyle}>{t1[r.key]?.oral_prev || 0}</td><td style={tdStyle}>{t1[r.key]?.oral_curr || 0}</td>
+                                    <td style={tdStyle}>{t1[r.key]?.written_prev || 0}</td><td style={tdStyle}>{t1[r.key]?.written_curr || 0}</td>
+                                    <td style={tdStyle}>{t1[r.key]?.electronic_prev || 0}</td><td style={tdStyle}>{t1[r.key]?.electronic_curr || 0}</td>
+                                </tr>
                             ))}
-                        </tr>
-                    );
-                })}
-            </tbody>
-        </table>
-    );
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        );
+    };
 
     const renderTable2 = () => {
         const t2 = autoReportsQuery.data?.table2 || { subjects: {} };
@@ -432,45 +448,69 @@ const AppealsPage: React.FC = () => {
         // Find the main organization (Total) and the others (Districts)
         const totalId = regionalIds.find(id => t4.regional[id].name === 'Жами' || id === 'total' || regionalIds.indexOf(id) === 0);
         const districtIds = regionalIds.filter(id => id !== totalId);
+        
+        const headerColors = {
+            num_name: '#f1f5f9',
+            total: '#ffffff',
+            dist: '#f0f9ff'
+        };
+
+        const thStyleWithColor = (color: string) => ({ ...thStyle, backgroundColor: color, fontSize: '11px', padding: '8px 4px' });
 
         return (
-            <div style={{ overflowX: 'auto', background: '#fff', padding: '15px' }}>
-                <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1200 }}>
-                    <thead>
-                        <tr>
-                            <th style={thStyle} rowSpan={2}>№</th>
-                            <th style={{ ...thStyle, textAlign: 'left', minWidth: 350 }} rowSpan={2}>Мурожаатларда кўтарилган масалалар</th>
-                            <th style={thStyle} colSpan={2}>Жами мурожаатлар</th>
-                            {districtIds.map(id => (
-                                <th key={id} style={{ ...thStyle, minWidth: 100 }} colSpan={2}>{t4.regional[id].name}</th>
-                            ))}
-                        </tr>
-                        <tr>
-                            <th style={thStyle}>{prevYear}</th><th style={thStyle}>{currYear}</th>
-                            {districtIds.map(id => (
-                                <React.Fragment key={id}>
-                                    <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
-                                </React.Fragment>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {APPEALS_SUBJECT_ROWS.map((s, idx) => (
-                            <tr key={s.key}>
-                                <td style={tdStyle}>{idx + 1}</td>
-                                <td style={{ ...tdStyle, textAlign: 'left' }}>{t(s.labelKey)}</td>
-                                <td style={tdStyle}>{t4.subjects[s.key]?.count_prev || 0}</td>
-                                <td style={{ ...tdStyle, fontWeight: 'bold' }}>{t4.subjects[s.key]?.count_curr || 0}</td>
+            <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', fontWeight: 'bold' }}>
+                    {currYear} йилнинг {dayjs(month).format('MMMM')} ойида келиб тушган мурожаатларнинг <span style={{ color: '#1890ff' }}>соҳалар ва туманлар</span> кесимидаги таҳлили
+                </h3>
+                <div style={{ overflowX: 'auto' }}>
+                    <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1500, border: '1px solid #000' }}>
+                        <thead>
+                            <tr>
+                                <th style={thStyleWithColor(headerColors.num_name)} rowSpan={3}>№</th>
+                                <th style={{ ...thStyleWithColor(headerColors.num_name), textAlign: 'left', minWidth: 350 }} rowSpan={3}>Мурожаатларда кўтарилган масалалар</th>
+                                <th style={thStyleWithColor(headerColors.total)} colSpan={2} rowSpan={2}>Жами</th>
                                 {districtIds.map(id => (
-                                    <React.Fragment key={id}>
-                                        <td style={tdStyle}>{t4.regional[id].data[s.key]?.prev || 0}</td>
-                                        <td style={tdStyle}>{t4.regional[id].data[s.key]?.curr || 0}</td>
+                                    <th key={id} style={{ ...thStyleWithColor(headerColors.dist), minWidth: 100 }} colSpan={2}>{t4.regional[id].name}</th>
+                                ))}
+                            </tr>
+                            <tr>
+                                {districtIds.map(id => (
+                                    <React.Fragment key={`h-${id}`}>
+                                        <th style={thStyleWithColor(headerColors.dist)}>{prevYearShort}</th><th style={thStyleWithColor(headerColors.dist)}>{currYearShort}</th>
                                     </React.Fragment>
                                 ))}
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                            <tr>
+                                <th style={thStyleWithColor(headerColors.total)}>{prevYearShort}</th><th style={thStyleWithColor(headerColors.total)}>{currYearShort}</th>
+                                {districtIds.map(id => (
+                                    <React.Fragment key={`y-${id}`}>
+                                        <th style={thStyleWithColor(headerColors.dist)}>{prevYearShort}</th><th style={thStyleWithColor(headerColors.dist)}>{currYearShort}</th>
+                                    </React.Fragment>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {APPEALS_SUBJECT_ROWS.map((s, idx) => (
+                                <tr key={s.key}>
+                                    <td style={tdStyle}>{idx + 1}</td>
+                                    <td style={{ ...tdStyle, textAlign: 'left', fontWeight: 'bold' }}>{t(s.labelKey)}</td>
+                                    <td style={tdStyle}>{t4.subjects[s.key]?.count_prev || 0}</td>
+                                    <td style={{ ...tdStyle, fontWeight: 'bold', color: '#1890ff' }}>{t4.subjects[s.key]?.count_curr || 0}</td>
+                                    {districtIds.map(id => {
+                                        const p = t4.regional[id].data[s.key]?.prev || 0;
+                                        const c = t4.regional[id].data[s.key]?.curr || 0;
+                                        return (
+                                            <React.Fragment key={`${s.key}-${id}`}>
+                                                <td style={tdStyle}>{p}</td>
+                                                <td style={{ ...tdStyle, fontWeight: c > 0 ? 'bold' : 'normal', color: c > 0 ? '#1890ff' : 'inherit' }}>{c}</td>
+                                            </React.Fragment>
+                                        );
+                                    })}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         );
     };
@@ -479,59 +519,86 @@ const AppealsPage: React.FC = () => {
         const t5 = autoReportsQuery.data?.table5 || { regional: {} };
         const regionalIds = Object.keys(t5.regional || {});
 
+        const headerColors = {
+            num_name: '#f1f5f9',
+            total: '#ffffff',
+            phys: '#fff7ed',
+            legal: '#f0f9ff'
+        };
+
+        const thStyleWithColor = (color: string) => ({ ...thStyle, backgroundColor: color, fontSize: '11px', padding: '8px 4px' });
+
         return (
-            <div style={{ overflowX: 'auto' }}>
-                <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1000 }}>
-                    <thead>
-                        <tr>
-                            <th style={thStyle} rowSpan={3}>№</th>
-                            <th style={{ ...thStyle, textAlign: 'left' }} rowSpan={3}>Viloyatlar</th>
-                            <th style={thStyle} colSpan={2} rowSpan={2}>Jami murojaatlar</th>
-                            <th style={thStyle} colSpan={8}>Jismoniy shaxslar bo'yicha</th>
-                            <th style={thStyle} colSpan={8}>Yuridik shaxslar bo'yicha</th>
-                        </tr>
-                        <tr>
-                            <th style={thStyle} colSpan={2}>Jami</th><th style={thStyle} colSpan={2}>Ariza</th><th style={thStyle} colSpan={2}>Shikoyat</th><th style={thStyle} colSpan={2}>Taklif</th>
-                            <th style={thStyle} colSpan={2}>Jami</th><th style={thStyle} colSpan={2}>Ariza</th><th style={thStyle} colSpan={2}>Shikoyat</th><th style={thStyle} colSpan={2}>Taklif</th>
-                        </tr>
-                        <tr>
-                            <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
-                            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                                <React.Fragment key={i}>
-                                    <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
-                                </React.Fragment>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {regionalIds.map((id, idx) => {
-                            const reg = t5.regional[id];
-                            return (
-                                <tr key={id}>
-                                    <td style={tdStyle}>{idx + 1}</td>
-                                    <td style={{ ...tdStyle, textAlign: 'left', fontWeight: 'bold' }}>{reg.name}</td>
-                                    <td style={tdStyle}>{reg.total.prev}</td><td style={{ ...tdStyle, fontWeight: 'bold' }}>{reg.total.curr}</td>
-                                    {/* Phys */}
-                                    <td style={tdStyle}>{reg.phys.prev.total}</td><td style={tdStyle}>{reg.phys.curr.total}</td>
-                                    <td style={tdStyle}>{reg.phys.prev.ariza}</td><td style={tdStyle}>{reg.phys.curr.ariza}</td>
-                                    <td style={tdStyle}>{reg.phys.prev.shikoyat}</td><td style={tdStyle}>{reg.phys.curr.shikoyat}</td>
-                                    <td style={tdStyle}>{reg.phys.prev.taklif}</td><td style={tdStyle}>{reg.phys.curr.taklif}</td>
-                                    {/* Legal */}
-                                    <td style={tdStyle}>{reg.legal.prev.total}</td><td style={tdStyle}>{reg.legal.curr.total}</td>
-                                    <td style={tdStyle}>{reg.legal.prev.ariza}</td><td style={tdStyle}>{reg.legal.curr.ariza}</td>
-                                    <td style={tdStyle}>{reg.legal.prev.shikoyat}</td><td style={tdStyle}>{reg.legal.curr.shikoyat}</td>
-                                    <td style={tdStyle}>{reg.legal.prev.taklif}</td><td style={tdStyle}>{reg.legal.curr.taklif}</td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
+            <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', fontWeight: 'bold' }}>
+                    {currYear} йилнинг {dayjs(month).format('MMMM')} ойида келиб тушган мурожаатларнинг <span style={{ color: '#1890ff' }}>турлари ва шахс тоифаси</span> бўйича таҳлили
+                </h3>
+                <div style={{ overflowX: 'auto' }}>
+                    <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1200, border: '1px solid #000' }}>
+                        <thead>
+                            <tr>
+                                <th style={thStyleWithColor(headerColors.num_name)} rowSpan={3}>№</th>
+                                <th style={{ ...thStyleWithColor(headerColors.num_name), textAlign: 'left', minWidth: 200 }} rowSpan={3}>Ҳудудлар nomi</th>
+                                <th style={thStyleWithColor(headerColors.total)} colSpan={2} rowSpan={2}>Жами мурожаатлар сони</th>
+                                <th style={thStyleWithColor(headerColors.phys)} colSpan={8}>Жисмоний шахслар бўйича</th>
+                                <th style={thStyleWithColor(headerColors.legal)} colSpan={8}>Юридик шахслар бўйича</th>
+                            </tr>
+                            <tr>
+                                <th style={thStyleWithColor(headerColors.phys)} colSpan={2}>Жами</th><th style={thStyleWithColor(headerColors.phys)} colSpan={2}>Ариза</th><th style={thStyleWithColor(headerColors.phys)} colSpan={2}>Шикоят</th><th style={thStyleWithColor(headerColors.phys)} colSpan={2}>Таклиф</th>
+                                <th style={thStyleWithColor(headerColors.legal)} colSpan={2}>Жами</th><th style={thStyleWithColor(headerColors.legal)} colSpan={2}>Ариза</th><th style={thStyleWithColor(headerColors.legal)} colSpan={2}>Шикоят</th><th style={thStyleWithColor(headerColors.legal)} colSpan={2}>Таклиф</th>
+                            </tr>
+                            <tr>
+                                <th style={thStyleWithColor(headerColors.total)}>{prevYear}</th><th style={thStyleWithColor(headerColors.total)}>{currYear}</th>
+                                {[1, 2, 3, 4].map(i => (
+                                    <React.Fragment key={`phys-${i}`}>
+                                        <th style={thStyleWithColor(headerColors.phys)}>{prevYearShort}</th><th style={thStyleWithColor(headerColors.phys)}>{currYearShort}</th>
+                                    </React.Fragment>
+                                ))}
+                                {[1, 2, 3, 4].map(i => (
+                                    <React.Fragment key={`legal-${i}`}>
+                                        <th style={thStyleWithColor(headerColors.legal)}>{prevYearShort}</th><th style={thStyleWithColor(headerColors.legal)}>{currYearShort}</th>
+                                    </React.Fragment>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {regionalIds.map((id, idx) => {
+                                const reg = t5.regional[id];
+                                return (
+                                    <tr key={id}>
+                                        <td style={tdStyle}>{idx + 1}</td>
+                                        <td style={{ ...tdStyle, textAlign: 'left', fontWeight: 'bold' }}>{reg.name}</td>
+                                        <td style={tdStyle}>{reg.total.prev}</td><td style={{ ...tdStyle, fontWeight: 'bold', color: '#1890ff' }}>{reg.total.curr}</td>
+                                        {/* Phys */}
+                                        <td style={tdStyle}>{reg.phys.prev.total}</td><td style={tdStyle}>{reg.phys.curr.total}</td>
+                                        <td style={tdStyle}>{reg.phys.prev.ariza}</td><td style={tdStyle}>{reg.phys.curr.ariza}</td>
+                                        <td style={tdStyle}>{reg.phys.prev.shikoyat}</td><td style={tdStyle}>{reg.phys.curr.shikoyat}</td>
+                                        <td style={tdStyle}>{reg.phys.prev.taklif}</td><td style={tdStyle}>{reg.phys.curr.taklif}</td>
+                                        {/* Legal */}
+                                        <td style={tdStyle}>{reg.legal.prev.total}</td><td style={tdStyle}>{reg.legal.curr.total}</td>
+                                        <td style={tdStyle}>{reg.legal.prev.ariza}</td><td style={tdStyle}>{reg.legal.curr.ariza}</td>
+                                        <td style={tdStyle}>{reg.legal.prev.shikoyat}</td><td style={tdStyle}>{reg.legal.curr.shikoyat}</td>
+                                        <td style={tdStyle}>{reg.legal.prev.taklif}</td><td style={tdStyle}>{reg.legal.curr.taklif}</td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         );
     };
 
     const renderTable6 = () => {
         const t6 = autoReportsQuery.data?.table6 || { people: { curr: {} }, virtual: { curr: {} } };
+
+        const headerColors = {
+            people: '#f0f9ff',
+            virtual: '#f5f3ff',
+            sub: '#ffffff'
+        };
+
+        const thStyleWithColor = (color: string) => ({ ...thStyle, backgroundColor: color, fontSize: '11px', padding: '8px 4px' });
 
         const renderStatusCells = (typeData: any) => [
             typeData.total || 0,
@@ -545,31 +612,49 @@ const AppealsPage: React.FC = () => {
         ];
 
         return (
-            <div style={{ overflowX: 'auto' }}>
-                <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1200 }}>
-                    <thead>
-                        <tr>
-                            <th style={thStyle} colSpan={8}>Xalq qabulxonalari orqali</th>
-                            <th style={thStyle} colSpan={8}>Virtual qabulxona orqali</th>
-                        </tr>
-                        <tr>
-                            <th style={thStyle}>Jami</th><th style={thStyle}>Qanoat.</th><th style={thStyle}>Tushun.</th><th style={thStyle}>Tegish.</th>
-                            <th style={thStyle}>Rad</th><th style={thStyle}>Anonim</th><th style={thStyle}>Ko'ril.</th><th style={thStyle}>Muddati.</th>
-                            <th style={thStyle}>Jami</th><th style={thStyle}>Qanoat.</th><th style={thStyle}>Tushun.</th><th style={thStyle}>Tegish.</th>
-                            <th style={thStyle}>Rad</th><th style={thStyle}>Anonim</th><th style={thStyle}>Ko'ril.</th><th style={thStyle}>Muddati.</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            {renderStatusCells(t6.people.curr).map((v, i) => (
-                                <td key={`p-${i}`} style={{ ...tdStyle, fontWeight: i === 0 || i === 6 ? 'bold' : 'normal', borderRight: i === 7 ? '2px solid #e2e8f0' : tdStyle.border }}>{v}</td>
-                            ))}
-                            {renderStatusCells(t6.virtual.curr).map((v, i) => (
-                                <td key={`v-${i}`} style={{ ...tdStyle, fontWeight: i === 0 || i === 6 ? 'bold' : 'normal' }}>{v}</td>
-                            ))}
-                        </tr>
-                    </tbody>
-                </table>
+            <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', fontWeight: 'bold' }}>
+                    Ўзбекистон Республикаси Президентининг <span style={{ color: '#1890ff' }}>Халқ ва Виртуал қабулхоналари</span> орқали келиб тушган мурожаатларнинг кўриб чиқилиши тўғрисида маълумот
+                </h3>
+                <div style={{ overflowX: 'auto' }}>
+                    <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1400, border: '1px solid #000' }}>
+                        <thead>
+                            <tr>
+                                <th style={thStyleWithColor(headerColors.people)} colSpan={8}>Халқ қабулхоналари орқали</th>
+                                <th style={thStyleWithColor(headerColors.virtual)} colSpan={8}>Виртуал қаabulхона орқали</th>
+                            </tr>
+                            <tr style={{ height: '80px' }}>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Жами</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Қаноатлантирилди</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Тушунтирилди</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Тегишлилиги бўйича</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Рад этилди</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Кўрмасдан қолдирилди</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Кўриб чиқилмоқда</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Муддати бузилган</div></th>
+                                
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Жами</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Қаноатлантирилди</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Тушунтирилди</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Тегишлилиги бўйича</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Рад этилди</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Кўрмасдан қолдирилди</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Кўриб чиқилмоқда</div></th>
+                                <th style={thStyleWithColor(headerColors.sub)}><div className="vertical-text">Муддати бузилган</div></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style={{ height: '50px' }}>
+                                {renderStatusCells(t6.people.curr).map((v, i) => (
+                                    <td key={`p-${i}`} style={{ ...tdStyle, fontWeight: i === 0 || i === 6 ? 'bold' : 'normal', fontSize: '14px', borderRight: i === 7 ? '2px solid #000' : '1px solid #000' }}>{v}</td>
+                                ))}
+                                {renderStatusCells(t6.virtual.curr).map((v, i) => (
+                                    <td key={`v-${i}`} style={{ ...tdStyle, fontWeight: i === 0 || i === 6 ? 'bold' : 'normal', fontSize: '14px' }}>{v}</td>
+                                ))}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         );
     };
@@ -577,47 +662,62 @@ const AppealsPage: React.FC = () => {
     const renderTable7 = () => {
         const t7 = autoReportsQuery.data?.table7 || { disciplinary: { fine: {}, reprimand: {}, dismissal: {}, total: {} }, administrative: {}, criminal: {}, grand_total: {} };
 
+        const headerColors = {
+            num_name: '#f1f5f9',
+            disciplinary: '#fff7ed',
+            measures: '#ffffff'
+        };
+
+        const thStyleWithColor = (color: string) => ({ ...thStyle, backgroundColor: color, fontSize: '11px', padding: '8px 4px' });
+
         return (
-            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-                <thead>
-                    <tr>
-                        <th style={thStyle} rowSpan={3}>№</th>
-                        <th style={{ ...thStyle, textAlign: 'left', minWidth: 200 }} rowSpan={3}>Javobgarlik turlari</th>
-                        <th style={thStyle} colSpan={10}>Intizomiy javobgarlik</th>
-                        <th style={thStyle} colSpan={2} rowSpan={2}>Ma'muriy javobgarlik</th>
-                        <th style={thStyle} colSpan={2} rowSpan={2}>Jinoiy javobgarlik</th>
-                        <th style={thStyle} colSpan={2} rowSpan={2}>Jami</th>
-                    </tr>
-                    <tr>
-                        <th style={thStyle} colSpan={2}>Jarima</th>
-                        <th style={thStyle} colSpan={2}>Hayfsan</th>
-                        <th style={thStyle} colSpan={2}>Lavozimidan ozod etish</th>
-                        <th style={thStyle} colSpan={2}>Jami</th>
-                    </tr>
-                    <tr>
-                        <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
-                        <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
-                        <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
-                        <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
-                        <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
-                        <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
-                        <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style={tdStyle}>1</td>
-                        <td style={{ ...tdStyle, textAlign: 'left', fontWeight: 'bold' }}>Jami ko'rilgan choralar</td>
-                        <td style={tdStyle}>{t7.disciplinary.fine.prev || 0}</td><td style={tdStyle}>{t7.disciplinary.fine.curr || 0}</td>
-                        <td style={tdStyle}>{t7.disciplinary.reprimand.prev || 0}</td><td style={tdStyle}>{t7.disciplinary.reprimand.curr || 0}</td>
-                        <td style={tdStyle}>{t7.disciplinary.dismissal.prev || 0}</td><td style={tdStyle}>{t7.disciplinary.dismissal.curr || 0}</td>
-                        <td style={tdStyle}>{t7.disciplinary.total.prev || 0}</td><td style={{ ...tdStyle, fontWeight: 'bold' }}>{t7.disciplinary.total.curr || 0}</td>
-                        <td style={tdStyle}>{t7.administrative.prev || 0}</td><td style={tdStyle}>{t7.administrative.curr || 0}</td>
-                        <td style={tdStyle}>{t7.criminal.prev || 0}</td><td style={tdStyle}>{t7.criminal.curr || 0}</td>
-                        <td style={tdStyle}>{t7.grand_total.prev || 0}</td><td style={{ ...tdStyle, fontWeight: 'bold', color: '#1890ff' }}>{t7.grand_total.curr || 0}</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', fontWeight: 'bold' }}>
+                    {currYear} йилнинг {dayjs(month).format('MMMM')} ойида мурожаатларни кўриб чиқиш жараёнида <span style={{ color: '#1890ff' }}>қўлланилган чоралар</span> тўғрисида маълумот
+                </h3>
+                <div style={{ overflowX: 'auto' }}>
+                    <table style={{ borderCollapse: 'collapse', width: '100%', border: '1px solid #000' }}>
+                        <thead>
+                            <tr>
+                                <th style={thStyleWithColor(headerColors.num_name)} rowSpan={3}>№</th>
+                                <th style={{ ...thStyleWithColor(headerColors.num_name), textAlign: 'left', minWidth: 200 }} rowSpan={3}>Жавобгарлик турлари</th>
+                                <th style={thStyleWithColor(headerColors.disciplinary)} colSpan={8}>Интизомий жавобгарлик</th>
+                                <th style={thStyleWithColor(headerColors.measures)} colSpan={2} rowSpan={2}>Маъмурий жавобгарлик</th>
+                                <th style={thStyleWithColor(headerColors.measures)} colSpan={2} rowSpan={2}>Жиноий жавобгарлик</th>
+                                <th style={thStyleWithColor(headerColors.measures)} colSpan={2} rowSpan={2}>Жами</th>
+                            </tr>
+                            <tr>
+                                <th style={thStyleWithColor(headerColors.disciplinary)} colSpan={2}>Жарима</th>
+                                <th style={thStyleWithColor(headerColors.disciplinary)} colSpan={2}>Ҳайфсан</th>
+                                <th style={thStyleWithColor(headerColors.disciplinary)} colSpan={2}>Лавозимидан озод этиш</th>
+                                <th style={thStyleWithColor(headerColors.disciplinary)} colSpan={2}>Жами</th>
+                            </tr>
+                            <tr>
+                                <th style={thStyleWithColor(headerColors.disciplinary)}>{prevYearShort}</th><th style={thStyleWithColor(headerColors.disciplinary)}>{currYearShort}</th>
+                                <th style={thStyleWithColor(headerColors.disciplinary)}>{prevYearShort}</th><th style={thStyleWithColor(headerColors.disciplinary)}>{currYearShort}</th>
+                                <th style={thStyleWithColor(headerColors.disciplinary)}>{prevYearShort}</th><th style={thStyleWithColor(headerColors.disciplinary)}>{currYearShort}</th>
+                                <th style={thStyleWithColor(headerColors.disciplinary)}>{prevYearShort}</th><th style={thStyleWithColor(headerColors.disciplinary)}>{currYearShort}</th>
+                                <th style={thStyleWithColor(headerColors.measures)}>{prevYearShort}</th><th style={thStyleWithColor(headerColors.measures)}>{currYearShort}</th>
+                                <th style={thStyleWithColor(headerColors.measures)}>{prevYearShort}</th><th style={thStyleWithColor(headerColors.measures)}>{currYearShort}</th>
+                                <th style={thStyleWithColor(headerColors.measures)}>{prevYearShort}</th><th style={thStyleWithColor(headerColors.measures)}>{currYearShort}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style={tdStyle}>1</td>
+                                <td style={{ ...tdStyle, textAlign: 'left', fontWeight: 'bold' }}>Қўлланилган чоралар сони</td>
+                                <td style={tdStyle}>{t7.disciplinary.fine.prev || 0}</td><td style={tdStyle}>{t7.disciplinary.fine.curr || 0}</td>
+                                <td style={tdStyle}>{t7.disciplinary.reprimand.prev || 0}</td><td style={tdStyle}>{t7.disciplinary.reprimand.curr || 0}</td>
+                                <td style={tdStyle}>{t7.disciplinary.dismissal.prev || 0}</td><td style={tdStyle}>{t7.disciplinary.dismissal.curr || 0}</td>
+                                <td style={tdStyle}>{t7.disciplinary.total.prev || 0}</td><td style={{ ...tdStyle, fontWeight: 'bold' }}>{t7.disciplinary.total.curr || 0}</td>
+                                <td style={tdStyle}>{t7.administrative.prev || 0}</td><td style={tdStyle}>{t7.administrative.curr || 0}</td>
+                                <td style={tdStyle}>{t7.criminal.prev || 0}</td><td style={tdStyle}>{t7.criminal.curr || 0}</td>
+                                <td style={tdStyle}>{t7.grand_total.prev || 0}</td><td style={{ ...tdStyle, fontWeight: 'bold', color: '#1890ff' }}>{t7.grand_total.curr || 0}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         );
     };
 

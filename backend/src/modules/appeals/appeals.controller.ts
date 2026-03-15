@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, UseGuards, Req, Res } from "@nestjs/common";
+import { Controller, Get, Post, Body, Query, UseGuards, Req, Res, Param } from "@nestjs/common";
 import { AppealsService } from "./appeals.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { CreateAppealRecordDto } from "./dto/create-appeal-record.dto";
@@ -38,6 +38,14 @@ export class AppealsController {
         @Query("month") month: string,
     ) {
         return this.appealsService.getRecords(organizationId, month);
+    }
+
+    @Post("records/:id/close")
+    async closeRecord(
+        @Param("id") id: string,
+        @Body() body: { status: any, closureDate: string, consequence?: any }
+    ) {
+        return this.appealsService.closeRecord(id, body.status, body.closureDate, body.consequence);
     }
 
     @Get("auto-reports")
