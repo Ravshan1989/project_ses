@@ -108,6 +108,9 @@ export class AppealsService {
         const prevYear = currentYear - 1;
         const prevMonth = `${prevYear}-${mStr}`;
 
+        const org = await this.orgRepo.findOne({ where: { id: organizationId }, relations: ['children'] });
+        if (!org) throw new Error("Organization not found");
+
         const records = await this.getRecords(organizationId, month);
         const prevRecords = await this.getRecords(organizationId, prevMonth);
 
@@ -739,19 +742,19 @@ export class AppealsService {
         doc.fontSize(12).font('Helvetica-Bold').text("6-Jadval: Xalq va Virtual qabulxonalar", { underline: true });
         doc.moveDown(0.5);
         const t6 = reports.table6;
-        doc.fontSize(10).font('Helvetica').text(`Xalq qabulxonasi: Jami ${prevYear}: ${t6.people_total_prev || 0}, ${currYear}: ${t6.people_total_curr || 0}`);
-        doc.text(`  (2026 natijalari: Qanoat: ${t6.people_satisfied_curr || 0}, Tushun: ${t6.people_explained_curr || 0}, Rad: ${t6.people_rejected_curr || 0})`);
-        doc.text(`Virtual qabulxona: Jami ${prevYear}: ${t6.virtual_total_prev || 0}, ${currYear}: ${t6.virtual_total_curr || 0}`);
-        doc.text(`  (2026 natijalari: Qanoat: ${t6.virtual_satisfied_curr || 0}, Tushun: ${t6.virtual_explained_curr || 0}, Rad: ${t6.virtual_rejected_curr || 0})`);
+        doc.fontSize(10).font('Helvetica').text(`Xalq qabulxonasi: Jami ${prevYear}: ${t6.people.prev.total || 0}, ${currYear}: ${t6.people.curr.total || 0}`);
+        doc.text(`  (2026 natijalari: Qanoat: ${t6.people.curr.satisfied || 0}, Tushun: ${t6.people.curr.explained || 0}, Rad: ${t6.people.curr.rejected || 0})`);
+        doc.text(`Virtual qabulxona: Jami ${prevYear}: ${t6.virtual.prev.total || 0}, ${currYear}: ${t6.virtual.curr.total || 0}`);
+        doc.text(`  (2026 natijalari: Qanoat: ${t6.virtual.curr.satisfied || 0}, Tushun: ${t6.virtual.curr.explained || 0}, Rad: ${t6.virtual.curr.rejected || 0})`);
         doc.moveDown();
 
         // 7-Jadval - Consequences
         doc.fontSize(12).font('Helvetica-Bold').text("7-Jadval: Intizomiy choralar", { underline: true });
         doc.moveDown(0.5);
         const t7 = reports.table7;
-        doc.fontSize(10).font('Helvetica').text(`Jami choralar: ${prevYear}: ${t7.grand_total_prev || 0} | ${currYear}: ${t7.grand_total_curr || 0}`);
-        doc.text(`- Intizomiy: ${prevYear}: ${t7.disciplinary_total_prev || 0} | ${currYear}: ${t7.disciplinary_total_curr || 0}`);
-        doc.text(`- Ma'muriy/Jinoiy: ${t7.administrative_curr || 0} / ${t7.criminal_curr || 0}`);
+        doc.fontSize(10).font('Helvetica').text(`Jami choralar: ${prevYear}: ${t7.grand_total.prev || 0} | ${currYear}: ${t7.grand_total.curr || 0}`);
+        doc.text(`- Intizomiy: ${prevYear}: ${t7.disciplinary.total.prev || 0} | ${currYear}: ${t7.disciplinary.total.curr || 0}`);
+        doc.text(`- Ma'muriy/Jinoiy: ${t7.administrative.curr || 0} / ${t7.criminal.curr || 0}`);
         doc.moveDown();
 
         doc.end();
