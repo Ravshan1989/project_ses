@@ -34,7 +34,7 @@ export class SubmissionsService {
     private organizationsService: OrganizationsService,
     @InjectRepository(Template)
     private templateRepository: Repository<Template>,
-  ) { }
+  ) {}
 
   async saveFieldInspection(data: Partial<FieldInspection>) {
     const inspection = this.fieldInspectionRepo.create(data);

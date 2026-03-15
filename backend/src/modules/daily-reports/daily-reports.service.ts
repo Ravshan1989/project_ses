@@ -50,7 +50,7 @@ export class DailyReportsService {
     private submissionsService: SubmissionsService,
     @Inject(forwardRef(() => ExportsService))
     private exportsService: ExportsService,
-  ) { }
+  ) {}
 
   @Cron("0 20 * * *") // Every day at 20:00
   async handleDailyCron() {
@@ -64,23 +64,30 @@ export class DailyReportsService {
     // 1. Fetch data for today
     const fieldInspections = await this.submissionsService.findFieldInspections(
       { startDate: todayStr, endDate: todayStr },
-      { role: "ADMIN", organization: null } as any
+      { role: "ADMIN", organization: null } as any,
     );
 
     // 2. Calculate Stats
     const totalReports = fieldInspections.length;
-    const schools = fieldInspections.filter(i => i.type === FieldInspectionType.SCHOOL).length;
-    const kindergartens = fieldInspections.filter(i => i.type === FieldInspectionType.KINDERGARTEN).length;
-    const problems = fieldInspections.filter(i => i.type === FieldInspectionType.PROBLEM).length;
+    const schools = fieldInspections.filter(
+      (i) => i.type === FieldInspectionType.SCHOOL,
+    ).length;
+    const kindergartens = fieldInspections.filter(
+      (i) => i.type === FieldInspectionType.KINDERGARTEN,
+    ).length;
+    const problems = fieldInspections.filter(
+      (i) => i.type === FieldInspectionType.PROBLEM,
+    ).length;
 
     // District ranking logic
     const districtStats = {};
-    fieldInspections.forEach(i => {
+    fieldInspections.forEach((i) => {
       const d = i.districtName || "Noma'lum";
       districtStats[d] = (districtStats[d] || 0) + 1;
     });
 
-    const summaryText = `📅 *Kunlik Tezkor Xulosa (${todayStr})*\n\n` +
+    const summaryText =
+      `📅 *Kunlik Tezkor Xulosa (${todayStr})*\n\n` +
       `📊 *Umumiy statistika:*\n` +
       `✅ Jami hisobotlar: ${totalReports}\n` +
       `🏫 Maktablar: ${schools}\n` +
@@ -95,20 +102,39 @@ export class DailyReportsService {
     try {
       // 3. Generate Files
       // Note: We'll need to implement these methods in ExportsService
-      const pdfPath = await this.exportsService.generateDailySummaryPdf(todayStr, {
-        totalReports, schools, kindergartens, problems, districtStats
-      });
-      const excelPath = await this.exportsService.generateDailySummaryExcel(todayStr, {
-        totalReports, schools, kindergartens, problems, districtStats
-      });
+      const pdfPath = await this.exportsService.generateDailySummaryPdf(
+        todayStr,
+        {
+          totalReports,
+          schools,
+          kindergartens,
+          problems,
+          districtStats,
+        },
+      );
+      const excelPath = await this.exportsService.generateDailySummaryExcel(
+        todayStr,
+        {
+          totalReports,
+          schools,
+          kindergartens,
+          problems,
+          districtStats,
+        },
+      );
 
       // 4. Send to Telegram
       // UZ: Bot faqat ro'yxatga olish uchun qoldirilgan, hisobot xabarnomalari o'chirildi
       // await this.telegramService.sendDailyReportWithFiles(summaryText, pdfPath, excelPath);
 
-      console.log("[DailyReportsService] Automated report generated successfully.");
+      console.log(
+        "[DailyReportsService] Automated report generated successfully.",
+      );
     } catch (error) {
-      console.error("[DailyReportsService] Error generating automated report:", error);
+      console.error(
+        "[DailyReportsService] Error generating automated report:",
+        error,
+      );
     }
   }
 
@@ -1010,16 +1036,16 @@ export class DailyReportsService {
 
 /**
  * [ORIGINAL_REDACTED_CODE_PRESERVATION]
- * 
+ *
  * Original methods used to call telegramService:
- * 
+ *
  * async upsertHepatitis(dto: CreateHepatitisDto) {
  *   const report = this.reportRepo.create(dto);
  *   const saved = await this.reportRepo.save(report);
  *   await this.telegramService.sendReportNotification(saved); // REMOVED FOR OPTIMIZATION
  *   return saved;
  * }
- * 
+ *
  * Modified methods in DailyReportsService:
  * - upsertEpidemiology (Removed telegram notification)
  * - bulkUpsertBatch (Split epi and sanitary logic)

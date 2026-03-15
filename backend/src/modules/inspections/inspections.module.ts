@@ -8,9 +8,16 @@ import { InspectionTable3 } from "./entities/inspection-table3.entity";
 import { InspectionTable4 } from "./entities/inspection-table4.entity";
 
 @Module({
-    imports: [TypeOrmModule.forFeature([InspectionRecord, InspectionTable2, InspectionTable3, InspectionTable4])],
-    providers: [InspectionsService],
-    controllers: [InspectionsController],
-    exports: [InspectionsService],
+  imports: [
+    TypeOrmModule.forFeature([
+      InspectionRecord,
+      InspectionTable2,
+      InspectionTable3,
+      InspectionTable4,
+    ]),
+  ],
+  providers: [InspectionsService],
+  controllers: [InspectionsController],
+  exports: [InspectionsService],
 })
-export class InspectionsModule { }
+export class InspectionsModule {}

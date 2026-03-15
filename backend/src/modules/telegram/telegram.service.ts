@@ -20,11 +20,14 @@ export class TelegramService implements OnModuleInit {
   private readonly logger = new Logger(TelegramService.name);
   private chatId: string;
   private adminChatId: string;
-  private userStates: Map<number, {
-    step: string;
-    data: any;
-    timeout?: NodeJS.Timeout;
-  }> = new Map();
+  private userStates: Map<
+    number,
+    {
+      step: string;
+      data: any;
+      timeout?: NodeJS.Timeout;
+    }
+  > = new Map();
 
   constructor(
     private configService: ConfigService,
@@ -102,7 +105,7 @@ export class TelegramService implements OnModuleInit {
           if (user) {
             return ctx.reply(
               `Assalomu alaykum!\n\n` +
-              `Davom etish uchun telefon raqamingizni tasdiqlang.`,
+                `Davom etish uchun telefon raqamingizni tasdiqlang.`,
               Markup.keyboard([
                 [Markup.button.contactRequest("📞 Telefon raqamni yuborish")],
               ]).resize(),
@@ -126,7 +129,7 @@ export class TelegramService implements OnModuleInit {
 
       // UZ: Telefon raqamni turli formatlar bilan qidiramiz
       const digitsOnly = rawPhone.replace(/\D/g, ""); // 99807736812
-      const withPlus = `+${digitsOnly}`;               // +99807736812
+      const withPlus = `+${digitsOnly}`; // +99807736812
 
       try {
         // UZ: Avval +XXX formatda qidiramiz, keyin raqam bilan
@@ -148,14 +151,17 @@ export class TelegramService implements OnModuleInit {
 
           await ctx.reply(
             `✅ Tasdiqlandi!\n\n` +
-            `Assalomu alaykum, ${user.firstName}!\n\n` +
-            `Siz muvaffaqiyatli ro'yxatdan o'tdingiz.\n` +
-            `Ma'mulotlaringiz tekshirilmoqda.\n\n` +
-            `${user.organization?.name || "Tashkilot"} kadri tasdiqlashidan so'ng login va parol yuboriladi.`,
+              `Assalomu alaykum, ${user.firstName}!\n\n` +
+              `Siz muvaffaqiyatli ro'yxatdan o'tdingiz.\n` +
+              `Ma'mulotlaringiz tekshirilmoqda.\n\n` +
+              `${user.organization?.name || "Tashkilot"} kadri tasdiqlashidan so'ng login va parol yuboriladi.`,
             Markup.removeKeyboard(),
           );
         } else {
-          await ctx.reply(`❌ Xatolik! Bu telefon raqam tizimda topilmadi.`, Markup.removeKeyboard());
+          await ctx.reply(
+            `❌ Xatolik! Bu telefon raqam tizimda topilmadi.`,
+            Markup.removeKeyboard(),
+          );
         }
       } catch (error) {
         this.logger.error("Error verifying phone number:", error);
@@ -180,12 +186,9 @@ export class TelegramService implements OnModuleInit {
   private async showMainMenu(ctx: any) {
     return ctx.reply(
       "Assalomu alaykum! Bu SMART SES ro'yxatga olish botidir.\n\nSiz ushbu bot orqali tizimga ro'yxatdan o'tishingiz va login/parolingizni olishingiz mumkin.",
-      Markup.keyboard([
-        ["📞 Aloqa"]
-      ]).resize()
+      Markup.keyboard([["📞 Aloqa"]]).resize(),
     );
   }
-
 
   // UZ: Faqat ro'yxatga olish bilan bog'liq xabarnomalar qoldirildi
 
@@ -324,13 +327,22 @@ export class TelegramService implements OnModuleInit {
 <i>Foydalanuvchiga ma'lumotlar yuborildi.</i>
       `.trim();
 
-      await ctx.editMessageText(approvalMessage, { parse_mode: "HTML" }).catch(e => {
-        this.logger.warn(`Could not edit message for user ${userId}: ${e.message}`);
-      });
+      await ctx
+        .editMessageText(approvalMessage, { parse_mode: "HTML" })
+        .catch((e) => {
+          this.logger.warn(
+            `Could not edit message for user ${userId}: ${e.message}`,
+          );
+        });
 
-      this.logger.log(`User approved successfully via Telegram: ${user.username} (User ID: ${userId})`);
+      this.logger.log(
+        `User approved successfully via Telegram: ${user.username} (User ID: ${userId})`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to approve user ${userId} via Telegram:`, error);
+      this.logger.error(
+        `Failed to approve user ${userId} via Telegram:`,
+        error,
+      );
       await ctx.reply("❌ Tasdiqlashda xatolik yuz berdi").catch(() => {});
     }
   }
@@ -355,9 +367,11 @@ export class TelegramService implements OnModuleInit {
 <i>Foydalanuvchi ma'lumotlar bazasidan o'chirildi.</i>
       `.trim();
 
-      await ctx.editMessageText(rejectionMessage, { parse_mode: "HTML" }).catch(e => {
-        this.logger.warn("Could not edit message, might be already edited");
-      });
+      await ctx
+        .editMessageText(rejectionMessage, { parse_mode: "HTML" })
+        .catch((e) => {
+          this.logger.warn("Could not edit message, might be already edited");
+        });
 
       this.logger.log(`User rejected and deleted: ${userId}`);
     } catch (error) {
@@ -365,7 +379,6 @@ export class TelegramService implements OnModuleInit {
       await ctx.reply("❌ Rad etishda xatolik yuz berdi").catch(() => {});
     }
   }
-
 
   private getRoleLabel(role: string): string {
     const roleLabels = {
@@ -452,27 +465,32 @@ Login/Parol Adminga yuborilmoqda:
       await this.bot.telegram.sendMessage(user.telegramChatId, message, {
         parse_mode: "HTML",
       });
-      this.logger.log(`Message sent to user ${user.username} (${user.telegramChatId})`);
+      this.logger.log(
+        `Message sent to user ${user.username} (${user.telegramChatId})`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to send message to user ${user.username}`, error);
+      this.logger.error(
+        `Failed to send message to user ${user.username}`,
+        error,
+      );
     }
   }
 }
 
 /**
  * [ORIGINAL_REDACTED_CODE_PRESERVATION]
- * 
+ *
  * async sendReportNotification(report: any): Promise<void> {
  *   if (!this.bot || !this.chatId) return;
  *   const message = `📊 Yangi hisobot: ${report.id}`;
  *   await this.bot.telegram.sendMessage(this.chatId, message);
  * }
- * 
+ *
  * async sendDailyReportWithFiles(report: any, files: any[]): Promise<void> {
  *   if (!this.bot || !this.chatId) return;
  *   // ... logic for sending files ...
  * }
- * 
+ *
  * async getDailyStats(): Promise<any> {
  *   // ... logic for stats ...
  * }

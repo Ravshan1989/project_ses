@@ -1,28 +1,28 @@
 import { IsString, IsOptional, IsInt } from "class-validator";
 
 export class CreateInspectionRecordDto {
-    @IsString()
-    organization_id: string;
+  @IsString()
+  organization_id: string;
 
-    @IsString()
-    period_month: string;
+  @IsString()
+  period_month: string;
 
-    @IsString()
-    object_name: string;
+  @IsString()
+  object_name: string;
 
-    @IsOptional()
-    @IsString()
-    transfer_date?: string;
+  @IsOptional()
+  @IsString()
+  transfer_date?: string;
 
-    @IsOptional()
-    @IsString()
-    reason?: string;
+  @IsOptional()
+  @IsString()
+  reason?: string;
 
-    @IsOptional()
-    @IsString()
-    measures_taken?: string;
+  @IsOptional()
+  @IsString()
+  measures_taken?: string;
 
-    @IsOptional()
-    @IsInt()
-    sort_order?: number;
+  @IsOptional()
+  @IsInt()
+  sort_order?: number;
 }

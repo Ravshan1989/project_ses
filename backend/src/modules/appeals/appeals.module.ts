@@ -14,21 +14,21 @@ import { Organization } from "../organizations/entities/organization.entity";
 import { AppealsReminderService } from "./appeals-reminder.service";
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([
-            AppealsTable1,
-            AppealsTable2,
-            AppealsTable3,
-            AppealsTable4,
-            AppealsTable5,
-            AppealsTable6,
-            AppealsTable7,
-            AppealRecord,
-            Organization,
-        ]),
-    ],
-    providers: [AppealsService, AppealsReminderService],
-    controllers: [AppealsController],
-    exports: [AppealsService],
+  imports: [
+    TypeOrmModule.forFeature([
+      AppealsTable1,
+      AppealsTable2,
+      AppealsTable3,
+      AppealsTable4,
+      AppealsTable5,
+      AppealsTable6,
+      AppealsTable7,
+      AppealRecord,
+      Organization,
+    ]),
+  ],
+  providers: [AppealsService, AppealsReminderService],
+  controllers: [AppealsController],
+  exports: [AppealsService],
 })
-export class AppealsModule { }
+export class AppealsModule {}

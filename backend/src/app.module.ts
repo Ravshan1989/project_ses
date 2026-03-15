@@ -88,4 +88,4 @@ import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core"; // UZ: Global interce
     // { provide: APP_INTERCEPTOR, useClass: NotificationInterceptor }, // UZ: Bildirishnomalar uchun interceptor
   ],
 })
-export class AppModule { }
+export class AppModule {}

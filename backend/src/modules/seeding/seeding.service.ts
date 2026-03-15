@@ -29,7 +29,7 @@ export class SeedingService implements OnModuleInit {
     @InjectRepository(DepartmentPermission)
     private readonly deptPermRepo: Repository<DepartmentPermission>,
     private readonly usersService: UsersService,
-  ) { }
+  ) {}
 
   async onModuleInit() {
     this.logger.log("Checking and seeding initial data...");
@@ -46,16 +46,22 @@ export class SeedingService implements OnModuleInit {
 
     if (existingHR) return;
 
-    const chirchiq = await this.orgRepo.findOne({ where: { name: "Chirchiq sh" } });
+    const chirchiq = await this.orgRepo.findOne({
+      where: { name: "Chirchiq sh" },
+    });
     if (!chirchiq) return;
 
-    let dept = await this.deptRepo.findOne({ where: { name: "Boshqaruv (Admin)" } });
+    let dept = await this.deptRepo.findOne({
+      where: { name: "Boshqaruv (Admin)" },
+    });
     if (!dept) {
-      dept = await this.deptRepo.save(this.deptRepo.create({
-        name: "Boshqaruv (Admin)",
-        level: 1,
-        isActive: true,
-      }));
+      dept = await this.deptRepo.save(
+        this.deptRepo.create({
+          name: "Boshqaruv (Admin)",
+          level: 1,
+          isActive: true,
+        }),
+      );
     }
 
     const salt = await bcrypt.genSalt();
@@ -77,7 +83,8 @@ export class SeedingService implements OnModuleInit {
 
   private async seedAdmin() {
     const adminUsername = "admin";
-    const existingAdmin = await this.usersService.findOneByUsername(adminUsername);
+    const existingAdmin =
+      await this.usersService.findOneByUsername(adminUsername);
 
     if (existingAdmin) {
       this.logger.log("Admin user already exists.");
@@ -85,23 +92,31 @@ export class SeedingService implements OnModuleInit {
     }
 
     // Get/Create Department
-    let dept = await this.deptRepo.findOne({ where: { name: "Boshqaruv (Admin)" } });
+    let dept = await this.deptRepo.findOne({
+      where: { name: "Boshqaruv (Admin)" },
+    });
     if (!dept) {
-      dept = await this.deptRepo.save(this.deptRepo.create({
-        name: "Boshqaruv (Admin)",
-        description: "Sistem Administrator",
-        level: 1,
-        isActive: true,
-      }));
+      dept = await this.deptRepo.save(
+        this.deptRepo.create({
+          name: "Boshqaruv (Admin)",
+          description: "Sistem Administrator",
+          level: 1,
+          isActive: true,
+        }),
+      );
     }
 
     // Get/Create Viloyat Organization
-    let viloyat = await this.orgRepo.findOne({ where: { name: "Toshkent viloyati" } });
+    let viloyat = await this.orgRepo.findOne({
+      where: { name: "Toshkent viloyati" },
+    });
     if (!viloyat) {
-      viloyat = await this.orgRepo.save(this.orgRepo.create({
-        name: "Toshkent viloyati",
-        population: 3000000,
-      }));
+      viloyat = await this.orgRepo.save(
+        this.orgRepo.create({
+          name: "Toshkent viloyati",
+          population: 3000000,
+        }),
+      );
     }
 
     const salt = await bcrypt.genSalt();
@@ -194,10 +209,22 @@ export class SeedingService implements OnModuleInit {
       { code: "EDIT_FORM1_TABLE1", description: "Edit Form 1 Table 1" },
       { code: "VERIFY_REPORT", description: "Verify Report (Mudir)" },
       { code: "APPROVE_REPORT", description: "Approve Report (Rahbar)" },
-      { code: "VIEW_APPEALS", description: "View Appeals and Execution Discipline" },
-      { code: "EDIT_APPEALS", description: "Edit Appeals and Execution Discipline" },
-      { code: "VIEW_NUTRITION_HYGIENE", description: "View Nutrition Hygiene Reports" },
-      { code: "EDIT_NUTRITION_HYGIENE", description: "Edit Nutrition Hygiene Reports" },
+      {
+        code: "VIEW_APPEALS",
+        description: "View Appeals and Execution Discipline",
+      },
+      {
+        code: "EDIT_APPEALS",
+        description: "Edit Appeals and Execution Discipline",
+      },
+      {
+        code: "VIEW_NUTRITION_HYGIENE",
+        description: "View Nutrition Hygiene Reports",
+      },
+      {
+        code: "EDIT_NUTRITION_HYGIENE",
+        description: "Edit Nutrition Hygiene Reports",
+      },
       {
         code: "MANAGE_DEPARTMENTS",
         description: "Create/Edit Departments and Permissions",
@@ -486,10 +513,7 @@ export class SeedingService implements OnModuleInit {
       },
       {
         role: UserRole.LEAD_SPECIALIST,
-        perms: [
-          "VIEW_APPEALS",
-          "EDIT_APPEALS",
-        ],
+        perms: ["VIEW_APPEALS", "EDIT_APPEALS"],
         canCreate: true,
         canEdit: true,
         canApprove: false,

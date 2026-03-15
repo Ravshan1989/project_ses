@@ -34,7 +34,7 @@ import { ExportsModule } from "../exports/exports.module";
   controllers: [DailyReportsController, ApprovalController],
   exports: [DailyReportsService, VerificationService],
 })
-export class DailyReportsModule { }
+export class DailyReportsModule {}
 
 /**
  * [ORIGINAL_REDACTED_CODE_PRESERVATION]

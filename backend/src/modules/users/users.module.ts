@@ -7,10 +7,7 @@ import { AdminUsersController } from "./admin-users.controller";
 import { TelegramModule } from "../telegram/telegram.module";
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User]),
-    forwardRef(() => TelegramModule),
-  ],
+  imports: [TypeOrmModule.forFeature([User]), forwardRef(() => TelegramModule)],
   controllers: [UsersController, AdminUsersController],
   providers: [UsersService],
   exports: [UsersService], // Export UsersService for AuthModule

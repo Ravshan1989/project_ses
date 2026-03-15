@@ -23,8 +23,8 @@ async function bootstrap() {
   const passwordHash = await bcrypt.hash(password, salt);
 
   // Find Chirchiq sh
-  let org = await orgRepo.findOne({ where: { name: "Chirchiq sh" } });
-  
+  const org = await orgRepo.findOne({ where: { name: "Chirchiq sh" } });
+
   if (!org) {
     console.error("Organization 'Chirchiq sh' not found!");
     await app.close();
@@ -33,11 +33,13 @@ async function bootstrap() {
 
   let dept = await deptRepo.findOne({ where: { name: "Boshqaruv (Admin)" } });
   if (!dept) {
-     dept = await deptRepo.save(deptRepo.create({
+    dept = await deptRepo.save(
+      deptRepo.create({
         name: "Boshqaruv (Admin)",
         level: 1,
-        isActive: true
-     }));
+        isActive: true,
+      }),
+    );
   }
 
   const userData = {
@@ -48,7 +50,7 @@ async function bootstrap() {
     organizationId: org.id,
     departmentId: dept.id,
     passwordHash,
-    isActive: true
+    isActive: true,
   };
 
   const existing = await usersService.findOneByUsername(userData.username);

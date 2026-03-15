@@ -31,4 +31,4 @@ import { OrganizationsModule } from "../organizations/organizations.module";
   providers: [ExportsService, VerificationService],
   exports: [ExportsService],
 })
-export class ExportsModule { }
+export class ExportsModule {}

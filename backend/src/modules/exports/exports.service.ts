@@ -43,7 +43,7 @@ export class ExportsService {
     private readonly orgRepo: Repository<Organization>,
     private readonly diseasesService: DiseasesService,
     private readonly verificationService: VerificationService,
-  ) { }
+  ) {}
 
   async getFluReports(
     startDate: string,
@@ -1318,7 +1318,9 @@ export class ExportsService {
 
   async generateDailySummaryPdf(date: string, stats: any): Promise<string> {
     // Placeholder as pdfkit is not installed
-    console.log("[ExportsService] PDF generation requested but skipped (pdfkit missing)");
+    console.log(
+      "[ExportsService] PDF generation requested but skipped (pdfkit missing)",
+    );
     return "";
   }
 }

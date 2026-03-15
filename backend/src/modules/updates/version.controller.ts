@@ -33,8 +33,7 @@ export class VersionController {
     // Force 1.0.0 as a last resort to stop notification loop until new APK is built
     return {
       version: "1.0.0",
-      downloadUrl:
-        "https://project-ses.onrender.com/public/app-release.apk",
+      downloadUrl: "https://project-ses.onrender.com/public/app-release.apk",
       notes: "Jadvallar va Mudir tahlili yangilanishi",
     };
   }

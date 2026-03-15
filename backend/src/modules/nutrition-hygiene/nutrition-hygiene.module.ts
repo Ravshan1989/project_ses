@@ -11,20 +11,20 @@ import { NutritionHygieneTable6 } from "./entities/nutrition-hygiene-table-6.ent
 import { NutritionActionRecord } from "./entities/nutrition-action-record.entity";
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([
-            NutritionHygieneTable1,
-            NutritionHygieneTable2,
-            NutritionHygieneTable3,
-            NutritionHygieneTable4,
-            NutritionHygieneTable5,
-            NutritionHygieneTable6,
-            NutritionActionRecord,
-        ]),
-    ],
+  imports: [
+    TypeOrmModule.forFeature([
+      NutritionHygieneTable1,
+      NutritionHygieneTable2,
+      NutritionHygieneTable3,
+      NutritionHygieneTable4,
+      NutritionHygieneTable5,
+      NutritionHygieneTable6,
+      NutritionActionRecord,
+    ]),
+  ],
 
-    controllers: [NutritionHygieneController],
-    providers: [NutritionHygieneService],
-    exports: [NutritionHygieneService],
+  controllers: [NutritionHygieneController],
+  providers: [NutritionHygieneService],
+  exports: [NutritionHygieneService],
 })
-export class NutritionHygieneModule { }
+export class NutritionHygieneModule {}

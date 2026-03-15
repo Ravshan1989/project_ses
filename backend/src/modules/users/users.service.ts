@@ -143,10 +143,10 @@ export class UsersService {
 
     // UZ: Agar login reg_ bilan boshlansa yoki bo'sh bo'lsa - yangi login generatsiya qilamiz
     const needsNewUsername = !user.username || user.username.startsWith("reg_");
-    const username = needsNewUsername 
+    const username = needsNewUsername
       ? await this.generateUniqueUsername(user)
       : user.username;
-    
+
     const password = this.generatePassword();
     const salt = await bcrypt.genSalt();
     const passwordHash = await bcrypt.hash(password, salt);

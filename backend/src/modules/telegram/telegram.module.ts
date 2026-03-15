@@ -10,10 +10,7 @@ import { SosBotService } from "./sos-bot.service";
 
 @Global()
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User]),
-    forwardRef(() => UsersModule),
-  ],
+  imports: [TypeOrmModule.forFeature([User]), forwardRef(() => UsersModule)],
   providers: [
     TelegramService,
     DataExportService,

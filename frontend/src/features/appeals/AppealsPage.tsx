@@ -5,10 +5,9 @@ import { SaveOutlined, ReloadOutlined, FileExcelOutlined, FilePdfOutlined } from
 import dayjs from 'dayjs';
 import GlassLayout from '../../components/layout/GlassLayout';
 import PermissionGate from '../../components/PermissionGate';
-import EditCell from '../../components/common/EditCell';
 import { useAppealsData } from './hooks/useAppealsData';
 import { API_BASE_URL } from '../../config';
-import { APPEALS_T1_ROWS, APPEALS_SUBJECT_ROWS } from './components/AppealsConstants';
+import { APPEALS_SUBJECT_ROWS } from './components/AppealsConstants';
 import MasterAppealsJournal from './components/MasterAppealsJournal';
 import AppealsMonitoring from './components/AppealsMonitoring';
 import AppealsDashboard from './components/AppealsDashboard';
@@ -78,33 +77,6 @@ const AppealsPage: React.FC = () => {
         setLocalData(tableData);
     }, [tableData]);
 
-    const updateCell = (rowKey: string, field: string, val: number) => {
-        setLocalData(prev => {
-            const idx = prev.findIndex(r => r.row_key === rowKey);
-            if (idx === -1) {
-                return [...prev, { row_key: rowKey, [field]: val }];
-            }
-            const copy = [...prev];
-            copy[idx] = { ...copy[idx], [field]: val };
-            return copy;
-        });
-    };
-
-    const getVal = (rowKey: string, field: string): number => {
-        // UZ: Agar avtomatik hisobot ma'lumotlari bo'lsa, ularni qaytaradi (faqat joriy yil/davr uchun)
-        if (activeTab !== 'journal' && autoReportsQuery.data) {
-            const data = autoReportsQuery.data;
-            if (activeTab === '1') return data.table1?.[rowKey]?.[field] || 0;
-            if (activeTab === '2') return data.table2?.[rowKey]?.[field] || 0;
-            if (activeTab === '3') return data.table3?.[field] || 0;
-            if (activeTab === '4') return data.table4?.[rowKey]?.[field] || 0;
-            if (activeTab === '5') return data.table5?.[field] || 0;
-            if (activeTab === '6') return data.table6?.[field] || 0;
-            if (activeTab === '7') return data.table7?.[field] || 0;
-        }
-        return localData.find(r => r.row_key === rowKey)?.[field] || 0;
-    };
-
     const handleExportExcel = () => {
         if (!effectiveOrgId) return;
         window.open(`${API_BASE_URL}/appeals/export-excel?organizationId=${effectiveOrgId}&month=${month}`, '_blank');
@@ -128,16 +100,20 @@ const AppealsPage: React.FC = () => {
 
         const thStyleWithColor = (color: string) => ({ ...thStyle, backgroundColor: color, fontSize: '11px', padding: '8px 4px' });
 
-        const rows = [
-            { key: 'head', label: 'Қўмита раиси' },
-            { key: 'deputy_epid', label: 'Раиснинг биринчи ўринбосари (Эпидемиология)' },
-            { key: 'deputy_san', label: 'Раис ўринбосари (Санитария)' }
-        ];
+        const rows = isRegionalOrg 
+            ? [
+                { key: 'head', label: 'Раҳбар (Бошлиқ)' },
+                { key: 'deputy_epid', label: 'Бошлиқнинг биринчи ўринбосари' },
+                { key: 'deputy_san', label: 'Бошлиқ ўринбосари' }
+              ]
+            : [
+                { key: 'head', label: 'Бўлим бошлиғи' }
+              ];
 
         return (
             <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', fontWeight: 'bold' }}>
-                    {currYear} йилнинг {dayjs(month).format('MMMM')} ойида келиб тушган мурожаатларнинг <span style={{ color: '#1890ff' }}>раҳбарият кесимидаги</span> таҳлили
+                    {currYear} йилнинг {dayjs(month).format('MMMM')} ойида {currentOrg?.name || 'Қўмита'}га келиб тушган мурожаатларнинг <span style={{ color: '#1890ff' }}>раҳбарият кесимидаги</span> таҳлили
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ borderCollapse: 'collapse', width: '100%', border: '1px solid #000' }}>
@@ -213,7 +189,7 @@ const AppealsPage: React.FC = () => {
         return (
             <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', lineHeight: '1.6', fontWeight: 'bold', maxWidth: '1000px', margin: '0 auto 20px' }}>
-                    {currYear} йилнинг {dayjs(month).format('MMMM')} ойида Ўзбекистон Республикаси СЭОваЖС қўмитасига жисмоний ва юридик шахслардан келиб тушган мурожаатларнинг <span style={{ color: '#1890ff' }}>масалалар (соҳалар) кесимидаги</span> таҳлили тўғрисида маълумот
+                    {currYear} йилнинг {dayjs(month).format('MMMM')} ойida «{currentOrg?.name || 'Санитария-эпидемиологик осойишталик ва жамоат саломатligi'}» қўмитасига жисмоний ва юридик шахслардан келиб тушган мурожаатларнинг <span style={{ color: '#1890ff' }}>масалалар (соҳалар) кесимидаги</span> таҳлили тўғрисида маълумот
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
                 <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1800, border: '1px solid #000' }}>
@@ -223,7 +199,7 @@ const AppealsPage: React.FC = () => {
                             <th style={{ ...thStyleWithColor(headerColors.c1_2), textAlign: 'left', minWidth: 300 }} rowSpan={4}>Murojaatlarda ko'tarilgan masalalar</th>
                             <th style={thStyleWithColor(headerColors.c3_4)} colSpan={2}>Жами мурожаатлар сони</th>
                             <th style={thStyleWithColor(headerColors.c5_8)} colSpan={4}>Мурожаат этувчилар тоифаси</th>
-                            <th style={thStyleWithColor('#f8fafc')} colSpan={11}>Шу жумлаdan {currYear} йилги мурожаатлар бўйича</th>
+                            <th style={thStyleWithColor('#f8fafc')} colSpan={11}>Шу жумладан {currYear} йилги мурожаатлар бўйича</th>
                             <th style={thStyleWithColor(headerColors.c20_21)} colSpan={2} rowSpan={2}>Вазирлар Маҳкамасидан келган</th>
                             <th style={thStyleWithColor(headerColors.c22_23)} colSpan={2} rowSpan={2}>Ўтказилган сайёр қабуллар сони</th>
                         </tr>
@@ -237,7 +213,7 @@ const AppealsPage: React.FC = () => {
                             <th style={thStyleWithColor(headerColors.c11_15)} colSpan={5}>Оғзаки мурожаатлар</th>
                             <th style={thStyleWithColor(headerColors.c16_19)} rowSpan={3}>Вазирлик аппаратида кўрилган</th>
                             <th style={thStyleWithColor(headerColors.c16_19)} rowSpan={3}>Ҳудудий идорага юборилган</th>
-                            <th style={thStyleWithColor(headerColors.c16_19)} rowSpan={3}>Тегишли идора ва ҳокимиятларга юборилgan</th>
+                            <th style={thStyleWithColor(headerColors.c16_19)} rowSpan={3}>Тегишли идора ва ҳокимиятларга юборилган</th>
                             <th style={thStyleWithColor(headerColors.c16_19)} rowSpan={3}>Кўриб чиқилмоқда</th>
                         </tr>
                         <tr>
@@ -332,7 +308,7 @@ const AppealsPage: React.FC = () => {
         return (
             <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', lineHeight: '1.6', fontWeight: 'bold', maxWidth: '1000px', margin: '0 auto 20px' }}>
-                    {currYear} йилнинг {dayjs(month).format('MMMM')} ойида Ўзбекистон Республикаси СЭОваЖС қўмитасига жисмоний ва юридик шахслардан келиб тушган мурожаатларнинг вилоятлар бўйича таққослама таҳлили тўғрисида маълумот
+                    {currYear} йилнинг {dayjs(month).format('MMMM')} ойida {currentOrg?.name || 'Санитария-эпидемиологик осойишталик ва жамоат саломатligi'}» қўмитасига жисмоний ва юридик шахслардан келиб тушган мурожаатларнинг вилоятлар бўйича таққослама таҳлили тўғрисида маълумот
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
                 <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1800, border: '1px solid #000' }}>
@@ -460,7 +436,7 @@ const AppealsPage: React.FC = () => {
         return (
             <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', fontWeight: 'bold' }}>
-                    {currYear} йилнинг {dayjs(month).format('MMMM')} ойида келиб тушган мурожаатларнинг <span style={{ color: '#1890ff' }}>соҳалар ва туманлар</span> кесимидаги таҳлили
+                    {currYear} йилнинг {dayjs(month).format('MMMM')} ойида {currentOrg?.name || 'Қўмита'}га келиб тушган мурожаатларнинг <span style={{ color: '#1890ff' }}>соҳалар ва туманлар</span> кесимидаги таҳлили
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1500, border: '1px solid #000' }}>
@@ -660,7 +636,8 @@ const AppealsPage: React.FC = () => {
     };
 
     const renderTable7 = () => {
-        const t7 = autoReportsQuery.data?.table7 || { disciplinary: { fine: {}, reprimand: {}, dismissal: {}, total: {} }, administrative: {}, criminal: {}, grand_total: {} };
+        const t7 = autoReportsQuery.data?.table7 || { summary: { disciplinary: { fine: {}, reprimand: {}, dismissal: {}, total: {} }, administrative: {}, criminal: {}, grand_total: {} }, regional: {} };
+        const regionalIds = Object.keys(t7.regional || {});
 
         const headerColors = {
             num_name: '#f1f5f9',
@@ -680,7 +657,7 @@ const AppealsPage: React.FC = () => {
                         <thead>
                             <tr>
                                 <th style={thStyleWithColor(headerColors.num_name)} rowSpan={3}>№</th>
-                                <th style={{ ...thStyleWithColor(headerColors.num_name), textAlign: 'left', minWidth: 200 }} rowSpan={3}>Жавобгарлик турлари</th>
+                                <th style={{ ...thStyleWithColor(headerColors.num_name), textAlign: 'left', minWidth: 200 }} rowSpan={3}>Ҳудудлар</th>
                                 <th style={thStyleWithColor(headerColors.disciplinary)} colSpan={8}>Интизомий жавобгарлик</th>
                                 <th style={thStyleWithColor(headerColors.measures)} colSpan={2} rowSpan={2}>Маъмурий жавобгарлик</th>
                                 <th style={thStyleWithColor(headerColors.measures)} colSpan={2} rowSpan={2}>Жиноий жавобгарлик</th>
@@ -703,16 +680,31 @@ const AppealsPage: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td style={tdStyle}>1</td>
-                                <td style={{ ...tdStyle, textAlign: 'left', fontWeight: 'bold' }}>Қўлланилган чоралар сони</td>
-                                <td style={tdStyle}>{t7.disciplinary.fine.prev || 0}</td><td style={tdStyle}>{t7.disciplinary.fine.curr || 0}</td>
-                                <td style={tdStyle}>{t7.disciplinary.reprimand.prev || 0}</td><td style={tdStyle}>{t7.disciplinary.reprimand.curr || 0}</td>
-                                <td style={tdStyle}>{t7.disciplinary.dismissal.prev || 0}</td><td style={tdStyle}>{t7.disciplinary.dismissal.curr || 0}</td>
-                                <td style={tdStyle}>{t7.disciplinary.total.prev || 0}</td><td style={{ ...tdStyle, fontWeight: 'bold' }}>{t7.disciplinary.total.curr || 0}</td>
-                                <td style={tdStyle}>{t7.administrative.prev || 0}</td><td style={tdStyle}>{t7.administrative.curr || 0}</td>
-                                <td style={tdStyle}>{t7.criminal.prev || 0}</td><td style={tdStyle}>{t7.criminal.curr || 0}</td>
-                                <td style={tdStyle}>{t7.grand_total.prev || 0}</td><td style={{ ...tdStyle, fontWeight: 'bold', color: '#1890ff' }}>{t7.grand_total.curr || 0}</td>
+                            {regionalIds.map((id, idx) => {
+                                const reg = t7.regional[id];
+                                return (
+                                    <tr key={id}>
+                                        <td style={tdStyle}>{idx + 1}</td>
+                                        <td style={{ ...tdStyle, textAlign: 'left', fontWeight: 'bold' }}>{reg.name}</td>
+                                        <td style={tdStyle}>{reg.disciplinary.fine.prev || 0}</td><td style={tdStyle}>{reg.disciplinary.fine.curr || 0}</td>
+                                        <td style={tdStyle}>{reg.disciplinary.reprimand.prev || 0}</td><td style={tdStyle}>{reg.disciplinary.reprimand.curr || 0}</td>
+                                        <td style={tdStyle}>{reg.disciplinary.dismissal.prev || 0}</td><td style={tdStyle}>{reg.disciplinary.dismissal.curr || 0}</td>
+                                        <td style={tdStyle}>{reg.disciplinary.total.prev || 0}</td><td style={{ ...tdStyle, fontWeight: 'bold' }}>{reg.disciplinary.total.curr || 0}</td>
+                                        <td style={tdStyle}>{reg.administrative.prev || 0}</td><td style={tdStyle}>{reg.administrative.curr || 0}</td>
+                                        <td style={tdStyle}>{reg.criminal.prev || 0}</td><td style={tdStyle}>{reg.criminal.curr || 0}</td>
+                                        <td style={tdStyle}>{reg.grand_total.prev || 0}</td><td style={{ ...tdStyle, fontWeight: 'bold', color: '#1890ff' }}>{reg.grand_total.curr || 0}</td>
+                                    </tr>
+                                );
+                            })}
+                            <tr style={{ background: '#f1f5f9', fontWeight: 'bold' }}>
+                                <td style={tdStyle} colSpan={2}>Жами</td>
+                                <td style={tdStyle}>{t7.summary.disciplinary.fine.prev || 0}</td><td style={tdStyle}>{t7.summary.disciplinary.fine.curr || 0}</td>
+                                <td style={tdStyle}>{t7.summary.disciplinary.reprimand.prev || 0}</td><td style={tdStyle}>{t7.summary.disciplinary.reprimand.curr || 0}</td>
+                                <td style={tdStyle}>{t7.summary.disciplinary.dismissal.prev || 0}</td><td style={tdStyle}>{t7.summary.disciplinary.dismissal.curr || 0}</td>
+                                <td style={tdStyle}>{t7.summary.disciplinary.total.prev || 0}</td><td style={tdStyle}>{t7.summary.disciplinary.total.curr || 0}</td>
+                                <td style={tdStyle}>{t7.summary.administrative.prev || 0}</td><td style={tdStyle}>{t7.summary.administrative.curr || 0}</td>
+                                <td style={tdStyle}>{t7.summary.criminal.prev || 0}</td><td style={tdStyle}>{t7.summary.criminal.curr || 0}</td>
+                                <td style={tdStyle}>{t7.summary.grand_total.prev || 0}</td><td style={{ ...tdStyle, color: '#1890ff' }}>{t7.summary.grand_total.curr || 0}</td>
                             </tr>
                         </tbody>
                     </table>
