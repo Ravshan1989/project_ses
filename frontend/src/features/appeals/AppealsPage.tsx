@@ -161,15 +161,12 @@ const AppealsPage: React.FC = () => {
         const subjectKeys = APPEALS_SUBJECT_ROWS.map(s => s.key);
         
         const headerColors = {
-            c1_2: '#f1f5f9',
-            c3_4: '#ffffff',
-            c5_8: '#fff7ed',
-            c9: '#f0fdf4',
-            c10: '#f5f3ff',
-            c11_15: '#fffaf0',
-            c16_19: '#f0f9ff',
-            c20_21: '#fff7ed',
-            c22_23: '#f1f5f9'
+            num_name: '#f1f5f9',
+            total: '#ffffff',
+            channels: '#fff7ed',
+            consideration: '#fffaf0',
+            repeated: '#f0f9ff',
+            expired: '#f1f5f9'
         };
 
         const thStyleWithColor = (color: string) => ({ ...thStyle, backgroundColor: color, fontSize: '11px', padding: '8px 4px' });
@@ -189,94 +186,97 @@ const AppealsPage: React.FC = () => {
         return (
             <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', lineHeight: '1.6', fontWeight: 'bold', maxWidth: '1000px', margin: '0 auto 20px' }}>
-                    {currYear} йилнинг {dayjs(month).format('MMMM')} ойida «{currentOrg?.name || 'Санитария-эпидемиологик осойишталик ва жамоат саломатligi'}» қўмитасига жисмоний ва юридик шахслардан келиб тушган мурожаатларнинг <span style={{ color: '#1890ff' }}>масалалар (соҳалар) кесимидаги</span> таҳлили тўғрисида маълумот
+                    {t('appeals.table2.title', { year: currYear })}
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
-                <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1800, border: '1px solid #000' }}>
+                <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1600, border: '1px solid #000' }}>
                     <thead>
+                        {/* Row 1 */}
                         <tr>
-                            <th style={thStyleWithColor(headerColors.c1_2)} rowSpan={4}>№</th>
-                            <th style={{ ...thStyleWithColor(headerColors.c1_2), textAlign: 'left', minWidth: 300 }} rowSpan={4}>Murojaatlarda ko'tarilgan masalalar</th>
-                            <th style={thStyleWithColor(headerColors.c3_4)} colSpan={2}>Жами мурожаатлар сони</th>
-                            <th style={thStyleWithColor(headerColors.c5_8)} colSpan={4}>Мурожаат этувчилар тоифаси</th>
-                            <th style={thStyleWithColor('#f8fafc')} colSpan={11}>Шу жумладан {currYear} йилги мурожаатлар бўйича</th>
-                            <th style={thStyleWithColor(headerColors.c20_21)} colSpan={2} rowSpan={2}>Вазирлар Маҳкамасидан келган</th>
-                            <th style={thStyleWithColor(headerColors.c22_23)} colSpan={2} rowSpan={2}>Ўтказилган сайёр қабуллар сони</th>
+                            <th style={thStyleWithColor(headerColors.num_name)} rowSpan={3}>№</th>
+                            <th style={{ ...thStyleWithColor(headerColors.num_name), textAlign: 'left', minWidth: 300 }} rowSpan={3}>{t('appeals.table2.columns.subjects')}</th>
+                            <th style={thStyleWithColor(headerColors.total)} colSpan={2} rowSpan={2}>{t('appeals.table2.columns.jami')}</th>
+                            <th style={thStyleWithColor(headerColors.channels)} colSpan={6}>{t('appeals.table2.columns.shakllari')}</th>
+                            <th style={thStyleWithColor(headerColors.consideration)} colSpan={5}>{t('appeals.table2.columns.consideration_2026')}</th>
+                            <th style={thStyleWithColor(headerColors.repeated)} rowSpan={3}>{t('appeals.table2.columns.repeated')}</th>
+                            <th style={thStyleWithColor(headerColors.expired)} rowSpan={3}>{t('appeals.table2.columns.expired')}</th>
                         </tr>
+                        {/* Row 2 */}
                         <tr>
-                            <th style={thStyleWithColor(headerColors.c3_4)} rowSpan={3}>{prevYear}</th>
-                            <th style={thStyleWithColor(headerColors.c3_4)} rowSpan={3}>{currYear}</th>
-                            <th style={thStyleWithColor(headerColors.c5_8)} colSpan={2}>Жисмоний шахслар</th>
-                            <th style={thStyleWithColor(headerColors.c5_8)} colSpan={2}>Юридик шахслар</th>
-                            <th style={thStyleWithColor(headerColors.c9)} rowSpan={3}>Ёзма мурожаатлар</th>
-                            <th style={thStyleWithColor(headerColors.c10)} rowSpan={3}>Электрон мурожаатлар</th>
-                            <th style={thStyleWithColor(headerColors.c11_15)} colSpan={5}>Оғзаки мурожаатлар</th>
-                            <th style={thStyleWithColor(headerColors.c16_19)} rowSpan={3}>Вазирлик аппаратида кўрилган</th>
-                            <th style={thStyleWithColor(headerColors.c16_19)} rowSpan={3}>Ҳудудий идорага юборилган</th>
-                            <th style={thStyleWithColor(headerColors.c16_19)} rowSpan={3}>Тегишли идора ва ҳокимиятларга юборилган</th>
-                            <th style={thStyleWithColor(headerColors.c16_19)} rowSpan={3}>Кўриб чиқилмоқда</th>
+                            <th style={thStyleWithColor(headerColors.channels)} colSpan={2}>{t('appeals.table2.columns.written')}</th>
+                            <th style={thStyleWithColor(headerColors.channels)} colSpan={2}>{t('appeals.table2.columns.electronic')}</th>
+                            <th style={thStyleWithColor(headerColors.channels)} colSpan={2}>{t('appeals.table2.columns.oral')}</th>
+                            <th style={thStyleWithColor(headerColors.consideration)} rowSpan={2}>{t('appeals.table2.columns.monitored')}</th>
+                            <th style={thStyleWithColor(headerColors.consideration)} colSpan={4}>Жумладан</th>
                         </tr>
+                        {/* Row 3 */}
                         <tr>
-                            <th style={thStyleWithColor(headerColors.c5_8)} rowSpan={2}>{prevYear}</th><th style={thStyleWithColor(headerColors.c5_8)} rowSpan={2}>{currYear}</th>
-                            <th style={thStyleWithColor(headerColors.c5_8)} rowSpan={2}>{prevYear}</th><th style={thStyleWithColor(headerColors.c5_8)} rowSpan={2}>{currYear}</th>
-                            <th style={thStyleWithColor(headerColors.c11_15)} colSpan={4}>Раҳбарларнинг</th>
-                            <th style={thStyleWithColor(headerColors.c11_15)} rowSpan={2}>ишонч телефони</th>
-                            <th style={thStyleWithColor(headerColors.c20_21)} rowSpan={2}>{prevYear}</th><th style={thStyleWithColor(headerColors.c20_21)} rowSpan={2}>{currYear}</th>
-                            <th style={thStyleWithColor(headerColors.c22_23)} rowSpan={2}>{prevYear}</th><th style={thStyleWithColor(headerColors.c22_23)} rowSpan={2}>{currYear}</th>
+                            <th style={thStyleWithColor(headerColors.total)}>{prevYear}</th><th style={thStyleWithColor(headerColors.total)}>{currYear}</th>
+                            <th style={thStyleWithColor(headerColors.channels)}>{prevYearShort}</th><th style={thStyleWithColor(headerColors.channels)}>{currYearShort}</th>
+                            <th style={thStyleWithColor(headerColors.channels)}>{prevYearShort}</th><th style={thStyleWithColor(headerColors.channels)}>{currYearShort}</th>
+                            <th style={thStyleWithColor(headerColors.channels)}>{prevYearShort}</th><th style={thStyleWithColor(headerColors.channels)}>{currYearShort}</th>
+                            <th style={thStyleWithColor(headerColors.consideration)}>{t('appeals.table2.columns.satisfied')}</th>
+                            <th style={thStyleWithColor(headerColors.consideration)}>{t('appeals.table2.columns.explained')}</th>
+                            <th style={thStyleWithColor(headerColors.consideration)}>{t('appeals.table2.columns.rejected')}</th>
+                            <th style={thStyleWithColor(headerColors.consideration)}>{t('appeals.table2.columns.pending')}</th>
                         </tr>
+                        {/* Row Indices */}
                         <tr>
-                            <th style={thStyleWithColor(headerColors.c11_15)}>Жами</th>
-                            <th style={thStyleWithColor(headerColors.c11_15)}>шахсий қабули</th>
-                            <th style={thStyleWithColor(headerColors.c11_15)}>сайёр қабули</th>
-                            <th style={thStyleWithColor(headerColors.c11_15)}>масъул ходимларнинг қабули</th>
-                        </tr>
-                        <tr style={{ background: '#f8fafc' }}>
-                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23].map(n => (
-                                <th key={n} style={{ ...thStyle, fontSize: '11px', padding: '4px', border: '1px solid #000' }}>{n}</th>
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17].map(n => (
+                                <th key={n} style={{ ...thStyle, fontSize: '10px', height: '20px', padding: 0 }}>{n}</th>
                             ))}
                         </tr>
                     </thead>
                     <tbody>
                         {APPEALS_SUBJECT_ROWS.map((s, idx) => (
-                                <tr key={s.key}>
-                                    <td style={tdStyle}>{idx + 1}</td>
-                                    <td style={{ ...tdStyle, textAlign: 'left' }}>{t(s.labelKey)}</td>
-                                    <td style={tdStyle}>{getSubjectVal(s.key, 'count_prev')}</td><td style={tdStyle}>{getSubjectVal(s.key, 'count_curr')}</td>
-                                    <td style={tdStyle}>{getSubjectVal(s.key, 'phys_prev')}</td><td style={tdStyle}>{getSubjectVal(s.key, 'phys_curr')}</td>
-                                    <td style={tdStyle}>{getSubjectVal(s.key, 'legal_prev')}</td><td style={tdStyle}>{getSubjectVal(s.key, 'legal_curr')}</td>
-                                    <td style={tdStyle}>{getSubjectVal(s.key, 'written')}</td>
-                                    <td style={tdStyle}>{getSubjectVal(s.key, 'electronic')}</td>
-                                    <td style={tdStyle}>{getSubjectVal(s.key, 'oral_total')}</td>
-                                    <td style={tdStyle}>{getSubjectVal(s.key, 'oral_personal')}</td>
-                                    <td style={tdStyle}>{getSubjectVal(s.key, 'oral_field')}</td>
-                                    <td style={tdStyle}>{getSubjectVal(s.key, 'oral_staff')}</td>
-                                    <td style={tdStyle}>{getSubjectVal(s.key, 'oral_phone')}</td>
-                                    <td style={tdStyle}>{getSubjectVal(s.key, 'apparat_seen')}</td>
-                                    <td style={tdStyle}>{getSubjectVal(s.key, 'referral_regional')}</td>
-                                    <td style={tdStyle}>{getSubjectVal(s.key, 'referral_related')}</td>
-                                    <td style={tdStyle}>{getSubjectVal(s.key, 'being_considered')}</td>
-                                    <td style={tdStyle}>{getSubjectVal(s.key, 'vm_prev')}</td><td style={tdStyle}>{getSubjectVal(s.key, 'vm_curr')}</td>
-                                    <td style={tdStyle}>{getSubjectVal(s.key, 'field_meetings_prev')}</td><td style={tdStyle}>{getSubjectVal(s.key, 'field_meetings_curr')}</td>
-                                </tr>
+                            <tr key={s.key}>
+                                <td style={tdStyle}>{idx + 1}</td>
+                                <td style={{ ...tdStyle, textAlign: 'left', fontWeight: 'bold' }}>{t(s.labelKey)}</td>
+                                <td style={tdStyle}>{getSubjectVal(s.key, 'count_prev')}</td>
+                                <td style={{ ...tdStyle, fontWeight: 'bold', color: '#1890ff' }}>{getSubjectVal(s.key, 'count_curr')}</td>
+                                
+                                <td style={tdStyle}>{getSubjectVal(s.key, 'written_prev')}</td>
+                                <td style={tdStyle}>{getSubjectVal(s.key, 'written_curr')}</td>
+                                
+                                <td style={tdStyle}>{getSubjectVal(s.key, 'electronic_prev')}</td>
+                                <td style={tdStyle}>{getSubjectVal(s.key, 'electronic_curr')}</td>
+                                
+                                <td style={tdStyle}>{getSubjectVal(s.key, 'oral_prev')}</td>
+                                <td style={tdStyle}>{getSubjectVal(s.key, 'oral_curr')}</td>
+                                
+                                <td style={tdStyle}>{getSubjectVal(s.key, 'monitored')}</td>
+                                <td style={tdStyle}>{getSubjectVal(s.key, 'satisfied')}</td>
+                                <td style={tdStyle}>{getSubjectVal(s.key, 'explained')}</td>
+                                <td style={tdStyle}>{getSubjectVal(s.key, 'rejected')}</td>
+                                <td style={tdStyle}>{getSubjectVal(s.key, 'pending')}</td>
+                                
+                                <td style={tdStyle}>{getSubjectVal(s.key, 'repeated')}</td>
+                                <td style={tdStyle}>{getSubjectVal(s.key, 'expired')}</td>
+                            </tr>
                         ))}
-                        <tr style={{ background: '#f1f5f9', fontWeight: 'bold' }}>
-                            <td style={tdStyle} colSpan={2}>Жами</td>
-                            <td style={tdStyle}>{totalRow.count_prev || 0}</td><td style={tdStyle}>{totalRow.count_curr || 0}</td>
-                            <td style={tdStyle}>{totalRow.phys_prev || 0}</td><td style={tdStyle}>{totalRow.phys_curr || 0}</td>
-                            <td style={tdStyle}>{totalRow.legal_prev || 0}</td><td style={tdStyle}>{totalRow.legal_curr || 0}</td>
-                            <td style={tdStyle}>{totalRow.written || 0}</td>
-                            <td style={tdStyle}>{totalRow.electronic || 0}</td>
-                            <td style={tdStyle}>{totalRow.oral_total || 0}</td>
-                            <td style={tdStyle}>{totalRow.oral_personal || 0}</td>
-                            <td style={tdStyle}>{totalRow.oral_field || 0}</td>
-                            <td style={tdStyle}>{totalRow.oral_staff || 0}</td>
-                            <td style={tdStyle}>{totalRow.oral_phone || 0}</td>
-                            <td style={tdStyle}>{totalRow.apparat_seen || 0}</td>
-                            <td style={tdStyle}>{totalRow.referral_regional || 0}</td>
-                            <td style={tdStyle}>{totalRow.referral_related || 0}</td>
-                            <td style={tdStyle}>{totalRow.being_considered || 0}</td>
-                            <td style={tdStyle}>{totalRow.vm_prev || 0}</td><td style={tdStyle}>{totalRow.vm_curr || 0}</td>
-                            <td style={tdStyle}>{totalRow.field_meetings_prev || 0}</td><td style={tdStyle}>{totalRow.field_meetings_curr || 0}</td>
+                        {/* Total Row */}
+                        <tr style={{ background: '#f8fafc', fontWeight: 'bold' }}>
+                            <td style={tdStyle} colSpan={2}>Жами:</td>
+                            <td style={tdStyle}>{totalRow.count_prev || 0}</td>
+                            <td style={{ ...tdStyle, color: '#1890ff' }}>{totalRow.count_curr || 0}</td>
+                            
+                            <td style={tdStyle}>{totalRow.written_prev || 0}</td>
+                            <td style={tdStyle}>{totalRow.written_curr || 0}</td>
+                            
+                            <td style={tdStyle}>{totalRow.electronic_prev || 0}</td>
+                            <td style={tdStyle}>{totalRow.electronic_curr || 0}</td>
+                            
+                            <td style={tdStyle}>{totalRow.oral_prev || 0}</td>
+                            <td style={tdStyle}>{totalRow.oral_curr || 0}</td>
+                            
+                            <td style={tdStyle}>{totalRow.monitored || 0}</td>
+                            <td style={tdStyle}>{totalRow.satisfied || 0}</td>
+                            <td style={tdStyle}>{totalRow.explained || 0}</td>
+                            <td style={tdStyle}>{totalRow.rejected || 0}</td>
+                            <td style={tdStyle}>{totalRow.pending || 0}</td>
+                            
+                            <td style={tdStyle}>{totalRow.repeated || 0}</td>
+                            <td style={tdStyle}>{totalRow.expired || 0}</td>
                         </tr>
                     </tbody>
                 </table>

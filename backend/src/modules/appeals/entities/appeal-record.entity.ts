@@ -113,6 +113,9 @@ export class AppealRecord {
   is_repeated: boolean;
 
   @Column({ default: false })
+  is_monitored: boolean;
+
+  @Column({ default: false })
   is_overdue: boolean;
 
   @Column({ default: false })

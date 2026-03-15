@@ -194,7 +194,7 @@ export class AppealsService {
       electronic_curr: records.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
     };
 
-    // 2. Table 2 Aggregation (Detailed Subject Matrix YoY)
+    // 2. Table 2 Aggregation (Detailed Subject Matrix YoY - 17 Columns)
     const table2: any = { subjects: {} };
 
     // Dashboard summaries
@@ -208,54 +208,25 @@ export class AppealsService {
       const sPrevRecs = prevRecords.filter((r) => r.subject_key === s.key);
 
       table2.subjects[s.key] = {
-        name: s.labelKey, // We use the labelKey for translation
+        name: s.labelKey,
         count_prev: sPrevRecs.length,
         count_curr: sRecs.length,
-        phys_prev: sPrevRecs.filter(
-          (r) => r.applicant_type === ApplicantType.PHYSICAL,
-        ).length,
-        phys_curr: sRecs.filter(
-          (r) => r.applicant_type === ApplicantType.PHYSICAL,
-        ).length,
-        legal_prev: sPrevRecs.filter(
-          (r) => r.applicant_type === ApplicantType.LEGAL,
-        ).length,
-        legal_curr: sRecs.filter(
-          (r) => r.applicant_type === ApplicantType.LEGAL,
-        ).length,
-        written: sRecs.filter((r) => r.channel === AppealChannel.WRITTEN)
-          .length,
-        electronic: sRecs.filter((r) => r.channel === AppealChannel.ELECTRONIC)
-          .length,
-        oral_total: sRecs.filter((r) => r.channel === AppealChannel.ORAL)
-          .length,
-        oral_personal: sRecs.filter(
-          (r) =>
-            r.channel === AppealChannel.ORAL &&
-            r.recipient?.includes("head") &&
-            !r.is_field_meeting,
-        ).length,
-        oral_field: sRecs.filter(
-          (r) =>
-            r.channel === AppealChannel.ORAL &&
-            r.recipient?.includes("head") &&
-            r.is_field_meeting,
-        ).length,
-        oral_staff: sRecs.filter(
-          (r) =>
-            r.channel === AppealChannel.ORAL && !r.recipient?.includes("head"),
-        ).length,
-        oral_phone: sRecs.filter((r) => r.is_phone).length,
-        apparat_seen: 0,
-        referral_regional: 0,
-        referral_related: 0,
-        being_considered: sRecs.filter(
-          (r) => r.status === AppealStatus.BEING_CONSIDERED,
-        ).length,
-        vm_prev: 0,
-        vm_curr: 0,
-        field_meetings_prev: sPrevRecs.filter((r) => r.is_field_meeting).length,
-        field_meetings_curr: sRecs.filter((r) => r.is_field_meeting).length,
+        // Channels YoY
+        written_prev: sPrevRecs.filter(r => r.channel === AppealChannel.WRITTEN).length,
+        written_curr: sRecs.filter(r => r.channel === AppealChannel.WRITTEN).length,
+        electronic_prev: sPrevRecs.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
+        electronic_curr: sRecs.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
+        oral_prev: sPrevRecs.filter(r => r.channel === AppealChannel.ORAL).length,
+        oral_curr: sRecs.filter(r => r.channel === AppealChannel.ORAL).length,
+        
+        // 2026 specific results (from current records)
+        monitored: sRecs.filter(r => r.is_monitored).length,
+        satisfied: sRecs.filter(r => r.status === AppealStatus.SATISFIED).length,
+        explained: sRecs.filter(r => r.status === AppealStatus.EXPLAINED).length,
+        rejected: sRecs.filter(r => r.status === AppealStatus.REJECTED).length,
+        pending: sRecs.filter(r => r.status === AppealStatus.BEING_CONSIDERED).length,
+        repeated: sRecs.filter(r => r.is_repeated).length,
+        expired: sRecs.filter(r => r.is_overdue).length,
       };
     });
 

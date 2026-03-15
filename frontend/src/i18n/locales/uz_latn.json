@@ -317,23 +317,34 @@
             }
         },
         "subjects": {
-            "san_epid": "Sanitariya-epidemiologiya masalalari bo'yicha",
-            "coronavirus": "Koronavirus bilan bog'liq muammolar bo'yicha",
-            "nutrition": "Ovqatlanish gigiyenasi bo'yicha",
-            "child_hygiene": "Bolalar va o'smirlar gigiyenasi bo'yicha",
-            "labor_hygiene": "Mehnat gigiyenasi bo'yicha",
-            "communal_hygiene": "Kommunal gigiyena bo'yicha",
-            "radiation_hygiene": "Radiatsiya gigiyenasi bo'yicha",
-            "parasitology": "Parazitologiya masalalari bo'yicha",
-            "epidemiology": "Epidemiologiya masalalari bo'yicha",
-            "bacteriology": "Bakteriologiya laboratoriyasi bo'yicha",
-            "virology": "Virologiya laboratoriyasi bo'yicha",
-            "disinfection": "Dezinfeksiya tadbirlari bo'yicha",
-            "laborant": "Laborantlar faoliyati bo'yicha",
-            "vacancies": "Bo'sh ish o'rinlari haqida",
-            "ethics": "Odob-axloq qoidalari buzilishi",
-            "corruption": "Korrupsiya holatlari bo'yicha",
+            "san_epid": "sanitariya-epidemiologik osoyishtalik masalalari bo'yicha",
+            "coronavirus": "koronavirus bilan bog'liq muammolar bo'yicha",
+            "labor_relations": "mehnat munosabatlari to'g'risida",
+            "medical_activity": "tibbiy muassasalarning faoliyati bilan masalalar haqida",
+            "complaint_head": "Rahbar ustidan shikoyat",
+            "staff_conduct": "soha xodimlarining xatti-harakati yuzasidan",
+            "disinfection": "dezinfeksiya tadbirlari bilan bog'liq masalalar bo'yicha",
+            "fines_objection": "qo'llanilgan jarimalardan norozilik",
             "other": "Boshqa masalalar"
+        },
+        "table2": {
+            "title": "{{year}} yilning yanvar oyida O'zbekiston Respublikasi SÉOvaJS qo'mitasiga jismoniy va yuridik shaxslardan tushgan va nazoratga olingan murojaatlarni ko'rib chiqish natijalari to'g'risida ma'lumot",
+            "columns": {
+                "subjects": "Murojaatlarda ko'tarilgan masalalar",
+                "jami": "Jami murojaatlar soni",
+                "shakllari": "Murojaatlar shakllari",
+                "written": "Yozma murojaatlar",
+                "electronic": "Elektron murojaatlar",
+                "oral": "Og'zaki murojaatlar (shaxsiy qabul, sayyor qabul, mas'ul xodimlar qabuli va ishonch telefoni)",
+                "consideration_2026": "2026 yil bo'yicha murojaatlarni ko'rib chiqish holatlari",
+                "monitored": "Nazoratga olinganlar",
+                "satisfied": "choralar ko'rildi",
+                "explained": "tushuntirildi",
+                "rejected": "rad etildi",
+                "pending": "ko'rib chiqilmoqda",
+                "repeated": "Takroriylar",
+                "expired": "Muddati buzilganlar"
+            }
         },
         "table7": {
             "columns": {
