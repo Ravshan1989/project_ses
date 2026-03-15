@@ -218,84 +218,133 @@ const AppealsPage: React.FC = () => {
     const renderTable3 = () => {
         const t3 = autoReportsQuery.data?.table3 || { regional: {} };
         const regionalIds = Object.keys(t3.regional || {});
+        // Move Total (identified as idx 0 or by key) to the end
+        const regularRegions = regionalIds.filter(id => id !== 'total' && t3.regional[id].name !== 'Жами');
+        const totalId = regionalIds.find(id => id === 'total' || t3.regional[id].name === 'Жами');
+
+        const headerColors = {
+            c1_2: '#f1f5f9',
+            c3_4: '#ffffff',
+            c5_8: '#fff7ed',
+            c9: '#f0fdf4',
+            c10: '#f5f3ff',
+            c11_15: '#fffaf0',
+            c16_19: '#f0f9ff',
+            c20_21: '#fff7ed',
+            c22_23: '#f1f5f9'
+        };
+
+        const thStyleWithColor = (color: string) => ({ ...thStyle, backgroundColor: color, fontSize: '11px', padding: '8px 4px' });
 
         return (
-            <div style={{ overflowX: 'auto', background: '#fff' }}>
-                <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1800 }}>
+            <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                <h3 style={{ textAlign: 'center', fontSize: '14px', marginBottom: '20px', lineHeight: '1.6', fontWeight: 'bold', maxWidth: '1000px', margin: '0 auto 20px' }}>
+                    2026 йилнинг январь ойида Ўзбекистон Республикаси СЭОваЖС қўмитасига жисмоний ва юридик шахслардан келиб тушган мурожаатларнинг вилоятлар бўйича таққослама таҳлили тўғрисида маълумот
+                </h3>
+                <div style={{ overflowX: 'auto' }}>
+                <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 1800, border: '1px solid #000' }}>
                     <thead>
                         <tr>
-                            <th style={thStyle} rowSpan={4}>№</th>
-                            <th style={{ ...thStyle, textAlign: 'left', minWidth: 220 }} rowSpan={4}>Вилоятлар</th>
-                            <th style={thStyle} colSpan={2}>Жами мурожаатлар сони</th>
-                            <th style={thStyle} colSpan={4}>Мурожаат этувчилар тоифаси</th>
-                            <th style={thStyle} colSpan={11}>Шу жумладан 2026 йилги мурожаатлар бўйича</th>
-                            <th style={thStyle} colSpan={2} rowSpan={2}>Вазирлар Маҳкамасидан келган</th>
-                            <th style={thStyle} colSpan={2} rowSpan={2}>Ўтказилган сайёр қабуллар сони</th>
+                            <th style={thStyleWithColor(headerColors.c1_2)} rowSpan={4}>№</th>
+                            <th style={{ ...thStyleWithColor(headerColors.c1_2), textAlign: 'left', minWidth: 200 }} rowSpan={4}>Ҳудудлар</th>
+                            <th style={thStyleWithColor(headerColors.c3_4)} colSpan={2}>Жами мурожаатлар сони</th>
+                            <th style={thStyleWithColor(headerColors.c5_8)} colSpan={4}>Мурожаат этувчилар тоифаси</th>
+                            <th style={thStyleWithColor('#f8fafc')} colSpan={11}>Шу жумладан 2026 йилги мурожаатлар бўйича</th>
+                            <th style={thStyleWithColor(headerColors.c20_21)} colSpan={2} rowSpan={2}>Вазирлар Маҳкамасидан келган</th>
+                            <th style={thStyleWithColor(headerColors.c22_23)} colSpan={2} rowSpan={2}>Ўтказилган сайёр қабуллар сони</th>
                         </tr>
                         <tr>
-                            <th style={thStyle} rowSpan={3}>2025</th>
-                            <th style={thStyle} rowSpan={3}>2026</th>
-                            <th style={thStyle} colSpan={2}>Жисмоний шахслар</th>
-                            <th style={thStyle} colSpan={2}>Юридик шахслар</th>
-                            <th style={thStyle} rowSpan={3}>Ёзма мурожаатлар</th>
-                            <th style={thStyle} rowSpan={3}>Электрон мурожаатлар</th>
-                            <th style={thStyle} colSpan={5}>Оғзаки мурожаатлар</th>
-                            <th style={thStyle} rowSpan={3}>Аппаратда кўрилган</th>
-                            <th style={thStyle} rowSpan={3}>Ҳудудий идорага</th>
-                            <th style={thStyle} rowSpan={3}>Тегишли идорага</th>
-                            <th style={thStyle} rowSpan={3}>Кўриб чиқилмоқда</th>
+                            <th style={thStyleWithColor(headerColors.c3_4)} rowSpan={3}>2025</th>
+                            <th style={thStyleWithColor(headerColors.c3_4)} rowSpan={3}>2026</th>
+                            <th style={thStyleWithColor(headerColors.c5_8)} colSpan={2}>Жисмоний шахслар</th>
+                            <th style={thStyleWithColor(headerColors.c5_8)} colSpan={2}>Юридик шахслар</th>
+                            <th style={thStyleWithColor(headerColors.c9)} rowSpan={3}>Ёзма мурожаатлар</th>
+                            <th style={thStyleWithColor(headerColors.c10)} rowSpan={3}>Электрон мурожаатлар</th>
+                            <th style={thStyleWithColor(headerColors.c11_15)} colSpan={5}>Оғзаки мурожаатлар</th>
+                            <th style={thStyleWithColor(headerColors.c16_19)} rowSpan={3}>Вазирлик аппаратида кўрилган</th>
+                            <th style={thStyleWithColor(headerColors.c16_19)} rowSpan={3}>Ҳудудий идорага юборилган</th>
+                            <th style={thStyleWithColor(headerColors.c16_19)} rowSpan={3}>Тегишли идора ва ҳокимиятларга юборилган</th>
+                            <th style={thStyleWithColor(headerColors.c16_19)} rowSpan={3}>Кўриб чиқилмоқда</th>
                         </tr>
                         <tr>
-                            <th style={thStyle} rowSpan={2}>2025</th><th style={thStyle} rowSpan={2}>2026</th>
-                            <th style={thStyle} rowSpan={2}>2025</th><th style={thStyle} rowSpan={2}>2026</th>
-                            <th style={thStyle} colSpan={4}>Раҳбарларning</th>
-                            <th style={thStyle} rowSpan={2}>ишонч телефони</th>
-                            <th style={thStyle} rowSpan={2}>2025</th><th style={thStyle} rowSpan={2}>2026</th>
-                            <th style={thStyle} rowSpan={2}>2025</th><th style={thStyle} rowSpan={2}>2026</th>
+                            <th style={thStyleWithColor(headerColors.c5_8)} rowSpan={2}>2025</th><th style={thStyleWithColor(headerColors.c5_8)} rowSpan={2}>2026</th>
+                            <th style={thStyleWithColor(headerColors.c5_8)} rowSpan={2}>2025</th><th style={thStyleWithColor(headerColors.c5_8)} rowSpan={2}>2026</th>
+                            <th style={thStyleWithColor(headerColors.c11_15)} colSpan={4}>Раҳбарларнинг</th>
+                            <th style={thStyleWithColor(headerColors.c11_15)} rowSpan={2}>ишонч телефони</th>
+                            <th style={thStyleWithColor(headerColors.c20_21)} rowSpan={2}>2025</th><th style={thStyleWithColor(headerColors.c20_21)} rowSpan={2}>2026</th>
+                            <th style={thStyleWithColor(headerColors.c22_23)} rowSpan={2}>2025</th><th style={thStyleWithColor(headerColors.c22_23)} rowSpan={2}>2026</th>
                         </tr>
                         <tr>
-                            <th style={thStyle}>Жами</th>
-                            <th style={thStyle}>шахсий қабули</th>
-                            <th style={thStyle}>сайёр қабули</th>
-                            <th style={thStyle}>ходимлар қабули</th>
+                            <th style={thStyleWithColor(headerColors.c11_15)}>Жами</th>
+                            <th style={thStyleWithColor(headerColors.c11_15)}>шахсий қабули</th>
+                            <th style={thStyleWithColor(headerColors.c11_15)}>сайёр қабули</th>
+                            <th style={thStyleWithColor(headerColors.c11_15)}>масъул ходимларнинг қабули</th>
                         </tr>
                         <tr style={{ background: '#f8fafc' }}>
                             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23].map(n => (
-                                <th key={n} style={{ ...thStyle, fontSize: '11px', padding: '4px' }}>{n}</th>
+                                <th key={n} style={{ ...thStyle, fontSize: '11px', padding: '4px', border: '1px solid #000' }}>{n}</th>
                             ))}
                         </tr>
                     </thead>
                     <tbody>
-                        {regionalIds.length === 0 ? (
-                            <tr><td colSpan={23} style={{ ...tdStyle, padding: '40px', color: '#94a3b8' }}>Yuklanmoqda yoki ma'lumot topilmadi...</td></tr>
-                        ) : regionalIds.map((id, idx) => {
-                            const reg = t3.regional[id];
-                            const isTotal = idx === 0;
-                            return (
-                                <tr key={id} style={isTotal ? { background: '#f1f5f9', fontWeight: 'bold' } : {}}>
-                                    <td style={tdStyle}>{isTotal ? '' : idx}</td>
-                                    <td style={{ ...tdStyle, textAlign: 'left' }}>{isTotal ? 'Жами' : reg.name}</td>
-                                    <td style={tdStyle}>{reg.count_prev || 0}</td><td style={tdStyle}>{reg.count_curr || 0}</td>
-                                    <td style={tdStyle}>{reg.phys_prev || 0}</td><td style={tdStyle}>{reg.phys_curr || 0}</td>
-                                    <td style={tdStyle}>{reg.legal_prev || 0}</td><td style={tdStyle}>{reg.legal_curr || 0}</td>
-                                    <td style={tdStyle}>{reg.written || 0}</td>
-                                    <td style={tdStyle}>{reg.electronic || 0}</td>
-                                    <td style={tdStyle}>{reg.oral_total || 0}</td>
-                                    <td style={tdStyle}>{reg.oral_personal || 0}</td>
-                                    <td style={tdStyle}>{reg.oral_field || 0}</td>
-                                    <td style={tdStyle}>{reg.oral_staff || 0}</td>
-                                    <td style={tdStyle}>{reg.oral_phone || 0}</td>
-                                    <td style={tdStyle}>{reg.apparat_seen || 0}</td>
-                                    <td style={tdStyle}>{reg.referral_regional || 0}</td>
-                                    <td style={tdStyle}>{reg.referral_related || 0}</td>
-                                    <td style={tdStyle}>{reg.being_considered || 0}</td>
-                                    <td style={tdStyle}>{reg.vm_prev || 0}</td><td style={tdStyle}>{reg.vm_curr || 0}</td>
-                                    <td style={tdStyle}>{reg.field_meetings_prev || 0}</td><td style={tdStyle}>{reg.field_meetings_curr || 0}</td>
-                                </tr>
-                            );
-                        })}
+                        {regularRegions.length === 0 ? (
+                            <tr><td colSpan={23} style={{ ...tdStyle, padding: '40px', color: '#94a3b8' }}>Yuklanmoqda...</td></tr>
+                        ) : (
+                            <>
+                                {regularRegions.map((id, idx) => {
+                                    const reg = t3.regional[id];
+                                    return (
+                                        <tr key={id}>
+                                            <td style={tdStyle}>{idx + 1}</td>
+                                            <td style={{ ...tdStyle, textAlign: 'left' }}>{reg.name}</td>
+                                            <td style={tdStyle}>{reg.count_prev || 0}</td><td style={tdStyle}>{reg.count_curr || 0}</td>
+                                            <td style={tdStyle}>{reg.phys_prev || 0}</td><td style={tdStyle}>{reg.phys_curr || 0}</td>
+                                            <td style={tdStyle}>{reg.legal_prev || 0}</td><td style={tdStyle}>{reg.legal_curr || 0}</td>
+                                            <td style={tdStyle}>{reg.written || 0}</td>
+                                            <td style={tdStyle}>{reg.electronic || 0}</td>
+                                            <td style={tdStyle}>{reg.oral_total || 0}</td>
+                                            <td style={tdStyle}>{reg.oral_personal || 0}</td>
+                                            <td style={tdStyle}>{reg.oral_field || 0}</td>
+                                            <td style={tdStyle}>{reg.oral_staff || 0}</td>
+                                            <td style={tdStyle}>{reg.oral_phone || 0}</td>
+                                            <td style={tdStyle}>{reg.apparat_seen || 0}</td>
+                                            <td style={tdStyle}>{reg.referral_regional || 0}</td>
+                                            <td style={tdStyle}>{reg.referral_related || 0}</td>
+                                            <td style={tdStyle}>{reg.being_considered || 0}</td>
+                                            <td style={tdStyle}>{reg.vm_prev || 0}</td><td style={tdStyle}>{reg.vm_curr || 0}</td>
+                                            <td style={tdStyle}>{reg.field_meetings_prev || 0}</td><td style={tdStyle}>{reg.field_meetings_curr || 0}</td>
+                                        </tr>
+                                    );
+                                })}
+                                {totalId && (() => {
+                                    const reg = t3.regional[totalId];
+                                    return (
+                                        <tr key="total-row" style={{ background: '#f1f5f9', fontWeight: 'bold' }}>
+                                            <td style={tdStyle} colSpan={2}>Жами</td>
+                                            <td style={tdStyle}>{reg.count_prev || 0}</td><td style={tdStyle}>{reg.count_curr || 0}</td>
+                                            <td style={tdStyle}>{reg.phys_prev || 0}</td><td style={tdStyle}>{reg.phys_curr || 0}</td>
+                                            <td style={tdStyle}>{reg.legal_prev || 0}</td><td style={tdStyle}>{reg.legal_curr || 0}</td>
+                                            <td style={tdStyle}>{reg.written || 0}</td>
+                                            <td style={tdStyle}>{reg.electronic || 0}</td>
+                                            <td style={tdStyle}>{reg.oral_total || 0}</td>
+                                            <td style={tdStyle}>{reg.oral_personal || 0}</td>
+                                            <td style={tdStyle}>{reg.oral_field || 0}</td>
+                                            <td style={tdStyle}>{reg.oral_staff || 0}</td>
+                                            <td style={tdStyle}>{reg.oral_phone || 0}</td>
+                                            <td style={tdStyle}>{reg.apparat_seen || 0}</td>
+                                            <td style={tdStyle}>{reg.referral_regional || 0}</td>
+                                            <td style={tdStyle}>{reg.referral_related || 0}</td>
+                                            <td style={tdStyle}>{reg.being_considered || 0}</td>
+                                            <td style={tdStyle}>{reg.vm_prev || 0}</td><td style={tdStyle}>{reg.vm_curr || 0}</td>
+                                            <td style={tdStyle}>{reg.field_meetings_prev || 0}</td><td style={tdStyle}>{reg.field_meetings_curr || 0}</td>
+                                        </tr>
+                                    );
+                                })()}
+                            </>
+                        )}
                     </tbody>
                 </table>
+                </div>
             </div>
         );
     };
