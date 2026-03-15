@@ -250,123 +250,63 @@ const AppealsPage: React.FC = () => {
             </tbody>
         </table>
     );
-
-    const renderTable4 = () => (
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-            <thead>
-                <tr>
-                    <th style={thStyle}>Mavzular</th>
-                    <th style={thStyle}>{prevYear}</th>
-                    <th style={thStyle}>{currYear}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {APPEALS_SUBJECT_ROWS.map((row, ridx) => (
-                    <tr key={row.key}>
-                        <td style={{ ...tdStyle, textAlign: 'left' }}>{t(row.labelKey)}</td>
-                        <td style={tdStyle}><EditCell value={getVal(row.key, 'count_prev')} onChange={v => updateCell(row.key, 'count_prev', v)} rowIdx={ridx} colIdx={0} disabled={isSaving} /></td>
-                        <td style={tdStyle}>
-                            <span style={{ fontWeight: 600, color: '#1890ff' }}>{getVal(row.key, 'count_curr')}</span>
-                        </td>
+                                ) : (
+                                    <EditCell value={getVal('total', f)} onChange={v => updateCell('total', f, v)} rowIdx={idx} colIdx={fidx} disabled={isSaving} />
+                                )}
+                            </td>
+                        ))}
                     </tr>
                 ))}
             </tbody>
         </table>
     );
 
-    const renderTable5 = () => (
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-            <thead>
-                <tr>
-                    <th style={thStyle} rowSpan={2}>Ko'rsatkich</th>
-                    <th style={thStyle} colSpan={2}>Jami</th>
-                    <th style={thStyle} colSpan={4}>Jismoniy ({currYear})</th>
-                    <th style={thStyle} colSpan={4}>Yuridik ({currYear})</th>
-                </tr>
-                <tr>
-                    <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
-                    <th style={thStyle}>Jami</th><th style={thStyle}>Ariza</th><th style={thStyle}>Shikoyat</th><th style={thStyle}>Taklif</th>
-                    <th style={thStyle}>Jami</th><th style={thStyle}>Ariza</th><th style={thStyle}>Shikoyat</th><th style={thStyle}>Taklif</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr key="total">
-                    <td style={tdStyle}>Murojaat turlari</td>
-                    {['total_prev', 'total_curr', 'phys_total_curr', 'phys_ariza_curr', 'phys_shikoyat_curr', 'phys_taklif_curr', 'legal_total_curr', 'legal_ariza_curr', 'legal_shikoyat_curr', 'legal_taklif_curr'].map((f, fidx) => (
-                        <td key={f} style={tdStyle}>
-                            {!f.endsWith('_prev') ? (
-                                <span style={{ fontWeight: 600, color: '#1890ff' }}>{getVal('total', f)}</span>
-                            ) : (
-                                <EditCell value={getVal('total', f)} onChange={v => updateCell('total', f, v)} rowIdx={0} colIdx={fidx} disabled={isSaving} />
-                            )}
-                        </td>
-                    ))}
-                </tr>
-            </tbody>
-        </table>
-    );
+    const renderTable7 = () => {
+        const t7 = autoReportsQuery.data?.table7 || { disciplinary: { fine: {}, reprimand: {}, dismissal: {}, total: {} }, administrative: {}, criminal: {}, grand_total: {} };
 
-    const renderTable6 = () => (
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-            <thead>
-                <tr>
-                    <th style={thStyle} rowSpan={2}>Kanal</th>
-                    <th style={thStyle} colSpan={4}>Xalq qabulxonasi</th>
-                    <th style={thStyle} colSpan={4}>Virtual qabulxona</th>
-                </tr>
-                <tr>
-                    <th style={thStyle}>Jami</th><th style={thStyle}>Qanoat.</th><th style={thStyle}>Tushun.</th><th style={thStyle}>Rad</th>
-                    <th style={thStyle}>Jami</th><th style={thStyle}>Qanoat.</th><th style={thStyle}>Tushun.</th><th style={thStyle}>Rad</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr key="total">
-                    <td style={tdStyle}>Soni</td>
-                    {['people_total', 'people_satisfied', 'people_explained', 'people_rejected', 'virtual_total', 'virtual_satisfied', 'virtual_explained', 'virtual_rejected'].map((f) => (
-                        <td key={f} style={tdStyle}>
-                            <span style={{ fontWeight: 600, color: '#1890ff' }}>{getVal('total', f)}</span>
-                        </td>
-                    ))}
-                </tr>
-            </tbody>
-        </table>
-    );
-
-    const renderTable7 = () => (
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-            <thead>
-                <tr>
-                    <th style={thStyle} rowSpan={2}>№</th>
-                    <th style={{ ...thStyle, textAlign: 'left' }} rowSpan={2}>{t('appeals.table7.columns.action_type')}</th>
-                    <th style={thStyle} colSpan={2}>{t('appeals.table7.columns.fine')}</th>
-                    <th style={thStyle} colSpan={2}>{t('appeals.table7.columns.reprimand')}</th>
-                    <th style={thStyle} colSpan={2}>{t('appeals.table7.columns.dismissal')}</th>
-                </tr>
-                <tr>
-                    <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
-                    <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
-                    <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {APPEALS_T7_ROWS.map((row, ridx) => (
-                        <tr key={row.key}>
-                            <td style={tdStyle}>{ridx + 1}</td>
-                            <td style={{ ...tdStyle, textAlign: 'left' }}>{t(row.labelKey)}</td>
-                            {['fine_prev', 'fine_curr', 'reprimand_prev', 'reprimand_curr', 'dismissal_prev', 'dismissal_curr'].map((f, fidx) => (
-                                <td key={f} style={tdStyle}>
-                                    {f.endsWith('_curr') ? (
-                                        <span style={{ fontWeight: 600, color: '#1890ff' }}>{getVal(row.key, f)}</span>
-                                    ) : (
-                                        <EditCell value={getVal(row.key, f)} onChange={v => updateCell(row.key, f, v)} rowIdx={ridx} colIdx={fidx} disabled={isSaving} />
-                                    )}
-                                </td>
-                            ))}
-                        </tr>
-                ))}
-            </tbody>
-        </table>
-    );
+        return (
+            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                <thead>
+                    <tr>
+                        <th style={thStyle} rowSpan={3}>№</th>
+                        <th style={{ ...thStyle, textAlign: 'left', minWidth: 200 }} rowSpan={3}>Javobgarlik turlari</th>
+                        <th style={thStyle} colSpan={10}>Intizomiy javobgarlik</th>
+                        <th style={thStyle} colSpan={2} rowSpan={2}>Ma'muriy javobgarlik</th>
+                        <th style={thStyle} colSpan={2} rowSpan={2}>Jinoiy javobgarlik</th>
+                        <th style={thStyle} colSpan={2} rowSpan={2}>Jami</th>
+                    </tr>
+                    <tr>
+                        <th style={thStyle} colSpan={2}>Jarima</th>
+                        <th style={thStyle} colSpan={2}>Hayfsan</th>
+                        <th style={thStyle} colSpan={2}>Lavozimidan ozod etish</th>
+                        <th style={thStyle} colSpan={2}>Jami</th>
+                    </tr>
+                    <tr>
+                        <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
+                        <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
+                        <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
+                        <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
+                        <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
+                        <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
+                        <th style={thStyle}>{prevYearShort}</th><th style={thStyle}>{currYearShort}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style={tdStyle}>1</td>
+                        <td style={{ ...tdStyle, textAlign: 'left', fontWeight: 'bold' }}>Jami ko'rilgan choralar</td>
+                        <td style={tdStyle}>{t7.disciplinary.fine.prev || 0}</td><td style={tdStyle}>{t7.disciplinary.fine.curr || 0}</td>
+                        <td style={tdStyle}>{t7.disciplinary.reprimand.prev || 0}</td><td style={tdStyle}>{t7.disciplinary.reprimand.curr || 0}</td>
+                        <td style={tdStyle}>{t7.disciplinary.dismissal.prev || 0}</td><td style={tdStyle}>{t7.disciplinary.dismissal.curr || 0}</td>
+                        <td style={tdStyle}>{t7.disciplinary.total.prev || 0}</td><td style={{ ...tdStyle, fontWeight: 'bold' }}>{t7.disciplinary.total.curr || 0}</td>
+                        <td style={tdStyle}>{t7.administrative.prev || 0}</td><td style={tdStyle}>{t7.administrative.curr || 0}</td>
+                        <td style={tdStyle}>{t7.criminal.prev || 0}</td><td style={tdStyle}>{t7.criminal.curr || 0}</td>
+                        <td style={tdStyle}>{t7.grand_total.prev || 0}</td><td style={{ ...tdStyle, fontWeight: 'bold', color: '#1890ff' }}>{t7.grand_total.curr || 0}</td>
+                    </tr>
+                </tbody>
+            </table>
+        );
+    };
 
     const tabItems = [
         {

@@ -116,6 +116,12 @@ export class AppealRecord {
     @Column({ default: false })
     is_overdue: boolean;
 
+    @Column({ default: false })
+    is_phone: boolean;
+
+    @Column({ default: false })
+    is_field_meeting: boolean;
+
     @CreateDateColumn({ type: "timestamp with time zone" })
     created_at: Date;
 

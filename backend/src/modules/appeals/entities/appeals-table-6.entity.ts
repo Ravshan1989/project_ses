@@ -24,53 +24,101 @@ export class AppealsTable6 {
 
     // People's Reception (Xalq qabulxonasi)
     @Column({ type: "int", default: 0 })
-    people_total: number;
+    people_total_prev: number;
 
     @Column({ type: "int", default: 0 })
-    people_satisfied: number;
+    people_total_curr: number;
 
     @Column({ type: "int", default: 0 })
-    people_explained: number;
+    people_satisfied_prev: number;
 
     @Column({ type: "int", default: 0 })
-    people_routed: number;
+    people_satisfied_curr: number;
 
     @Column({ type: "int", default: 0 })
-    people_rejected: number;
+    people_explained_prev: number;
 
     @Column({ type: "int", default: 0 })
-    people_not_considered: number;
+    people_explained_curr: number;
 
     @Column({ type: "int", default: 0 })
-    people_being_considered: number;
+    people_routed_prev: number;
 
     @Column({ type: "int", default: 0 })
-    people_overdue: number;
+    people_routed_curr: number;
+
+    @Column({ type: "int", default: 0 })
+    people_rejected_prev: number;
+
+    @Column({ type: "int", default: 0 })
+    people_rejected_curr: number;
+
+    @Column({ type: "int", default: 0 })
+    people_not_considered_prev: number;
+
+    @Column({ type: "int", default: 0 })
+    people_not_considered_curr: number;
+
+    @Column({ type: "int", default: 0 })
+    people_being_considered_prev: number;
+
+    @Column({ type: "int", default: 0 })
+    people_being_considered_curr: number;
+
+    @Column({ type: "int", default: 0 })
+    people_overdue_prev: number;
+
+    @Column({ type: "int", default: 0 })
+    people_overdue_curr: number;
 
     // Virtual Reception (Virtual qabulxona)
     @Column({ type: "int", default: 0 })
-    virtual_total: number;
+    virtual_total_prev: number;
 
     @Column({ type: "int", default: 0 })
-    virtual_satisfied: number;
+    virtual_total_curr: number;
 
     @Column({ type: "int", default: 0 })
-    virtual_explained: number;
+    virtual_satisfied_prev: number;
 
     @Column({ type: "int", default: 0 })
-    virtual_routed: number;
+    virtual_satisfied_curr: number;
 
     @Column({ type: "int", default: 0 })
-    virtual_rejected: number;
+    virtual_explained_prev: number;
 
     @Column({ type: "int", default: 0 })
-    virtual_not_considered: number;
+    virtual_explained_curr: number;
 
     @Column({ type: "int", default: 0 })
-    virtual_being_considered: number;
+    virtual_routed_prev: number;
 
     @Column({ type: "int", default: 0 })
-    virtual_overdue: number;
+    virtual_routed_curr: number;
+
+    @Column({ type: "int", default: 0 })
+    virtual_rejected_prev: number;
+
+    @Column({ type: "int", default: 0 })
+    virtual_rejected_curr: number;
+
+    @Column({ type: "int", default: 0 })
+    virtual_not_considered_prev: number;
+
+    @Column({ type: "int", default: 0 })
+    virtual_not_considered_curr: number;
+
+    @Column({ type: "int", default: 0 })
+    virtual_being_considered_prev: number;
+
+    @Column({ type: "int", default: 0 })
+    virtual_being_considered_curr: number;
+
+    @Column({ type: "int", default: 0 })
+    virtual_overdue_prev: number;
+
+    @Column({ type: "int", default: 0 })
+    virtual_overdue_curr: number;
 
     @CreateDateColumn({ type: "timestamp with time zone" })
     created_at: Date;

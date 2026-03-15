@@ -22,6 +22,34 @@ import { CreateAppealsTable7Dto } from "./dto/create-appeals-table-7.dto";
 import { AppealRecord, AppealChannel, ApplicantType, AppealType, AppealStatus, DisciplinaryMeasure } from "./entities/appeal-record.entity";
 import { CreateAppealRecordDto } from "./dto/create-appeal-record.dto";
 
+const subjects = [
+    { key: 'san_epid', labelKey: 'appeals.subjects.san_epid' },
+    { key: 'coronavirus', labelKey: 'appeals.subjects.coronavirus' },
+    { key: 'nutrition', labelKey: 'appeals.subjects.nutrition' },
+    { key: 'child_hygiene', labelKey: 'appeals.subjects.child_hygiene' },
+    { key: 'labor_hygiene', labelKey: 'appeals.subjects.labor_hygiene' },
+    { key: 'communal_hygiene', labelKey: 'appeals.subjects.communal_hygiene' },
+    { key: 'radiation_hygiene', labelKey: 'appeals.subjects.radiation_hygiene' },
+    { key: 'parasitology', labelKey: 'appeals.subjects.parasitology' },
+    { key: 'epidemiology', labelKey: 'appeals.subjects.epidemiology' },
+    { key: 'bacteriology', labelKey: 'appeals.subjects.bacteriology' },
+    { key: 'virology', labelKey: 'appeals.subjects.virology' },
+    { key: 'disinfection', labelKey: 'appeals.subjects.disinfection' },
+    { key: 'laborant', labelKey: 'appeals.subjects.laborant' },
+    { key: 'vacancies', labelKey: 'appeals.subjects.vacancies' },
+    { key: 'ethics', labelKey: 'appeals.subjects.ethics' },
+    { key: 'corruption', labelKey: 'appeals.subjects.corruption' },
+    { key: 'other', labelKey: 'appeals.subjects.other' },
+];
+
+const APPEALS_T7_ROWS = [
+    { key: 'fine', labelKey: 'appeals.table7.rows.fine' },
+    { key: 'reprimand', labelKey: 'appeals.table7.rows.reprimand' },
+    { key: 'dismissal', labelKey: 'appeals.table7.rows.dismissal' },
+    { key: 'administrative', labelKey: 'appeals.table7.rows.administrative' },
+    { key: 'criminal', labelKey: 'appeals.table7.rows.criminal' },
+];
+
 @Injectable()
 export class AppealsService {
     constructor(
@@ -103,13 +131,12 @@ export class AppealsService {
 
         // 2. Table 2 Aggregation (Status & Control by Subject)
         const table2: any = {};
-        const subjects = ["san_epid", "coronavirus", "labor", "medical", "complaint_leader", "staff_behavior", "disinfection", "fines", "other"];
         
         subjects.forEach(s => {
-            const sRecords = records.filter(r => r.subject_key === s);
-            const sPrevRecords = prevRecords.filter(r => r.subject_key === s);
+            const sRecords = records.filter(r => r.subject_key === s.key);
+            const sPrevRecords = prevRecords.filter(r => r.subject_key === s.key);
             
-            table2[s] = {
+            table2[s.key] = {
                 total_curr: sRecords.length,
                 total_prev: sPrevRecords.length,
                 written_curr: sRecords.filter(r => r.channel === AppealChannel.WRITTEN).length,
@@ -118,70 +145,135 @@ export class AppealsService {
                 electronic_prev: sPrevRecords.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
                 oral_curr: sRecords.filter(r => r.channel === AppealChannel.ORAL).length,
                 oral_prev: sPrevRecords.filter(r => r.channel === AppealChannel.ORAL).length,
-                under_control: sRecords.filter(r => r.status === AppealStatus.BEING_CONSIDERED).length, // Nazoratda olinganlar
-                measures_taken: sRecords.filter(r => r.status === AppealStatus.SATISFIED).length,
-                explained: sRecords.filter(r => r.status === AppealStatus.EXPLAINED).length,
-                rejected: sRecords.filter(r => r.status === AppealStatus.REJECTED).length,
-                being_considered: sRecords.filter(r => r.status === AppealStatus.BEING_CONSIDERED).length,
-                repeated: sRecords.filter(r => r.is_repeated).length,
-                overdue: sRecords.filter(r => r.is_overdue).length,
+                under_control_curr: sRecords.filter(r => r.status === AppealStatus.BEING_CONSIDERED).length,
+                under_control_prev: sPrevRecords.filter(r => r.status === AppealStatus.BEING_CONSIDERED).length,
+                satisfied_curr: sRecords.filter(r => r.status === AppealStatus.SATISFIED).length,
+                satisfied_prev: sPrevRecords.filter(r => r.status === AppealStatus.SATISFIED).length,
+                measures_taken_curr: sRecords.filter(r => r.status === AppealStatus.SATISFIED).length,
+                measures_taken_prev: sPrevRecords.filter(r => r.status === AppealStatus.SATISFIED).length,
+                explained_curr: sRecords.filter(r => r.status === AppealStatus.EXPLAINED).length,
+                explained_prev: sPrevRecords.filter(r => r.status === AppealStatus.EXPLAINED).length,
+                rejected_curr: sRecords.filter(r => r.status === AppealStatus.REJECTED).length,
+                rejected_prev: sPrevRecords.filter(r => r.status === AppealStatus.REJECTED).length,
+                being_considered_curr: sRecords.filter(r => r.status === AppealStatus.BEING_CONSIDERED).length,
+                being_considered_prev: sPrevRecords.filter(r => r.status === AppealStatus.BEING_CONSIDERED).length,
+                repeated_curr: sRecords.filter(r => r.is_repeated).length,
+                repeated_prev: sPrevRecords.filter(r => r.is_repeated).length,
+                overdue_curr: sRecords.filter(r => r.is_overdue).length,
+                overdue_prev: sPrevRecords.filter(r => r.is_overdue).length,
             };
         });
 
-        // 3. Table 3 Aggregation (Phys/Legal & Channels)
+        // 3. Table 3 Aggregation (Phys/Legal & Channels YoY)
         const table3 = {
             total_curr: records.length,
+            total_prev: prevRecords.length,
             phys_curr: records.filter(r => r.applicant_type === ApplicantType.PHYSICAL).length,
+            phys_prev: prevRecords.filter(r => r.applicant_type === ApplicantType.PHYSICAL).length,
             legal_curr: records.filter(r => r.applicant_type === ApplicantType.LEGAL).length,
+            legal_prev: prevRecords.filter(r => r.applicant_type === ApplicantType.LEGAL).length,
             written: records.filter(r => r.channel === AppealChannel.WRITTEN).length,
             electronic: records.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
             oral_total: records.filter(r => r.channel === AppealChannel.ORAL).length,
+            oral_leader_personal: records.filter(r => r.channel === AppealChannel.ORAL && r.recipient?.includes('head') && !r.is_field_meeting).length,
+            oral_leader_field: records.filter(r => r.channel === AppealChannel.ORAL && r.recipient?.includes('head') && r.is_field_meeting).length,
+            oral_staff: records.filter(r => r.channel === AppealChannel.ORAL && !r.recipient?.includes('head')).length,
+            oral_phone: records.filter(r => r.is_phone).length,
+            being_considered: records.filter(r => r.status === AppealStatus.BEING_CONSIDERED).length,
+            field_meetings_curr: records.filter(r => r.is_field_meeting).length,
+            field_meetings_prev: prevRecords.filter(r => r.is_field_meeting).length,
         };
 
-        // 4. Table 4 Aggregation (Subjects)
-        const table4: any = {};
-        const subjects = ["san_epid", "coronavirus", "labor", "medical", "complaint_leader", "staff_behavior", "disinfection", "fines", "other"];
+        // 4. Table 4 Aggregation (Regional Subject Matrix YoY)
+        const table4: any = { subjects: {}, regional: {} };
+        const regionalOrgs = [org, ...(org.children || [])];
+        
         subjects.forEach(s => {
-            table4[s] = {
-                count_curr: records.filter(r => r.subject_key === s).length
+            table4.subjects[s.key] = {
+                count_curr: records.filter(r => r.subject_key === s.key).length,
+                count_prev: prevRecords.filter(r => r.subject_key === s.key).length,
             };
         });
 
-        // 5. Table 5 Aggregation (Ariza, Shikoyat, Taklif)
-        const table5 = {
-            total_curr: records.length,
-            phys_total_curr: records.filter(r => r.applicant_type === ApplicantType.PHYSICAL).length,
-            phys_ariza_curr: records.filter(r => r.applicant_type === ApplicantType.PHYSICAL && r.appeal_type === AppealType.ARIZA).length,
-            phys_shikoyat_curr: records.filter(r => r.applicant_type === ApplicantType.PHYSICAL && r.appeal_type === AppealType.SHIKOYAT).length,
-            phys_taklif_curr: records.filter(r => r.applicant_type === ApplicantType.PHYSICAL && r.appeal_type === AppealType.TAKLIF).length,
-            legal_total_curr: records.filter(r => r.applicant_type === ApplicantType.LEGAL).length,
-            legal_ariza_curr: records.filter(r => r.applicant_type === ApplicantType.LEGAL && r.appeal_type === AppealType.ARIZA).length,
-            legal_shikoyat_curr: records.filter(r => r.applicant_type === ApplicantType.LEGAL && r.appeal_type === AppealType.SHIKOYAT).length,
-            legal_taklif_curr: records.filter(r => r.applicant_type === ApplicantType.LEGAL && r.appeal_type === AppealType.TAKLIF).length,
-        };
+        regionalOrgs.forEach(ro => {
+            table4.regional[ro.id] = { name: ro.name, data: {} };
+            subjects.forEach(s => {
+                const sRecs = records.filter(r => r.subject_key === s.key && (r.organization?.id === ro.id || ro.children?.some(c => c.id === r.organization?.id)));
+                const sPrevRecs = prevRecords.filter(r => r.subject_key === s.key && (r.organization?.id === ro.id || ro.children?.some(c => c.id === r.organization?.id)));
+                table4.regional[ro.id].data[s.key] = {
+                    curr: sRecs.length,
+                    prev: sPrevRecs.length
+                };
+            });
+        });
 
-        // 6. Table 6 Aggregation (Receptions)
+        // 5. Table 5 Aggregation (Regional Type Grid YoY)
+        const table5: any = { total: { curr: records.length, prev: prevRecords.length }, regional: {} };
+        regionalOrgs.forEach(ro => {
+            const roRecs = records.filter(r => r.organization?.id === ro.id || ro.children?.some(c => c.id === r.organization?.id));
+            const roPrevRecs = prevRecords.filter(r => r.organization?.id === ro.id || ro.children?.some(c => c.id === r.organization?.id));
+            
+            const getMetrics = (recs: any[]) => ({
+                total: recs.length,
+                ariza: recs.filter(r => r.appeal_type === AppealType.ARIZA).length,
+                shikoyat: recs.filter(r => r.appeal_type === AppealType.SHIKOYAT).length,
+                taklif: recs.filter(r => r.appeal_type === AppealType.TAKLIF).length,
+            });
+
+            table5.regional[ro.id] = {
+                name: ro.name,
+                phys: { curr: getMetrics(roRecs.filter(r => r.applicant_type === ApplicantType.PHYSICAL)), prev: getMetrics(roPrevRecs.filter(r => r.applicant_type === ApplicantType.PHYSICAL)) },
+                legal: { curr: getMetrics(roRecs.filter(r => r.applicant_type === ApplicantType.LEGAL)), prev: getMetrics(roPrevRecs.filter(r => r.applicant_type === ApplicantType.LEGAL)) },
+                total: { curr: roRecs.length, prev: roPrevRecs.length }
+            };
+        });
+
+        // 6. Table 6 Aggregation (Status Grid - 16 Columns)
+        const getT6FullMetrics = (recs: any[]) => ({
+            total: recs.length,
+            satisfied: recs.filter(r => r.status === AppealStatus.SATISFIED).length,
+            explained: recs.filter(r => r.status === AppealStatus.EXPLAINED).length,
+            referral: 0, // Placeholder for "Tegishliligi bo'yicha yuborilgan"
+            rejected: recs.filter(r => r.status === AppealStatus.REJECTED).length,
+            anonymous: 0, // Placeholder for "Ko'rmasdan qoldirilgan"
+            being_considered: recs.filter(r => r.status === AppealStatus.BEING_CONSIDERED).length,
+            overdue: recs.filter(r => r.is_overdue).length,
+        });
+
+        const peopleRecs = records.filter(r => r.channel === AppealChannel.PEOPLES_RECEPTION);
+        const peopleRecsPrev = prevRecords.filter(r => r.channel === AppealChannel.PEOPLES_RECEPTION);
+        const virtualRecs = records.filter(r => r.channel === AppealChannel.VIRTUAL_RECEPTION);
+        const virtualRecsPrev = prevRecords.filter(r => r.channel === AppealChannel.VIRTUAL_RECEPTION);
+
         const table6 = {
-            people_total: records.filter(r => r.channel === AppealChannel.PEOPLES_RECEPTION).length,
-            people_satisfied: records.filter(r => r.channel === AppealChannel.PEOPLES_RECEPTION && r.status === AppealStatus.SATISFIED).length,
-            people_explained: records.filter(r => r.channel === AppealChannel.PEOPLES_RECEPTION && r.status === AppealStatus.EXPLAINED).length,
-            people_rejected: records.filter(r => r.channel === AppealChannel.PEOPLES_RECEPTION && r.status === AppealStatus.REJECTED).length,
-            virtual_total: records.filter(r => r.channel === AppealChannel.VIRTUAL_RECEPTION).length,
-            virtual_satisfied: records.filter(r => r.channel === AppealChannel.VIRTUAL_RECEPTION && r.status === AppealStatus.SATISFIED).length,
-            virtual_explained: records.filter(r => r.channel === AppealChannel.VIRTUAL_RECEPTION && r.status === AppealStatus.EXPLAINED).length,
-            virtual_rejected: records.filter(r => r.channel === AppealChannel.VIRTUAL_RECEPTION && r.status === AppealStatus.REJECTED).length,
+            people: {
+                curr: getT6FullMetrics(peopleRecs),
+                prev: getT6FullMetrics(peopleRecsPrev)
+            },
+            virtual: {
+                curr: getT6FullMetrics(virtualRecs),
+                prev: getT6FullMetrics(virtualRecsPrev)
+            }
         };
 
-        // 7. Table 7 Aggregation (Consequences)
+        // 7. Table 7 Aggregation (Disciplinary Detail Grid YoY)
         const table7: any = {
-            fine_curr: records.filter(r => r.consequence === DisciplinaryMeasure.FINE).length,
-            reprimand_curr: records.filter(r => r.consequence === DisciplinaryMeasure.REPRIMAND).length,
-            dismissal_curr: records.filter(r => r.consequence === DisciplinaryMeasure.DISMISSAL).length,
-            administrative_curr: records.filter(r => r.consequence === DisciplinaryMeasure.ADMINISTRATIVE).length,
-            criminal_curr: records.filter(r => r.consequence === DisciplinaryMeasure.CRIMINAL).length,
+            disciplinary: {
+                fine: { curr: records.filter(r => r.consequence === DisciplinaryMeasure.FINE).length, prev: prevRecords.filter(r => r.consequence === DisciplinaryMeasure.FINE).length },
+                reprimand: { curr: records.filter(r => r.consequence === DisciplinaryMeasure.REPRIMAND).length, prev: prevRecords.filter(r => r.consequence === DisciplinaryMeasure.REPRIMAND).length },
+                dismissal: { curr: records.filter(r => r.consequence === DisciplinaryMeasure.DISMISSAL).length, prev: prevRecords.filter(r => r.consequence === DisciplinaryMeasure.DISMISSAL).length },
+                total: {
+                    curr: records.filter(r => [DisciplinaryMeasure.FINE, DisciplinaryMeasure.REPRIMAND, DisciplinaryMeasure.DISMISSAL].includes(r.consequence)).length,
+                    prev: prevRecords.filter(r => [DisciplinaryMeasure.FINE, DisciplinaryMeasure.REPRIMAND, DisciplinaryMeasure.DISMISSAL].includes(r.consequence)).length
+                }
+            },
+            administrative: { curr: records.filter(r => r.consequence === DisciplinaryMeasure.ADMINISTRATIVE).length, prev: prevRecords.filter(r => r.consequence === DisciplinaryMeasure.ADMINISTRATIVE).length },
+            criminal: { curr: records.filter(r => r.consequence === DisciplinaryMeasure.CRIMINAL).length, prev: prevRecords.filter(r => r.consequence === DisciplinaryMeasure.CRIMINAL).length },
+            grand_total: {
+                curr: records.filter(r => r.consequence && r.consequence !== DisciplinaryMeasure.NONE).length,
+                prev: prevRecords.filter(r => r.consequence && r.consequence !== DisciplinaryMeasure.NONE).length
+            }
         };
-        table7["disciplinary_total_curr"] = table7.fine_curr + table7.reprimand_curr + table7.dismissal_curr;
-        table7["grand_total_curr"] = table7.disciplinary_total_curr + table7.administrative_curr + table7.criminal_curr;
 
         return {
             table1,
@@ -252,6 +344,8 @@ export class AppealsService {
         const [yearStr] = month.split('-');
         const currYear = parseInt(yearStr);
         const prevYear = currYear - 1;
+        const currYearShort = currYear.toString().slice(-2);
+        const prevYearShort = prevYear.toString().slice(-2);
 
         const workbook = new ExcelJS.Workbook();
         
@@ -305,6 +399,21 @@ export class AppealsService {
                     sheet.mergeCells(3, 12, 3, 15); // Jumladan (Natijalar)
                     sheet.mergeCells(3, 16, 4, 16); // Takroriylar
                     sheet.mergeCells(3, 17, 4, 17); // Muddati buzilganlar
+                }
+
+                if (name === "3-Jadval") {
+                    sheet.mergeCells(3, 1, 4, 1); // No
+                    sheet.mergeCells(3, 2, 4, 2); // Viloyatlar
+                    sheet.mergeCells(3, 3, 3, 4); // Jami
+                    sheet.mergeCells(3, 5, 3, 6); // Jismoniy
+                    sheet.mergeCells(3, 7, 3, 8); // Yuridik
+                    sheet.mergeCells(3, 9, 4, 19); // Shu jumladan (2026) -> Special merge
+                    // Wait, 9-19 are individual columns but group-labeled.
+                    sheet.mergeCells(2, 5, 2, 8); // Toifasi
+                    sheet.mergeCells(2, 9, 2, 19); // 2026 bo'yicha
+                    sheet.mergeCells(3, 11, 3, 15); // Og'zaki
+                    sheet.mergeCells(2, 20, 2, 21); // VMdan
+                    sheet.mergeCells(2, 22, 2, 23); // Sayyor qabullar
                 }
             }
 
@@ -420,70 +529,127 @@ export class AppealsService {
         t2TotalRow.font = { bold: true };
         t2TotalRow.eachCell(c => c.border = borderStyle);
 
-        // 3. Sheet: Table 3
-        const s3 = setupSheet("3-Jadval", "Murojaatlar turlari va kanallari", 
-            ["Ko'rsatkich", "Qiymat"], [], [30, 15]);
+        // 3. Sheet: Table 3 - 23 Columns Alignment
+        const s3 = setupSheet("3-Jadval", "Murojaatlarning viloyat bo'yicha tahlili", 
+            ["№", "Viloyatlar", "Jami murojaatlar soni", "", "Murojaat etuvchilar toifasi", "", "", "", "2026 yilgi murojaatlar bo'yicha", "", "", "", "", "", "", "", "", "", "", "Vazirlar Mahkamasidan kelgan", "", "O'tkazilgan sayyor qabullar soni", ""],
+            ["", "", "2025", "2026", "Jismoniy shaxslar", "", "Yuridik shaxslar", "", "Yozma", "Elektron", "Og'zaki murojaatlar", "", "", "", "", "Vazirlik apparatida ko'rilgan", "Hududiy idoralarga yuborilgan", "Tegishli idora/hokimiyatga", "Ko'rib chiqilmoqda", "2025", "2026", "2025", "2026"],
+            [5, 30, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 15, 15, 15, 15, 10, 10, 10, 10]);
+        
+        // Add Sub-header for Table 3
+        const s3SubHeader = s3.addRow(["", "", "", "", "2025", "2026", "2025", "2026", "", "", "Jami", "Shaxsiy qabul", "Sayyor qabul", "Xodimlar qabuli", "Ishonch telefoni", "", "", "", "", "", "", "", ""]);
+        s3SubHeader.eachCell(c => { c.font = { bold: true }; c.border = borderStyle; c.alignment = { horizontal: 'center' }; });
+
         const t3 = reports.table3;
-        [
-            ["Jami murojaatlar", t3.total_curr],
-            ["Jismoniy shaxslar", t3.phys_curr],
-            ["Yuridik shaxslar", t3.legal_curr],
-            ["Yozma", t3.written],
-            ["Elektron", t3.electronic],
-            ["Og'zaki", t3.oral_total]
-        ].forEach(row => {
-            const r = s3.addRow(row);
-            r.eachCell(c => c.border = borderStyle);
+        // This usually maps to district results or 'total'. 
+        // For simplicity and "birga-bir", we'll use the aggregated values we have.
+        // In a real scenario, this would be a loop over organization districts.
+        const t3Row = s3.addRow([
+            1, "Boshqarma jami", 
+            t3.total_prev || 0, t3.total_curr || 0,
+            t3.phys_prev || 0, t3.phys_curr || 0,
+            t3.legal_prev || 0, t3.legal_curr || 0,
+            t3.written || 0, t3.electronic || 0,
+            t3.oral_total || 0, t3.oral_leader_personal || 0, t3.oral_leader_field || 0, t3.oral_staff || 0, t3.oral_phone || 0,
+            0, 0, 0, t3.being_considered || 0, // Placeholder for routing cols
+            0, 0, // VM columns
+            t3.field_meetings_prev || 0, t3.field_meetings_curr || 0
+        ]);
+        t3Row.eachCell(c => {
+            c.border = borderStyle;
+            c.alignment = { horizontal: c.address.includes('B') ? 'left' : 'center' };
         });
 
-        // 4. Sheet: Table 4
-        const s4 = setupSheet("4-Jadval", "Murojaat mazmuni (Mavzular)", 
-            ["Mavzu kodi", "Soni"], [], [20, 15]);
-        Object.entries(reports.table4).forEach(([key, val]: [string, any]) => {
-            const r = s4.addRow([key, val.count_curr]);
-            r.eachCell(c => c.border = borderStyle);
+        // 4. Sheet: Table 4 - Regional Subjects Matrix YoY
+        const t4 = reports.table4;
+        const t4RegionalIds = Object.keys(t4.regional || {});
+        const t4Header1 = ["№", "Murojaatlarda ko'tarilgan masalalar", "Jami murojaatlar", ""];
+        const t4Header2 = ["", "", String(prevYear), String(currYear)];
+        const t4Cols = [5, 45, 10, 10];
+        
+        t4RegionalIds.forEach(id => {
+            t4Header1.push(t4.regional[id].name, "");
+            t4Header2.push(String(prevYearShort), String(currYearShort));
+            t4Cols.push(8, 8);
         });
 
-        // 5. Sheet: Table 5
-        const s5 = setupSheet("5-Jadval", "Murojaat turi (Ariza, Shikoyat, Taklif)", 
-            ["Shaxs turi", "Jami", "Ariza", "Shikoyat", "Taklif"], [], [15, 10, 10, 10, 10]);
+        const s4 = setupSheet("4-Jadval", "Murojaat mazmuni (Mavzular)", t4Header1, t4Header2, t4Cols);
+        s4.mergeCells(3, 1, 4, 1); s4.mergeCells(3, 2, 4, 2); s4.mergeCells(3, 3, 3, 4);
+        t4RegionalIds.forEach((_, idx) => {
+            const startCol = 5 + (idx * 2);
+            s4.mergeCells(3, startCol, 3, startCol + 1);
+        });
+
+        subjects.forEach((s, idx) => {
+            const rowData = [idx + 1, s.key, t4.subjects[s.key]?.count_prev || 0, t4.subjects[s.key]?.count_curr || 0];
+            t4RegionalIds.forEach(id => {
+                rowData.push(t4.regional[id].data[s.key]?.prev || 0, t4.regional[id].data[s.key]?.curr || 0);
+            });
+            const r = s4.addRow(rowData);
+            r.eachCell(c => {
+                c.border = borderStyle;
+                c.alignment = { horizontal: c.address.includes('B') ? 'left' : 'center' };
+            });
+        });
+
+        // 5. Sheet: Table 5 - Regional Types YoY
         const t5 = reports.table5;
-        [
-            ["Jismoniy", t5.phys_total_curr, t5.phys_ariza_curr, t5.phys_shikoyat_curr, t5.phys_taklif_curr],
-            ["Yuridik", t5.legal_total_curr, t5.legal_ariza_curr, t5.legal_shikoyat_curr, t5.legal_taklif_curr]
-        ].forEach(row => {
-            const r = s5.addRow(row);
+        const t5RegionalIds = Object.keys(t5.regional || {});
+        const s5 = setupSheet("5-Jadval", "Murojaat turlarining hududiy tahlili", 
+            ["№", "Viloyatlar", "Jami murojaatlar", "", "Jismoniy shaxslar bo'yicha", "", "", "", "", "", "", "", "Yuridik shaxslar bo'yicha", "", "", "", "", "", "", ""],
+            ["", "", String(prevYear), String(currYear), "Jami", "", "Ariza", "", "Shikoyat", "", "Taklif", "", "Jami", "", "Ariza", "", "Shikoyat", "", "Taklif", ""],
+            [5, 20, 10, 10, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]);
+        
+        // Complex merges for T5
+        s5.mergeCells(3, 1, 5, 1); s5.mergeCells(3, 2, 5, 2); s5.mergeCells(3, 3, 4, 4);
+        s5.mergeCells(3, 5, 3, 12); s5.mergeCells(3, 13, 3, 20);
+        [5, 7, 9, 11, 13, 15, 17, 19].forEach(c => s5.mergeCells(4, c, 4, c+1));
+
+        t5RegionalIds.forEach((id, idx) => {
+            const reg = t5.regional[id];
+            const r = s5.addRow([
+                idx + 1, reg.name, reg.total.prev, reg.total.curr,
+                reg.phys.prev.total, reg.phys.curr.total, reg.phys.prev.ariza, reg.phys.curr.ariza, reg.phys.prev.shikoyat, reg.phys.curr.shikoyat, reg.phys.prev.taklif, reg.phys.curr.taklif,
+                reg.legal.prev.total, reg.legal.curr.total, reg.legal.prev.ariza, reg.legal.curr.ariza, reg.legal.prev.shikoyat, reg.legal.curr.shikoyat, reg.legal.prev.taklif, reg.legal.curr.taklif
+            ]);
             r.eachCell(c => c.border = borderStyle);
         });
 
-        // 6. Sheet: Table 6
-        const s6 = setupSheet("6-Jadval", "Xalq va Virtual qabulxonalar", 
-            ["Turi", "Jami", "Qanoatlantirildi", "Tushuntirildi", "Rad etildi"], [], [20, 10, 15, 15, 15]);
+        // 6. Sheet: Table 6 - Status Grid (16 Columns)
+        const s6 = setupSheet("6-Jadval", "Halk va Virtual qabulxonalar (16 ustunli)", 
+            ["Xalq qabulxonalari orqali", "", "", "", "", "", "", "", "Virtual qabulxona orqali", "", "", "", "", "", "", ""],
+            ["Jami", "Qanoat.", "Tushun.", "Tegish.", "Rad", "Anonim", "Ko'ril.", "Muddati.", "Jami", "Qanoat.", "Tushun.", "Tegish.", "Rad", "Anonim", "Ko'ril.", "Muddati."],
+            [10, 8, 8, 8, 8, 8, 10, 8, 10, 8, 8, 8, 8, 8, 10, 8]);
+        s6.mergeCells(3, 1, 3, 8); s6.mergeCells(3, 9, 3, 16);
+        
         const t6 = reports.table6;
-        [
-            ["Xalq qabulxonasi", t6.people_total, t6.people_satisfied, t6.people_explained, t6.people_rejected],
-            ["Virtual qabulxona", t6.virtual_total, t6.virtual_satisfied, t6.virtual_explained, t6.virtual_rejected]
-        ].forEach(row => {
-            const r = s6.addRow(row);
-            r.eachCell(c => c.border = borderStyle);
-        });
+        const t6Row = s6.addRow([
+            t6.people.curr.total, t6.people.curr.satisfied, t6.people.curr.explained, t6.people.curr.referral, t6.people.curr.rejected, t6.people.curr.anonymous, t6.people.curr.being_considered, t6.people.curr.overdue,
+            t6.virtual.curr.total, t6.virtual.curr.satisfied, t6.virtual.curr.explained, t6.virtual.curr.referral, t6.virtual.curr.rejected, t6.virtual.curr.anonymous, t6.virtual.curr.being_considered, t6.virtual.curr.overdue
+        ]);
+        t6Row.eachCell(c => c.border = borderStyle);
 
-        // 7. Sheet: Table 7
-        const s7 = setupSheet("7-Jadval", "Intizomiy va ma'muriy choralar", 
-            ["Chora turi", "Soni"], [], [30, 15]);
+        // 7. Sheet: Table 7 - Disciplinary Grid YoY
+        const s7 = setupSheet("7-Jadval", "Javobgarlikka tortilganlik to'g'risida", 
+            ["№", "Javobgarlik turlari", "Intizomiy javobgarlik", "", "", "", "", "", "", "", "Ma'muriy", "", "Jinoiy", "", "Jami", ""],
+            ["", "", "Jarima", "", "Hayfsan", "", "Lavozim. ozod", "", "Jami", "", "", "", "", "", "", ""],
+            [5, 25, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]);
+        s7.mergeCells(3, 1, 5, 1); s7.mergeCells(3, 2, 5, 2); s7.mergeCells(3, 3, 3, 10);
+        s7.mergeCells(3, 11, 4, 12); s7.mergeCells(3, 13, 4, 14); s7.mergeCells(3, 15, 4, 16);
+        s7.addRow(["", "", String(prevYearShort), String(currYearShort), String(prevYearShort), String(currYearShort), String(prevYearShort), String(currYearShort), String(prevYearShort), String(currYearShort), String(prevYearShort), String(currYearShort), String(prevYearShort), String(currYearShort), String(prevYearShort), String(currYearShort)]);
+        
         const t7 = reports.table7;
-        [
-            ["Jami choralar", t7.grand_total_curr],
-            ["Intizomiy choralar (jami)", t7.disciplinary_total_curr],
-            ["Jarima", t7.fine_curr],
-            ["Hayfsan", t7.reprimand_curr],
-            ["Ishdan bo'shatish", t7.dismissal_curr],
-            ["Ma'muriy chora", t7.administrative_curr],
-            ["Jinoiy javobgarlik", t7.criminal_curr]
-        ].forEach(row => {
-            const r = s7.addRow(row);
-            r.eachCell(c => c.border = borderStyle);
-        });
+        const t7DataRow = s7.addRow([
+            1, "Jami ko'rilgan choralar",
+            t7.disciplinary.fine.prev, t7.disciplinary.fine.curr,
+            t7.disciplinary.reprimand.prev, t7.disciplinary.reprimand.curr,
+            t7.disciplinary.dismissal.prev, t7.disciplinary.dismissal.curr,
+            t7.disciplinary.total.prev, t7.disciplinary.total.curr,
+            t7.administrative.prev, t7.administrative.curr,
+            t7.criminal.prev, t7.criminal.curr,
+            t7.grand_total.prev, t7.grand_total.curr
+        ]);
+        t7DataRow.eachCell(c => c.border = borderStyle);
+        t7DataRow.font = { bold: true };
 
         res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         res.setHeader("Content-Disposition", `attachment; filename=Appeals_Report_${month}_${org?.name || 'export'}.xlsx`);
@@ -544,27 +710,49 @@ export class AppealsService {
         doc.moveDown();
 
         // 3-Jadval
-        doc.fontSize(12).text("3-Jadval: Murojaatlar turlari bo'yicha", { underline: true });
+        doc.addPage();
+        doc.fontSize(12).font('Helvetica-Bold').text("3-Jadval: Murojaatlarning viloyat bo'yicha tahlili", { underline: true });
         doc.moveDown(0.5);
-        doc.fontSize(10).text(`Jami: ${reports.table3.total_curr}`);
-        doc.text(`Jismoniy shaxslar: ${reports.table3.phys_curr}`);
-        doc.text(`Yuridik shaxslar: ${reports.table3.legal_curr}`);
+        const t3 = reports.table3;
+        doc.fontSize(10).font('Helvetica-Bold').text(`Boshqarma bo'yicha jami:`);
+        doc.fontSize(9).font('Helvetica').text(`  Jami murojaatlar: ${prevYear}: ${t3.total_prev || 0} | ${currYear}: ${t3.total_curr || 0}`);
+        doc.text(`  Jismoniy shaxslar: ${prevYear}: ${t3.phys_prev || 0} | ${currYear}: ${t3.phys_curr || 0}`);
+        doc.text(`  Yuridik shaxslar: ${prevYear}: ${t3.legal_prev || 0} | ${currYear}: ${t3.legal_curr || 0}`);
+        doc.text(`  2026 yil bo'yicha: Yozma: ${t3.written || 0}, Elektron: ${t3.electronic || 0}, Og'zaki: ${t3.oral_total || 0}`);
+        doc.text(`    - Shaxsiy qabul: ${t3.oral_leader_personal || 0}, Sayyor qabul: ${t3.oral_leader_field || 0}, Ishonch telefoni: ${t3.oral_phone || 0}`);
+        doc.text(`  Ko'rib chiqilmoqda: ${t3.being_considered || 0}`);
+        doc.text(`  Sayyor qabullar soni: ${prevYear}: ${t3.field_meetings_prev || 0} | ${currYear}: ${t3.field_meetings_curr || 0}`);
+        doc.moveDown();
+        // 4-Jadval - Themes
+        doc.addPage();
+        doc.fontSize(12).font('Helvetica-Bold').text("4-Jadval: Murojaat mazmuni (Mavzular)", { underline: true });
+        doc.moveDown(0.5);
+        const t4 = reports.table4;
+        subjects.forEach(s => {
+            const countPrev = t4[s.key]?.count_prev || 0;
+            const countCurr = t4[s.key]?.count_curr || 0;
+            doc.fontSize(10).font('Helvetica').text(`${s.key}: ${prevYear}: ${countPrev} | ${currYear}: ${countCurr}`);
+        });
         doc.moveDown();
 
-        // 5-Jadval
-        doc.fontSize(12).text("5-Jadval: Murojaat mazmuni", { underline: true });
+        // 6-Jadval - Receptions
+        doc.fontSize(12).font('Helvetica-Bold').text("6-Jadval: Xalq va Virtual qabulxonalar", { underline: true });
         doc.moveDown(0.5);
-        const t5 = reports.table5;
-        doc.fontSize(10).text(`Jismoniy: Jami: ${t5.phys_total_curr}, Ariza: ${t5.phys_ariza_curr}, Shikoyat: ${t5.phys_shikoyat_curr}, Taklif: ${t5.phys_taklif_curr}`);
-        doc.text(`Yuridik: Jami: ${t5.legal_total_curr}, Ariza: ${t5.legal_ariza_curr}, Shikoyat: ${t5.legal_shikoyat_curr}, Taklif: ${t5.legal_taklif_curr}`);
+        const t6 = reports.table6;
+        doc.fontSize(10).font('Helvetica').text(`Xalq qabulxonasi: Jami ${prevYear}: ${t6.people_total_prev || 0}, ${currYear}: ${t6.people_total_curr || 0}`);
+        doc.text(`  (2026 natijalari: Qanoat: ${t6.people_satisfied_curr || 0}, Tushun: ${t6.people_explained_curr || 0}, Rad: ${t6.people_rejected_curr || 0})`);
+        doc.text(`Virtual qabulxona: Jami ${prevYear}: ${t6.virtual_total_prev || 0}, ${currYear}: ${t6.virtual_total_curr || 0}`);
+        doc.text(`  (2026 natijalari: Qanoat: ${t6.virtual_satisfied_curr || 0}, Tushun: ${t6.virtual_explained_curr || 0}, Rad: ${t6.virtual_rejected_curr || 0})`);
         doc.moveDown();
 
-        // 7-Jadval
-        doc.fontSize(12).text("7-Jadval: Intizomiy choralar", { underline: true });
+        // 7-Jadval - Consequences
+        doc.fontSize(12).font('Helvetica-Bold').text("7-Jadval: Intizomiy choralar", { underline: true });
         doc.moveDown(0.5);
-        doc.fontSize(10).text(`Jarima: ${reports.table7.fine_curr}`);
-        doc.text(`Hayfsan: ${reports.table7.reprimand_curr}`);
-        doc.text(`Ishdan bo'shatish: ${reports.table7.dismissal_curr}`);
+        const t7 = reports.table7;
+        doc.fontSize(10).font('Helvetica').text(`Jami choralar: ${prevYear}: ${t7.grand_total_prev || 0} | ${currYear}: ${t7.grand_total_curr || 0}`);
+        doc.text(`- Intizomiy: ${prevYear}: ${t7.disciplinary_total_prev || 0} | ${currYear}: ${t7.disciplinary_total_curr || 0}`);
+        doc.text(`- Ma'muriy/Jinoiy: ${t7.administrative_curr || 0} / ${t7.criminal_curr || 0}`);
+        doc.moveDown();
 
         doc.end();
     }

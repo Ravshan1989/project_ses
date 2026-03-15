@@ -50,13 +50,16 @@ export class AppealsTable3 {
     oral_total: number;
 
     @Column({ type: "int", default: 0 })
-    oral_leader: number;
+    oral_leader_personal: number; // Col 12
 
     @Column({ type: "int", default: 0 })
-    oral_staff: number;
+    oral_leader_field: number; // Col 13
 
     @Column({ type: "int", default: 0 })
-    oral_phone: number;
+    oral_staff: number; // Col 14
+
+    @Column({ type: "int", default: 0 })
+    oral_phone: number; // Col 15
 
     @Column({ type: "int", default: 0 })
     ministry_routing: number;
