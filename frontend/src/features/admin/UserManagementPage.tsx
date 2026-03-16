@@ -352,47 +352,86 @@ const UserManagementPage: React.FC = () => {
                     </Col>
                     {selectedRoleId && (
                         <Col xs={24} md={16}>
-                            <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '8px' }}>
-                                {organizations
-                                    .filter((org: any) => org.parent)
-                                    .map((org: any) => {
-                                        const userCount = users.filter((u: any) => {
+                            <div style={{ marginBottom: '16px' }}>
+                                <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '12px', scrollbarWidth: 'thin' }}>
+                                    {organizations
+                                        .filter((org: any) => org.parent)
+                                        .map((org: any) => {
+                                            const userCount = users.filter((u: any) => {
+                                                const matchesOrg = u.organization?.id === org.id;
+                                                if (!matchesOrg) return false;
+                                                if (selectedRoleId.startsWith('sys:')) {
+                                                    return u.role === selectedRoleId.replace('sys:', '');
+                                                }
+                                                return u.dynamicRole?.id === selectedRoleId;
+                                            }).length;
+                                            const isConnected = userCount > 0;
+                                            
+                                            return (
+                                                <Tooltip key={org.id} title={`${org.name}: ${userCount} ta xodim`}>
+                                                    <div style={{
+                                                        minWidth: '140px',
+                                                        padding: '12px',
+                                                        borderRadius: '16px',
+                                                        background: isConnected ? 'rgba(82, 196, 26, 0.1)' : 'rgba(0, 0, 0, 0.02)',
+                                                        border: `1px solid ${isConnected ? 'rgba(82, 196, 26, 0.2)' : 'rgba(0, 0, 0, 0.05)'}`,
+                                                        transition: 'all 0.3s'
+                                                    }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '4px' }}>
+                                                            <span style={{ fontSize: '11px', fontWeight: 700, color: '#595959', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>
+                                                                {org.name}
+                                                            </span>
+                                                            {isConnected ? 
+                                                                <CheckCircleOutlined style={{ color: '#52c41a' }} /> : 
+                                                                <CloseCircleOutlined style={{ color: '#bfbfbf' }} />
+                                                            }
+                                                        </div>
+                                                        <div style={{ fontSize: '10px', color: isConnected ? '#52c41a' : '#8c8c8c' }}>
+                                                            {isConnected ? 'Ulangan' : 'Ulanmagan'}
+                                                        </div>
+                                                    </div>
+                                                </Tooltip>
+                                            );
+                                        })
+                                    }
+                                </div>
+                            </div>
+
+                            {/* UZ: Ulanmagan tumanlar ro'yxati (Aniq ko'rinishi uchun) */}
+                            <div style={{ background: 'rgba(255, 77, 79, 0.05)', padding: '12px', borderRadius: '12px', border: '1px dashed rgba(255, 77, 79, 0.2)' }}>
+                                <div style={{ fontSize: '11px', fontWeight: 800, color: '#ff4d4f', marginBottom: '8px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <CloseCircleOutlined /> Ulanmagan hududlar:
+                                </div>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                    {organizations
+                                        .filter((org: any) => org.parent)
+                                        .filter((org: any) => {
+                                            return users.filter((u: any) => {
+                                                const matchesOrg = u.organization?.id === org.id;
+                                                if (!matchesOrg) return false;
+                                                if (selectedRoleId.startsWith('sys:')) {
+                                                    return u.role === selectedRoleId.replace('sys:', '');
+                                                }
+                                                return u.dynamicRole?.id === selectedRoleId;
+                                            }).length === 0;
+                                        })
+                                        .map((org: any) => (
+                                            <Tag key={org.id} color="error" style={{ borderRadius: '6px', margin: 0 }}>
+                                                {org.name}
+                                            </Tag>
+                                        ))
+                                    }
+                                    {organizations.filter((org: any) => org.parent).every((org: any) => {
+                                        return users.some((u: any) => {
                                             const matchesOrg = u.organization?.id === org.id;
                                             if (!matchesOrg) return false;
                                             if (selectedRoleId.startsWith('sys:')) {
                                                 return u.role === selectedRoleId.replace('sys:', '');
                                             }
                                             return u.dynamicRole?.id === selectedRoleId;
-                                        }).length;
-                                        const isConnected = userCount > 0;
-                                        
-                                        return (
-                                            <Tooltip key={org.id} title={`${org.name}: ${userCount} ta xodim`}>
-                                                <div style={{
-                                                    minWidth: '140px',
-                                                    padding: '12px',
-                                                    borderRadius: '16px',
-                                                    background: isConnected ? 'rgba(82, 196, 26, 0.1)' : 'rgba(0, 0, 0, 0.02)',
-                                                    border: `1px solid ${isConnected ? 'rgba(82, 196, 26, 0.2)' : 'rgba(0, 0, 0, 0.05)'}`,
-                                                    transition: 'all 0.3s'
-                                                }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '4px' }}>
-                                                        <span style={{ fontSize: '11px', fontWeight: 700, color: '#595959', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>
-                                                            {org.name}
-                                                        </span>
-                                                        {isConnected ? 
-                                                            <CheckCircleOutlined style={{ color: '#52c41a' }} /> : 
-                                                            <CloseCircleOutlined style={{ color: '#bfbfbf' }} />
-                                                        }
-                                                    </div>
-                                                    <div style={{ fontSize: '10px', color: isConnected ? '#52c41a' : '#8c8c8c' }}>
-                                                        {isConnected ? 'Ulangan' : 'Ulanmagan'}
-                                                    </div>
-                                                </div>
-                                            </Tooltip>
-                                        );
-                                    })
-                                }
+                                        });
+                                    }) && <span style={{ fontSize: '11px', color: '#52c41a' }}>Barcha hududlar ulangan ✅</span>}
+                                </div>
                             </div>
                         </Col>
                     )}
