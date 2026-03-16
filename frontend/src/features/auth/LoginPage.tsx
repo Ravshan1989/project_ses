@@ -475,7 +475,7 @@ const LoginPage: React.FC = () => {
 
                         <div style={{ textAlign: 'center', marginTop: '32px' }}>
                             <Text style={{ color: '#64748b', fontSize: '14px' }}>
-                                Technical Support: <Link href="https://t.me/smart_ses_support" target="_blank" style={{ color: '#94a3b8' }}>@smart_ses_support</Link>
+                                Texnik yordam: <Link href="https://t.me/smart_ses_support" target="_blank" style={{ color: '#94a3b8' }}>@smart_ses_support</Link>
                             </Text>
                         </div>
                     </div>
