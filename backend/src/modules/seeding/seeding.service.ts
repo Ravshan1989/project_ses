@@ -415,6 +415,16 @@ export class SeedingService implements OnModuleInit {
         level: 3, // Tuman
         description: "Tuman Yetakchi Mutaxassisi",
       },
+      {
+        name: UserRole.REGION_HEAD,
+        level: 2,
+        description: "Viloyat Boshqarmasi Rahbari",
+      },
+      {
+        name: UserRole.REPUBLIC_HEAD,
+        level: 1,
+        description: "Respublika Boshqarmasi Rahbari",
+      },
     ];
 
     for (const r of rolesToSeed) {
@@ -517,6 +527,45 @@ export class SeedingService implements OnModuleInit {
         canCreate: true,
         canEdit: true,
         canApprove: false,
+        canDownload: true,
+      },
+      {
+        role: UserRole.REGION_HEAD,
+        perms: [
+          "VIEW_EPIDEMIOLOGY",
+          "VIEW_HEPATITIS",
+          "VIEW_FLU",
+          "VIEW_ARI",
+          "VIEW_COVID",
+          "VIEW_DIARRHEA",
+          "APPROVE_REPORT",
+          "VIEW_APPEALS",
+          "EDIT_APPEALS",
+          "VIEW_NUTRITION_HYGIENE",
+        ],
+        canCreate: true,
+        canEdit: true,
+        canApprove: true,
+        canDownload: true,
+      },
+      {
+        role: UserRole.REPUBLIC_HEAD,
+        perms: [
+          "VIEW_EPIDEMIOLOGY",
+          "VIEW_HEPATITIS",
+          "VIEW_FLU",
+          "VIEW_ARI",
+          "VIEW_COVID",
+          "VIEW_DIARRHEA",
+          "APPROVE_REPORT",
+          "VIEW_APPEALS",
+          "EDIT_APPEALS",
+          "VIEW_NUTRITION_HYGIENE",
+          "MANAGE_DEPARTMENTS",
+        ],
+        canCreate: true,
+        canEdit: true,
+        canApprove: true,
         canDownload: true,
       },
     ];
