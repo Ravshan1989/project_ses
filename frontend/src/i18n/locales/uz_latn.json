@@ -437,7 +437,8 @@
                 "is_repeated": "Takroriy",
                 "is_phone": "Ishonch telefoni",
                 "is_field": "Sayyor qabul",
-                "is_overdue": "Muddat buzilgan"
+                "is_overdue": "Muddat buzilgan",
+                "jami": "Jami murojaatlar"
             },
             "statuses": {
                 "closed": "Yopilgan",
@@ -633,18 +634,6 @@
         "actions": "Amallar",
         "organizations": {
             "select_org": "Tashkilotni tanlang"
-        },
-        "roles": {
-            "ADMIN": "Admin",
-            "REGION_HEAD": "Viloyat Boshqarmasi Rahbari",
-            "DISTRICT_HEAD": "Tuman Bo'limi Rahbari",
-            "DEPARTMENT_HEAD_EPI": "Bo'lim Mudiri (Epi)",
-            "SANITARY_HEAD": "Bo'lim Mudiri (Sanitariya)",
-            "SANITARY_SPECIALIST": "Sanitar-Vrach",
-            "SANITARY_OPERATOR": "Sanitar-yordamchi",
-            "LAB_HEAD": "Laboratoriya Mudiri",
-            "REPUBLIC_HEAD": "Respublika Rahbari",
-            "STAFF": "Oddiy Hodim"
         }
     },
     "daily_reports": {

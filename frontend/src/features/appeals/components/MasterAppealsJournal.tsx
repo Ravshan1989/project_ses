@@ -106,6 +106,12 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
     };
 
     const columns = [
+        {
+            title: '№',
+            key: 'index',
+            width: 50,
+            render: (text: any, record: any, index: number) => index + 1
+        },
         { 
             title: t('appeals.journal.columns.date'), 
             dataIndex: 'registration_date', 
@@ -246,7 +252,7 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                 loading={isLoading}
                 rowKey="id"
                 size="small"
-                pagination={{ pageSize: 10 }}
+                pagination={{ pageSize: 30 }}
             />
 
             {/* NEW APPEAL MODAL */}
