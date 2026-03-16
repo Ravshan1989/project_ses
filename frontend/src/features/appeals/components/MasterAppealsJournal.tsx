@@ -33,10 +33,12 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
     const { t } = useTranslation();
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isCloseModalVisible, setIsCloseModalVisible] = useState(false);
+    const [isExtendModalVisible, setIsExtendModalVisible] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState<any>(null);
     const [users, setUsers] = useState<any[]>([]);
     const [form] = Form.useForm();
     const [closeForm] = Form.useForm();
+    const [extendForm] = Form.useForm();
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -85,6 +87,24 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
         }
     };
 
+    const handleExtend = async (values: any) => {
+        try {
+            const token = localStorage.getItem('access_token');
+            await axios.post(`${API_BASE_URL}/appeals/records/${selectedRecord.id}/extend`, {
+                newDeadline: values.new_deadline.format('YYYY-MM-DD'),
+                reason: values.reason
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            message.success('Murojaat muddati uzaytirildi!');
+            setIsExtendModalVisible(false);
+            extendForm.resetFields();
+            window.location.reload(); 
+        } catch (error) {
+            message.error('Xatolik yuz berdi');
+        }
+    };
+
     const columns = [
         { 
             title: t('appeals.journal.columns.date'), 
@@ -94,8 +114,13 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                 <Space direction="vertical" size={0}>
                     <Text>{date}</Text>
                     {record.deadline_date && (
-                        <Text type="secondary" style={{ fontSize: '10px' }}>
+                        <Text type={record.original_deadline_date ? "warning" : "secondary"} style={{ fontSize: '10px' }}>
                             {t('appeals.journal.columns.deadline')}: {record.deadline_date}
+                        </Text>
+                    )}
+                    {record.original_deadline_date && (
+                        <Text type="secondary" style={{ fontSize: '9px', textDecoration: 'line-through' }}>
+                            {record.original_deadline_date}
                         </Text>
                     )}
                 </Space>
@@ -140,6 +165,11 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                     <Space direction="vertical" size={2}>
                         {statusTag}
                         {record.consequence && record.consequence !== 'NONE' && <Tag color="red">Chora: {record.consequence}</Tag>}
+                        {record.extension_reason && (
+                            <Text type="secondary" style={{ fontSize: '10px', fontStyle: 'italic' }}>
+                                Uzaytirildi: {record.extension_reason}
+                            </Text>
+                        )}
                     </Space>
                 );
             }
@@ -148,16 +178,34 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
             title: t('appeals.journal.columns.actions'),
             key: 'actions',
             render: (record: any) => !record.closure_date && (
-                <Button 
-                    type="link" 
-                    icon={<CheckCircleOutlined />} 
-                    onClick={() => {
-                        setSelectedRecord(record);
-                        setIsCloseModalVisible(true);
-                    }}
-                >
-                    {t('appeals.table6.columns.pending')}
-                </Button>
+                <Space>
+                    <Button 
+                        type="link" 
+                        size="small"
+                        icon={<CheckCircleOutlined />} 
+                        onClick={() => {
+                            setSelectedRecord(record);
+                            setIsCloseModalVisible(true);
+                        }}
+                    >
+                        {t('appeals.table6.columns.pending')}
+                    </Button>
+                    <Button 
+                        type="link" 
+                        size="small"
+                        style={{ color: '#fa8c16' }}
+                        icon={<ClockCircleOutlined />} 
+                        onClick={() => {
+                            setSelectedRecord(record);
+                            setIsExtendModalVisible(true);
+                            extendForm.setFieldsValue({
+                                new_deadline: dayjs(record.deadline_date).add(10, 'day')
+                            });
+                        }}
+                    >
+                        Muddatni uzaytirish
+                    </Button>
+                </Space>
             )
         }
     ];
@@ -356,6 +404,24 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                             { label: t('appeals.journal.consequences.administrative'), value: 'ADMINISTRATIVE' },
                             { label: t('appeals.journal.consequences.criminal'), value: 'CRIMINAL' },
                         ]} />
+                    </Form.Item>
+                </Form>
+            </Modal>
+
+            {/* EXTEND DEADLINE MODAL */}
+            <Modal
+                title="Muddatni uzaytirish"
+                open={isExtendModalVisible}
+                onCancel={() => setIsExtendModalVisible(false)}
+                onOk={() => extendForm.submit()}
+                width={400}
+            >
+                <Form form={extendForm} layout="vertical" onFinish={handleExtend}>
+                    <Form.Item name="new_deadline" label="Yangi muddat" rules={[{ required: true }]}>
+                        <DatePicker style={{ width: '100%' }} />
+                    </Form.Item>
+                    <Form.Item name="reason" label="Sababi" rules={[{ required: true }]}>
+                        <Input.TextArea rows={3} placeholder="Masalan: Qo'shimcha o'rganish talab etiladi..." />
                     </Form.Item>
                 </Form>
             </Modal>
