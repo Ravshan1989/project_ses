@@ -92,37 +92,9 @@ export class TelegramService implements OnModuleInit {
 
     this.bot.start(async (ctx) => {
       this.logger.log(`Bot /start buyrug'ini oldi: ${ctx.from.username}`);
-
-      // Check if user came from registration
-      const startPayload = ctx.startPayload;
-      if (startPayload) {
-        try {
-          const user = await this.userRepository.findOne({
-            where: { id: startPayload },
-            relations: ["organization"],
-          });
-
-          if (user) {
-            return ctx.reply(
-              `Assalomu alaykum!\n\n` +
-                `Davom etish uchun telefon raqamingizni tasdiqlang.`,
-              Markup.keyboard([
-                [Markup.button.contactRequest("📞 Telefon raqamni yuborish")],
-              ]).resize(),
-            );
-          }
-        } catch (error) {
-          this.logger.error("Error processing /start with payload:", error);
-        }
-      }
-
-      return this.showMainMenu(ctx);
-    });
-
-    // Listen for menu buttons
-    this.bot.hears("📞 Aloqa", (ctx) => {
+      
       return ctx.reply(
-        `Davom etish uchun telefon raqamingizni tasdiqlang.`,
+        `Assalomu alaykum! Tizimdan foydalanish uchun telefon raqamingizni tasdiqlang.`,
         Markup.keyboard([
           [Markup.button.contactRequest("📞 Telefon raqamni yuborish")],
         ]).resize(),
@@ -197,12 +169,6 @@ export class TelegramService implements OnModuleInit {
     });
   }
 
-  private async showMainMenu(ctx: any) {
-    return ctx.reply(
-      "Assalomu alaykum! Bu SMART SES ro'yxatga olish botidir.\n\nSiz ushbu bot orqali tizimga ro'yxatdan o'tishingiz va login/parolingizni olishingiz mumkin.",
-      Markup.keyboard([["📞 Aloqa"]]).resize(),
-    );
-  }
 
   // UZ: Faqat ro'yxatga olish bilan bog'liq xabarnomalar qoldirildi
 
