@@ -78,6 +78,14 @@ export class AppealsController {
     );
   }
 
+  @Post("records/:id/extend")
+  async extendRecord(
+    @Param("id") id: string,
+    @Body() body: { newDeadline: string; reason: string },
+  ) {
+    return this.appealsService.extendDeadline(id, body.newDeadline, body.reason);
+  }
+
   @Get("auto-reports")
   async getAutoReports(
     @Query("organizationId") organizationId: string,

@@ -122,6 +122,21 @@ export class AppealsService {
     return await this.recordRepo.save(record);
   }
 
+  async extendDeadline(id: string, newDeadline: string, reason: string) {
+    const record = await this.recordRepo.findOne({ where: { id } });
+    if (!record) throw new Error("Murojaat topilmadi");
+
+    // Save original deadline if it's the first extension
+    if (!record.original_deadline_date) {
+      record.original_deadline_date = record.deadline_date;
+    }
+
+    record.deadline_date = newDeadline;
+    record.extension_reason = reason;
+
+    return await this.recordRepo.save(record);
+  }
+
   async getRecords(organizationId: string, month: string) {
     const org = await this.orgRepo.findOne({
       where: { id: organizationId },

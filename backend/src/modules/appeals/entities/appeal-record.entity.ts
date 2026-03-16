@@ -128,6 +128,12 @@ export class AppealRecord {
   deadline_date: string;
 
   @Column({ type: "date", nullable: true })
+  original_deadline_date: string;
+
+  @Column({ type: "text", nullable: true })
+  extension_reason: string;
+
+  @Column({ type: "date", nullable: true })
   closure_date: string;
 
   @ManyToOne(() => User, { nullable: true })
