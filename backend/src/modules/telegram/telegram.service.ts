@@ -141,21 +141,15 @@ export class TelegramService implements OnModuleInit {
       const withPlus = `+${digitsOnly}`; // +99807736812
 
       try {
-        // UZ: Avval +XXX formatda qidiramiz, keyin raqam bilan
-        let user = await this.userRepository.findOne({
-          where: { phoneNumber: withPlus },
-          relations: ["organization"],
-        });
-
-        if (!user) {
-          user = await this.userRepository.findOne({
-            where: { phoneNumber: digitsOnly },
-            relations: ["organization"],
-          });
-        }
+        // UZ: Raqamni barcha formatlarda (probel bilan yoki probelsiz) qidirish uchun normallashtiramiz
+        const user = await this.userRepository.createQueryBuilder("user")
+          .where("REPLACE(REPLACE(user.phoneNumber, ' ', ''), '+', '') = :phone", { phone: digitsOnly })
+          .getOne();
 
         if (user) {
           user.telegramChatId = ctx.from.id.toString();
+          // UZ: Kelajakda muammo bo'lmasligi uchun phoneNumber ni ham normallashtirib qo'yamiz
+          user.phoneNumber = withPlus; 
           await this.userRepository.save(user);
 
           // UZ: Faol bo'lmagan foydalanuvchilar uchun kadrga xabarnoma jo'natamiz

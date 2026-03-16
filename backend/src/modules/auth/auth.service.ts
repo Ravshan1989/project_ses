@@ -55,7 +55,8 @@ export class AuthService {
   async register(registerDto: RegisterDto): Promise<User> {
     // UZ: Ro'yxatdan o'tishda login/parol avtomat generatsiya qilinadi (Telegram orqali beriladi)
     // Vaqtincha login sifatida telefon raqamini ishlatamiz
-    const tempUsername = `reg_${registerDto.phoneNumber.replace(/\D/g, "")}`;
+    const normalizedPhone = `+${registerDto.phoneNumber.replace(/\D/g, "")}`;
+    const tempUsername = `reg_${normalizedPhone.replace(/\D/g, "")}`;
     const dummyPassword = Math.random().toString(36).slice(-8);
     const salt = await bcrypt.genSalt();
     const passwordHash = await bcrypt.hash(dummyPassword, salt);
@@ -63,6 +64,7 @@ export class AuthService {
     try {
       const newUser = await this.usersService.create({
         ...registerDto,
+        phoneNumber: normalizedPhone,
         username: tempUsername,
         passwordHash,
         isActive: false, // UZ: Admin tasdiqlamaguncha nofaol bo'ladi

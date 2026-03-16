@@ -1,48 +1,30 @@
 const { Client } = require('pg');
-const dotenv = require('dotenv');
 
-dotenv.config();
+async function checkUser() {
+  const client = new Client({
+    connectionString: 'postgresql://project_ses_user:9O1Yv1nThXnC36LzN6BFrx6P45JpQYF2@dpg-cv66csqj1k6c73eqof1g-a.oregon-postgres.render.com/project_ses?ssl=true'
+  });
 
-const client = new Client({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    user: process.env.DB_USERNAME,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-});
+  try {
+    await client.connect();
+    console.log('Connected to database');
 
-async function run() {
-    try {
-        await client.connect();
-        console.log('Connected to DB');
+    const res = await client.query('SELECT id, username, "phoneNumber", "telegramChatId" FROM users');
+    console.log('All users phone numbers and Telegram IDs:');
+    res.rows.forEach(row => {
+        console.log(`- User: ${row.username} | Phone: ${row.phoneNumber} | TG ID: ${row.telegramChatId}`);
+    });
 
-        // Find admin user
-        const userRes = await client.query('SELECT id, username, role, "department_id" FROM "users" WHERE username = \'admin\'');
-        if (userRes.rowCount === 0) {
-            console.log('User admin not found');
-            return;
-        }
-        const user = userRes.rows[0];
-        console.log('User found:', user);
+    // Specifically search for the testing number
+    const searchRes = await client.query('SELECT id, username, "phoneNumber", "telegramChatId" FROM users WHERE "phoneNumber" LIKE $1', ['%7361812%']);
+    console.log('\nSearch result for 7361812:');
+    console.log(searchRes.rows);
 
-        if (user && user.department_id) {
-            // Check department permissions
-            const deptPerms = await client.query(`
-            SELECT p.code 
-            FROM "department_permissions" dp 
-            JOIN "permissions" p ON dp."permission_id" = p.id 
-            WHERE dp."department_id" = $1
-        `, [user.department_id]);
-            console.log('Department Permissions:', deptPerms.rows.map(r => r.code));
-        } else {
-            console.log('User has no department.');
-        }
-
-    } catch (err) {
-        console.error('Error:', err);
-    } finally {
-        await client.end();
-    }
+  } catch (err) {
+    console.error('Error:', err);
+  } finally {
+    await client.end();
+  }
 }
 
-run();
+checkUser();
