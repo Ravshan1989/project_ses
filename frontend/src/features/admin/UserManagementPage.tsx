@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../../config';
-import { Table, Button, Modal, Form, Input, message, Space, Tag, Typography, Select, Card, Row, Col, Tooltip } from 'antd';
+import { Table, Button, Modal, Form, Input, message, Space, Tag, Typography, Select, Row, Col, Tooltip } from 'antd';
 import { UserAddOutlined, SolutionOutlined, CheckCircleOutlined, CloseCircleOutlined, FilterOutlined } from '@ant-design/icons';
 import { rolesApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
@@ -336,9 +336,16 @@ const UserManagementPage: React.FC = () => {
                                     bordered={false}
                                     dropdownStyle={{ borderRadius: '12px' }}
                                 >
-                                    {roles.map((r: any) => (
-                                        <Option key={r.id} value={r.id}>{r.name}</Option>
-                                    ))}
+                                    <Select.OptGroup label="Tizim rollari">
+                                        <Option value="sys:HR">{t('user.roles.HR')}</Option>
+                                        <Option value="sys:LEAD_SPECIALIST">{t('user.roles.LEAD_SPECIALIST')}</Option>
+                                        <Option value="sys:DISTRICT_HEAD">{t('user.roles.DISTRICT_HEAD')}</Option>
+                                    </Select.OptGroup>
+                                    <Select.OptGroup label="Dinamik rollar (Huquqlar)">
+                                        {roles.map((r: any) => (
+                                            <Option key={r.id} value={r.id}>{r.name}</Option>
+                                        ))}
+                                    </Select.OptGroup>
                                 </Select>
                             </div>
                         </div>
@@ -349,9 +356,14 @@ const UserManagementPage: React.FC = () => {
                                 {organizations
                                     .filter((org: any) => org.parent)
                                     .map((org: any) => {
-                                        const userCount = users.filter((u: any) => 
-                                            u.organization?.id === org.id && u.dynamicRole?.id === selectedRoleId
-                                        ).length;
+                                        const userCount = users.filter((u: any) => {
+                                            const matchesOrg = u.organization?.id === org.id;
+                                            if (!matchesOrg) return false;
+                                            if (selectedRoleId.startsWith('sys:')) {
+                                                return u.role === selectedRoleId.replace('sys:', '');
+                                            }
+                                            return u.dynamicRole?.id === selectedRoleId;
+                                        }).length;
                                         const isConnected = userCount > 0;
                                         
                                         return (
@@ -389,7 +401,12 @@ const UserManagementPage: React.FC = () => {
 
             <div style={glassStyle}>
                 <Table
-                    dataSource={selectedRoleId ? users.filter((u: any) => u.dynamicRole?.id === selectedRoleId) : users}
+                    dataSource={selectedRoleId ? users.filter((u: any) => {
+                        if (selectedRoleId.startsWith('sys:')) {
+                            return u.role === selectedRoleId.replace('sys:', '');
+                        }
+                        return u.dynamicRole?.id === selectedRoleId;
+                    }) : users}
                     columns={columns}
                     rowKey="id"
                     loading={loading}
