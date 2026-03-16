@@ -55,13 +55,13 @@ export const useAppealsData = (month: string, orgId: string | null, activeTab: s
         recordsQuery: useQuery({
             queryKey: ['appeals-records', month, orgId],
             queryFn: () => appealsApi.getRecords(orgId!, month),
-            enabled: !!orgId && !!month,
+            enabled: !!orgId && orgId !== 'undefined' && orgId !== 'null' && !!month,
         }),
 
         autoReportsQuery: useQuery({
             queryKey: ['appeals-auto-reports', month, orgId],
             queryFn: () => appealsApi.getAutoReports(orgId!, month),
-            enabled: !!orgId && !!month,
+            enabled: !!orgId && orgId !== 'undefined' && orgId !== 'null' && !!month,
         }),
 
         monitoringQuery: useQuery({

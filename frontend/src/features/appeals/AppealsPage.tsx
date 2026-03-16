@@ -54,7 +54,9 @@ const AppealsPage: React.FC = () => {
 
     const isAdmin = localStorage.getItem('user_role') === 'ADMIN' || localStorage.getItem('user_role') === 'EXECUTIVE';
     const userOrgId = localStorage.getItem('user_org_id');
-    const effectiveOrgId = isAdmin ? selectedOrgId : userOrgId;
+    const effectiveOrgId = isAdmin 
+        ? selectedOrgId 
+        : (userOrgId === 'undefined' || userOrgId === 'null' ? null : userOrgId);
 
     const currYear = dayjs(month).year();
     const prevYear = currYear - 1;
