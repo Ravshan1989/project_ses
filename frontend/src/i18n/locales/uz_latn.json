@@ -581,6 +581,26 @@
         "title": "Shakl 1: Monitoring"
     },
     "user": {
+        "roles": {
+            "ADMIN": "Tizim ma'muri (Admin)",
+            "HR": "Kadrlar bo'limi (HR)",
+            "REPUBLIC_HEAD": "Respublika boshqarmasi rahbari",
+            "REGION_HEAD": "Viloyat boshqarmasi rahbari",
+            "DISTRICT_HEAD": "Tuman (Shahar) bo'limi mudiri",
+            "LAB_HEAD": "Laboratoriya mudiri",
+            "STAFF": "Xodim",
+            "DEPARTMENT_HEAD": "Bo'lim mudiri",
+            "DISTRICT_SPECIALIST": "Vrach (Tuman mutaxassisi)",
+            "DISTRICT_OPERATOR": "Yordamchi (Tuman operatori)",
+            "SANITARY_HEAD": "Sanitariya bo'limi mudiri",
+            "SANITARY_SPECIALIST": "Sanitar vrach",
+            "SANITARY_OPERATOR": "Sanitar yordamchisi",
+            "EXECUTIVE_HEAD": "Ijro intizomi boshlig'i",
+            "EXECUTIVE_SPECIALIST": "Ijro intizomi mutaxassisi",
+            "INSPECTION_HEAD": "Nazorat bo'limi boshlig'i",
+            "INSPECTION_SPECIALIST": "Nazorat mutaxassisi",
+            "ACCOUNTANT": "Toshkent viloyati SES (Buxgalter)"
+        },
         "title": "Foydalanuvchilar Boshqaruvi",
         "add_button": "Yangi Hodim Qo'shish",
         "modal_title": "Yangi Foydalanuvchi Qo'shish",
