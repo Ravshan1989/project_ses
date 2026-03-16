@@ -88,8 +88,22 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         if (!userRole) return false;
         if (userRole === 'ADMIN' || userRole === 'REPUBLIC_HEAD' || userRole === 'REGION_HEAD') return true;
         if (!userDept) return false;
-        // Check if any of the allowedDepts is a substring of userDept (to be flexible with naming)
-        return allowedDepts.some(dept => userDept.includes(dept));
+        
+        const normalizedUserDept = userDept.toLowerCase();
+        
+        // Exact match or isolated word match to prevent "Sanitariya-epidemiologiya" triggering "Sanitariya" alone
+        return allowedDepts.some(dept => {
+            const normalizedAllowed = dept.toLowerCase();
+            if (normalizedUserDept === normalizedAllowed) return true;
+            
+            // Special case: if allowed is 'Epidemiologiya', it should match 'Sanitariya-epidemiologiya' too,
+            // but if allowed is 'Sanitariya' (alone), it should NOT match 'Sanitariya-epidemiologiya'
+            if (normalizedAllowed === 'sanitariya') {
+                return normalizedUserDept === 'sanitariya' || normalizedUserDept.includes('sanitariya bo\'limi');
+            }
+            
+            return normalizedUserDept.includes(normalizedAllowed);
+        });
     };
 
     const isAdmin = userRole === 'ADMIN';
