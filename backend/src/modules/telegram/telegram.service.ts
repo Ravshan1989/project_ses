@@ -149,12 +149,20 @@ export class TelegramService implements OnModuleInit {
           user.telegramChatId = ctx.from.id.toString();
           await this.userRepository.save(user);
 
+          // UZ: Faol bo'lmagan foydalanuvchilar uchun kadrga xabarnoma jo'natamiz
+          let approvalMessage = "";
+          if (!user.isActive) {
+            await this.sendRegistrationNotification(user);
+            approvalMessage = `Ma'lumotlaringiz tekshirilmoqda.\n\n${user.organization?.name || "Tashkilot"} kadri tasdiqlashidan so'ng login va parol yuboriladi.`;
+          } else {
+            approvalMessage = `Siz avvalroq tasdiqlangansiz! Tizimga kirishingiz mumkin.`;
+          }
+
           await ctx.reply(
             `✅ Tasdiqlandi!\n\n` +
               `Assalomu alaykum, ${user.firstName}!\n\n` +
               `Siz muvaffaqiyatli ro'yxatdan o'tdingiz.\n` +
-              `Ma'mulotlaringiz tekshirilmoqda.\n\n` +
-              `${user.organization?.name || "Tashkilot"} kadri tasdiqlashidan so'ng login va parol yuboriladi.`,
+              approvalMessage,
             Markup.removeKeyboard(),
           );
         } else {

@@ -1,18 +1,65 @@
-import { Injectable, Inject, forwardRef } from "@nestjs/common";
+import { Injectable, Inject, forwardRef, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, LessThan } from "typeorm";
 import { User } from "./entities/user.entity";
 import * as bcrypt from "bcrypt";
 import { TelegramService } from "../telegram/telegram.service";
+import { Cron } from "@nestjs/schedule";
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @Inject(forwardRef(() => TelegramService))
     private telegramService: TelegramService,
   ) {}
+
+  private async checkExistingUser(username: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { username } });
+  }
+
+  // UZ: Eski kod - foydalanuvchiga eski parolni jo'natardi.
+  // Endi doim yangi parol generatsiya qilib bcrypt yordamida shifrlab saqlash.
+
+  // --- Cron Job: Har 5 daqiqada ishlaydi ---
+  @Cron("*/5 * * * *")
+  async cleanupStuckRegistrations() {
+    this.logger.log("Hali botga ulanmagan va tasdiqlanmagan foydalanuvchilarni tozalash jarayoni boshlandi...");
+    try {
+      // 15 daqiqadan oldingi vaqtni hisoblash
+      const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+
+      // Faol emas (isActive: false) va TelegramChatId yo'q (null) va 15 daqiqa oldin yaratilganlarni topish
+      const stuckUsers = await this.usersRepository.find({
+        where: {
+          isActive: false,
+          telegramChatId: null,
+          createdAt: LessThan(fifteenMinutesAgo),
+        },
+      });
+
+      if (stuckUsers.length > 0) {
+        this.logger.log(`${stuckUsers.length} ta eskirgan (15 daqiqadan o'tgan) arizalar topildi va o'chirilmoqda.`);
+        
+        for (const user of stuckUsers) {
+          // Xavfsizlik uchun yana bir bor tekshiramiz: reg_ bilan boshlanmasa o'chirmaymiz (ehtimol eski data)
+          if (user.username && user.username.startsWith("reg_")) {
+            await this.usersRepository.remove(user);
+            this.logger.debug(`O'chirildi (Kutish muddati o'tgan): ${user.phoneNumber} - ${user.firstName} ${user.lastName}`);
+          }
+        }
+        
+        this.logger.log("Tozalash jarayoni muvaffaqiyatli yakunlandi.");
+      } else {
+        this.logger.verbose("O'chirilishi kerak bo'lgan eskirgan arizalar topilmadi.");
+      }
+    } catch (error) {
+      this.logger.error("Hali tasdiqlanmagan foydalanuvchilarni tozalashda xatolik yuz berdi:", error);
+    }
+  }
 
   async findOneByUsername(username: string): Promise<User | undefined> {
     return this.usersRepository.findOne({

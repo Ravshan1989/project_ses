@@ -68,13 +68,11 @@ export class AuthService {
         isActive: false, // UZ: Admin tasdiqlamaguncha nofaol bo'ladi
       });
 
-      // Fetch full user with relations (Organization, Department) for notification
+      // Fetch full user with relations (Organization, Department)
       const fullUser = await this.usersService.findOne(newUser.id);
-
-      // Send Telegram notification to admin
-      if (fullUser) {
-        await this.telegramService.sendRegistrationNotification(fullUser);
-      }
+      
+      // Removed immediate sendRegistrationNotification.
+      // This is now triggered from telegram.service.ts ONLY after the user shares their contact.
 
       return newUser;
     } catch (error) {
