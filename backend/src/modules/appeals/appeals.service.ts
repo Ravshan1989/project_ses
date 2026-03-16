@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import * as ExcelJS from "exceljs";
@@ -52,6 +52,8 @@ const APPEALS_T7_ROWS = [
 
 @Injectable()
 export class AppealsService {
+  private readonly logger = new Logger(AppealsService.name);
+
   constructor(
     @InjectRepository(AppealsTable1)
     private readonly table1Repo: Repository<AppealsTable1>,
@@ -74,16 +76,24 @@ export class AppealsService {
   ) {}
 
   async createRecord(dto: CreateAppealRecordDto, userId: string) {
-    const { responsible_user_id, ...rest } = dto;
-    const record = this.recordRepo.create({
-      ...rest,
-      organization: { id: dto.organization_id } as any,
-      createdBy: { id: userId } as any,
-      responsibleUser: responsible_user_id
-        ? ({ id: responsible_user_id } as any)
-        : undefined,
-    });
-    return await this.recordRepo.save(record);
+    try {
+      this.logger.log(`Creating appeal record for organization: ${dto.organization_id} by user: ${userId}`);
+      const { responsible_user_id, ...rest } = dto;
+      const record = this.recordRepo.create({
+        ...rest,
+        organization: { id: dto.organization_id } as any,
+        createdBy: { id: userId } as any,
+        responsibleUser: responsible_user_id
+          ? ({ id: responsible_user_id } as any)
+          : undefined,
+      });
+      const saved = await this.recordRepo.save(record);
+      this.logger.log(`Appeal record saved successfully: ${saved.id}`);
+      return saved;
+    } catch (error) {
+      this.logger.error(`Error saving appeal record: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 
   async closeRecord(
