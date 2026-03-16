@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../../config';
-import { Table, Button, Modal, Form, Input, message, Space, Tag, Typography, Select } from 'antd';
-import { UserAddOutlined, SolutionOutlined } from '@ant-design/icons';
+import { Table, Button, Modal, Form, Input, message, Space, Tag, Typography, Select, Card, Row, Col, Tooltip } from 'antd';
+import { UserAddOutlined, SolutionOutlined, CheckCircleOutlined, CloseCircleOutlined, FilterOutlined } from '@ant-design/icons';
 import { rolesApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
 
@@ -20,6 +20,7 @@ const UserManagementPage: React.FC = () => {
     const [submitLoading, setSubmitLoading] = useState(false);
 
     const [editingUser, setEditingUser] = useState<any>(null);
+    const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -315,9 +316,80 @@ const UserManagementPage: React.FC = () => {
                 </Button>
             </div>
 
+            <div style={{ ...glassStyle, marginBottom: '24px', padding: '20px' }}>
+                <Row gutter={[24, 24]} align="middle">
+                    <Col xs={24} md={8}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ background: '#e6f7ff', padding: '8px', borderRadius: '10px' }}>
+                                <FilterOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: '12px', color: '#8c8c8c', fontWeight: 600, textTransform: 'uppercase' }}>
+                                    {t('user.filter_by_role') || 'Lavozim bo\'yicha saralash'}
+                                </div>
+                                <Select
+                                    placeholder="Barcha lavozimlar"
+                                    style={{ width: '100%' }}
+                                    allowClear
+                                    onChange={(val) => setSelectedRoleId(val)}
+                                    size="large"
+                                    bordered={false}
+                                    dropdownStyle={{ borderRadius: '12px' }}
+                                >
+                                    {roles.map((r: any) => (
+                                        <Option key={r.id} value={r.id}>{r.name}</Option>
+                                    ))}
+                                </Select>
+                            </div>
+                        </div>
+                    </Col>
+                    {selectedRoleId && (
+                        <Col xs={24} md={16}>
+                            <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '8px' }}>
+                                {organizations
+                                    .filter((org: any) => org.parent)
+                                    .map((org: any) => {
+                                        const userCount = users.filter((u: any) => 
+                                            u.organization?.id === org.id && u.dynamicRole?.id === selectedRoleId
+                                        ).length;
+                                        const isConnected = userCount > 0;
+                                        
+                                        return (
+                                            <Tooltip key={org.id} title={`${org.name}: ${userCount} ta xodim`}>
+                                                <div style={{
+                                                    minWidth: '140px',
+                                                    padding: '12px',
+                                                    borderRadius: '16px',
+                                                    background: isConnected ? 'rgba(82, 196, 26, 0.1)' : 'rgba(0, 0, 0, 0.02)',
+                                                    border: `1px solid ${isConnected ? 'rgba(82, 196, 26, 0.2)' : 'rgba(0, 0, 0, 0.05)'}`,
+                                                    transition: 'all 0.3s'
+                                                }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '4px' }}>
+                                                        <span style={{ fontSize: '11px', fontWeight: 700, color: '#595959', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>
+                                                            {org.name}
+                                                        </span>
+                                                        {isConnected ? 
+                                                            <CheckCircleOutlined style={{ color: '#52c41a' }} /> : 
+                                                            <CloseCircleOutlined style={{ color: '#bfbfbf' }} />
+                                                        }
+                                                    </div>
+                                                    <div style={{ fontSize: '10px', color: isConnected ? '#52c41a' : '#8c8c8c' }}>
+                                                        {isConnected ? 'Ulangan' : 'Ulanmagan'}
+                                                    </div>
+                                                </div>
+                                            </Tooltip>
+                                        );
+                                    })
+                                }
+                            </div>
+                        </Col>
+                    )}
+                </Row>
+            </div>
+
             <div style={glassStyle}>
                 <Table
-                    dataSource={users}
+                    dataSource={selectedRoleId ? users.filter((u: any) => u.dynamicRole?.id === selectedRoleId) : users}
                     columns={columns}
                     rowKey="id"
                     loading={loading}
