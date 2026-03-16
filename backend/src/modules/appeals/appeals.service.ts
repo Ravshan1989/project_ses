@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, Brackets, In } from "typeorm";
 import * as ExcelJS from "exceljs";
 import { Response } from "express";
 import * as PDFDocument from "pdfkit";
@@ -179,15 +179,12 @@ export class AppealsService {
     return await this.recordRepo
       .createQueryBuilder("record")
       .leftJoinAndSelect("record.organization", "organization")
-      .where("record.organization_id IN (:...orgIds)", { orgIds })
-      .andWhere(
-        "(record.period_month = :month OR CAST(record.closure_date AS TEXT) LIKE :monthPattern OR (record.period_month < :month AND record.status = :pendingStatus))",
-        { 
-          monthPattern: `${month}%`, 
-          month,
-          pendingStatus: AppealStatus.BEING_CONSIDERED 
-        }
-      )
+      .where("organization.id IN (:...orgIds)", { orgIds })
+      .andWhere(new Brackets(qb => {
+        qb.where("record.period_month = :month", { month })
+          .orWhere("CAST(record.closure_date AS TEXT) LIKE :monthPattern", { monthPattern: `${month}%` })
+          .orWhere("(record.period_month < :month AND record.status = :pendingStatus)", { month, pendingStatus: AppealStatus.BEING_CONSIDERED });
+      }))
       .orderBy("record.closure_date", "DESC")
       .addOrderBy("record.registration_date", "DESC")
       .getMany();
