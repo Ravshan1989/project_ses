@@ -181,7 +181,7 @@ export class AppealsService {
       .leftJoinAndSelect("record.organization", "organization")
       .where("record.organization_id IN (:...orgIds)", { orgIds })
       .andWhere(
-        "(record.closure_date LIKE :monthPattern OR (record.period_month <= :month AND record.status = :pendingStatus))",
+        "(record.period_month = :month OR CAST(record.closure_date AS TEXT) LIKE :monthPattern OR (record.period_month < :month AND record.status = :pendingStatus))",
         { 
           monthPattern: `${month}%`, 
           month,
