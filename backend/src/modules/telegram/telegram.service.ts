@@ -120,6 +120,15 @@ export class TelegramService implements OnModuleInit {
     });
 
     // Listen for menu buttons
+    this.bot.hears("📞 Aloqa", (ctx) => {
+      return ctx.reply(
+        `Davom etish uchun telefon raqamingizni tasdiqlang.`,
+        Markup.keyboard([
+          [Markup.button.contactRequest("📞 Telefon raqamni yuborish")],
+        ]).resize(),
+      );
+    });
+
     // Handle phone number verification
     this.bot.on("contact", async (ctx) => {
       const contact = ctx.message.contact;
@@ -422,6 +431,7 @@ Tizimga kirish uchun ma'lumotlar:
     try {
       // 1. Try sending to the user if they have a chat ID
       if (user.telegramChatId) {
+        console.log(`[BOT DEBUG] Sending to user chat ID: ${user.telegramChatId}`);
         await this.bot.telegram.sendMessage(user.telegramChatId, message, {
           parse_mode: "HTML",
         });
@@ -432,6 +442,7 @@ Tizimga kirish uchun ma'lumotlar:
       }
 
       // 2. If user has no chat ID, send to Admin (fallback)
+      console.log(`[BOT DEBUG] User has no chat ID! Falling back to admin server. adminChatId: ${this.adminChatId}`);
       if (this.adminChatId) {
         const adminMessage = `
 ⚠️ <b>Foydalanuvchi faollashtirildi, lekin Telegram ID topilmadi.</b>
@@ -445,10 +456,12 @@ Login/Parol Adminga yuborilmoqda:
         await this.bot.telegram.sendMessage(this.adminChatId, adminMessage, {
           parse_mode: "HTML",
         });
+        console.log(`[BOT DEBUG] Successfully sent to admin!`);
         this.logger.log(
           `Activation notification sent to ADMIN for user ${user.username}`,
         );
       } else {
+        console.log(`[BOT DEBUG] Missing adminChatId in ENV!`);
         this.logger.warn(
           `Could not send activation notification for ${user.username}: No Chat ID and No Admin ID.`,
         );

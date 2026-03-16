@@ -107,6 +107,26 @@ export const AdminUsersPage: React.FC = () => {
         }
     };
 
+    const handleResetPassword = async (userId: string, username: string | undefined) => {
+        try {
+            const token = localStorage.getItem('access_token');
+            const response = await axios.post(`${API_BASE_URL}/admin/users/${userId}/reset-password`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            message.success('Parol muvaffaqiyatli yangilandi');
+            
+            // Show new credentials
+            setCredentialsModal({
+                visible: true,
+                username: username,
+                password: response.data.password
+            });
+        } catch (error) {
+            message.error('Parolni yangilashda xatolik');
+        }
+    };
+
     const handleDelete = async (userId: string) => {
         try {
             const token = localStorage.getItem('access_token');
@@ -172,13 +192,13 @@ export const AdminUsersPage: React.FC = () => {
             title: 'Login',
             dataIndex: 'username',
             key: 'username',
-            render: (username: string) => username || <Tag color="orange">Kutmoqda</Tag>,
+            render: (username: string) => (!username || username.startsWith('reg_')) ? <Tag color="orange">Kutmoqda</Tag> : username,
         },
         {
             title: 'Holat',
             key: 'isActive',
             render: (record: User) => {
-                if (!record.username) {
+                if (!record.username || record.username.startsWith('reg_')) {
                     return <Tag color="orange">Kutmoqda</Tag>;
                 }
                 return record.isActive ? <Tag color="green">Faol</Tag> : <Tag color="red">Nofaol</Tag>;
@@ -189,7 +209,7 @@ export const AdminUsersPage: React.FC = () => {
             key: 'actions',
             render: (record: User) => (
                 <Space>
-                    {!record.username ? (
+                    {!record.username || record.username.startsWith('reg_') ? (
                         <>
                             <Button
                                 type="primary"
@@ -242,16 +262,28 @@ export const AdminUsersPage: React.FC = () => {
             title: 'Boshqa',
             key: 'delete',
             render: (record: User) => (
-                <Popconfirm
-                    title="Xodimni o'chirishni tasdiqlaysizmi?"
-                    description="Bu amalni ortga qaytarib bo'lmaydi!"
-                    onConfirm={() => handleDelete(record.id)}
-                    okText="Ha, o'chirish"
-                    cancelText="Yo'q"
-                    okButtonProps={{ danger: true }}
-                >
-                    <Button type="text" danger icon={<DeleteOutlined />} />
-                </Popconfirm>
+                <Space>
+                    {record.username && !record.username.startsWith('reg_') && (
+                        <Popconfirm
+                            title="Parolni yangilashni tasdiqlaysizmi?"
+                            onConfirm={() => handleResetPassword(record.id, record.username)}
+                            okText="Ha"
+                            cancelText="Yo'q"
+                        >
+                            <Button type="text" style={{ color: '#faad14' }} icon={<LockOutlined />} />
+                        </Popconfirm>
+                    )}
+                    <Popconfirm
+                        title="Xodimni o'chirishni tasdiqlaysizmi?"
+                        description="Bu amalni ortga qaytarib bo'lmaydi!"
+                        onConfirm={() => handleDelete(record.id)}
+                        okText="Ha, o'chirish"
+                        cancelText="Yo'q"
+                        okButtonProps={{ danger: true }}
+                    >
+                        <Button type="text" danger icon={<DeleteOutlined />} />
+                    </Popconfirm>
+                </Space>
             )
         },
     ];
