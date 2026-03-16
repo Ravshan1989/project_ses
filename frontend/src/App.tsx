@@ -337,8 +337,11 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             <Text strong style={{ display: 'block', color: '#333' }}>
                                 {localStorage.getItem('user_full_name') || localStorage.getItem('username') || t('common.user_fallback')}
                             </Text>
-                            <Text type="secondary" style={{ fontSize: '12px' }}>
+                            <Text type="secondary" style={{ fontSize: '12px', display: 'block', lineHeight: '1.2' }}>
                                 {t(`user.roles.${localStorage.getItem('user_role') || 'STAFF'}`)}
+                            </Text>
+                            <Text type="secondary" style={{ fontSize: '11px', color: '#8c8c8c' }}>
+                                {localStorage.getItem('user_department_name') || ''}
                             </Text>
                         </div>
                         {hasRole(['DISTRICT_HEAD', 'STAFF']) && (
