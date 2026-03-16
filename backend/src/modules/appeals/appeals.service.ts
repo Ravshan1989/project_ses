@@ -137,6 +137,33 @@ export class AppealsService {
     return await this.recordRepo.save(record);
   }
 
+  async updateRecord(id: string, dto: Partial<CreateAppealRecordDto>) {
+    const record = await this.recordRepo.findOne({ where: { id } });
+    if (!record) throw new Error("Murojaat topilmadi");
+
+    const { organization_id, responsible_user_id, ...rest } = dto;
+
+    Object.assign(record, rest);
+
+    if (organization_id) {
+      record.organization = { id: organization_id } as any;
+    }
+
+    if (responsible_user_id) {
+      record.responsibleUser = { id: responsible_user_id } as any;
+    } else if (responsible_user_id === null) {
+      record.responsibleUser = null;
+    }
+
+    return await this.recordRepo.save(record);
+  }
+
+  async deleteRecord(id: string) {
+    const record = await this.recordRepo.findOne({ where: { id } });
+    if (!record) throw new Error("Murojaat topilmadi");
+    return await this.recordRepo.remove(record);
+  }
+
   async getRecords(organizationId: string, month: string) {
     const org = await this.orgRepo.findOne({
       where: { id: organizationId },
@@ -153,8 +180,39 @@ export class AppealsService {
       .createQueryBuilder("record")
       .leftJoinAndSelect("record.organization", "organization")
       .where("record.organization_id IN (:...orgIds)", { orgIds })
+      .andWhere(
+        "(record.closure_date LIKE :monthPattern OR (record.period_month <= :month AND record.status = :pendingStatus))",
+        { 
+          monthPattern: `${month}%`, 
+          month,
+          pendingStatus: AppealStatus.BEING_CONSIDERED 
+        }
+      )
+      .orderBy("record.closure_date", "DESC")
+      .addOrderBy("record.registration_date", "DESC")
+      .getMany();
+  }
+
+  /**
+   * UZ: Hisobotlar uchun faqat shu oydagi ma'lumotlarni olish (Stats verification)
+   */
+  async getRecordsForReporting(organizationId: string, month: string) {
+    const org = await this.orgRepo.findOne({
+      where: { id: organizationId },
+      relations: ["children"],
+    });
+    if (!org) return [];
+
+    const orgIds = [organizationId];
+    if (org.children && org.children.length > 0) {
+      orgIds.push(...org.children.map((c) => c.id));
+    }
+
+    return await this.recordRepo
+      .createQueryBuilder("record")
+      .leftJoinAndSelect("record.organization", "organization")
+      .where("record.organization_id IN (:...orgIds)", { orgIds })
       .andWhere("record.period_month = :month", { month })
-      .orderBy("record.registration_date", "DESC")
       .getMany();
   }
 
@@ -175,8 +233,9 @@ export class AppealsService {
 
     const regionalOrgs = [org, ...(org.children || [])];
 
-    const records = await this.getRecords(organizationId, month);
-    const prevRecords = await this.getRecords(organizationId, prevMonth);
+    // UZ: Hisobotlar uchun faqat shu oydagi yozuvlarni olamiz
+    const records = await this.getRecordsForReporting(organizationId, month);
+    const prevRecords = await this.getRecordsForReporting(organizationId, prevMonth);
 
     // 1. Table 1 Aggregation (Official Grouping by Recipient)
     const getTable1Metrics = (rec: string) => {

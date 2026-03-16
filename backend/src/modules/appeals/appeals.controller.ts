@@ -86,6 +86,16 @@ export class AppealsController {
     return this.appealsService.extendDeadline(id, body.newDeadline, body.reason);
   }
 
+  @Post("records/:id/update") // Use POST for update for simplicity with DTOs in some proxies, or PATCH
+  async updateRecord(@Param("id") id: string, @Body() dto: Partial<CreateAppealRecordDto>) {
+    return this.appealsService.updateRecord(id, dto);
+  }
+
+  @Post("records/:id/delete")
+  async deleteRecord(@Param("id") id: string) {
+    return this.appealsService.deleteRecord(id);
+  }
+
   @Get("auto-reports")
   async getAutoReports(
     @Query("organizationId") organizationId: string,

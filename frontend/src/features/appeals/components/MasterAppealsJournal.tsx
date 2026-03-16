@@ -34,11 +34,23 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isCloseModalVisible, setIsCloseModalVisible] = useState(false);
     const [isExtendModalVisible, setIsExtendModalVisible] = useState(false);
+    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState<any>(null);
     const [users, setUsers] = useState<any[]>([]);
     const [form] = Form.useForm();
     const [closeForm] = Form.useForm();
     const [extendForm] = Form.useForm();
+    const [editForm] = Form.useForm();
+
+    const userRole = localStorage.getItem('user_role');
+    const userDept = localStorage.getItem('user_department_name');
+    const isAuthorized = userRole === 'ADMIN' || 
+                       userRole === 'REPUBLIC_HEAD' || 
+                       (isRegionalOrg && (
+                           userRole === 'REGION_HEAD' || 
+                           userRole === 'LEAD_SPECIALIST' || 
+                           userDept === 'Ijro intizomi'
+                       ));
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -105,12 +117,54 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
         }
     };
 
+    const handleUpdate = async (values: any) => {
+        try {
+            const token = localStorage.getItem('access_token');
+            await axios.post(`${API_BASE_URL}/appeals/records/${selectedRecord.id}/update`, {
+                ...values,
+                registration_date: values.registration_date.format('YYYY-MM-DD'),
+                deadline_date: values.deadline_date ? values.deadline_date.format('YYYY-MM-DD') : undefined,
+                closure_date: values.closure_date ? values.closure_date.format('YYYY-MM-DD') : undefined,
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            message.success('Murojaat muvaffaqiyatli yangilandi!');
+            setIsEditModalVisible(false);
+            editForm.resetFields();
+            window.location.reload();
+        } catch (error) {
+            message.error('Yangilashda xatolik yuz berdi');
+        }
+    };
+
+    const handleDelete = (id: string) => {
+        Modal.confirm({
+            title: 'Murojaatni o\'chirish',
+            content: 'Haqiqatan ham ushbu yozuvni o\'chirib tashlamoqchimisiz? Bu amalni ortga qaytarib bo\'lmaydi.',
+            okText: 'Ha, o\'chirish',
+            okType: 'danger',
+            cancelText: 'Yo\'q',
+            onOk: async () => {
+                try {
+                    const token = localStorage.getItem('access_token');
+                    await axios.post(`${API_BASE_URL}/appeals/records/${id}/delete`, {}, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    message.success('Murojaat o\'chirildi!');
+                    window.location.reload();
+                } catch (error) {
+                    message.error('O\'chirishda xatolik yuz berdi');
+                }
+            }
+        });
+    };
+
     const columns = [
         {
             title: '№',
             key: 'index',
             width: 50,
-            render: (text: any, record: any, index: number) => index + 1
+            render: (_: any, __: any, index: number) => index + 1
         },
         { 
             title: t('appeals.journal.columns.date'), 
@@ -181,36 +235,76 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
             }
         },
         {
+            title: t('appeals.journal.columns.closure_date'),
+            dataIndex: 'closure_date',
+            key: 'closure_date',
+            render: (v: string) => v ? <Tag color="success">{v}</Tag> : '-'
+        },
+        {
             title: t('appeals.journal.columns.actions'),
             key: 'actions',
-            render: (record: any) => !record.closure_date && (
+            render: (record: any) => (
                 <Space>
-                    <Button 
-                        type="link" 
-                        size="small"
-                        icon={<CheckCircleOutlined />} 
-                        onClick={() => {
-                            setSelectedRecord(record);
-                            setIsCloseModalVisible(true);
-                        }}
-                    >
-                        {t('appeals.table6.columns.pending')}
-                    </Button>
-                    <Button 
-                        type="link" 
-                        size="small"
-                        style={{ color: '#fa8c16' }}
-                        icon={<ClockCircleOutlined />} 
-                        onClick={() => {
-                            setSelectedRecord(record);
-                            setIsExtendModalVisible(true);
-                            extendForm.setFieldsValue({
-                                new_deadline: dayjs(record.deadline_date).add(10, 'day')
-                            });
-                        }}
-                    >
-                        Muddatni uzaytirish
-                    </Button>
+                    {!record.closure_date && (
+                        <>
+                            <Button 
+                                type="link" 
+                                size="small"
+                                icon={<CheckCircleOutlined />} 
+                                onClick={() => {
+                                    setSelectedRecord(record);
+                                    setIsCloseModalVisible(true);
+                                }}
+                            >
+                                {t('appeals.table6.columns.pending')}
+                            </Button>
+                            <Button 
+                                type="link" 
+                                size="small"
+                                style={{ color: '#fa8c16' }}
+                                icon={<ClockCircleOutlined />} 
+                                onClick={() => {
+                                    setSelectedRecord(record);
+                                    setIsExtendModalVisible(true);
+                                    extendForm.setFieldsValue({
+                                        new_deadline: dayjs(record.deadline_date).add(10, 'day')
+                                    });
+                                }}
+                            >
+                                {t('appeals.journal.columns.deadline')}
+                            </Button>
+                        </>
+                    )}
+                    {isAuthorized && (
+                        <>
+                            <Button 
+                                type="link" 
+                                size="small" 
+                                onClick={() => {
+                                    setSelectedRecord(record);
+                                    setIsEditModalVisible(true);
+                                    editForm.setFieldsValue({
+                                        ...record,
+                                        registration_date: dayjs(record.registration_date),
+                                        deadline_date: record.deadline_date ? dayjs(record.deadline_date) : undefined,
+                                        closure_date: record.closure_date ? dayjs(record.closure_date) : undefined,
+                                        organization_id: record.organization?.id,
+                                        responsible_user_id: record.responsibleUser?.id
+                                    });
+                                }}
+                            >
+                                {t('common.update')}
+                            </Button>
+                            <Button 
+                                type="link" 
+                                size="small" 
+                                danger 
+                                onClick={() => handleDelete(record.id)}
+                            >
+                                O'chirish
+                            </Button>
+                        </>
+                    )}
                 </Space>
             )
         }
@@ -375,8 +469,8 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                         </Col>
                     </Row>
 
-                    <Form.Item name="summary" label="Qisqacha mazmuni">
-                        <Input.TextArea rows={2} placeholder="Murojaat mazmuni..." />
+                    <Form.Item name="summary" label={t('appeals.journal.fields.summary')}>
+                        <Input.TextArea rows={2} placeholder={t('appeals.journal.fields.summary_placeholder')} />
                     </Form.Item>
                 </Form>
             </Modal>
@@ -416,18 +510,113 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
 
             {/* EXTEND DEADLINE MODAL */}
             <Modal
-                title="Muddatni uzaytirish"
+                title={t('appeals.journal.modal_extend_title')}
                 open={isExtendModalVisible}
                 onCancel={() => setIsExtendModalVisible(false)}
                 onOk={() => extendForm.submit()}
                 width={400}
             >
                 <Form form={extendForm} layout="vertical" onFinish={handleExtend}>
-                    <Form.Item name="new_deadline" label="Yangi muddat" rules={[{ required: true }]}>
+                    <Form.Item name="new_deadline" label={t('appeals.journal.fields.new_deadline')} rules={[{ required: true }]}>
                         <DatePicker style={{ width: '100%' }} />
                     </Form.Item>
-                    <Form.Item name="reason" label="Sababi" rules={[{ required: true }]}>
-                        <Input.TextArea rows={3} placeholder="Masalan: Qo'shimcha o'rganish talab etiladi..." />
+                    <Form.Item name="reason" label={t('appeals.journal.fields.reason')} rules={[{ required: true }]}>
+                        <Input.TextArea rows={3} placeholder={t('appeals.journal.fields.reason_placeholder')} />
+                    </Form.Item>
+                </Form>
+            </Modal>
+
+            {/* EDIT APPEAL MODAL */}
+            <Modal
+                title={t('appeals.journal.modal_edit_title')}
+                open={isEditModalVisible}
+                onCancel={() => setIsEditModalVisible(false)}
+                onOk={() => editForm.submit()}
+                width={700}
+            >
+                <Form form={editForm} layout="vertical" onFinish={handleUpdate}>
+                    <Row gutter={16}>
+                        <Col span={8}>
+                            <Form.Item name="registration_date" label={t('appeals.journal.fields.reg_date')} rules={[{ required: true }]}>
+                                <DatePicker style={{ width: '100%' }} />
+                            </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                            <Form.Item name="deadline_date" label={t('appeals.journal.fields.deadline')}>
+                                <DatePicker style={{ width: '100%' }} />
+                            </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                            <Form.Item name="applicant_name" label={t('appeals.journal.fields.applicant_name')} rules={[{ required: true }]}>
+                                <Input />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    <Row gutter={16}>
+                        <Col span={8}>
+                            <Form.Item name="applicant_type" label={t('appeals.journal.fields.applicant_type')} rules={[{ required: true }]}>
+                                <Select options={[
+                                    { label: t('common.physical'), value: 'PHYSICAL' },
+                                    { label: t('common.legal'), value: 'LEGAL' },
+                                ]} />
+                            </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                            <Form.Item name="channel" label={t('appeals.journal.fields.channel')} rules={[{ required: true }]}>
+                                <Select options={[
+                                    { label: t('appeals.table2.columns.electronic'), value: 'ELECTRONIC' },
+                                    { label: t('appeals.table2.columns.oral'), value: 'ORAL' },
+                                    { label: t('appeals.table2.columns.written'), value: 'WRITTEN' },
+                                    { label: t('appeals.table6.columns.virtual'), value: 'VIRTUAL_RECEPTION' },
+                                    { label: t('appeals.table6.columns.people'), value: 'PEOPLES_RECEPTION' },
+                                ]} />
+                            </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                            <Form.Item name="appeal_type" label={t('appeals.journal.fields.appeal_type')} rules={[{ required: true }]}>
+                                <Select options={[
+                                    { label: t('appeals.table5.columns.ariza'), value: 'ARIZA' },
+                                    { label: t('appeals.table5.columns.shikoyat'), value: 'SHIKOYAT' },
+                                    { label: t('appeals.table5.columns.taklif'), value: 'TAKLIF' },
+                                ]} />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    <Row gutter={16}>
+                        <Col span={8}>
+                            <Form.Item name="status" label={t('common.status')}>
+                                <Select options={[
+                                    { label: t('appeals.journal.statuses.pending'), value: 'BEING_CONSIDERED' },
+                                    { label: t('appeals.table6.columns.satisfied'), value: 'SATISFIED' },
+                                    { label: t('appeals.table6.columns.explained'), value: 'EXPLAINED' },
+                                    { label: t('appeals.table6.columns.rejected'), value: 'REJECTED' },
+                                    { label: t('appeals.table6.columns.referral'), value: 'ROUTED' },
+                                ]} />
+                            </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                            <Form.Item name="closure_date" label={t('appeals.journal.columns.closure_date')}>
+                                <DatePicker style={{ width: '100%' }} />
+                            </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                            <Form.Item name="consequence" label={t('appeals.table7.columns.action_type')}>
+                                <Select options={[
+                                    { label: t('appeals.journal.consequences.none'), value: 'NONE' },
+                                    { label: t('appeals.journal.consequences.fine'), value: 'FINE' },
+                                    { label: t('appeals.journal.consequences.reprimand'), value: 'REPRIMAND' },
+                                    { label: t('appeals.journal.consequences.dismissal'), value: 'DISMISSAL' },
+                                    { label: t('appeals.journal.consequences.administrative'), value: 'ADMINISTRATIVE' },
+                                    { label: t('appeals.journal.consequences.criminal'), value: 'CRIMINAL' },
+                                ]} />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    <Form.Item name="summary" label={t('appeals.journal.fields.summary')}>
+                        <Input.TextArea rows={3} placeholder={t('appeals.journal.fields.summary_placeholder')} />
                     </Form.Item>
                 </Form>
             </Modal>

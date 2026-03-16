@@ -126,6 +126,8 @@
         "physical": "Jismoniy",
         "legal": "Yuridik",
         "committee": "Qo'mita",
+        "delete_confirm": "Uchirishni tasdiqlaysizmi?",
+        "delete": "O'chirish",
         "refresh": "Yangilash",
         "export_all": "Hammasini eksport qilish"
     },
@@ -420,7 +422,8 @@
                 "type": "Turi",
                 "channel": "Kanal",
                 "status": "Holat",
-                "actions": "Amallar"
+                "actions": "Amallar",
+                "closure_date": "Yopilgan sana"
             },
             "fields": {
                 "reg_date": "Qabul sanasi",
@@ -434,6 +437,10 @@
                 "recipient": "Kimga (Table 1)",
                 "subject": "Masala turi (Table 4)",
                 "summary": "Qisqacha mazmuni",
+                "summary_placeholder": "Murojaat mazmuni...",
+                "new_deadline": "Yangi muddat",
+                "reason": "Sababi",
+                "reason_placeholder": "Masalan: Qo'shimcha o'rganish talab etiladi...",
                 "is_repeated": "Takroriy",
                 "is_phone": "Ishonch telefoni",
                 "is_field": "Sayyor qabul",
@@ -454,7 +461,11 @@
                 "criminal": "Jinoiy javobgarlik"
             },
             "success_closed": "Murojaat yopildi!",
-            "error_close": "Xatolik yuz berdi"
+            "error_close": "Xatolik yuz berdi",
+            "modal_edit_title": "Murojaatni tahrirlash",
+            "modal_extend_title": "Muddatni uzaytirish",
+            "delete_confirm_title": "Murojaatni o'chirish",
+            "delete_confirm_text": "Haqiqatan ham ushbu yozuvni o'chirib tashlamoqchimisiz? Bu amalni ortga qaytarib bo'lmaydi."
         },
         "monitoring": {
             "title": "Tuman / Hudud",
