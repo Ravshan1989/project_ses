@@ -292,6 +292,11 @@
     },
     "appeals": {
         "title": "Ijro intizomi va murojaatlar bilan ishlash",
+        "actions": {
+            "close": "Yopish",
+            "edit": "Tahrirlash",
+            "delete": "O'chirish"
+        },
         "tabs": {
             "t1": "Rahbarlar qabuli",
             "t2": "Masalalar kesimida",
@@ -300,7 +305,9 @@
             "t5": "Murojaat turlari",
             "t6": "Qabulxonalar",
             "t7": "Intizomiy choralar",
-            "journal": "Master Jurnal (Yangi)"
+            "journal": "Master Jurnal (Yangi)",
+            "monitoring": "Monitoring (Tumanlar)",
+            "analytics": "Tahliliy Dashboard"
         },
         "table1": {
             "title": "{{year}} yilning {{month}} oyida {{org}}ga kelib tushgan murojaatlarning rahbarlar kesimidagi tahlili",
@@ -593,6 +600,9 @@
         "title": "Shakl 1: Monitoring"
     },
     "user": {
+        "welcome": "Xush kelibsiz",
+        "role_label": "Lavozim",
+        "dept_label": "Bo'lim",
         "roles": {
             "ADMIN": "Tizim ma'muri (Admin)",
             "HR": "Kadrlar bo'limi (HR)",
@@ -602,6 +612,7 @@
             "LAB_HEAD": "Laboratoriya mudiri",
             "STAFF": "Xodim",
             "DEPARTMENT_HEAD": "Bo'lim mudiri",
+            "LEAD_SPECIALIST": "Yetakchi mutaxassis",
             "DISTRICT_SPECIALIST": "Vrach (Tuman mutaxassisi)",
             "DISTRICT_OPERATOR": "Yordamchi (Tuman operatori)",
             "SANITARY_HEAD": "Sanitariya bo'limi mudiri",

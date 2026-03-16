@@ -783,7 +783,7 @@ const AppealsPage: React.FC = () => {
         },
         {
             key: 'dashboard',
-            label: <span style={{ fontWeight: 'bold', color: '#52c41a' }}>Tahliliy Dashboard</span>,
+            label: <span style={{ fontWeight: 'bold', color: '#52c41a' }}>{t('appeals.tabs.analytics')}</span>,
             children: <AppealsDashboard 
                 data={autoReportsQuery.data} 
                 month={month} 
@@ -803,7 +803,7 @@ const AppealsPage: React.FC = () => {
     if (isRegion) {
         tabItems.push({
             key: 'monitoring',
-            label: <span style={{ fontWeight: 'bold', color: '#fa8c16' }}>Monitoring (Tumanlar)</span>,
+            label: <span style={{ fontWeight: 'bold', color: '#fa8c16' }}>{t('appeals.tabs.monitoring')}</span>,
             children: (
                 <AppealsMonitoring 
                     data={monitoringQuery.data || []}

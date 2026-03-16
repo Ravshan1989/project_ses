@@ -46,6 +46,8 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
     const userDept = localStorage.getItem('user_department_name');
     const isAuthorized = userRole === 'ADMIN' || 
                        userRole === 'REPUBLIC_HEAD' || 
+                       userRole === 'EXECUTIVE_HEAD' ||
+                       userRole === 'EXECUTIVE_SPECIALIST' ||
                        (isRegionalOrg && (
                            userRole === 'REGION_HEAD' || 
                            userRole === 'LEAD_SPECIALIST' || 
@@ -256,7 +258,7 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                                     setIsCloseModalVisible(true);
                                 }}
                             >
-                                {t('appeals.table6.columns.pending')}
+                                {t('appeals.actions.close')}
                             </Button>
                             <Button 
                                 type="link" 
@@ -271,7 +273,7 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                                     });
                                 }}
                             >
-                                {t('appeals.journal.columns.deadline')}
+                                {t('appeals.journal.fields.deadline')}
                             </Button>
                         </>
                     )}
@@ -293,7 +295,7 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                                     });
                                 }}
                             >
-                                {t('common.update')}
+                                {t('appeals.actions.edit')}
                             </Button>
                             <Button 
                                 type="link" 
@@ -301,7 +303,7 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                                 danger 
                                 onClick={() => handleDelete(record.id)}
                             >
-                                O'chirish
+                                {t('appeals.actions.delete')}
                             </Button>
                         </>
                     )}

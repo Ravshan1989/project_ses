@@ -40,6 +40,7 @@ import ImportPage from './features/import/ImportPage';
 import DepartmentManagementPage from './features/admin/DepartmentManagementPage';
 import SosAlertPage from './features/sos/SosAlertPage';
 import SosModal from './features/sos/SosModal';
+import SurpriseDaisy from './components/SurpriseDaisy';
 import VerificationPage from './features/verify/VerificationPage';
 import DashboardExecutivePage from './features/dashboard/DashboardExecutivePage';
 import RegisterPage from './features/auth/RegisterPage';
@@ -333,16 +334,18 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     <Text style={{ fontSize: '18px', fontWeight: 600, color: '#001529' }}>{getPageTitle()}</Text>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                         <LanguageSwitcher />
-                        <div style={{ textAlign: 'right', lineHeight: '1.2' }}>
-                            <Text strong style={{ display: 'block', color: '#333' }}>
-                                {localStorage.getItem('user_full_name') || localStorage.getItem('username') || t('common.user_fallback')}
+                        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                            <Text strong style={{ display: 'block', color: '#1890ff', fontSize: '13px', lineHeight: '1.2' }}>
+                                {t('user.welcome')}, {localStorage.getItem('user_full_name') || localStorage.getItem('username') || t('common.user_fallback')}
                             </Text>
-                            <Text type="secondary" style={{ fontSize: '12px', display: 'block', lineHeight: '1.2' }}>
+                            <div style={{ fontSize: '12px', color: '#595959', lineHeight: '1.1', marginTop: '2px' }}>
+                                <Text type="secondary" style={{ fontSize: '11px', fontWeight: 600 }}>{t('user.role_label')}: </Text>
                                 {t(`user.roles.${localStorage.getItem('user_role') || 'STAFF'}`)}
-                            </Text>
-                            <Text type="secondary" style={{ fontSize: '11px', color: '#8c8c8c' }}>
+                            </div>
+                            <div style={{ fontSize: '11px', color: '#8c8c8c', lineHeight: '1.1' }}>
+                                <Text type="secondary" style={{ fontSize: '10px', fontWeight: 600 }}>{t('user.dept_label')}: </Text>
                                 {localStorage.getItem('user_department_name') || ''}
-                            </Text>
+                            </div>
                         </div>
                         {hasRole(['DISTRICT_HEAD', 'STAFF']) && (
                             <Button type="primary" danger icon={<AlertOutlined />} onClick={() => setSosVisible(true)} style={{ fontWeight: 'bold' }}>
@@ -352,7 +355,12 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         <Button type="text" icon={<LogoutOutlined />} onClick={handleLogout} danger>{t('common.logout')}</Button>
                     </div>
                 </Header>
-                <Content style={{ margin: '24px 24px 0', overflow: 'initial' }}><div style={{ padding: 0, minHeight: 360 }}>{children}</div></Content>
+                <Content style={{ margin: '24px 24px 0', overflow: 'initial' }}>
+                    <div style={{ padding: 0, minHeight: 360 }}>
+                        {localStorage.getItem('username') === 'sitora.ibragimova' && <SurpriseDaisy />}
+                        {children}
+                    </div>
+                </Content>
                 <SosModal visible={sosVisible} onClose={() => setSosVisible(false)} />
                 <MobileBottomNav />
                 <Footer style={{ textAlign: 'center', color: '#999', background: 'transparent', paddingBottom: '80px' }}>
