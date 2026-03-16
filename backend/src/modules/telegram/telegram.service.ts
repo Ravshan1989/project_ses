@@ -131,28 +131,28 @@ export class TelegramService implements OnModuleInit {
 
     // Handle phone number verification
     this.bot.on("contact", async (ctx) => {
-      const contact = ctx.message.contact;
-      const rawPhone = contact.phone_number;
-
-      this.logger.log(`Received phone number: ${rawPhone} from ${ctx.from.id}`);
-
-      // UZ: Telefon raqamni turli formatlar bilan qidiramiz
-      const digitsOnly = rawPhone.replace(/\D/g, ""); // 99807736812
-      const withPlus = `+${digitsOnly}`; // +99807736812
-
       try {
+        const contact = ctx.message.contact;
+        const rawPhone = contact.phone_number;
+        const tgId = ctx.from.id.toString();
+
+        this.logger.log(`[BOT DEBUG] Received contact: ${rawPhone} from TG ID: ${tgId}`);
+        await ctx.reply(`⏳ Qidirilmoqda: ${rawPhone}...`).catch(() => {});
+
+        const digitsOnly = rawPhone.replace(/\D/g, "");
+        const withPlus = `+${digitsOnly}`;
+
         // UZ: Raqamni barcha formatlarda (probel bilan yoki probelsiz) qidirish uchun normallashtiramiz
         const user = await this.userRepository.createQueryBuilder("user")
-          .where("REPLACE(REPLACE(user.phoneNumber, ' ', ''), '+', '') = :phone", { phone: digitsOnly })
+          .where("REPLACE(REPLACE(\"phoneNumber\", ' ', ''), '+', '') = :phone", { phone: digitsOnly })
           .getOne();
 
         if (user) {
-          user.telegramChatId = ctx.from.id.toString();
-          // UZ: Kelajakda muammo bo'lmasligi uchun phoneNumber ni ham normallashtirib qo'yamiz
+          this.logger.log(`[BOT DEBUG] User found: ${user.username} for phone: ${rawPhone}`);
+          user.telegramChatId = tgId;
           user.phoneNumber = withPlus; 
           await this.userRepository.save(user);
 
-          // UZ: Faol bo'lmagan foydalanuvchilar uchun kadrga xabarnoma jo'natamiz
           let approvalMessage = "";
           if (!user.isActive) {
             await this.sendRegistrationNotification(user);
@@ -169,13 +169,16 @@ export class TelegramService implements OnModuleInit {
             Markup.removeKeyboard(),
           );
         } else {
+          this.logger.warn(`[BOT DEBUG] User NOT found for phone: ${rawPhone} (digitsOnly: ${digitsOnly})`);
           await ctx.reply(
-            `❌ Xatolik! Bu telefon raqam tizimda topilmadi.`,
+            `❌ Xatolik! Bu telefon raqam (${rawPhone}) tizimda topilmadi.\n\n` +
+            `Iltimos, avval saytda ro'yxatdan o'tganingizni va raqamingizni to'g'ri kiritganingizni tekshiring.`,
             Markup.removeKeyboard(),
           );
         }
       } catch (error) {
-        this.logger.error("Error verifying phone number:", error);
+        this.logger.error("[BOT DEBUG] Error in contact handler:", error);
+        await ctx.reply("❌ Tizimda xatolik yuz berdi. Birozdan so'ng qayta urinib ko'ring.").catch(() => {});
       }
     });
 
