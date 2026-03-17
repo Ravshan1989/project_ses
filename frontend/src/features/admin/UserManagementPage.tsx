@@ -21,6 +21,7 @@ const UserManagementPage: React.FC = () => {
 
     const [editingUser, setEditingUser] = useState<any>(null);
     const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+    const [selectedDeptId, setSelectedDeptId] = useState<string | null>(null);
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -318,7 +319,7 @@ const UserManagementPage: React.FC = () => {
 
             <div style={{ ...glassStyle, marginBottom: '24px', padding: '20px' }}>
                 <Row gutter={[24, 24]} align="middle">
-                    <Col xs={24} md={8}>
+                    <Col xs={24} md={10}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <div style={{ background: '#e6f7ff', padding: '8px', borderRadius: '10px' }}>
                                 <FilterOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
@@ -350,102 +351,175 @@ const UserManagementPage: React.FC = () => {
                             </div>
                         </div>
                     </Col>
-                    {selectedRoleId && (
-                        <Col xs={24} md={16}>
-                            <div style={{ marginBottom: '16px' }}>
-                                <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '12px', scrollbarWidth: 'thin' }}>
-                                    {organizations
-                                        .filter((org: any) => org.parent)
-                                        .map((org: any) => {
-                                            const userCount = users.filter((u: any) => {
-                                                const matchesOrg = u.organization?.id === org.id;
-                                                if (!matchesOrg) return false;
-                                                if (selectedRoleId.startsWith('sys:')) {
-                                                    return u.role === selectedRoleId.replace('sys:', '');
-                                                }
-                                                return u.dynamicRole?.id === selectedRoleId;
-                                            }).length;
-                                            const isConnected = userCount > 0;
-                                            
-                                            return (
-                                                <Tooltip key={org.id} title={`${org.name}: ${userCount} ta xodim`}>
-                                                    <div style={{
-                                                        minWidth: '140px',
-                                                        padding: '12px',
-                                                        borderRadius: '16px',
-                                                        background: isConnected ? 'rgba(82, 196, 26, 0.1)' : 'rgba(0, 0, 0, 0.02)',
-                                                        border: `1px solid ${isConnected ? 'rgba(82, 196, 26, 0.2)' : 'rgba(0, 0, 0, 0.05)'}`,
-                                                        transition: 'all 0.3s'
-                                                    }}>
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '4px' }}>
-                                                            <span style={{ fontSize: '11px', fontWeight: 700, color: '#595959', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>
-                                                                {org.name}
-                                                            </span>
-                                                            {isConnected ? 
-                                                                <CheckCircleOutlined style={{ color: '#52c41a' }} /> : 
-                                                                <CloseCircleOutlined style={{ color: '#bfbfbf' }} />
-                                                            }
-                                                        </div>
-                                                        <div style={{ fontSize: '10px', color: isConnected ? '#52c41a' : '#8c8c8c' }}>
-                                                            {isConnected ? 'Ulangan' : 'Ulanmagan'}
-                                                        </div>
-                                                    </div>
-                                                </Tooltip>
-                                            );
-                                        })
-                                    }
-                                </div>
+                    <Col xs={24} md={10}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ background: '#f6ffed', padding: '8px', borderRadius: '10px' }}>
+                                <FilterOutlined style={{ color: '#52c41a', fontSize: '18px' }} />
                             </div>
-
-                            {/* UZ: Ulanmagan tumanlar ro'yxati (Aniq ko'rinishi uchun) */}
-                            <div style={{ background: 'rgba(255, 77, 79, 0.05)', padding: '12px', borderRadius: '12px', border: '1px dashed rgba(255, 77, 79, 0.2)' }}>
-                                <div style={{ fontSize: '11px', fontWeight: 800, color: '#ff4d4f', marginBottom: '8px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    <CloseCircleOutlined /> Ulanmagan hududlar:
+                            <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: '12px', color: '#8c8c8c', fontWeight: 600, textTransform: 'uppercase' }}>
+                                    {t('user.filter_by_dept') || 'Bo\'lim bo\'yicha saralash'}
                                 </div>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                                    {organizations
-                                        .filter((org: any) => org.parent)
-                                        .filter((org: any) => {
-                                            return users.filter((u: any) => {
-                                                const matchesOrg = u.organization?.id === org.id;
-                                                if (!matchesOrg) return false;
-                                                if (selectedRoleId.startsWith('sys:')) {
-                                                    return u.role === selectedRoleId.replace('sys:', '');
-                                                }
-                                                return u.dynamicRole?.id === selectedRoleId;
-                                            }).length === 0;
-                                        })
-                                        .map((org: any) => (
-                                            <Tag key={org.id} color="error" style={{ borderRadius: '6px', margin: 0 }}>
-                                                {org.name}
-                                            </Tag>
-                                        ))
-                                    }
-                                    {organizations.filter((org: any) => org.parent).every((org: any) => {
-                                        return users.some((u: any) => {
-                                            const matchesOrg = u.organization?.id === org.id;
-                                            if (!matchesOrg) return false;
-                                            if (selectedRoleId.startsWith('sys:')) {
-                                                return u.role === selectedRoleId.replace('sys:', '');
-                                            }
-                                            return u.dynamicRole?.id === selectedRoleId;
-                                        });
-                                    }) && <span style={{ fontSize: '11px', color: '#52c41a' }}>Barcha hududlar ulangan ✅</span>}
-                                </div>
+                                <Select
+                                    placeholder="Barcha bo'limlar"
+                                    style={{ width: '100%' }}
+                                    allowClear
+                                    onChange={(val) => setSelectedDeptId(val)}
+                                    size="large"
+                                    bordered={false}
+                                    dropdownStyle={{ borderRadius: '12px' }}
+                                >
+                                    {departments.map((d: any) => (
+                                        <Option key={d.id} value={d.id}>{d.name}</Option>
+                                    ))}
+                                </Select>
                             </div>
-                        </Col>
-                    )}
+                        </div>
+                    </Col>
                 </Row>
             </div>
 
+            {(selectedRoleId || selectedDeptId) && (
+                <div style={{ ...glassStyle, marginBottom: '24px', padding: '20px' }}>
+                    <div style={{ marginBottom: '16px' }}>
+                        <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '12px', scrollbarWidth: 'thin' }}>
+                            {organizations
+                                .filter((org: any) => org.parent)
+                                .map((org: any) => {
+                                    const userCount = users.filter((u: any) => {
+                                        const matchesOrg = u.organization?.id === org.id;
+                                        if (!matchesOrg) return false;
+                                        
+                                        let matchesRole = true;
+                                        if (selectedRoleId) {
+                                            if (selectedRoleId.startsWith('sys:')) {
+                                                matchesRole = u.role === selectedRoleId.replace('sys:', '');
+                                            } else {
+                                                matchesRole = u.dynamicRole?.id === selectedRoleId;
+                                            }
+                                        }
+
+                                        let matchesDept = true;
+                                        if (selectedDeptId) {
+                                            matchesDept = u.department?.id === selectedDeptId;
+                                        }
+
+                                        return matchesRole && matchesDept;
+                                    }).length;
+                                    const isConnected = userCount > 0;
+                                    
+                                    return (
+                                        <Tooltip key={org.id} title={`${org.name}: ${userCount} ta xodim`}>
+                                            <div style={{
+                                                minWidth: '140px',
+                                                padding: '12px',
+                                                borderRadius: '16px',
+                                                background: isConnected ? 'rgba(82, 196, 26, 0.1)' : 'rgba(0, 0, 0, 0.02)',
+                                                border: `1px solid ${isConnected ? 'rgba(82, 196, 26, 0.2)' : 'rgba(0, 0, 0, 0.05)'}`,
+                                                transition: 'all 0.3s'
+                                            }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '4px' }}>
+                                                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#595959', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>
+                                                        {org.name}
+                                                    </span>
+                                                    {isConnected ? 
+                                                        <CheckCircleOutlined style={{ color: '#52c41a' }} /> : 
+                                                        <CloseCircleOutlined style={{ color: '#bfbfbf' }} />
+                                                    }
+                                                </div>
+                                                <div style={{ fontSize: '10px', color: isConnected ? '#52c41a' : '#8c8c8c' }}>
+                                                    {isConnected ? 'Ulangan' : 'Ulanmagan'}
+                                                </div>
+                                            </div>
+                                        </Tooltip>
+                                    );
+                                })
+                            }
+                        </div>
+                    </div>
+
+                    {/* UZ: Ulanmagan tumanlar ro'yxati */}
+                    <div style={{ background: 'rgba(255, 77, 79, 0.05)', padding: '12px', borderRadius: '12px', border: '1px dashed rgba(255, 77, 79, 0.2)' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 800, color: '#ff4d4f', marginBottom: '8px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <CloseCircleOutlined /> Ulanmagan hududlar:
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                            {organizations
+                                .filter((org: any) => org.parent)
+                                .filter((org: any) => {
+                                    return users.filter((u: any) => {
+                                        const matchesOrg = u.organization?.id === org.id;
+                                        if (!matchesOrg) return false;
+                                        
+                                        let matchesRole = true;
+                                        if (selectedRoleId) {
+                                            if (selectedRoleId.startsWith('sys:')) {
+                                                matchesRole = u.role === selectedRoleId.replace('sys:', '');
+                                            } else {
+                                                matchesRole = u.dynamicRole?.id === selectedRoleId;
+                                            }
+                                        }
+
+                                        let matchesDept = true;
+                                        if (selectedDeptId) {
+                                            matchesDept = u.department?.id === selectedDeptId;
+                                        }
+
+                                        return matchesRole && matchesDept;
+                                    }).length === 0;
+                                })
+                                .map((org: any) => (
+                                    <Tag key={org.id} color="error" style={{ borderRadius: '6px', margin: 0 }}>
+                                        {org.name}
+                                    </Tag>
+                                ))
+                            }
+                            {organizations.filter((org: any) => org.parent).every((org: any) => {
+                                return users.some((u: any) => {
+                                    const matchesOrg = u.organization?.id === org.id;
+                                    if (!matchesOrg) return false;
+                                    
+                                    let matchesRole = true;
+                                    if (selectedRoleId) {
+                                        if (selectedRoleId.startsWith('sys:')) {
+                                            matchesRole = u.role === selectedRoleId.replace('sys:', '');
+                                        } else {
+                                            matchesRole = u.dynamicRole?.id === selectedRoleId;
+                                        }
+                                    }
+
+                                    let matchesDept = true;
+                                    if (selectedDeptId) {
+                                        matchesDept = u.department?.id === selectedDeptId;
+                                    }
+
+                                    return matchesRole && matchesDept;
+                                });
+                            }) && <span style={{ fontSize: '11px', color: '#52c41a' }}>Barcha hududlar ulangan ✅</span>}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div style={glassStyle}>
                 <Table
-                    dataSource={selectedRoleId ? users.filter((u: any) => {
-                        if (selectedRoleId.startsWith('sys:')) {
-                            return u.role === selectedRoleId.replace('sys:', '');
+                    dataSource={users.filter((u: any) => {
+                        let matchesRole = true;
+                        if (selectedRoleId) {
+                            if (selectedRoleId.startsWith('sys:')) {
+                                matchesRole = u.role === selectedRoleId.replace('sys:', '');
+                            } else {
+                                matchesRole = u.dynamicRole?.id === selectedRoleId;
+                            }
                         }
-                        return u.dynamicRole?.id === selectedRoleId;
-                    }) : users}
+
+                        let matchesDept = true;
+                        if (selectedDeptId) {
+                            matchesDept = u.department?.id === selectedDeptId;
+                        }
+
+                        return matchesRole && matchesDept;
+                    })}
                     columns={columns}
                     rowKey="id"
                     loading={loading}

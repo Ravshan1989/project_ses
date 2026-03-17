@@ -626,6 +626,8 @@
         },
         "title": "Foydalanuvchilar Boshqaruvi",
         "add_button": "Yangi Hodim Qo'shish",
+        "filter_by_role": "Lavozim bo'yicha saralash",
+        "filter_by_dept": "Bo'lim bo'yicha saralash",
         "modal_title": "Yangi Foydalanuvchi Qo'shish",
         "first_name": "Ism",
         "last_name": "Familiya",

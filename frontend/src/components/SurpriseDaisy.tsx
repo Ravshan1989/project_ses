@@ -2,12 +2,30 @@ import React, { useEffect, useState } from 'react';
 
 const SurpriseDaisy: React.FC = () => {
     const [visible, setVisible] = useState(true);
+    const fullText = "Salom Romashka 🌼";
+    const [displayText, setDisplayText] = useState("");
 
     useEffect(() => {
+        let currentText = "";
+        let index = 0;
+        const interval = setInterval(() => {
+            if (index < fullText.length) {
+                currentText += fullText[index];
+                setDisplayText(currentText);
+                index++;
+            } else {
+                clearInterval(interval);
+            }
+        }, 150);
+        
         const timer = setTimeout(() => {
             setVisible(false);
-        }, 15000); // Ultimate version lasts 15 seconds
-        return () => clearTimeout(timer);
+        }, 15000);
+
+        return () => {
+            clearInterval(interval);
+            clearTimeout(timer);
+        };
     }, []);
 
     if (!visible) return null;
@@ -147,9 +165,10 @@ const SurpriseDaisy: React.FC = () => {
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     animation: 'textGlow 3s ease-in-out infinite',
-                    padding: '10px'
+                    padding: '10px',
+                    minHeight: '100px'
                 }}>
-                    Salom Romashka 🌼
+                    {displayText}
                 </div>
                 <div style={{
                     width: '120px',
