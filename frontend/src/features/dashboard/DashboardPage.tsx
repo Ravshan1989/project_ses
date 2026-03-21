@@ -450,7 +450,7 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
                     </div>
                     <div className="org-badge">
                         <CheckCircleOutlined style={{ color: '#38bdf8', marginRight: 6 }} />
-                        <span style={{ color: '#bae6fd', fontSize: '13px', fontWeight: 500 }}>Toshkent viloyati SES</span>
+                        <span style={{ color: '#bae6fd', fontSize: '13px', fontWeight: 500 }}>Sanepidqo'mita</span>
                     </div>
                     <button className="sos-btn">
                         <span style={{ marginRight: 8 }}>⚠️</span> FAVQULODDA SOS

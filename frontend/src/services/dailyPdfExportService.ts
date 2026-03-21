@@ -8,7 +8,7 @@ const getNestedValue = (obj: any, path: string) => {
 };
 
 // --- GEPATIT A PDF EKSPORTI ---
-export const exportHepatitisProfessionalPDF = (data: any[], date: string, orgName: string = 'To\'shkent viloyati') => {
+export const exportHepatitisProfessionalPDF = (data: any[], date: string, orgName: string = 'O\'zbekiston Respublikasi') => {
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
     doc.setFontSize(14);
@@ -68,7 +68,7 @@ export const exportHepatitisProfessionalPDF = (data: any[], date: string, orgNam
 };
 
 // --- GRIPP VA O'RVI PDF EKSPORTI ---
-export const exportFluProfessionalPDF = (data: any[], date: string, orgName: string = 'Toshkent viloyati') => {
+export const exportFluProfessionalPDF = (data: any[], date: string, orgName: string = 'O\'zbekiston Respublikasi') => {
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
     doc.setFontSize(14);
@@ -129,7 +129,7 @@ export const exportFluProfessionalPDF = (data: any[], date: string, orgName: str
 };
 
 // --- EPIDEMIOLOGIYA PDF EKSPORTI ---
-export const exportEpidemiologyProfessionalPDF = (data: any[], date: string, orgName: string = 'Toshkent viloyati') => {
+export const exportEpidemiologyProfessionalPDF = (data: any[], date: string, orgName: string = 'O\'zbekiston Respublikasi') => {
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
     doc.setFontSize(14);
@@ -177,7 +177,7 @@ export const exportEpidemiologyProfessionalPDF = (data: any[], date: string, org
 };
 
 // --- ARI QUICK PDF EKSPORTI ---
-export const exportAriQuickProfessionalPDF = (data: any[], date: string, orgName: string = 'Toshkent viloyati') => {
+export const exportAriQuickProfessionalPDF = (data: any[], date: string, orgName: string = 'O\'zbekiston Respublikasi') => {
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
     doc.setFontSize(12);

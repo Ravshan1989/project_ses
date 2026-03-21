@@ -22,5 +22,5 @@ export const INSPECTION_T2_ROWS = [
     { key: "chinoz_t", label: "Chinoz tumani" },
     { key: "yuqori_chirchiq_t", label: "Yuqori Chirchiq tumani" },
     { key: "yangiyul_t", label: "Yangiyo'l tumani" },
-    { key: "toshkent_viloyati", label: "Toshkent viloyati" },
+    { key: "toshkent_viloyati", label: "Sanepidqo'mita" },
 ];

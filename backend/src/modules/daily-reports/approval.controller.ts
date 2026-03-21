@@ -33,7 +33,22 @@ export class ApprovalController {
     const user = req.user;
     const tableName = this.getTableName(type);
 
-    // TODO: Check if user is the creator (executor)
+    // UZ: Faqat muallif (executor) yoki Admin yubora oladi
+    const [report] = await this.dataSource.query(
+      `SELECT "executor_id" FROM "${tableName}" WHERE id = $1`,
+      [id],
+    );
+
+    if (
+      report &&
+      report.executor_id !== user.id &&
+      user.role !== UserRole.ADMIN
+    ) {
+      throw new Error(
+        "Siz ushbu hisobotni yubora olmaysiz (muallif emassiz)",
+      );
+    }
+
     await this.dataSource.query(
       `UPDATE "${tableName}" SET status = $1 WHERE id = $2`,
       [ReportStatus.SUBMITTED, id],

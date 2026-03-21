@@ -205,7 +205,17 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
             title: t('appeals.journal.columns.channel'),
             dataIndex: 'channel',
             key: 'channel',
-            render: (v: string) => <Tag>{v}</Tag>
+            render: (v: string) => {
+                let color = 'blue';
+                let label = v;
+                if (v === 'VIRTUAL_RECEPTION') { color = 'cyan'; label = t('appeals.table6.columns.virtual'); }
+                else if (v === 'PEOPLES_RECEPTION') { color = 'gold'; label = t('appeals.table6.columns.people'); }
+                else if (v === 'ELECTRONIC') { color = 'geekblue'; label = t('appeals.table2.columns.electronic'); }
+                else if (v === 'WRITTEN') { color = 'orange'; label = t('appeals.table2.columns.written'); }
+                else if (v === 'ORAL') { color = 'green'; label = t('appeals.table2.columns.oral'); }
+                
+                return <Tag color={color}>{label}</Tag>;
+            }
         },
         {
             title: t('appeals.journal.columns.status'),
@@ -396,6 +406,7 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                                     { label: t('appeals.table2.columns.written'), value: 'WRITTEN' },
                                     { label: t('appeals.table6.columns.virtual'), value: 'VIRTUAL_RECEPTION' },
                                     { label: t('appeals.table6.columns.people'), value: 'PEOPLES_RECEPTION' },
+                                    { label: t('appeals.table6.columns.telegram'), value: 'TELEGRAM_RECEPTION' },
                                 ]} />
                             </Form.Item>
                         </Col>
@@ -572,6 +583,7 @@ const MasterAppealsJournal: React.FC<MasterAppealsJournalProps> = ({
                                     { label: t('appeals.table2.columns.written'), value: 'WRITTEN' },
                                     { label: t('appeals.table6.columns.virtual'), value: 'VIRTUAL_RECEPTION' },
                                     { label: t('appeals.table6.columns.people'), value: 'PEOPLES_RECEPTION' },
+                                    { label: t('appeals.table6.columns.telegram'), value: 'TELEGRAM_RECEPTION' },
                                 ]} />
                             </Form.Item>
                         </Col>

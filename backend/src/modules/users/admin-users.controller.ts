@@ -16,41 +16,23 @@ import { Roles } from "../auth/decorators/roles.decorator";
 import { UsersService } from "../users/users.service";
 import { UserRole } from "../../common/enums/role.enum";
 import * as bcrypt from "bcrypt";
+import { validateOrganizationAccess } from "../../common/utils/access-control.util";
 
 @Controller("admin/users")
 @UseGuards(JwtAuthGuard, RolesGuard)
+// @Roles(UserRole.ADMIN, UserRole.HR, UserRole.REPUBLIC_HEAD, UserRole.REGION_HEAD, UserRole.DISTRICT_HEAD) // ESKI
 @Roles(UserRole.ADMIN, UserRole.HR)
 export class AdminUsersController {
   constructor(private usersService: UsersService) {}
 
   @Get()
   async getAllUsers(@Request() req) {
-    const currentUser = req.user;
-
-    // Admin sees all users, HR sees only their organization
-    if (currentUser.role === UserRole.ADMIN) {
-      return this.usersService.findAll();
-    } else if (currentUser.role === UserRole.HR) {
-      return this.usersService.findByOrganization(currentUser.organization.id);
-    }
-
-    throw new HttpException("Unauthorized", HttpStatus.FORBIDDEN);
+    return this.usersService.findAll(req.user);
   }
 
   @Get("pending")
   async getPendingUsers(@Request() req) {
-    const currentUser = req.user;
-
-    // Get users waiting for approval
-    if (currentUser.role === UserRole.ADMIN) {
-      return this.usersService.findPending();
-    } else if (currentUser.role === UserRole.HR) {
-      return this.usersService.findPendingByOrganization(
-        currentUser.organization.id,
-      );
-    }
-
-    throw new HttpException("Unauthorized", HttpStatus.FORBIDDEN);
+    return this.usersService.findPending(req.user);
   }
 
   @Post(":id/approve")
@@ -62,12 +44,14 @@ export class AdminUsersController {
       throw new HttpException("User not found", HttpStatus.NOT_FOUND);
     }
 
-    // Check permissions
-    if (
-      currentUser.role === UserRole.HR &&
-      user.organization.id !== currentUser.organization.id
-    ) {
-      throw new HttpException("Unauthorized", HttpStatus.FORBIDDEN);
+    // Check permissions using validateOrganizationAccess
+    if (user.organization?.id) {
+      validateOrganizationAccess(currentUser, user.organization.id);
+    } else if (currentUser.role !== UserRole.ADMIN) {
+      throw new HttpException(
+        "Sizda ushbu foydalanuvchini boshqarish ruxsati yo'q",
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     const result = await this.usersService.approveUser(id);
@@ -89,12 +73,14 @@ export class AdminUsersController {
       throw new HttpException("User not found", HttpStatus.NOT_FOUND);
     }
 
-    // Check permissions
-    if (
-      currentUser.role === UserRole.HR &&
-      user.organization.id !== currentUser.organization.id
-    ) {
-      throw new HttpException("Unauthorized", HttpStatus.FORBIDDEN);
+    // Check permissions using validateOrganizationAccess
+    if (user.organization?.id) {
+      validateOrganizationAccess(currentUser, user.organization.id);
+    } else if (currentUser.role !== UserRole.ADMIN) {
+      throw new HttpException(
+        "Sizda ushbu foydalanuvchini boshqarish ruxsati yo'q",
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     // Delete user
@@ -116,12 +102,14 @@ export class AdminUsersController {
       throw new HttpException("User not found", HttpStatus.NOT_FOUND);
     }
 
-    // Check permissions
-    if (
-      currentUser.role === UserRole.HR &&
-      user.organization.id !== currentUser.organization.id
-    ) {
-      throw new HttpException("Unauthorized", HttpStatus.FORBIDDEN);
+    // Check permissions using validateOrganizationAccess
+    if (user.organization?.id) {
+      validateOrganizationAccess(currentUser, user.organization.id);
+    } else if (currentUser.role !== UserRole.ADMIN) {
+      throw new HttpException(
+        "Sizda ushbu foydalanuvchini boshqarish ruxsati yo'q",
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     await this.usersService.update(id, updateData);
@@ -138,12 +126,14 @@ export class AdminUsersController {
       throw new HttpException("User not found", HttpStatus.NOT_FOUND);
     }
 
-    // Check permissions
-    if (
-      currentUser.role === UserRole.HR &&
-      user.organization.id !== currentUser.organization.id
-    ) {
-      throw new HttpException("Unauthorized", HttpStatus.FORBIDDEN);
+    // Check permissions using validateOrganizationAccess
+    if (user.organization?.id) {
+      validateOrganizationAccess(currentUser, user.organization.id);
+    } else if (currentUser.role !== UserRole.ADMIN) {
+      throw new HttpException(
+        "Sizda ushbu foydalanuvchini boshqarish ruxsati yo'q",
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     await this.usersService.update(id, { isActive: false });
@@ -160,12 +150,14 @@ export class AdminUsersController {
       throw new HttpException("User not found", HttpStatus.NOT_FOUND);
     }
 
-    // Check permissions
-    if (
-      currentUser.role === UserRole.HR &&
-      user.organization.id !== currentUser.organization.id
-    ) {
-      throw new HttpException("Unauthorized", HttpStatus.FORBIDDEN);
+    // Check permissions using validateOrganizationAccess
+    if (user.organization?.id) {
+      validateOrganizationAccess(currentUser, user.organization.id);
+    } else if (currentUser.role !== UserRole.ADMIN) {
+      throw new HttpException(
+        "Sizda ushbu foydalanuvchini boshqarish ruxsati yo'q",
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     await this.usersService.update(id, { isActive: true });
@@ -182,12 +174,14 @@ export class AdminUsersController {
       throw new HttpException("User not found", HttpStatus.NOT_FOUND);
     }
 
-    // Check permissions
-    if (
-      currentUser.role === UserRole.HR &&
-      user.organization.id !== currentUser.organization.id
-    ) {
-      throw new HttpException("Unauthorized", HttpStatus.FORBIDDEN);
+    // Check permissions using validateOrganizationAccess
+    if (user.organization?.id) {
+      validateOrganizationAccess(currentUser, user.organization.id);
+    } else if (currentUser.role !== UserRole.ADMIN) {
+      throw new HttpException(
+        "Sizda ushbu foydalanuvchini boshqarish ruxsati yo'q",
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     const { password } = await this.usersService.resetPassword(id);
@@ -198,3 +192,110 @@ export class AdminUsersController {
     };
   }
 }
+
+/**
+ * [ORIGINAL_REDACTED_CODE_PRESERVATION]
+ *
+ * @Controller("admin/users")
+ * @UseGuards(JwtAuthGuard, RolesGuard)
+ * @Roles(UserRole.ADMIN, UserRole.HR)
+ * export class AdminUsersController {
+ *   constructor(private usersService: UsersService) {}
+ *
+ *   @Get()
+ *   async getAllUsers(@Request() req) {
+ *     if (req.user.role === UserRole.ADMIN) {
+ *       return this.usersService.findAll();
+ *     } else if (req.user.role === UserRole.HR) {
+ *       return this.usersService.findByOrganization(req.user.organization.id);
+ *     }
+ *     throw new HttpException("Unauthorized", HttpStatus.FORBIDDEN);
+ *   }
+ *
+ *   @Get("pending")
+ *   async getPendingUsers(@Request() req) {
+ *     if (req.user.role === UserRole.ADMIN) {
+ *       return this.usersService.findPending();
+ *     } else if (req.user.role === UserRole.HR) {
+ *       return this.usersService.findPendingByOrganization(req.user.organization.id);
+ *     }
+ *     throw new HttpException("Unauthorized", HttpStatus.FORBIDDEN);
+ *   }
+ *
+ *   @Post(":id/approve")
+ *   async approveUser(@Param("id") id: string, @Request() req) {
+ *     const currentUser = req.user;
+ *     const user = await this.usersService.findOne(id);
+ *
+ *     if (!user) {
+ *       throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+ *     }
+ *
+ *     // Check permissions
+ *     if (
+ *       currentUser.role === UserRole.HR &&
+ *       user.organization.id !== currentUser.organization.id
+ *     ) {
+ *       throw new HttpException("Unauthorized", HttpStatus.FORBIDDEN);
+ *     }
+ *
+ *     const result = await this.usersService.approveUser(id);
+ *
+ *     return {
+ *       message: "User approved successfully",
+ *       username: result.user.username,
+ *       password: result.password,
+ *       user: result.user,
+ *     };
+ *   }
+ *
+ *   @Post(":id/reject")
+ *   async rejectUser(@Param("id") id: string, @Request() req) {
+ *     const currentUser = req.user;
+ *     const user = await this.usersService.findOne(id);
+ *
+ *     if (!user) {
+ *       throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+ *     }
+ *
+ *     // Check permissions
+ *     if (
+ *       currentUser.role === UserRole.HR &&
+ *       user.organization.id !== currentUser.organization.id
+ *     ) {
+ *       throw new HttpException("Unauthorized", HttpStatus.FORBIDDEN);
+ *     }
+ *
+ *     // Delete user
+ *     await this.usersService.remove(id);
+ *
+ *     return { message: "User rejected and removed" };
+ *   }
+ *
+ *   @Patch(":id")
+ *   async updateUser(
+ *     @Param("id") id: string,
+ *     @Body() updateData: any,
+ *     @Request() req,
+ *   ) {
+ *     const currentUser = req.user;
+ *     const user = await this.usersService.findOne(id);
+ *
+ *     if (!user) {
+ *       throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+ *     }
+ *
+ *     // Check permissions
+ *     if (
+ *       currentUser.role === UserRole.HR &&
+ *       user.organization.id !== currentUser.organization.id
+ *     ) {
+ *       throw new HttpException("Unauthorized", HttpStatus.FORBIDDEN);
+ *     }
+ *
+ *     await this.usersService.update(id, updateData);
+ *
+ *     return { message: "User updated successfully" };
+ *   }
+ * }
+ */

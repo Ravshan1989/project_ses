@@ -72,7 +72,7 @@ export class AuthService {
 
       // Fetch full user with relations (Organization, Department)
       const fullUser = await this.usersService.findOne(newUser.id);
-      
+
       // Removed immediate sendRegistrationNotification.
       // This is now triggered from telegram.service.ts ONLY after the user shares their contact.
 

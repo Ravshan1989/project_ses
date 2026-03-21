@@ -165,23 +165,7 @@ export class SubmissionsService {
   // Shuningdek, organization null bo'lgan holatda xatolik yuz berishi mumkin.
   // Quyida tuzatilgan versiya keltirilgan.
 
-  // async getStatusSummary(templateCode: string, period: string) {
-  //     // Fetch all submissions for this template and period
-  //     const submissions = await this.submissionRepository.find({
-  //         where: {
-  //             template: { code: templateCode },
-  //             reportingPeriod: period
-  //         },
-  //         relations: ['organization']
-  //     });
-  //
-  //     return submissions.map(s => ({
-  //         organizationId: s.organization.id,
-  //         organizationName: s.organization.name,
-  //         status: s.status,
-  //         submissionId: s.id
-  //     }));
-  // }
+
 
   async getStatusSummary(
     templateCode: string,
@@ -584,3 +568,21 @@ export class SubmissionsService {
     };
   }
 }
+
+/*
+ * [ORIGINAL_REDACTED_CODE_PRESERVATION]
+ *
+ * async getStatusSummary(templateCode: string, period: string) {
+ *   const submissions = await this.submissionRepository.find({
+ *     where: { template: { code: templateCode }, reportingPeriod: period },
+ *     relations: ['organization']
+ *   });
+ *   return submissions.map(s => ({
+ *     organizationId: s.organization.id,
+ *     organizationName: s.organization.name,
+ *     status: s.status,
+ *     submissionId: s.id
+ *   }));
+ * }
+ */
+

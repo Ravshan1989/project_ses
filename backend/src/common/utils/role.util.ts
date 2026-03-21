@@ -11,13 +11,30 @@ export const getRoleLevel = (role: UserRole, user?: any): number => {
       return 1;
     case UserRole.REGION_HEAD:
       return 2;
+    case UserRole.HR:
     case UserRole.DEPARTMENT_HEAD:
-      // UZ: Agar Mudir Viloyat darajasida bo'lsa (tashkilotining ota-onasi yo'q bo'lsa), u 2-daraja (Viloyat) hisoblanadi.
-      // Agar Tuman darajasida bo'lsa (ota-onasi bor), u 3-daraja (Tuman).
-      if (user && user.organization && !user.organization.parent) {
+      // UZ: Agar Kadr yoki Mudir Viloyat darajasida bo'lsa (tashkilotining ota-onasi Respublika bo'lsa), u 2-daraja.
+      if (user && user.organization && user.organization.parent) {
+        // Agar ota-onasining ham ota-onasi bo'lsa, demak bu tuman (Level 3)
+        // Agar ota-onasining ota-onasi bo'lmasa, demak bu viloyat (Level 2)
+        if (
+          user.organization.parent.parent ||
+          user.organization.parent.parent_id
+        ) {
+          return 3;
+        }
         return 2;
       }
-      return 3;
+      // Agar ota-onasi bo'lmasa, demak bu Respublika (Level 1)
+      if (
+        user &&
+        user.organization &&
+        !user.organization.parent &&
+        !user.organization.parent_id
+      ) {
+        return 1;
+      }
+      return 2; // Default viloyat deb hisoblaymiz (xavfsizlik uchun)
     case UserRole.DISTRICT_HEAD:
     case UserRole.DISTRICT_SPECIALIST:
     case UserRole.DISTRICT_OPERATOR:

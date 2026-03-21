@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SaveOutlined, ReloadOutlined, CheckCircleOutlined, AuditOutlined, QrcodeOutlined, DownloadOutlined } from '@ant-design/icons';
-import { Table, DatePicker, Button, notification, Space, Badge, Tooltip, Card } from 'antd';
+import { Table, DatePicker, Button, notification, Space, Badge, Tooltip, Card, Modal, Form, InputNumber, Divider } from 'antd';
 import dayjs from 'dayjs';
 import { dailyReportsApi, organizationsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
@@ -56,6 +56,9 @@ const FluDailyReportPage: React.FC = () => {
     const [data, setData] = useState<FluReportData[]>([]);
     const [loading, setLoading] = useState(false);
     const [organizations, setOrganizations] = useState<any[]>([]);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [editingRecord, setEditingRecord] = useState<FluReportData | null>(null);
+    const [form] = Form.useForm();
 
     // Mobile check
     const isMobile = window.innerWidth <= 768;
@@ -234,6 +237,32 @@ const FluDailyReportPage: React.FC = () => {
         } catch (error) {
             notification.error({ message: t('daily_reports.actions.approve_error') });
         }
+    };
+
+    const handleMobileEdit = (record: FluReportData) => {
+        setEditingRecord(record);
+        form.setFieldsValue(record);
+        setIsModalVisible(true);
+    };
+
+    const handleModalOk = () => {
+        form.validateFields().then(values => {
+            const newData = [...data];
+            const index = newData.findIndex(item => item.key === editingRecord?.key);
+            if (index > -1) {
+                const updatedRow = { ...newData[index], ...values };
+                // Re-calculate totals
+                updatedRow.ari_total = updatedRow.ari_0_1 + updatedRow.ari_1_2 + updatedRow.ari_3_6 + updatedRow.ari_7_14 + updatedRow.ari_adult;
+                updatedRow.pneu_total = updatedRow.pneu_0_2 + updatedRow.pneu_3_6 + updatedRow.pneu_7_14 + updatedRow.pneu_adult;
+                updatedRow.flu_total = updatedRow.flu_0_1 + updatedRow.flu_1_2 + updatedRow.flu_3_6 + updatedRow.flu_7_14 + updatedRow.flu_adult;
+                updatedRow.sari_total = updatedRow.sari_0_2 + updatedRow.sari_3_6 + updatedRow.sari_7_14 + updatedRow.sari_adult;
+                
+                newData[index] = updatedRow;
+                setData(newData);
+            }
+            setIsModalVisible(false);
+            setEditingRecord(null);
+        });
     };
 
     const canEdit = (record: any) => {
@@ -477,10 +506,12 @@ const FluDailyReportPage: React.FC = () => {
                                             <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{item.sari_total}</div>
                                         </div>
                                     </div>
-                                    <Button block type="primary" onClick={() => {
-                                        // TODO: Detailed edit modal or expand
-                                        notification.info({ message: 'Batafsil ko\'rish tez orada qo\'shiladi' });
-                                    }}>
+                                    <Button 
+                                        block 
+                                        type="primary" 
+                                        disabled={!canEdit(item)}
+                                        onClick={() => handleMobileEdit(item)}
+                                    >
                                         Tahrirlash / Batafsil
                                     </Button>
                                 </Space>
@@ -489,6 +520,44 @@ const FluDailyReportPage: React.FC = () => {
                     </div>
                 )}
             </GlassLayout>
+
+            <Modal
+                title={editingRecord ? `${editingRecord.district_name} - Tahrirlash` : 'Tahrirlash'}
+                open={isModalVisible}
+                onOk={handleModalOk}
+                onCancel={() => setIsModalVisible(false)}
+                width={600}
+                okText={t('daily_reports.actions.save')}
+                cancelText={t('common.cancel')}
+            >
+                <Form form={form} layout="vertical">
+                    <Divider orientation="left">{t('reports.ari')}</Divider>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        <Form.Item name="ari_0_1" label={t('daily_reports.table.age_0_1')}><InputNumber style={{ width: '100%' }} /></Form.Item>
+                        <Form.Item name="ari_1_2" label={t('daily_reports.table.age_1_2')}><InputNumber style={{ width: '100%' }} /></Form.Item>
+                        <Form.Item name="ari_3_6" label={t('daily_reports.table.age_3_6')}><InputNumber style={{ width: '100%' }} /></Form.Item>
+                        <Form.Item name="ari_7_14" label={t('daily_reports.table.age_7_14')}><InputNumber style={{ width: '100%' }} /></Form.Item>
+                        <Form.Item name="ari_adult" label={t('daily_reports.table.adults_short')}><InputNumber style={{ width: '100%' }} /></Form.Item>
+                    </div>
+
+                    <Divider orientation="left">{t('reports.pneumonia')}</Divider>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        <Form.Item name="pneu_0_2" label={t('daily_reports.table.age_0_2')}><InputNumber style={{ width: '100%' }} /></Form.Item>
+                        <Form.Item name="pneu_3_6" label={t('daily_reports.table.age_3_6')}><InputNumber style={{ width: '100%' }} /></Form.Item>
+                        <Form.Item name="pneu_7_14" label={t('daily_reports.table.age_7_14')}><InputNumber style={{ width: '100%' }} /></Form.Item>
+                        <Form.Item name="pneu_adult" label={t('daily_reports.table.adults_short')}><InputNumber style={{ width: '100%' }} /></Form.Item>
+                    </div>
+
+                    <Divider orientation="left">{t('reports.flu')}</Divider>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        <Form.Item name="flu_0_1" label={t('daily_reports.table.age_0_1')}><InputNumber style={{ width: '100%' }} /></Form.Item>
+                        <Form.Item name="flu_1_2" label={t('daily_reports.table.age_1_2')}><InputNumber style={{ width: '100%' }} /></Form.Item>
+                        <Form.Item name="flu_3_6" label={t('daily_reports.table.age_3_6')}><InputNumber style={{ width: '100%' }} /></Form.Item>
+                        <Form.Item name="flu_7_14" label={t('daily_reports.table.age_7_14')}><InputNumber style={{ width: '100%' }} /></Form.Item>
+                        <Form.Item name="flu_adult" label={t('daily_reports.table.adults_short')}><InputNumber style={{ width: '100%' }} /></Form.Item>
+                    </div>
+                </Form>
+            </Modal>
         </PermissionGate>
     );
 };

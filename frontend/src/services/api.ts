@@ -9,27 +9,33 @@ export const api = axios.create({
     },
 });
 
-// Interceptor for Auth Token
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
+export const fileApi = axios.create({
+    baseURL: API_BASE_URL,
 });
 
-// Interceptor for Auth Errors (401)
-api.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        if (error.response?.status === 401) {
-            // UZ: Ruxsat berilmagan bo'lsa (token eskirgan yoki noto'g'ri bo'lsa) loginga haydaymiz
-            localStorage.clear(); // UZ: Barcha keshni tozalash (401 xatolarni oldini olish uchun)
-            window.location.href = '/login';
+const setupInterceptors = (instance: any) => {
+    instance.interceptors.request.use((config: any) => {
+        const token = localStorage.getItem('access_token');
+        if (token) {
+            config.headers.set('Authorization', `Bearer ${token}`);
         }
-        return Promise.reject(error);
-    }
-);
+        return config;
+    });
+
+    instance.interceptors.response.use(
+        (response: any) => response,
+        (error: any) => {
+            if (error.response?.status === 401) {
+                localStorage.clear();
+                window.location.href = '/login';
+            }
+            return Promise.reject(error);
+        }
+    );
+};
+
+setupInterceptors(api);
+setupInterceptors(fileApi);
 export const submissionApi = {
     create: (data: any) => api.post('/submissions', data),
     getAll: () => api.get('/submissions'),
@@ -95,9 +101,7 @@ export const importsApi = {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('type', type);
-        return api.post('/imports/global', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        return fileApi.post('/imports/global', formData);
     }
 };
 

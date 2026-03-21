@@ -18,6 +18,14 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
   }
 
   handleRequest(err, user, info, context: ExecutionContext) {
+    const req = context.switchToHttp().getRequest();
+    if (!user) {
+      console.warn(
+        `[AUTH DEBUG] 401 Unauthorized at ${req.url}. Info:`,
+        info?.message || info,
+      );
+    }
+
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),

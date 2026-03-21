@@ -23,7 +23,7 @@
         "error_system": "Tizimga ulanishda xatolik yuz berdi",
         "slogan_part1": "Aholining salomatligi",
         "slogan_part2": "bizning ustuvor vazifamiz",
-        "description": "Toshkent viloyati Sanitariya-epidemiologik osoyishtalik va jamoat salomatligi boshqarmasi yagona monitoring tizimi.",
+        "description": "O'zbekiston Respublikasi Sanitariya-epidemiologik osoyishtalik va jamoat salomatligi qo'mitasi yagona monitoring tizimi.",
         "footer_text": "Barcha huquqlar himoyalangan.",
         "welcome_title": "Xush kelibsiz",
         "welcome_subtitle": "Hisobingizga kiring",
@@ -75,7 +75,7 @@
         "school": "Maktablardagi sanitariya holati"
     },
     "common": {
-        "tashkent_region": "Toshkent viloyati",
+        "tashkent_region": "O'zbekiston Respublikasi",
         "dashboard": "Dashboard",
         "reports": "Hisobotlar",
         "analysis": "Tahlil",
@@ -92,7 +92,7 @@
         "users_menu": "Foydalanuvchilar Boshqaruvi",
         "sos_monitoring": "SOS Monitoringi",
         "app_name": "Smart SES",
-        "footer_org": "Toshkent viloyati SES",
+        "footer_org": "Sanepidqo'mita",
         "sanitary_menu": "Sanitariya",
         "user_fallback": "Foydalanuvchi",
         "success_approve": "Hisobot tasdiqlandi",
@@ -145,7 +145,7 @@
         "export_btn": "Excelga yuklash",
         "upload_btn": "Yuklash",
         "reject_prompt": "Rad etish sababi:",
-        "region_title": "Toshkent viloyati aholisi (Hududlar)",
+        "region_title": "O'zbekiston Respublikasi aholisi (Hududlar)",
         "month_suffix": "-oy",
         "trend_analysis": "Trend Analizi",
         "live": "Jonli",
@@ -322,7 +322,7 @@
             },
             "rows": {
                 "head": "Bo'lim boshlig'i",
-                "head_reg": "Toshkent viloyati sanepid boshqarmasi boshlig'i",
+                "head_reg": "Sanepidqo'mita raisi",
                 "deputy_epid": "Epidemiologiya bo'limi mudiri",
                 "deputy_san": "Sanitariya bo'limi mudiri",
                 "deputy_epid_reg": "Boshliqning o'rinbosari: F.R.Xolboev",
@@ -488,7 +488,7 @@
     },
     "inspections": {
         "title": "Nazoratlarni muvofiqlashtirish",
-        "document_title": "Toshkent viloyat Sanepidbo'shqarmasi tomonidan {{year}} yil {{month}}-oy davomida prokurattura organlariga yuborilgan tekshirish hujjatlari to'g'risida",
+        "document_title": "Sanepidqo'mita tomonidan {{year}} yil {{month}}-oy davomida prokurattura organlariga yuborilgan tekshirish hujjatlari to'g'risida",
         "info_label": "MA'LUMOT",
         "add_row": "Qator qo'shish",
         "delete_confirm": "Ushbu yozuvni o'chirmoqchimisiz?",
@@ -622,7 +622,7 @@
             "EXECUTIVE_SPECIALIST": "Ijro intizomi mutaxassisi",
             "INSPECTION_HEAD": "Nazorat bo'limi boshlig'i",
             "INSPECTION_SPECIALIST": "Nazorat mutaxassisi",
-            "ACCOUNTANT": "Toshkent viloyati SES (Buxgalter)"
+            "ACCOUNTANT": "Sanepidqo'mita (Buxgalter)"
         },
         "title": "Foydalanuvchilar Boshqaruvi",
         "add_button": "Yangi Hodim Qo'shish",
@@ -678,7 +678,7 @@
             "reinfected": "Shundan qayta kasallanganlar",
             "vaccinated_infected": "Emlanganlar orasida kasallanganlar",
             "hospitalized": "Shifoxonaga yotqizilganlar",
-            "total_province": "Toshkent viloyati bo'yicha jami",
+            "total_province": "O'zbekiston Respublikasi bo'yicha jami",
             "by_age": "Bemorlarni yoshlari bo'yicha",
             "age_1": "1 yosh.",
             "age_0_1": "0-1 y",

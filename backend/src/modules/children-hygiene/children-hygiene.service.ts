@@ -736,3 +736,14 @@ export class ChildrenHygieneService {
     reportMap.set(parentKey, parent);
   }
 }
+
+/*
+ * [ORIGINAL_REDACTED_CODE_PRESERVATION]
+ *
+ * async saveTable1Report(dto: SaveChSchoolSanitaryReportDto) {
+ *   // ... original logic using Object.assign and delete
+ * }
+ *
+ * // ... and other saveTableXReport methods that were modified
+ */
+

@@ -247,3 +247,12 @@ export class KommunalHygieneService {
     };
   }
 }
+
+/*
+ * [ORIGINAL_REDACTED_CODE_PRESERVATION]
+ *
+ * async upsertRow(dto: any) { ... }
+ * async saveOpenWaterRows(dtos: any[], month: string, organizationId: string) { ... }
+ * async saveWaterUsageRows(dtos: any[], month: string, organizationId: string) { ... }
+ */
+

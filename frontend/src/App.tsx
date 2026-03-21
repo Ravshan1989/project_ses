@@ -1,6 +1,9 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Button, ConfigProvider, Typography } from 'antd';
+import { Layout, Menu, Button, ConfigProvider, Typography, App as AntdApp } from 'antd';
+import uzUZ from 'antd/es/locale/uz_UZ';
+import ruRU from 'antd/es/locale/ru_RU';
+
 import {
     MedicineBoxOutlined,
     DashboardOutlined,
@@ -370,18 +373,17 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </Layout>
     );
 };
-
-const ProtectedRoute = ({ children }: { children: any }) => {
+const ProtectedRoute = ({ children }: { children: any }) => {
     const token = localStorage.getItem('access_token');
     if (!token) return <Navigate to="/login" replace />;
     return <MainLayout>{children}</MainLayout>;
 };
 
-
-
 function App() {
+    const { i18n } = useTranslation();
     return (
-        <ConfigProvider
+        <ConfigProvider 
+            locale={i18n.language === 'uz' ? uzUZ : ruRU}
             theme={{
                 token: {
                     colorPrimary: '#0050b3',
@@ -394,47 +396,50 @@ function App() {
                 }
             }}
         >
-            <BrowserRouter>
-                <Routes>
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
-                    <Route path="/verify/:token" element={<VerificationPage />} />
-                    <Route path="/" element={<Navigate to="/dashboard" />} />
-                    <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-                    <Route path="/dashboard/executive" element={<ProtectedRoute><DashboardExecutivePage /></ProtectedRoute>} />
-                    <Route path="/disease-entry" element={<ProtectedRoute><DiseaseEntryPage /></ProtectedRoute>} />
-                    <Route path="/form-1" element={<ProtectedRoute><Form1EntryPage /></ProtectedRoute>} />
-                    <Route path="/disease-manager" element={<ProtectedRoute><DiseaseManagerPage /></ProtectedRoute>} />
-                    <Route path="/daily-reports" element={<ProtectedRoute><DailyHepatitisPage /></ProtectedRoute>} />
-                    <Route path="/daily-flu" element={<ProtectedRoute><FluDailyReportPage /></ProtectedRoute>} />
-                    <Route path="/daily-ari" element={<ProtectedRoute><AriDailyReportPage /></ProtectedRoute>} />
-                    <Route path="/daily-epidemiology" element={<ProtectedRoute><EpidemiologyDailyReportPage /></ProtectedRoute>} />
-                    <Route path="/weekly-flu" element={<ProtectedRoute><WeeklyFluReportPage /></ProtectedRoute>} />
-                    <Route path="/daily-covid" element={<ProtectedRoute><CovidDailyReportPage /></ProtectedRoute>} />
-                    <Route path="/daily-diarrhea" element={<ProtectedRoute><DailyDiarrheaPage /></ProtectedRoute>} />
-                    <Route path="/daily-sanitary" element={<ProtectedRoute><SanitaryDailyReportPage /></ProtectedRoute>} />
-                    <Route path="/kg-water" element={<ProtectedRoute><KommunalGigiyenaWaterPage /></ProtectedRoute>} />
-                    <Route path="/ch-hygiene" element={<ProtectedRoute><ChildrenHygienePage /></ProtectedRoute>} />
-                    <Route path="/nutrition-hygiene" element={<ProtectedRoute><NutritionHygienePage /></ProtectedRoute>} />
-                    <Route path="/appeals" element={<ProtectedRoute><AppealsPage /></ProtectedRoute>} />
-                    <Route path="/inspections" element={<ProtectedRoute><InspectionsPage /></ProtectedRoute>} />
+            <AntdApp>
+                <BrowserRouter>
+                    <Routes>
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/register" element={<RegisterPage />} />
+                        <Route path="/verify/:token" element={<VerificationPage />} />
+                        <Route path="/" element={<Navigate to="/dashboard" />} />
+                        <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+                        <Route path="/dashboard/executive" element={<ProtectedRoute><DashboardExecutivePage /></ProtectedRoute>} />
+                        <Route path="/disease-entry" element={<ProtectedRoute><DiseaseEntryPage /></ProtectedRoute>} />
+                        <Route path="/form-1" element={<ProtectedRoute><Form1EntryPage /></ProtectedRoute>} />
+                        <Route path="/disease-manager" element={<ProtectedRoute><DiseaseManagerPage /></ProtectedRoute>} />
+                        <Route path="/daily-reports" element={<ProtectedRoute><DailyHepatitisPage /></ProtectedRoute>} />
+                        <Route path="/daily-flu" element={<ProtectedRoute><FluDailyReportPage /></ProtectedRoute>} />
+                        <Route path="/daily-ari" element={<ProtectedRoute><AriDailyReportPage /></ProtectedRoute>} />
+                        <Route path="/daily-epidemiology" element={<ProtectedRoute><EpidemiologyDailyReportPage /></ProtectedRoute>} />
+                        <Route path="/weekly-flu" element={<ProtectedRoute><WeeklyFluReportPage /></ProtectedRoute>} />
+                        <Route path="/daily-covid" element={<ProtectedRoute><CovidDailyReportPage /></ProtectedRoute>} />
+                        <Route path="/daily-diarrhea" element={<ProtectedRoute><DailyDiarrheaPage /></ProtectedRoute>} />
+                        <Route path="/daily-sanitary" element={<ProtectedRoute><SanitaryDailyReportPage /></ProtectedRoute>} />
+                        <Route path="/kg-water" element={<ProtectedRoute><KommunalGigiyenaWaterPage /></ProtectedRoute>} />
+                        <Route path="/ch-hygiene" element={<ProtectedRoute><ChildrenHygienePage /></ProtectedRoute>} />
+                        <Route path="/nutrition-hygiene" element={<ProtectedRoute><NutritionHygienePage /></ProtectedRoute>} />
+                        <Route path="/appeals" element={<ProtectedRoute><AppealsPage /></ProtectedRoute>} />
+                        <Route path="/inspections" element={<ProtectedRoute><InspectionsPage /></ProtectedRoute>} />
 
-                    <Route path="/daily-unified" element={<ProtectedRoute><DailyReportUnifiedPage /></ProtectedRoute>} />
-                    <Route path="/form1-monitoring" element={<ProtectedRoute><Form1StatusPage /></ProtectedRoute>} />
-                    <Route path="/export" element={<ProtectedRoute><ExportPage /></ProtectedRoute>} />
-                    <Route path="/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
-                    <Route path="/analysis" element={<ProtectedRoute><AnalysisDashboard /></ProtectedRoute>} />
-                    <Route path="/analysis/global" element={<ProtectedRoute><GlobalMonitoringPage /></ProtectedRoute>} />
-                    <Route path="/reports" element={<ProtectedRoute><MobileReportsPage /></ProtectedRoute>} />
-                    <Route path="/sos-monitoring" element={<ProtectedRoute><SosAlertPage /></ProtectedRoute>} />
-                    <Route path="/users" element={<ProtectedRoute><UserManagementPage /></ProtectedRoute>} />
-                    <Route path="/departments" element={<ProtectedRoute><DepartmentManagementPage /></ProtectedRoute>} />
-                    <Route path="/roles" element={<ProtectedRoute><RoleManagementPage /></ProtectedRoute>} />
-                    <Route path="/admin/users-management" element={<ProtectedRoute><AdminUsersPage /></ProtectedRoute>} />
-                </Routes>
-            </BrowserRouter>
+                        <Route path="/daily-unified" element={<ProtectedRoute><DailyReportUnifiedPage /></ProtectedRoute>} />
+                        <Route path="/form1-monitoring" element={<ProtectedRoute><Form1StatusPage /></ProtectedRoute>} />
+                        <Route path="/export" element={<ProtectedRoute><ExportPage /></ProtectedRoute>} />
+                        <Route path="/import" element={<ProtectedRoute><ImportPage /></ProtectedRoute>} />
+                        <Route path="/analysis" element={<ProtectedRoute><AnalysisDashboard /></ProtectedRoute>} />
+                        <Route path="/analysis/global" element={<ProtectedRoute><GlobalMonitoringPage /></ProtectedRoute>} />
+                        <Route path="/reports" element={<ProtectedRoute><MobileReportsPage /></ProtectedRoute>} />
+                        <Route path="/sos-monitoring" element={<ProtectedRoute><SosAlertPage /></ProtectedRoute>} />
+                        <Route path="/users" element={<ProtectedRoute><UserManagementPage /></ProtectedRoute>} />
+                        <Route path="/departments" element={<ProtectedRoute><DepartmentManagementPage /></ProtectedRoute>} />
+                        <Route path="/roles" element={<ProtectedRoute><RoleManagementPage /></ProtectedRoute>} />
+                        <Route path="/admin/users-management" element={<ProtectedRoute><AdminUsersPage /></ProtectedRoute>} />
+                    </Routes>
+                </BrowserRouter>
+            </AntdApp>
         </ConfigProvider>
     );
 }
 
 export default App;
+;

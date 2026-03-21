@@ -77,7 +77,9 @@ export class AppealsService {
 
   async createRecord(dto: CreateAppealRecordDto, userId: string) {
     try {
-      this.logger.log(`Creating appeal record for organization: ${dto.organization_id} by user: ${userId}`);
+      this.logger.log(
+        `Creating appeal record for organization: ${dto.organization_id} by user: ${userId}`,
+      );
       const { responsible_user_id, ...rest } = dto;
       const record = this.recordRepo.create({
         ...rest,
@@ -91,7 +93,10 @@ export class AppealsService {
       this.logger.log(`Appeal record saved successfully: ${saved.id}`);
       return saved;
     } catch (error) {
-      this.logger.error(`Error saving appeal record: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error saving appeal record: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -180,11 +185,18 @@ export class AppealsService {
       .createQueryBuilder("record")
       .leftJoinAndSelect("record.organization", "organization")
       .where("organization.id IN (:...orgIds)", { orgIds })
-      .andWhere(new Brackets(qb => {
-        qb.where("record.period_month = :month", { month })
-          .orWhere("CAST(record.closure_date AS TEXT) LIKE :monthPattern", { monthPattern: `${month}%` })
-          .orWhere("(record.period_month < :month AND record.status = :pendingStatus)", { month, pendingStatus: AppealStatus.BEING_CONSIDERED });
-      }))
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where("record.period_month = :month", { month })
+            .orWhere("CAST(record.closure_date AS TEXT) LIKE :monthPattern", {
+              monthPattern: `${month}%`,
+            })
+            .orWhere(
+              "(record.period_month < :month AND record.status = :pendingStatus)",
+              { month, pendingStatus: AppealStatus.BEING_CONSIDERED },
+            );
+        }),
+      )
       .orderBy("record.closure_date", "DESC")
       .addOrderBy("record.registration_date", "DESC")
       .getMany();
@@ -196,13 +208,18 @@ export class AppealsService {
   async getRecordsForReporting(organizationId: string, month: string) {
     const org = await this.orgRepo.findOne({
       where: { id: organizationId },
-      relations: ["children"],
+      relations: ["children", "children.children"],
     });
     if (!org) return [];
 
     const orgIds = [organizationId];
     if (org.children && org.children.length > 0) {
-      orgIds.push(...org.children.map((c) => c.id));
+      org.children.forEach((child) => {
+        orgIds.push(child.id);
+        if (child.children && child.children.length > 0) {
+          orgIds.push(...child.children.map((gc) => gc.id));
+        }
+      });
     }
 
     return await this.recordRepo
@@ -232,7 +249,10 @@ export class AppealsService {
 
     // UZ: Hisobotlar uchun faqat shu oydagi yozuvlarni olamiz
     const records = await this.getRecordsForReporting(organizationId, month);
-    const prevRecords = await this.getRecordsForReporting(organizationId, prevMonth);
+    const prevRecords = await this.getRecordsForReporting(
+      organizationId,
+      prevMonth,
+    );
 
     // 1. Table 1 Aggregation (Official Grouping by Recipient)
     const getTable1Metrics = (rec: string) => {
@@ -264,17 +284,27 @@ export class AppealsService {
       deputy_epid: getTable1Metrics("deputy_epid"),
       deputy_san: getTable1Metrics("deputy_san"),
       // flattened for dashboard
-      electronic_curr: records.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
+      electronic_curr: records.filter(
+        (r) => r.channel === AppealChannel.ELECTRONIC,
+      ).length,
     };
 
     // 2. Table 2 Aggregation (Detailed Subject Matrix YoY - 17 Columns)
     const table2: any = { subjects: {} };
 
     // Dashboard summaries
-    table2.measures_taken = records.filter(r => r.status === AppealStatus.SATISFIED).length;
-    table2.explained = records.filter(r => r.status === AppealStatus.EXPLAINED).length;
-    table2.rejected = records.filter(r => r.status === AppealStatus.REJECTED).length;
-    table2.being_considered = records.filter(r => r.status === AppealStatus.BEING_CONSIDERED).length;
+    table2.measures_taken = records.filter(
+      (r) => r.status === AppealStatus.SATISFIED,
+    ).length;
+    table2.explained = records.filter(
+      (r) => r.status === AppealStatus.EXPLAINED,
+    ).length;
+    table2.rejected = records.filter(
+      (r) => r.status === AppealStatus.REJECTED,
+    ).length;
+    table2.being_considered = records.filter(
+      (r) => r.status === AppealStatus.BEING_CONSIDERED,
+    ).length;
 
     subjects.forEach((s) => {
       const sRecs = records.filter((r) => r.subject_key === s.key);
@@ -285,30 +315,45 @@ export class AppealsService {
         count_prev: sPrevRecs.length,
         count_curr: sRecs.length,
         // Channels YoY
-        written_prev: sPrevRecs.filter(r => r.channel === AppealChannel.WRITTEN).length,
-        written_curr: sRecs.filter(r => r.channel === AppealChannel.WRITTEN).length,
-        electronic_prev: sPrevRecs.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
-        electronic_curr: sRecs.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
-        oral_prev: sPrevRecs.filter(r => r.channel === AppealChannel.ORAL).length,
-        oral_curr: sRecs.filter(r => r.channel === AppealChannel.ORAL).length,
-        
+        written_prev: sPrevRecs.filter(
+          (r) => r.channel === AppealChannel.WRITTEN,
+        ).length,
+        written_curr: sRecs.filter((r) => r.channel === AppealChannel.WRITTEN)
+          .length,
+        electronic_prev: sPrevRecs.filter(
+          (r) => r.channel === AppealChannel.ELECTRONIC,
+        ).length,
+        electronic_curr: sRecs.filter(
+          (r) => r.channel === AppealChannel.ELECTRONIC,
+        ).length,
+        oral_prev: sPrevRecs.filter((r) => r.channel === AppealChannel.ORAL)
+          .length,
+        oral_curr: sRecs.filter((r) => r.channel === AppealChannel.ORAL).length,
+
         // 2026 specific results (from current records)
-        monitored: sRecs.filter(r => r.is_monitored).length,
-        satisfied: sRecs.filter(r => r.status === AppealStatus.SATISFIED).length,
-        explained: sRecs.filter(r => r.status === AppealStatus.EXPLAINED).length,
-        rejected: sRecs.filter(r => r.status === AppealStatus.REJECTED).length,
-        pending: sRecs.filter(r => r.status === AppealStatus.BEING_CONSIDERED).length,
-        repeated: sRecs.filter(r => r.is_repeated).length,
-        expired: sRecs.filter(r => r.is_overdue).length,
+        monitored: sRecs.filter((r) => r.is_monitored).length,
+        satisfied: sRecs.filter((r) => r.status === AppealStatus.SATISFIED)
+          .length,
+        explained: sRecs.filter((r) => r.status === AppealStatus.EXPLAINED)
+          .length,
+        rejected: sRecs.filter((r) => r.status === AppealStatus.REJECTED)
+          .length,
+        pending: sRecs.filter((r) => r.status === AppealStatus.BEING_CONSIDERED)
+          .length,
+        repeated: sRecs.filter((r) => r.is_repeated).length,
+        expired: sRecs.filter((r) => r.is_overdue).length,
       };
     });
 
     // 3. Table 3 Aggregation (Official 23-Column Regional Matrix)
-    const table3: any = { 
+    const table3: any = {
       regional: {},
-      written: records.filter(r => r.channel === AppealChannel.WRITTEN).length,
-      electronic: records.filter(r => r.channel === AppealChannel.ELECTRONIC).length,
-      oral_total: records.filter(r => r.channel === AppealChannel.ORAL).length,
+      written: records.filter((r) => r.channel === AppealChannel.WRITTEN)
+        .length,
+      electronic: records.filter((r) => r.channel === AppealChannel.ELECTRONIC)
+        .length,
+      oral_total: records.filter((r) => r.channel === AppealChannel.ORAL)
+        .length,
     };
     regionalOrgs.forEach((ro) => {
       const roRecs = records.filter(
@@ -361,9 +406,9 @@ export class AppealsService {
             r.channel === AppealChannel.ORAL && !r.recipient?.includes("head"),
         ).length,
         oral_phone: roRecs.filter((r) => r.is_phone).length,
-        apparat_seen: roRecs.filter((r) => r.recipient === 'head').length,
+        apparat_seen: roRecs.filter((r) => r.recipient === "head").length,
         referral_regional: roRecs.filter((r) =>
-          ['deputy_epid', 'deputy_san'].includes(r.recipient),
+          ["deputy_epid", "deputy_san"].includes(r.recipient),
         ).length,
         referral_related: roRecs.filter((r) => r.status === AppealStatus.ROUTED)
           .length,
@@ -424,12 +469,36 @@ export class AppealsService {
       total: { curr: records.length, prev: prevRecords.length },
       regional: {},
       // Dashboard compatibility
-      phys_ariza_curr: records.filter(r => r.applicant_type === ApplicantType.PHYSICAL && r.appeal_type === AppealType.ARIZA).length,
-      phys_shikoyat_curr: records.filter(r => r.applicant_type === ApplicantType.PHYSICAL && r.appeal_type === AppealType.SHIKOYAT).length,
-      phys_taklif_curr: records.filter(r => r.applicant_type === ApplicantType.PHYSICAL && r.appeal_type === AppealType.TAKLIF).length,
-      legal_ariza_curr: records.filter(r => r.applicant_type === ApplicantType.LEGAL && r.appeal_type === AppealType.ARIZA).length,
-      legal_shikoyat_curr: records.filter(r => r.applicant_type === ApplicantType.LEGAL && r.appeal_type === AppealType.SHIKOYAT).length,
-      legal_taklif_curr: records.filter(r => r.applicant_type === ApplicantType.LEGAL && r.appeal_type === AppealType.TAKLIF).length,
+      phys_ariza_curr: records.filter(
+        (r) =>
+          r.applicant_type === ApplicantType.PHYSICAL &&
+          r.appeal_type === AppealType.ARIZA,
+      ).length,
+      phys_shikoyat_curr: records.filter(
+        (r) =>
+          r.applicant_type === ApplicantType.PHYSICAL &&
+          r.appeal_type === AppealType.SHIKOYAT,
+      ).length,
+      phys_taklif_curr: records.filter(
+        (r) =>
+          r.applicant_type === ApplicantType.PHYSICAL &&
+          r.appeal_type === AppealType.TAKLIF,
+      ).length,
+      legal_ariza_curr: records.filter(
+        (r) =>
+          r.applicant_type === ApplicantType.LEGAL &&
+          r.appeal_type === AppealType.ARIZA,
+      ).length,
+      legal_shikoyat_curr: records.filter(
+        (r) =>
+          r.applicant_type === ApplicantType.LEGAL &&
+          r.appeal_type === AppealType.SHIKOYAT,
+      ).length,
+      legal_taklif_curr: records.filter(
+        (r) =>
+          r.applicant_type === ApplicantType.LEGAL &&
+          r.appeal_type === AppealType.TAKLIF,
+      ).length,
     };
     regionalOrgs.forEach((ro) => {
       const roRecs = records.filter(
@@ -565,9 +634,8 @@ export class AppealsService {
         ).length,
       },
       criminal: {
-        curr: recs.filter(
-          (r) => r.consequence === DisciplinaryMeasure.CRIMINAL,
-        ).length,
+        curr: recs.filter((r) => r.consequence === DisciplinaryMeasure.CRIMINAL)
+          .length,
         prev: prevRecs.filter(
           (r) => r.consequence === DisciplinaryMeasure.CRIMINAL,
         ).length,
@@ -604,6 +672,124 @@ export class AppealsService {
       };
     });
 
+    // --- MERGE WITH BULK-UPLOADED TABLE DATA ---
+    const tData1 = await this.table1Repo.find({
+      where: { organization_id: organizationId, period_month: month },
+    });
+    let table1TotalFromIndividuals = 0;
+    let table1TotalFromSummary = 0;
+    tData1.forEach((row) => {
+      const rKey = row.row_key?.trim();
+      if (table1[rKey]) {
+        Object.assign(table1[rKey], {
+          total_curr: row.total_curr || table1[rKey].total_curr,
+          total_prev: row.total_prev || table1[rKey].total_prev,
+          oral_curr: row.oral_curr || table1[rKey].oral_curr,
+          oral_prev: row.oral_prev || table1[rKey].oral_prev,
+          written_curr: row.written_curr || table1[rKey].written_curr,
+          written_prev: row.written_prev || table1[rKey].written_prev,
+          electronic_curr: row.electronic_curr || table1[rKey].electronic_curr,
+          electronic_prev: row.electronic_prev || table1[rKey].electronic_prev,
+        });
+        if (["head", "deputy_epid", "deputy_san"].includes(rKey)) {
+          table1TotalFromIndividuals += row.total_curr || 0;
+        }
+      }
+      if (rKey === "summary") {
+        table1TotalFromSummary = row.total_curr || 0;
+      }
+    });
+
+    const finalTable1Total =
+      table1TotalFromSummary || table1TotalFromIndividuals;
+
+    const tData2 = await this.table2Repo.find({
+      where: { organization_id: organizationId, period_month: month },
+    });
+    tData2.forEach((row) => {
+      const rKey = row.row_key?.trim();
+      if (table2.subjects[rKey]) {
+        const s = table2.subjects[rKey];
+        s.count_curr = row.total_curr || s.count_curr;
+        s.count_prev = row.total_prev || s.count_prev;
+        s.satisfied = row.measures_taken || s.satisfied;
+        s.explained = row.explained || s.explained;
+        s.rejected = row.rejected || s.rejected;
+        s.pending = row.being_considered || s.pending;
+        s.repeated = row.repeated || s.repeated;
+        s.expired = row.overdue || s.expired;
+      }
+    });
+
+    // Update table2 global summaries for dashboard
+    table2.measures_taken = Object.values(
+      table2.subjects as Record<string, any>,
+    ).reduce((sum, s) => sum + (s.satisfied || 0), 0);
+    table2.explained = Object.values(
+      table2.subjects as Record<string, any>,
+    ).reduce((sum, s) => sum + (s.explained || 0), 0);
+    table2.rejected = Object.values(
+      table2.subjects as Record<string, any>,
+    ).reduce((sum, s) => sum + (s.rejected || 0), 0);
+    table2.being_considered = Object.values(
+      table2.subjects as Record<string, any>,
+    ).reduce((sum, s) => sum + (s.pending || 0), 0);
+
+    const tData5 = await this.table5Repo.find({
+      where: { organization_id: organizationId, period_month: month },
+    });
+    const sumRow5 = tData5.find((r) => {
+      const rKey = r.row_key?.trim();
+      return rKey === "Jami" || rKey === "summary";
+    });
+    if (sumRow5) {
+      table5.phys_ariza_curr = sumRow5.phys_ariza_curr;
+      table5.phys_shikoyat_curr = sumRow5.phys_shikoyat_curr;
+      table5.phys_taklif_curr = sumRow5.phys_taklif_curr;
+      table5.legal_ariza_curr = sumRow5.legal_ariza_curr;
+      table5.legal_shikoyat_curr = sumRow5.legal_shikoyat_curr;
+      table5.legal_taklif_curr = sumRow5.legal_taklif_curr;
+    }
+
+    // Table 3-7 Merging (Only if table data exists for the parent)
+    const tData3 = await this.table3Repo.find({
+      where: { organization_id: organizationId, period_month: month },
+    });
+    if (tData3.length > 0) {
+      const summaryRow = tData3.find((r) => {
+        const rKey = r.row_key?.trim();
+        return rKey === "Jami" || rKey === "summary";
+      });
+      if (summaryRow) {
+        table3.count_curr = summaryRow.total_curr;
+        table3.count_prev = summaryRow.total_prev;
+        table3.written = summaryRow.written;
+        table3.electronic = summaryRow.electronic;
+        table3.oral_total = summaryRow.oral_total;
+      }
+    }
+
+    const tData7 = await this.table7Repo.find({
+      where: { organization_id: organizationId, period_month: month },
+    });
+    if (tData7.length > 0) {
+      const s = table7.summary;
+      const sumRow = tData7.find((r) => {
+        const rKey = r.row_key?.trim();
+        return rKey === "Jami" || rKey === "summary";
+      });
+      if (sumRow) {
+        s.grand_total.curr = sumRow.grand_total_curr;
+        s.grand_total.prev = sumRow.grand_total_prev;
+        s.disciplinary.total.curr = sumRow.disciplinary_total_curr;
+        s.disciplinary.total.prev = sumRow.disciplinary_total_prev;
+        s.administrative.curr = sumRow.administrative_curr;
+        s.administrative.prev = sumRow.administrative_prev;
+        s.criminal.curr = sumRow.criminal_curr;
+        s.criminal.prev = sumRow.criminal_prev;
+      }
+    }
+
     return {
       table1,
       table2,
@@ -612,10 +798,11 @@ export class AppealsService {
       table5,
       table6,
       table7,
-      records_count: records.length,
+      records_count: finalTable1Total || records.length,
     };
   }
 
+  // async getTableData(tableNum: number, month: string, organizationId: string) { // ESKI
   async getTableData(tableNum: number, month: string, organizationId: string) {
     const repo = this.getRepo(tableNum);
     return await repo.find({
@@ -623,6 +810,12 @@ export class AppealsService {
     });
   }
 
+  // async saveTableData( // ESKI
+  //   tableNum: number, // ESKI
+  //   month: string, // ESKI
+  //   organizationId: string, // ESKI
+  //   rows: any[], // ESKI
+  // ) { // ESKI
   async saveTableData(
     tableNum: number,
     month: string,
@@ -675,798 +868,815 @@ export class AppealsService {
   }
 
   async exportExcel(res: Response, organizationId: string, month: string) {
-    const reports = await this.generateReportsFromRecords(
-      organizationId,
-      month,
-    );
-    const org = await this.orgRepo.findOne({ where: { id: organizationId } });
-
-    const [yearStr] = month.split("-");
-    const currYear = parseInt(yearStr);
-    const prevYear = currYear - 1;
-    const currYearShort = currYear.toString().slice(-2);
-    const prevYearShort = prevYear.toString().slice(-2);
-
-    const workbook = new ExcelJS.Workbook();
-
-    const headerFill: ExcelJS.Fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb: "FFE2EFDA" },
-    };
-    const borderStyle: Partial<ExcelJS.Borders> = {
-      top: { style: "thin" },
-      left: { style: "thin" },
-      bottom: { style: "thin" },
-      right: { style: "thin" },
-    };
-
-    const setupSheet = (
-      name: string,
-      title: string,
-      headers: string[],
-      subHeaders: string[],
-      widths: number[],
-    ) => {
-      const sheet = workbook.addWorksheet(name);
-      const titleRow = sheet.addRow([title]);
-      titleRow.font = { bold: true, size: 14 };
-      sheet.mergeCells(
-        1,
-        1,
-        1,
-        subHeaders.length > 0 ? subHeaders.length : headers.length,
+    try {
+      this.logger.log(
+        `Starting Excel export for organization: ${organizationId}, month: ${month}`,
       );
-      sheet.addRow([]); // empty row
+      const reports = await this.generateReportsFromRecords(
+        organizationId,
+        month,
+      );
+      const org = await this.orgRepo.findOne({ where: { id: organizationId } });
 
-      const headerRow = sheet.addRow(headers);
-      headerRow.eachCell((cell) => {
-        cell.fill = headerFill;
-        cell.font = { bold: true };
-        cell.border = borderStyle;
-        cell.alignment = {
-          horizontal: "center",
-          vertical: "middle",
-          wrapText: true,
-        };
-      });
+      const [yearStr] = month.split("-");
+      const currYear = parseInt(yearStr);
+      const prevYear = currYear - 1;
+      const currYearShort = currYear.toString().slice(-2);
+      const prevYearShort = prevYear.toString().slice(-2);
 
-      if (subHeaders.length > 0) {
-        const subHeaderRow = sheet.addRow(subHeaders);
-        subHeaderRow.eachCell((cell) => {
+      const workbook = new ExcelJS.Workbook();
+
+      const headerFill: ExcelJS.Fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFE2EFDA" },
+      };
+      const borderStyle: Partial<ExcelJS.Borders> = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+
+      const setupSheet = (
+        name: string,
+        title: string,
+        headers: string[],
+        subHeaders: string[],
+        widths: number[],
+      ) => {
+        const sheet = workbook.addWorksheet(name);
+        const titleRow = sheet.addRow([title]);
+        titleRow.font = { bold: true, size: 14 };
+        sheet.mergeCells(
+          1,
+          1,
+          1,
+          subHeaders.length > 0 ? subHeaders.length : headers.length,
+        );
+        sheet.addRow([]); // empty row
+
+        const headerRow = sheet.addRow(headers);
+        headerRow.eachCell((cell) => {
           cell.fill = headerFill;
           cell.font = { bold: true };
           cell.border = borderStyle;
-          cell.alignment = { horizontal: "center" };
+          cell.alignment = {
+            horizontal: "center",
+            vertical: "middle",
+            wrapText: true,
+          };
         });
 
-        // Merging logic for Table 1 official format
-        if (name === "1-Jadval") {
-          sheet.mergeCells(3, 1, 4, 1); // No
-          sheet.mergeCells(3, 2, 4, 2); // Rahbar
-          sheet.mergeCells(3, 3, 3, 4); // Jami
-          sheet.mergeCells(3, 5, 3, 6); // Og'zaki
-          sheet.mergeCells(3, 7, 3, 8); // Yozma
-          sheet.mergeCells(3, 9, 3, 10); // Elektron
+        if (subHeaders.length > 0) {
+          const subHeaderRow = sheet.addRow(subHeaders);
+          subHeaderRow.eachCell((cell) => {
+            cell.fill = headerFill;
+            cell.font = { bold: true };
+            cell.border = borderStyle;
+            cell.alignment = { horizontal: "center" };
+          });
+
+          // Merging logic for Table 1 official format
+          if (name === "1-Jadval") {
+            sheet.mergeCells(3, 1, 4, 1); // No
+            sheet.mergeCells(3, 2, 4, 2); // Rahbar
+            sheet.mergeCells(3, 3, 3, 4); // Jami
+            sheet.mergeCells(3, 5, 3, 6); // Og'zaki
+            sheet.mergeCells(3, 7, 3, 8); // Yozma
+            sheet.mergeCells(3, 9, 3, 10); // Elektron
+          }
+
+          if (name === "2-Jadval") {
+            sheet.mergeCells(3, 1, 4, 1); // No
+            sheet.mergeCells(3, 2, 4, 2); // Masalalar
+            sheet.mergeCells(3, 3, 3, 4); // Jami
+            sheet.mergeCells(3, 5, 3, 6); // Yozma
+            sheet.mergeCells(3, 7, 3, 8); // Elektron
+            sheet.mergeCells(3, 9, 3, 10); // Og'zaki
+            sheet.mergeCells(3, 11, 4, 11); // Nazoratga olinganlar
+            sheet.mergeCells(3, 12, 3, 15); // Jumladan (Natijalar)
+            sheet.mergeCells(3, 16, 4, 16); // Takroriylar
+            sheet.mergeCells(3, 17, 4, 17); // Muddati buzilganlar
+          }
+
+          if (name === "3-Jadval") {
+            sheet.mergeCells(3, 1, 5, 1); // No
+            sheet.mergeCells(3, 2, 5, 2); // Viloyatlar
+            sheet.mergeCells(3, 3, 4, 4); // Jami
+            sheet.mergeCells(3, 5, 3, 8); // Toifasi (Parent)
+            sheet.mergeCells(4, 5, 4, 6); // Jismoniy
+            sheet.mergeCells(4, 7, 4, 8); // Yuridik
+            sheet.mergeCells(3, 9, 3, 19); // 2026 bo'yicha (Parent)
+            sheet.mergeCells(4, 9, 5, 9); // Yozma
+            sheet.mergeCells(4, 10, 5, 10); // Elektron
+            sheet.mergeCells(4, 11, 4, 15); // Og'zaki murojaatlar (Sub-parent)
+            sheet.mergeCells(4, 16, 5, 16); // Apparatda
+            sheet.mergeCells(4, 17, 5, 17); // Hududiy idora
+            sheet.mergeCells(4, 18, 5, 18); // Tegishli idora
+            sheet.mergeCells(4, 19, 5, 19); // Ko'rib chiqilmoqda
+            sheet.mergeCells(3, 20, 4, 21); // VMdan
+            sheet.mergeCells(3, 22, 4, 23); // Sayyor qabullar
+          }
         }
 
-        if (name === "2-Jadval") {
-          sheet.mergeCells(3, 1, 4, 1); // No
-          sheet.mergeCells(3, 2, 4, 2); // Masalalar
-          sheet.mergeCells(3, 3, 3, 4); // Jami
-          sheet.mergeCells(3, 5, 3, 6); // Yozma
-          sheet.mergeCells(3, 7, 3, 8); // Elektron
-          sheet.mergeCells(3, 9, 3, 10); // Og'zaki
-          sheet.mergeCells(3, 11, 4, 11); // Nazoratga olinganlar
-          sheet.mergeCells(3, 12, 3, 15); // Jumladan (Natijalar)
-          sheet.mergeCells(3, 16, 4, 16); // Takroriylar
-          sheet.mergeCells(3, 17, 4, 17); // Muddati buzilganlar
-        }
+        widths.forEach((w, i) => {
+          sheet.getColumn(i + 1).width = w;
+        });
+        return sheet;
+      };
 
-        if (name === "3-Jadval") {
-          sheet.mergeCells(3, 1, 4, 1); // No
-          sheet.mergeCells(3, 2, 4, 2); // Viloyatlar
-          sheet.mergeCells(3, 3, 3, 4); // Jami
-          sheet.mergeCells(3, 5, 3, 6); // Jismoniy
-          sheet.mergeCells(3, 7, 3, 8); // Yuridik
-          sheet.mergeCells(3, 9, 4, 19); // Shu jumladan (2026) -> Special merge
-          // Wait, 9-19 are individual columns but group-labeled.
-          sheet.mergeCells(2, 5, 2, 8); // Toifasi
-          sheet.mergeCells(2, 9, 2, 19); // 2026 bo'yicha
-          sheet.mergeCells(3, 11, 3, 15); // Og'zaki
-          sheet.mergeCells(2, 20, 2, 21); // VMdan
-          sheet.mergeCells(2, 22, 2, 23); // Sayyor qabullar
-        }
-      }
+      // 1. Sheet: Table 1
+      const s1 = setupSheet(
+        "1-Jadval",
+        "Rahbarlar tomonidan murojaatlar ko'rib chiqilishi",
+        [
+          "№",
+          "Rahbar va o'rinbosarlari",
+          "Jami murojaatlar",
+          "",
+          "Shaxsiy va sayyor qabullar (Og'zaki)",
+          "",
+          "Yozma murojaatlar",
+          "",
+          "Elektron murojaatlar",
+          "",
+        ],
+        [
+          "",
+          "",
+          String(prevYear),
+          String(currYear),
+          String(prevYear),
+          String(currYear),
+          String(prevYear),
+          String(currYear),
+          String(prevYear),
+          String(currYear),
+        ],
+        [5, 40, 10, 10, 15, 15, 15, 15, 15, 15],
+      );
 
-      widths.forEach((w, i) => {
-        sheet.getColumn(i + 1).width = w;
+      const t1: any = reports.table1 || {};
+      const t1Rows = [
+        [
+          1,
+          "Boshqarama boshlig'i",
+          t1.head?.total_prev || 0,
+          t1.head?.total_curr || 0,
+          t1.head?.oral_prev || 0,
+          t1.head?.oral_curr || 0,
+          t1.head?.written_prev || 0,
+          t1.head?.written_curr || 0,
+          t1.head?.electronic_prev || 0,
+          t1.head?.electronic_curr || 0,
+        ],
+        [
+          2,
+          "Boshliqning o'rinbosari (Epidemiologiya)",
+          t1.deputy_epid?.total_prev || 0,
+          t1.deputy_epid?.total_curr || 0,
+          t1.deputy_epid?.oral_prev || 0,
+          t1.deputy_epid?.oral_curr || 0,
+          t1.deputy_epid?.written_prev || 0,
+          t1.deputy_epid?.written_curr || 0,
+          t1.deputy_epid?.electronic_prev || 0,
+          t1.deputy_epid?.electronic_curr || 0,
+        ],
+        [
+          3,
+          "Boshliqning o'rinbosari (Sanitariya)",
+          t1.deputy_san?.total_prev || 0,
+          t1.deputy_san?.total_curr || 0,
+          t1.deputy_san?.oral_prev || 0,
+          t1.deputy_san?.oral_curr || 0,
+          t1.deputy_san?.written_prev || 0,
+          t1.deputy_san?.written_curr || 0,
+          t1.deputy_san?.electronic_prev || 0,
+          t1.deputy_san?.electronic_curr || 0,
+        ],
+      ];
+
+      t1Rows.forEach((row) => {
+        const r = s1.addRow(row);
+        r.eachCell((c) => {
+          c.border = borderStyle;
+          c.alignment = {
+            horizontal: c.address.includes("B") ? "left" : "center",
+          };
+        });
       });
-      return sheet;
-    };
 
-    // 1. Sheet: Table 1
-    const s1 = setupSheet(
-      "1-Jadval",
-      "Rahbarlar tomonidan murojaatlar ko'rib chiqilishi",
-      [
-        "№",
-        "Rahbar va o'rinbosarlari",
-        "Jami murojaatlar",
+      // Add Total row
+      const t1Total = [
         "",
-        "Shaxsiy va sayyor qabullar (Og'zaki)",
-        "",
-        "Yozma murojaatlar",
-        "",
-        "Elektron murojaatlar",
-        "",
-      ],
-      [
-        "",
-        "",
-        String(prevYear),
-        String(currYear),
-        String(prevYear),
-        String(currYear),
-        String(prevYear),
-        String(currYear),
-        String(prevYear),
-        String(currYear),
-      ],
-      [5, 40, 10, 10, 15, 15, 15, 15, 15, 15],
-    );
+        "Jami",
+        t1Rows.reduce((a, b: any) => a + (b[2] || 0), 0),
+        t1Rows.reduce((a, b: any) => a + (b[3] || 0), 0),
+        t1Rows.reduce((a, b: any) => a + (b[4] || 0), 0),
+        t1Rows.reduce((a, b: any) => a + (b[5] || 0), 0),
+        t1Rows.reduce((a, b: any) => a + (b[6] || 0), 0),
+        t1Rows.reduce((a, b: any) => a + (b[7] || 0), 0),
+        t1Rows.reduce((a, b: any) => a + (b[8] || 0), 0),
+        t1Rows.reduce((a, b: any) => a + (b[9] || 0), 0),
+      ];
+      const t1TotalRow = s1.addRow(t1Total);
+      t1TotalRow.font = { bold: true };
+      t1TotalRow.eachCell((c) => (c.border = borderStyle));
 
-    const t1 = reports.table1;
-    const t1Rows = [
-      [
-        1,
-        "Boshqarama boshlig'i",
-        t1.head.total_prev,
-        t1.head.total_curr,
-        t1.head.oral_prev,
-        t1.head.oral_curr,
-        t1.head.written_prev,
-        t1.head.written_curr,
-        t1.head.electronic_prev,
-        t1.head.electronic_curr,
-      ],
-      [
-        2,
-        "Boshliqning o'rinbosari (Epidemiologiya)",
-        t1.deputy_epid.total_prev,
-        t1.deputy_epid.total_curr,
-        t1.deputy_epid.oral_prev,
-        t1.deputy_epid.oral_curr,
-        t1.deputy_epid.written_prev,
-        t1.deputy_epid.written_curr,
-        t1.deputy_epid.electronic_prev,
-        t1.deputy_epid.electronic_curr,
-      ],
-      [
-        3,
-        "Boshliqning o'rinbosari (Sanitariya)",
-        t1.deputy_san.total_prev,
-        t1.deputy_san.total_curr,
-        t1.deputy_san.oral_prev,
-        t1.deputy_san.oral_curr,
-        t1.deputy_san.written_prev,
-        t1.deputy_san.written_curr,
-        t1.deputy_san.electronic_prev,
-        t1.deputy_san.electronic_curr,
-      ],
-    ];
+      // 2. Sheet: Table 2
+      const s2 = setupSheet(
+        "2-Jadval",
+        "Murojaatlar ijrosi va nazorati",
+        [
+          "№",
+          "Murojaatlarda ko'tarilgan masalalar",
+          "Jami murojaatlar soni",
+          "",
+          "Murojaatlar shakllari (Yozma)",
+          "",
+          "Murojaatlar shakllari (Elektron)",
+          "",
+          "Murojaatlar shakllari (Og'zaki)",
+          "",
+          "Nazoratga olinganlar",
+          "Jumladan (2026 yil bo'yicha results)",
+          "",
+          "",
+          "",
+          "Takroriylar",
+          "Muddati buzilganlar",
+        ],
+        [
+          "",
+          "",
+          String(prevYear),
+          String(currYear),
+          String(prevYear),
+          String(currYear),
+          String(prevYear),
+          String(currYear),
+          String(prevYear),
+          String(currYear),
+          "",
+          "Choralar ko'rildi",
+          "Tushuntirildi",
+          "Rad etildi",
+          "Ko'rib chiqilmoqda",
+          "",
+          "",
+        ],
+        [5, 45, 10, 10, 10, 10, 10, 10, 10, 10, 15, 15, 15, 15, 15, 15, 15],
+      );
 
-    t1Rows.forEach((row) => {
-      const r = s1.addRow(row);
-      r.eachCell((c) => {
+      const t2: any = reports.table2 || { subjects: {} };
+      const subjectLabels: Record<string, string> = {
+        san_epid: "Sanitariya-epidemiologiya",
+        coronavirus: "Koronavirus",
+        labor_relations: "Mehnat munosabatlari",
+        medical_activity: "Tibbiy faoliyat",
+        complaint_head: "Rahbar ustidan shikoyat",
+        staff_conduct: "Xodimlar xatti-harakati",
+        disinfection: "Dezinfeksiya",
+        fines_objection: "Jarimalardan norozilik",
+        other: "Boshqalar",
+      };
+
+      subjects.forEach((s, idx) => {
+        const val = t2.subjects?.[s.key] || {};
+        const r = s2.addRow([
+          idx + 1,
+          subjectLabels[s.key] || s.key,
+          val.count_prev || 0,
+          val.count_curr || 0,
+          val.written_prev || 0,
+          val.written_curr || 0,
+          val.electronic_prev || 0,
+          val.electronic_curr || 0,
+          val.oral_prev || 0,
+          val.oral_curr || 0,
+          val.monitored || 0,
+          val.satisfied || 0,
+          val.explained || 0,
+          val.rejected || 0,
+          val.pending || 0,
+          val.repeated || 0,
+          val.expired || 0,
+        ]);
+        r.eachCell((c) => {
+          c.border = borderStyle;
+          c.alignment = {
+            horizontal: c.address.includes("B") ? "left" : "center",
+            wrapText: true,
+          };
+        });
+      });
+
+      // Add Total row for Table 2
+      const t2Subjects = Object.values(
+        t2.subjects || ({} as Record<string, any>),
+      );
+      const t2Total = [
+        "",
+        "Jami",
+        t2Subjects.reduce((a, b: any) => a + (b.count_prev || 0), 0),
+        t2Subjects.reduce((a, b: any) => a + (b.count_curr || 0), 0),
+        t2Subjects.reduce((a, b: any) => a + (b.written_prev || 0), 0),
+        t2Subjects.reduce((a, b: any) => a + (b.written_curr || 0), 0),
+        t2Subjects.reduce((a, b: any) => a + (b.electronic_prev || 0), 0),
+        t2Subjects.reduce((a, b: any) => a + (b.electronic_curr || 0), 0),
+        t2Subjects.reduce((a, b: any) => a + (b.oral_prev || 0), 0),
+        t2Subjects.reduce((a, b: any) => a + (b.oral_curr || 0), 0),
+        t2Subjects.reduce((a, b: any) => a + (b.monitored || 0), 0),
+        t2Subjects.reduce((a, b: any) => a + (b.satisfied || 0), 0),
+        t2Subjects.reduce((a, b: any) => a + (b.explained || 0), 0),
+        t2Subjects.reduce((a, b: any) => a + (b.rejected || 0), 0),
+        t2Subjects.reduce((a, b: any) => a + (b.pending || 0), 0),
+        t2Subjects.reduce((a, b: any) => a + (b.repeated || 0), 0),
+        t2Subjects.reduce((a, b: any) => a + (b.expired || 0), 0),
+      ];
+      const t2TotalRow = s2.addRow(t2Total);
+      t2TotalRow.font = { bold: true };
+      t2TotalRow.eachCell((c) => (c.border = borderStyle));
+
+      // 3. Sheet: Table 3 - 23 Columns Alignment (Official Regional Matrix)
+      const t3 = reports.table3;
+      const t3RegionalIds = Object.keys(t3.regional || {});
+
+      const s3 = setupSheet(
+        "3-Jadval",
+        "Murojaatlarning viloyat bo'yicha tahlili",
+        [
+          "№",
+          "Viloyatlar",
+          "Jami murojaatlar soni",
+          "",
+          "Murojaat etuvchilar toifasi",
+          "",
+          "",
+          "",
+          "2026 yilgi murojaatlar bo'yicha",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "Vazirlar Mahkamasidan kelgan",
+          "",
+          "O'tkazilgan sayyor qabullar soni",
+          "",
+        ],
+        [
+          "",
+          "",
+          "2025",
+          "2026",
+          "Jismoniy shaxslar",
+          "",
+          "Yuridik shaxslar",
+          "",
+          "Yozma",
+          "Elektron",
+          "Og'zaki murojaatlar",
+          "",
+          "",
+          "",
+          "",
+          "Аппаратда",
+          "Hududiy idora",
+          "Tegishli idora",
+          "Ko'rib chiqilmoqda",
+          "2025",
+          "2026",
+          "2025",
+          "2026",
+        ],
+        [
+          5, 30, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 15, 15, 15,
+          15, 10, 10, 10, 10,
+        ],
+      );
+
+      const s3SubHeader = s3.addRow([
+        "",
+        "",
+        "",
+        "",
+        "2025",
+        "2026",
+        "2025",
+        "2026",
+        "",
+        "",
+        "Jami",
+        "Shaxsiy qabul",
+        "Sayyor qabul",
+        "Xodimlar qabuli",
+        "Ishonch telefoni",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+      ]);
+      s3SubHeader.eachCell((c) => {
+        c.font = { bold: true };
         c.border = borderStyle;
-        c.alignment = {
-          horizontal: c.address.includes("B") ? "left" : "center",
-        };
+        c.alignment = { horizontal: "center" };
       });
-    });
 
-    // Add Total row
-    const t1Total = [
-      "",
-      "Jami",
-      t1Rows.reduce((a, b: any) => a + (b[2] || 0), 0),
-      t1Rows.reduce((a, b: any) => a + (b[3] || 0), 0),
-      t1Rows.reduce((a, b: any) => a + (b[4] || 0), 0),
-      t1Rows.reduce((a, b: any) => a + (b[5] || 0), 0),
-      t1Rows.reduce((a, b: any) => a + (b[6] || 0), 0),
-      t1Rows.reduce((a, b: any) => a + (b[7] || 0), 0),
-      t1Rows.reduce((a, b: any) => a + (b[8] || 0), 0),
-      t1Rows.reduce((a, b: any) => a + (b[9] || 0), 0),
-    ];
-    const t1TotalRow = s1.addRow(t1Total);
-    t1TotalRow.font = { bold: true };
-    t1TotalRow.eachCell((c) => (c.border = borderStyle));
+      t3RegionalIds.forEach((id, idx) => {
+        const reg = t3.regional[id];
+        const dr = s3.addRow([
+          idx + 1,
+          reg.name,
+          reg.count_prev,
+          reg.count_curr,
+          reg.phys_prev,
+          reg.phys_curr,
+          reg.legal_prev,
+          reg.legal_curr,
+          reg.written,
+          reg.electronic,
+          reg.oral_total,
+          reg.oral_personal,
+          reg.oral_field,
+          reg.oral_staff,
+          reg.oral_phone,
+          reg.apparat_seen,
+          reg.referral_regional,
+          reg.referral_related,
+          reg.being_considered,
+          reg.vm_prev,
+          reg.vm_curr,
+          reg.field_meetings_prev,
+          reg.field_meetings_curr,
+        ]);
+        dr.eachCell((c) => {
+          c.border = borderStyle;
+          c.alignment = {
+            horizontal: c.address.includes("B") ? "left" : "center",
+          };
+        });
+        if (idx === 0) dr.font = { bold: true };
+      });
 
-    // 2. Sheet: Table 2
-    const s2 = setupSheet(
-      "2-Jadval",
-      "Murojaatlar ijrosi va nazorati",
-      [
+      // 4. Sheet: Table 4 - Regional Subjects Matrix YoY
+      const t4 = reports.table4;
+      const t4RegionalIds = Object.keys(t4.regional || {});
+      const t4Header1 = [
         "№",
         "Murojaatlarda ko'tarilgan masalalar",
-        "Jami murojaatlar soni",
-        "",
-        "Murojaatlar shakllari (Yozma)",
-        "",
-        "Murojaatlar shakllari (Elektron)",
-        "",
-        "Murojaatlar shakllari (Og'zaki)",
-        "",
-        "Nazoratga olinganlar",
-        "Jumladan (2026 yil bo'yicha results)",
-        "",
-        "",
-        "",
-        "Takroriylar",
-        "Muddati buzilganlar",
-      ],
-      [
-        "",
-        "",
-        String(prevYear),
-        String(currYear),
-        String(prevYear),
-        String(currYear),
-        String(prevYear),
-        String(currYear),
-        String(prevYear),
-        String(currYear),
-        "",
-        "Choralar ko'rildi",
-        "Tushuntirildi",
-        "Rad etildi",
-        "Ko'rib chiqilmoqda",
-        "",
-        "",
-      ],
-      [5, 45, 10, 10, 10, 10, 10, 10, 10, 10, 15, 15, 15, 15, 15, 15, 15],
-    );
-
-    const t2 = reports.table2;
-    subjects.forEach((s, idx) => {
-      const val = t2[s.key] || {};
-      const r = s2.addRow([
-        idx + 1,
-        s.key, // Note: The Excel template might expect the key or label. Let's use key for now or a translated label if available.
-        val.total_prev || 0,
-        val.total_curr || 0,
-        val.written_prev || 0,
-        val.written_curr || 0,
-        val.electronic_prev || 0,
-        val.electronic_curr || 0,
-        val.oral_prev || 0,
-        val.oral_curr || 0,
-        val.under_control || 0,
-        val.measures_taken || 0,
-        val.explained || 0,
-        val.rejected || 0,
-        val.being_considered || 0,
-        val.repeated || 0,
-        val.overdue || 0,
-      ]);
-      r.eachCell((c) => {
-        c.border = borderStyle;
-        c.alignment = {
-          horizontal: c.address.includes("B") ? "left" : "center",
-          wrapText: true,
-        };
-      });
-    });
-
-    // Add Total row for Table 2
-    const t2Total = [
-      "",
-      "Jami",
-      Object.values(t2).reduce((a: any, b: any) => a + (b.total_prev || 0), 0),
-      Object.values(t2).reduce((a: any, b: any) => a + (b.total_curr || 0), 0),
-      Object.values(t2).reduce(
-        (a: any, b: any) => a + (b.written_prev || 0),
-        0,
-      ),
-      Object.values(t2).reduce(
-        (a: any, b: any) => a + (b.written_curr || 0),
-        0,
-      ),
-      Object.values(t2).reduce(
-        (a: any, b: any) => a + (b.electronic_prev || 0),
-        0,
-      ),
-      Object.values(t2).reduce(
-        (a: any, b: any) => a + (b.electronic_curr || 0),
-        0,
-      ),
-      Object.values(t2).reduce((a: any, b: any) => a + (b.oral_prev || 0), 0),
-      Object.values(t2).reduce((a: any, b: any) => a + (b.oral_curr || 0), 0),
-      Object.values(t2).reduce(
-        (a: any, b: any) => a + (b.under_control || 0),
-        0,
-      ),
-      Object.values(t2).reduce(
-        (a: any, b: any) => a + (b.measures_taken || 0),
-        0,
-      ),
-      Object.values(t2).reduce((a: any, b: any) => a + (b.explained || 0), 0),
-      Object.values(t2).reduce((a: any, b: any) => a + (b.rejected || 0), 0),
-      Object.values(t2).reduce(
-        (a: any, b: any) => a + (b.being_considered || 0),
-        0,
-      ),
-      Object.values(t2).reduce((a: any, b: any) => a + (b.repeated || 0), 0),
-      Object.values(t2).reduce((a: any, b: any) => a + (b.overdue || 0), 0),
-    ];
-    const t2TotalRow = s2.addRow(t2Total);
-    t2TotalRow.font = { bold: true };
-    t2TotalRow.eachCell((c) => (c.border = borderStyle));
-
-    // 3. Sheet: Table 3 - 23 Columns Alignment (Official Regional Matrix)
-    const t3 = reports.table3;
-    const t3RegionalIds = Object.keys(t3.regional || {});
-
-    const s3 = setupSheet(
-      "3-Jadval",
-      "Murojaatlarning viloyat bo'yicha tahlili",
-      [
-        "№",
-        "Viloyatlar",
-        "Jami murojaatlar soni",
-        "",
-        "Murojaat etuvchilar toifasi",
-        "",
-        "",
-        "",
-        "2026 yilgi murojaatlar bo'yicha",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "Vazirlar Mahkamasidan kelgan",
-        "",
-        "O'tkazilgan sayyor qabullar soni",
-        "",
-      ],
-      [
-        "",
-        "",
-        "2025",
-        "2026",
-        "Jismoniy shaxslar",
-        "",
-        "Yuridik shaxslar",
-        "",
-        "Yozma",
-        "Elektron",
-        "Og'zaki murojaatlar",
-        "",
-        "",
-        "",
-        "",
-        "Аппаратда",
-        "Hududiy idora",
-        "Tegishli idora",
-        "Ko'rib chiqilmoqda",
-        "2025",
-        "2026",
-        "2025",
-        "2026",
-      ],
-      [
-        5, 30, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 15, 15, 15,
-        15, 10, 10, 10, 10,
-      ],
-    );
-
-    const s3SubHeader = s3.addRow([
-      "",
-      "",
-      "",
-      "",
-      "2025",
-      "2026",
-      "2025",
-      "2026",
-      "",
-      "",
-      "Jami",
-      "Shaxsiy qabul",
-      "Sayyor qabul",
-      "Xodimlar qabuli",
-      "Ishonch telefoni",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-    ]);
-    s3SubHeader.eachCell((c) => {
-      c.font = { bold: true };
-      c.border = borderStyle;
-      c.alignment = { horizontal: "center" };
-    });
-
-    t3RegionalIds.forEach((id, idx) => {
-      const reg = t3.regional[id];
-      const dr = s3.addRow([
-        idx + 1,
-        reg.name,
-        reg.count_prev,
-        reg.count_curr,
-        reg.phys_prev,
-        reg.phys_curr,
-        reg.legal_prev,
-        reg.legal_curr,
-        reg.written,
-        reg.electronic,
-        reg.oral_total,
-        reg.oral_personal,
-        reg.oral_field,
-        reg.oral_staff,
-        reg.oral_phone,
-        reg.apparat_seen,
-        reg.referral_regional,
-        reg.referral_related,
-        reg.being_considered,
-        reg.vm_prev,
-        reg.vm_curr,
-        reg.field_meetings_prev,
-        reg.field_meetings_curr,
-      ]);
-      dr.eachCell((c) => {
-        c.border = borderStyle;
-        c.alignment = {
-          horizontal: c.address.includes("B") ? "left" : "center",
-        };
-      });
-      if (idx === 0) dr.font = { bold: true };
-    });
-
-    // 4. Sheet: Table 4 - Regional Subjects Matrix YoY
-    const t4 = reports.table4;
-    const t4RegionalIds = Object.keys(t4.regional || {});
-    const t4Header1 = [
-      "№",
-      "Murojaatlarda ko'tarilgan masalalar",
-      "Jami murojaatlar",
-      "",
-    ];
-    const t4Header2 = ["", "", String(prevYear), String(currYear)];
-    const t4Cols = [5, 45, 10, 10];
-
-    t4RegionalIds.forEach((id) => {
-      t4Header1.push(t4.regional[id].name, "");
-      t4Header2.push(String(prevYearShort), String(currYearShort));
-      t4Cols.push(8, 8);
-    });
-
-    const s4 = setupSheet(
-      "4-Jadval",
-      "Murojaat mazmuni (Mavzular)",
-      t4Header1,
-      t4Header2,
-      t4Cols,
-    );
-    s4.mergeCells(3, 1, 4, 1);
-    s4.mergeCells(3, 2, 4, 2);
-    s4.mergeCells(3, 3, 3, 4);
-    t4RegionalIds.forEach((_, idx) => {
-      const startCol = 5 + idx * 2;
-      s4.mergeCells(3, startCol, 3, startCol + 1);
-    });
-
-    subjects.forEach((s, idx) => {
-      const rowData = [
-        idx + 1,
-        s.key,
-        t4.subjects[s.key]?.count_prev || 0,
-        t4.subjects[s.key]?.count_curr || 0,
-      ];
-      t4RegionalIds.forEach((id) => {
-        rowData.push(
-          t4.regional[id].data[s.key]?.prev || 0,
-          t4.regional[id].data[s.key]?.curr || 0,
-        );
-      });
-      const r = s4.addRow(rowData);
-      r.eachCell((c) => {
-        c.border = borderStyle;
-        c.alignment = {
-          horizontal: c.address.includes("B") ? "left" : "center",
-        };
-      });
-    });
-
-    // 5. Sheet: Table 5 - Regional Types YoY
-    const t5 = reports.table5;
-    const t5RegionalIds = Object.keys(t5.regional || {});
-    const s5 = setupSheet(
-      "5-Jadval",
-      "Murojaat turlarining hududiy tahlili",
-      [
-        "№",
-        "Viloyatlar",
         "Jami murojaatlar",
         "",
-        "Jismoniy shaxslar bo'yicha",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "Yuridik shaxslar bo'yicha",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-      ],
-      [
-        "",
-        "",
-        String(prevYear),
-        String(currYear),
-        "Jami",
-        "",
-        "Ariza",
-        "",
-        "Shikoyat",
-        "",
-        "Taklif",
-        "",
-        "Jami",
-        "",
-        "Ariza",
-        "",
-        "Shikoyat",
-        "",
-        "Taklif",
-        "",
-      ],
-      [5, 20, 10, 10, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8],
-    );
+      ];
+      const t4Header2 = ["", "", String(prevYear), String(currYear)];
+      const t4Cols = [5, 45, 10, 10];
 
-    // Complex merges for T5
-    s5.mergeCells(3, 1, 5, 1);
-    s5.mergeCells(3, 2, 5, 2);
-    s5.mergeCells(3, 3, 4, 4);
-    s5.mergeCells(3, 5, 3, 12);
-    s5.mergeCells(3, 13, 3, 20);
-    [5, 7, 9, 11, 13, 15, 17, 19].forEach((c) => s5.mergeCells(4, c, 4, c + 1));
+      t4RegionalIds.forEach((id) => {
+        t4Header1.push(t4.regional[id].name, "");
+        t4Header2.push(String(prevYearShort), String(currYearShort));
+        t4Cols.push(8, 8);
+      });
 
-    t5RegionalIds.forEach((id, idx) => {
-      const reg = t5.regional[id];
-      const r = s5.addRow([
-        idx + 1,
-        reg.name,
-        reg.total.prev,
-        reg.total.curr,
-        reg.phys.prev.total,
-        reg.phys.curr.total,
-        reg.phys.prev.ariza,
-        reg.phys.curr.ariza,
-        reg.phys.prev.shikoyat,
-        reg.phys.curr.shikoyat,
-        reg.phys.prev.taklif,
-        reg.phys.curr.taklif,
-        reg.legal.prev.total,
-        reg.legal.curr.total,
-        reg.legal.prev.ariza,
-        reg.legal.curr.ariza,
-        reg.legal.prev.shikoyat,
-        reg.legal.curr.shikoyat,
-        reg.legal.prev.taklif,
-        reg.legal.curr.taklif,
+      const s4 = setupSheet(
+        "4-Jadval",
+        "Murojaat mazmuni (Mavzular)",
+        t4Header1,
+        t4Header2,
+        t4Cols,
+      );
+      s4.mergeCells(3, 1, 4, 1);
+      s4.mergeCells(3, 2, 4, 2);
+      s4.mergeCells(3, 3, 3, 4);
+      t4RegionalIds.forEach((_, idx) => {
+        const startCol = 5 + idx * 2;
+        s4.mergeCells(3, startCol, 3, startCol + 1);
+      });
+
+      subjects.forEach((s, idx) => {
+        const rowData = [
+          idx + 1,
+          s.key,
+          t4.subjects[s.key]?.count_prev || 0,
+          t4.subjects[s.key]?.count_curr || 0,
+        ];
+        t4RegionalIds.forEach((id) => {
+          rowData.push(
+            t4.regional[id].data[s.key]?.prev || 0,
+            t4.regional[id].data[s.key]?.curr || 0,
+          );
+        });
+        const r = s4.addRow(rowData);
+        r.eachCell((c) => {
+          c.border = borderStyle;
+          c.alignment = {
+            horizontal: c.address.includes("B") ? "left" : "center",
+          };
+        });
+      });
+
+      // 5. Sheet: Table 5 - Regional Types YoY
+      const t5 = reports.table5;
+      const t5RegionalIds = Object.keys(t5.regional || {});
+      const s5 = setupSheet(
+        "5-Jadval",
+        "Murojaat turlarining hududiy tahlili",
+        [
+          "№",
+          "Viloyatlar",
+          "Jami murojaatlar",
+          "",
+          "Jismoniy shaxslar bo'yicha",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "Yuridik shaxslar bo'yicha",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+        ],
+        [
+          "",
+          "",
+          String(prevYear),
+          String(currYear),
+          "Jami",
+          "",
+          "Ariza",
+          "",
+          "Shikoyat",
+          "",
+          "Taklif",
+          "",
+          "Jami",
+          "",
+          "Ariza",
+          "",
+          "Shikoyat",
+          "",
+          "Taklif",
+          "",
+        ],
+        [5, 20, 10, 10, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8],
+      );
+
+      // Complex merges for T5
+      s5.mergeCells(3, 1, 5, 1);
+      s5.mergeCells(3, 2, 5, 2);
+      s5.mergeCells(3, 3, 4, 4);
+      s5.mergeCells(3, 5, 3, 12);
+      s5.mergeCells(3, 13, 3, 20);
+      [5, 7, 9, 11, 13, 15, 17, 19].forEach((c) =>
+        s5.mergeCells(4, c, 4, c + 1),
+      );
+
+      t5RegionalIds.forEach((id, idx) => {
+        const reg = t5.regional[id];
+        const r = s5.addRow([
+          idx + 1,
+          reg.name,
+          reg.total.prev,
+          reg.total.curr,
+          reg.phys.prev.total,
+          reg.phys.curr.total,
+          reg.phys.prev.ariza,
+          reg.phys.curr.ariza,
+          reg.phys.prev.shikoyat,
+          reg.phys.curr.shikoyat,
+          reg.phys.prev.taklif,
+          reg.phys.curr.taklif,
+          reg.legal.prev.total,
+          reg.legal.curr.total,
+          reg.legal.prev.ariza,
+          reg.legal.curr.ariza,
+          reg.legal.prev.shikoyat,
+          reg.legal.curr.shikoyat,
+          reg.legal.prev.taklif,
+          reg.legal.curr.taklif,
+        ]);
+        r.eachCell((c) => (c.border = borderStyle));
+      });
+
+      // 6. Sheet: Table 6 - Status Grid (16 Columns)
+      const s6 = setupSheet(
+        "6-Jadval",
+        "Halk va Virtual qabulxonalar (16 ustunli)",
+        [
+          "Xalq qabulxonalari orqali",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "Virtual qabulxona orqali",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+        ],
+        [
+          "Jami",
+          "Qanoat.",
+          "Tushun.",
+          "Tegish.",
+          "Rad",
+          "Anonim",
+          "Ko'ril.",
+          "Muddati.",
+          "Jami",
+          "Qanoat.",
+          "Tushun.",
+          "Tegish.",
+          "Rad",
+          "Anonim",
+          "Ko'ril.",
+          "Muddati.",
+        ],
+        [10, 8, 8, 8, 8, 8, 10, 8, 10, 8, 8, 8, 8, 8, 10, 8],
+      );
+      s6.mergeCells(3, 1, 3, 8);
+      s6.mergeCells(3, 9, 3, 16);
+
+      const t6 = reports.table6;
+      const t6Row = s6.addRow([
+        t6.people.curr.total,
+        t6.people.curr.satisfied,
+        t6.people.curr.explained,
+        t6.people.curr.referral,
+        t6.people.curr.rejected,
+        t6.people.curr.anonymous,
+        t6.people.curr.being_considered,
+        t6.people.curr.overdue,
+        t6.virtual.curr.total,
+        t6.virtual.curr.satisfied,
+        t6.virtual.curr.explained,
+        t6.virtual.curr.referral,
+        t6.virtual.curr.rejected,
+        t6.virtual.curr.anonymous,
+        t6.virtual.curr.being_considered,
+        t6.virtual.curr.overdue,
       ]);
-      r.eachCell((c) => (c.border = borderStyle));
-    });
+      t6Row.eachCell((c) => (c.border = borderStyle));
 
-    // 6. Sheet: Table 6 - Status Grid (16 Columns)
-    const s6 = setupSheet(
-      "6-Jadval",
-      "Halk va Virtual qabulxonalar (16 ustunli)",
-      [
-        "Xalq qabulxonalari orqali",
+      // 7. Sheet: Table 7 - Disciplinary Grid YoY
+      const s7 = setupSheet(
+        "7-Jadval",
+        "Javobgarlikka tortilganlik to'g'risida",
+        [
+          "№",
+          "Javobgarlik turlari",
+          "Intizomiy javobgarlik",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "Ma'muriy",
+          "",
+          "Jinoiy",
+          "",
+          "Jami",
+          "",
+        ],
+        [
+          "",
+          "",
+          "Jarima",
+          "",
+          "Hayfsan",
+          "",
+          "Lavozim. ozod",
+          "",
+          "Jami",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+        ],
+        [5, 25, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8],
+      );
+      s7.mergeCells(3, 1, 5, 1);
+      s7.mergeCells(3, 2, 5, 2);
+      s7.mergeCells(3, 3, 3, 10);
+      s7.mergeCells(3, 11, 4, 12);
+      s7.mergeCells(3, 13, 4, 14);
+      s7.mergeCells(3, 15, 4, 16);
+      s7.addRow([
         "",
         "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "Virtual qabulxona orqali",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-      ],
-      [
-        "Jami",
-        "Qanoat.",
-        "Tushun.",
-        "Tegish.",
-        "Rad",
-        "Anonim",
-        "Ko'ril.",
-        "Muddati.",
-        "Jami",
-        "Qanoat.",
-        "Tushun.",
-        "Tegish.",
-        "Rad",
-        "Anonim",
-        "Ko'ril.",
-        "Muddati.",
-      ],
-      [10, 8, 8, 8, 8, 8, 10, 8, 10, 8, 8, 8, 8, 8, 10, 8],
-    );
-    s6.mergeCells(3, 1, 3, 8);
-    s6.mergeCells(3, 9, 3, 16);
-
-    const t6 = reports.table6;
-    const t6Row = s6.addRow([
-      t6.people.curr.total,
-      t6.people.curr.satisfied,
-      t6.people.curr.explained,
-      t6.people.curr.referral,
-      t6.people.curr.rejected,
-      t6.people.curr.anonymous,
-      t6.people.curr.being_considered,
-      t6.people.curr.overdue,
-      t6.virtual.curr.total,
-      t6.virtual.curr.satisfied,
-      t6.virtual.curr.explained,
-      t6.virtual.curr.referral,
-      t6.virtual.curr.rejected,
-      t6.virtual.curr.anonymous,
-      t6.virtual.curr.being_considered,
-      t6.virtual.curr.overdue,
-    ]);
-    t6Row.eachCell((c) => (c.border = borderStyle));
-
-    // 7. Sheet: Table 7 - Disciplinary Grid YoY
-    const s7 = setupSheet(
-      "7-Jadval",
-      "Javobgarlikka tortilganlik to'g'risida",
-      [
-        "№",
-        "Javobgarlik turlari",
-        "Intizomiy javobgarlik",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "Ma'muriy",
-        "",
-        "Jinoiy",
-        "",
-        "Jami",
-        "",
-      ],
-      [
-        "",
-        "",
-        "Jarima",
-        "",
-        "Hayfsan",
-        "",
-        "Lavozim. ozod",
-        "",
-        "Jami",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-      ],
-      [5, 25, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8],
-    );
-    s7.mergeCells(3, 1, 5, 1);
-    s7.mergeCells(3, 2, 5, 2);
-    s7.mergeCells(3, 3, 3, 10);
-    s7.mergeCells(3, 11, 4, 12);
-    s7.mergeCells(3, 13, 4, 14);
-    s7.mergeCells(3, 15, 4, 16);
-    s7.addRow([
-      "",
-      "",
-      String(prevYearShort),
-      String(currYearShort),
-      String(prevYearShort),
-      String(currYearShort),
-      String(prevYearShort),
-      String(currYearShort),
-      String(prevYearShort),
-      String(currYearShort),
-      String(prevYearShort),
-      String(currYearShort),
-      String(prevYearShort),
-      String(currYearShort),
-      String(prevYearShort),
-      String(currYearShort),
-    ]);
-
-    const t7 = reports.table7;
-    const t7RegionalIds = Object.keys(t7.regional || {});
-
-    t7RegionalIds.forEach((id, idx) => {
-      const reg = t7.regional[id];
-      const dr = s7.addRow([
-        idx + 1,
-        reg.name,
-        reg.disciplinary.fine.prev,
-        reg.disciplinary.fine.curr,
-        reg.disciplinary.reprimand.prev,
-        reg.disciplinary.reprimand.curr,
-        reg.disciplinary.dismissal.prev,
-        reg.disciplinary.dismissal.curr,
-        reg.disciplinary.total.prev,
-        reg.disciplinary.total.curr,
-        reg.administrative.prev,
-        reg.administrative.curr,
-        reg.criminal.prev,
-        reg.criminal.curr,
-        reg.grand_total.prev,
-        reg.grand_total.curr,
+        String(prevYearShort),
+        String(currYearShort),
+        String(prevYearShort),
+        String(currYearShort),
+        String(prevYearShort),
+        String(currYearShort),
+        String(prevYearShort),
+        String(currYearShort),
+        String(prevYearShort),
+        String(currYearShort),
+        String(prevYearShort),
+        String(currYearShort),
+        String(prevYearShort),
+        String(currYearShort),
       ]);
-      dr.eachCell((c) => (c.border = borderStyle));
-      if (idx === 0) dr.font = { bold: true };
-    });
 
-    const t7TotalRow = s7.addRow([
-      "",
-      "Jami",
-      t7.summary.disciplinary.fine.prev,
-      t7.summary.disciplinary.fine.curr,
-      t7.summary.disciplinary.reprimand.prev,
-      t7.summary.disciplinary.reprimand.curr,
-      t7.summary.disciplinary.dismissal.prev,
-      t7.summary.disciplinary.dismissal.curr,
-      t7.summary.disciplinary.total.prev,
-      t7.summary.disciplinary.total.curr,
-      t7.summary.administrative.prev,
-      t7.summary.administrative.curr,
-      t7.summary.criminal.prev,
-      t7.summary.criminal.curr,
-      t7.summary.grand_total.prev,
-      t7.summary.grand_total.curr,
-    ]);
-    t7TotalRow.eachCell((c) => (c.border = borderStyle));
-    t7TotalRow.font = { bold: true };
+      const t7 = reports.table7;
+      const t7RegionalIds = Object.keys(t7.regional || {});
 
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    );
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=Appeals_Report_${month}_${org?.name || "export"}.xlsx`,
-    );
-    await workbook.xlsx.write(res);
+      t7RegionalIds.forEach((id, idx) => {
+        const reg = t7.regional[id];
+        if (!reg) return;
+        const dr = s7.addRow([
+          idx + 1,
+          reg.name,
+          reg.disciplinary?.fine?.prev || 0,
+          reg.disciplinary?.fine?.curr || 0,
+          reg.disciplinary?.reprimand?.prev || 0,
+          reg.disciplinary?.reprimand?.curr || 0,
+          reg.disciplinary?.dismissal?.prev || 0,
+          reg.disciplinary?.dismissal?.curr || 0,
+          reg.disciplinary?.total?.prev || 0,
+          reg.disciplinary?.total?.curr || 0,
+          reg.administrative?.prev || 0,
+          reg.administrative?.curr || 0,
+          reg.criminal?.prev || 0,
+          reg.criminal?.curr || 0,
+          reg.grand_total?.prev || 0,
+          reg.grand_total?.curr || 0,
+        ]);
+        dr.eachCell((c) => (c.border = borderStyle));
+        if (idx === 0) dr.font = { bold: true };
+      });
+
+      const t7TotalRow = s7.addRow([
+        "",
+        "Jami",
+        t7.summary?.disciplinary?.fine?.prev || 0,
+        t7.summary?.disciplinary?.fine?.curr || 0,
+        t7.summary?.disciplinary?.reprimand?.prev || 0,
+        t7.summary?.disciplinary?.reprimand?.curr || 0,
+        t7.summary?.disciplinary?.dismissal?.prev || 0,
+        t7.summary?.disciplinary?.dismissal?.curr || 0,
+        t7.summary?.disciplinary?.total?.prev || 0,
+        t7.summary?.disciplinary?.total?.curr || 0,
+        t7.summary?.administrative?.prev || 0,
+        t7.summary?.administrative?.curr || 0,
+        t7.summary?.criminal?.prev || 0,
+        t7.summary?.criminal?.curr || 0,
+        t7.summary?.grand_total?.prev || 0,
+        t7.summary?.grand_total?.curr || 0,
+      ]);
+      t7TotalRow.eachCell((c) => (c.border = borderStyle));
+      t7TotalRow.font = { bold: true };
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=Appeals_Report_${month}_${org?.name || "export"}.xlsx`,
+      );
+      await workbook.xlsx.write(res);
+      res.end();
+    } catch (error) {
+      this.logger.error(
+        `Excel export error for org ${organizationId}: ${error.message}`,
+        error.stack,
+      );
+      if (!res.headersSent) {
+        res
+          .status(500)
+          .json({ message: "Excel export failed", error: error.message });
+      }
+    }
   }
 
   async exportPdf(res: Response, organizationId: string, month: string) {
@@ -1648,17 +1858,28 @@ export class AppealsService {
     const t7 = reports.table7;
     Object.values(t7.regional).forEach((reg: any) => {
       doc.fontSize(10).font("Helvetica-Bold").text(`${reg.name}:`);
-      doc.fontSize(9).font("Helvetica").text(
-        `  Jami choralar: ${prevYear}: ${reg.grand_total.prev} | ${currYear}: ${reg.grand_total.curr}`
-      );
+      doc
+        .fontSize(9)
+        .font("Helvetica")
+        .text(
+          `  Jami choralar: ${prevYear}: ${reg.grand_total.prev} | ${currYear}: ${reg.grand_total.curr}`,
+        );
       doc.text(
-        `  - Intizomiy: ${reg.disciplinary.total.curr}, Ma'muriy/Jinoiy: ${reg.administrative.curr}/${reg.criminal.curr}`
+        `  - Intizomiy: ${reg.disciplinary.total.curr}, Ma'muriy/Jinoiy: ${reg.administrative.curr}/${reg.criminal.curr}`,
       );
       doc.moveDown(0.5);
     });
     doc.moveDown();
-    doc.fontSize(10).font("Helvetica-Bold").text("Jami (Viloyat bo'yicha):", { underline: true });
-    doc.fontSize(9).font("Helvetica").text(`Jami: ${t7.summary.grand_total.prev} -> ${t7.summary.grand_total.curr}`);
+    doc
+      .fontSize(10)
+      .font("Helvetica-Bold")
+      .text("Jami (Viloyat bo'yicha):", { underline: true });
+    doc
+      .fontSize(9)
+      .font("Helvetica")
+      .text(
+        `Jami: ${t7.summary.grand_total.prev} -> ${t7.summary.grand_total.curr}`,
+      );
     doc.moveDown();
 
     doc.end();
@@ -1685,3 +1906,45 @@ export class AppealsService {
     }
   }
 }
+
+/*
+ * [ORIGINAL_REDACTED_CODE_PRESERVATION]
+ *
+ * async getTableData(tableNum: number, month: string, organizationId: string) {
+ *   const repo = this.getRepo(tableNum);
+ *   return await repo.find({
+ *     where: { period_month: month, organization_id: organizationId },
+ *   });
+ * }
+ *
+ * async saveTableData(
+ *   tableNum: number,
+ *   month: string,
+ *   organizationId: string,
+ *   rows: any[],
+ * ) {
+ *   const repo = this.getRepo(tableNum);
+ *   const existing = await repo.find({
+ *     where: { period_month: month, organization_id: organizationId },
+ *   });
+ *   const map = new Map(existing.map((r) => [r.row_key, r]));
+ *
+ *   for (const rowData of rows) {
+ *     if (map.has(rowData.row_key)) {
+ *       const entity = map.get(rowData.row_key);
+ *       Object.assign(entity, rowData);
+ *       await repo.save(entity);
+ *     } else {
+ *       const entity = repo.create({
+ *         ...rowData,
+ *         period_month: month,
+ *         organization_id: organizationId,
+ *       });
+ *       await repo.save(entity);
+ *     }
+ *   }
+ *   return { success: true };
+ * }
+ */
+
+

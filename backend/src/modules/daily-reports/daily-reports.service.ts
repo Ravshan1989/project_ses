@@ -124,8 +124,8 @@ export class DailyReportsService {
       );
 
       // 4. Send to Telegram
-      // UZ: Bot faqat ro'yxatga olish uchun qoldirilgan, hisobot xabarnomalari o'chirildi
-      // await this.telegramService.sendDailyReportWithFiles(summaryText, pdfPath, excelPath);
+      await this.telegramService.sendDailyReportWithFiles(summaryText, pdfPath, excelPath);
+
 
       console.log(
         "[DailyReportsService] Automated report generated successfully.",
@@ -190,18 +190,12 @@ export class DailyReportsService {
       report.executor = { id: user.id } as any;
     }
     const saved = await this.reportRepo.save(report);
-    // UZ: Bot faqat ro'yxatga olish uchun qoldirilgan
+    await this.telegramService.sendReportNotification(saved);
     return saved;
+
   }
 
-  /*
-  async getByDate(date: string) {
-    return this.reportRepo.find({
-      where: { reportDate: date },
-      relations: ["organization", "organization.parent"],
-    });
-  }
-  */
+
 
   async getByDate(date: string, user: User, includeTest = false) {
     const level = getRoleLevel(user.role, user);
@@ -1050,4 +1044,17 @@ export class DailyReportsService {
  * - upsertEpidemiology (Removed telegram notification)
  * - bulkUpsertBatch (Split epi and sanitary logic)
  * - cleanupTest, getRepoByType (Added sanitaryRepo)
+ *
+ * async getByDate(date: string) {
+ *   return this.reportRepo.find({
+ *     where: { reportDate: date },
+ *     relations: ["organization", "organization.parent"],
+ *   });
+ * }
+ *
+ * async upsert(dto: CreateHepatitisReportDto, user: User) {
+ *   // ... (Original logic with notification)
+ *   await this.telegramService.sendReportNotification(saved);
+ * }
  */
+

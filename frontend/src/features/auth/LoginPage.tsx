@@ -226,7 +226,7 @@ const LoginPage: React.FC = () => {
                             maxWidth: '480px',
                             fontWeight: 300
                         }}>
-                            {t('auth.description', 'Toshkent viloyati Sanitariya-epidemiologik osoyishtalik va jamoat salomatligi boshqarmasi yagona monitoring tizimi.')}
+                            {t('auth.description', 'O\'zbekiston Respublikasi Sanitariya-epidemiologik osoyishtalik va jamoat salomatligi qo\'mitasi yagona monitoring tizimi.')}
                         </Text>
 
                         {/* Feature Cards Instead of Pills */}

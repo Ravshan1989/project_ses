@@ -8,9 +8,16 @@ import { DataExportService } from "./data-export.service";
 import { BackupBotService } from "./backup-bot.service";
 import { SosBotService } from "./sos-bot.service";
 
+import { Organization } from "../organizations/entities/organization.entity";
+import { OrganizationsModule } from "../organizations/organizations.module";
+
 @Global()
 @Module({
-  imports: [TypeOrmModule.forFeature([User]), forwardRef(() => UsersModule)],
+  imports: [
+    TypeOrmModule.forFeature([User, Organization]),
+    forwardRef(() => UsersModule),
+    forwardRef(() => OrganizationsModule),
+  ],
   providers: [
     TelegramService,
     DataExportService,

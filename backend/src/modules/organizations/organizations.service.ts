@@ -12,24 +12,29 @@ export class OrganizationsService {
     private orgRepo: Repository<Organization>,
   ) {}
 
-  /* 
-    ESKI KOD (Barcha tashkilotlarni, jumladan viloyat darajasini ham qaytaradi):
-    async findAll(): Promise<Organization[]> {
-        return this.orgRepo.find({ relations: ['parent'] });
-    }
-    */
+
 
   // YANGI YECHIM (Faqat tuman va shaharlarni qaytaradi, ya'ni 'parent'i borlarni):
   async findAll(user?: User): Promise<Organization[]> {
-    const allOrgs = await this.orgRepo.find({ relations: ["parent"] });
+    const allOrgs = await this.orgRepo.find({
+      relations: ["parent", "children"],
+    });
 
     if (user) {
       const level = getRoleLevel(user.role, user);
+      if (level === 1) {
+        return allOrgs; // Republic sees everything
+      }
       if (level === 3 && user.organization) {
         return allOrgs.filter((o) => o.id === user.organization.id);
       }
       if (level === 2 && user.organization) {
-        return allOrgs.filter((o) => o.parent?.id === user.organization.id);
+        // Region sees itself and its children
+        return allOrgs.filter(
+          (o) =>
+            o.id === user.organization.id ||
+            o.parent?.id === user.organization.id,
+        );
       }
     }
 
@@ -52,3 +57,12 @@ export class OrganizationsService {
     return this.orgRepo.save(org);
   }
 }
+
+/*
+ * [ORIGINAL_REDACTED_CODE_PRESERVATION]
+ *
+ * async findAll(): Promise<Organization[]> {
+ *   return this.orgRepo.find({ relations: ['parent'] });
+ * }
+ */
+

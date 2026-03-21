@@ -24,7 +24,7 @@ const dataCellStyle = {
 };
 
 // --- GEPATIT A EKSPORTI ---
-export const exportHepatitisProfessional = (data: any[], date: string, orgName: string = 'Тошкент вилояти') => {
+export const exportHepatitisProfessional = (data: any[], date: string, orgName: string = 'Ўзбекистон Республикаси') => {
     const workbook = XLSX.utils.book_new();
     const worksheetData: any[][] = [];
 
@@ -120,7 +120,7 @@ export const exportHepatitisProfessional = (data: any[], date: string, orgName: 
 };
 
 // --- GRIPP VA O'RVI EKSPORTI ---
-export const exportFluProfessional = (data: any[], date: string, orgName: string = 'Тошкент вилояти') => {
+export const exportFluProfessional = (data: any[], date: string, orgName: string = 'Ўзбекистон Республикаси') => {
     const workbook = XLSX.utils.book_new();
     const worksheetData: any[][] = [];
 
@@ -205,7 +205,7 @@ export const exportFluProfessional = (data: any[], date: string, orgName: string
 };
 
 // --- EPIDEMIOLOGIYA EKSPORTI ---
-export const exportEpidemiologyProfessional = (data: any[], date: string, orgName: string = 'Тошкент вилояти') => {
+export const exportEpidemiologyProfessional = (data: any[], date: string, orgName: string = 'Ўзбекистон Республикаси') => {
     const workbook = XLSX.utils.book_new();
     const worksheetData: any[][] = [];
 
@@ -272,7 +272,7 @@ export const exportEpidemiologyProfessional = (data: any[], date: string, orgNam
 };
 
 // --- ARI SHORT EKSPORTI ---
-export const exportAriQuickProfessional = (data: any[], date: string, orgName: string = 'Toshkent viloyati') => {
+export const exportAriQuickProfessional = (data: any[], date: string, orgName: string = 'O\'zbekiston Respublikasi') => {
     const workbook = XLSX.utils.book_new();
     const worksheetData: any[][] = [];
 

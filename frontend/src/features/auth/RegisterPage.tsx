@@ -11,6 +11,9 @@ const { Option } = Select;
 
 const RegisterPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
+    const [regions, setRegions] = useState<any[]>([]);
+    const [districts, setDistricts] = useState<any[]>([]);
+    const [filteredDistricts, setFilteredDistricts] = useState<any[]>([]);
     const [organizations, setOrganizations] = useState<any[]>([]);
     const [allDepartments, setAllDepartments] = useState<any[]>([]);
     const [filteredDepartments, setFilteredDepartments] = useState<any[]>([]);
@@ -35,12 +38,40 @@ const RegisterPage: React.FC = () => {
                 const depts = await deptRes.json();
                 setOrganizations(orgs);
                 setAllDepartments(depts);
-                // Initial load: show all departments (will be filtered on org select)
+
+                // Identify the Republic root (Level 1 - has no parent)
+                const republic = orgs.find((o: any) => !o.parent);
+                
+                // Regions (Level 2) are children of Republic
+                const filteredRegions = orgs.filter((o: any) => o.parent?.id === republic?.id);
+                
+                // Districts (Level 3) are children of Regions
+                const filteredDistricts = orgs.filter((o: any) => 
+                    filteredRegions.some(r => r.id === o.parent?.id)
+                );
+
+                setRegions([...(republic ? [republic] : []), ...filteredRegions]);
+                setDistricts(filteredDistricts);
+                
                 setFilteredDepartments(depts);
             }
         } catch (error) {
             console.error('Fetch data error:', error);
             message.error(t('common.error_loading_data', 'Ma\'lumotlarni yuklab bo\'lmadi'));
+        }
+    };
+
+    const handleRegionChange = (regionId: string) => {
+        form.setFieldsValue({ organizationId: undefined, departmentId: undefined, role: undefined });
+        
+        const regionDistricts = districts.filter(d => d.parent?.id === regionId);
+        setFilteredDistricts(regionDistricts);
+
+        // If it's a republic level org with no districts, we might want to handle it
+        const selectedRegion = regions.find(r => r.id === regionId);
+        if (selectedRegion && regionDistricts.length === 0) {
+            // This is likely a direct assignment if no sub-organizations
+            setFilteredDistricts([selectedRegion]);
         }
     };
 
@@ -51,8 +82,8 @@ const RegisterPage: React.FC = () => {
         const selectedOrg = organizations.find(o => o.id === orgId);
         if (!selectedOrg) return;
 
-        // Check if District or Region (Districts have a parent)
-        const isDistrict = !!selectedOrg.parent;
+        // Check if District or Region (Districts have a parent who has a parent)
+        const isDistrict = !!(selectedOrg.parent && selectedOrg.parent.parent);
 
         if (isDistrict) {
             // Filter departments for Districts:
@@ -259,21 +290,38 @@ const RegisterPage: React.FC = () => {
                             </Space>
 
                             <Form.Item
-                                name="organizationId"
-                                label={t('common.organization', 'Tashkilot (Viloyat/Tuman)')}
-                                rules={[{ required: true, message: t('common.error_select_org', 'Tashkilotni tanlang') }]}
+                                name="regionId"
+                                label={t('common.region', 'Viloyat')}
+                                rules={[{ required: true, message: t('common.error_select_region', 'Viloyatni tanlang') }]}
                             >
                                 <Select
                                     showSearch
-                                    placeholder={t('common.placeholder_org', 'Qidirish...')}
+                                    placeholder={t('common.placeholder_region', 'Viloyatni tanlang...')}
+                                    optionFilterProp="children"
+                                    prefix={<BankOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
+                                    onChange={handleRegionChange}
+                                >
+                                    {regions.map(region => (
+                                        <Option key={region.id} value={region.id}>{region.name}</Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+
+                            <Form.Item
+                                name="organizationId"
+                                label={t('common.organization', 'Tuman (Shahar)')}
+                                rules={[{ required: true, message: t('common.error_select_org', 'Tuman/shaharni tanlang') }]}
+                            >
+                                <Select
+                                    showSearch
+                                    placeholder={t('common.placeholder_org', 'Tuman/shaharni tanlang...')}
                                     optionFilterProp="children"
                                     prefix={<BankOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
                                     onChange={handleOrganizationChange}
+                                    disabled={!form.getFieldValue('regionId')}
                                 >
-                                    {organizations.map(org => (
-                                        <Option key={org.id} value={org.id}>
-                                            {org.parent ? `${org.parent.name} - ${org.name}` : org.name}
-                                        </Option>
+                                    {filteredDistricts.map(org => (
+                                        <Option key={org.id} value={org.id}>{org.name}</Option>
                                     ))}
                                 </Select>
                             </Form.Item>

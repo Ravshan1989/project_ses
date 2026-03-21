@@ -15,8 +15,23 @@ async function bootstrap() {
     }),
   ); // UZ: CORS xatolarini oldini olish uchun helmet sozlamasi
 
-  app.use(json({ limit: "50mb" }));
-  app.use(urlencoded({ limit: "50mb", extended: true }));
+  // Global Body Limits
+  app.use(json({ limit: "100mb" }));
+  app.use(urlencoded({ limit: "100mb", extended: true }));
+
+  // Request Logger Middleware
+  app.use((req, res, next) => {
+    const start = Date.now();
+    res.on("finish", () => {
+      const duration = Date.now() - start;
+      if (res.statusCode >= 400) {
+        console.log(
+          `[REQ DEBUG] ${req.method} ${req.url} -> ${res.statusCode} (${duration}ms)`,
+        );
+      }
+    });
+    next();
+  });
 
   // Enable CORS for Frontend (Standard NestJS way)
   app.enableCors({

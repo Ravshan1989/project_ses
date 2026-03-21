@@ -8,7 +8,9 @@ const localPort = 3000; // Backend port (matches Docker)
 // UZ: Render yoki boshqa production URL ni shu yerga yozing yoki Vercel'dan VITE_API_URL o'zgaruvchisini bering
 const productionUrl = import.meta.env.VITE_API_URL || 'https://project-ses.onrender.com';
 
-// Pointing to Production for "Test Mode" verification on localhost
-export const API_BASE_URL = `${productionUrl}/api/v1`;
+// For local development and production, use relative URL or dynamic check
+export const API_BASE_URL = (isLocalhost || !import.meta.env.VITE_API_URL) 
+    ? '/api/v1' 
+    : `${import.meta.env.VITE_API_URL}/api/v1`;
 
 console.log('Using API_BASE_URL:', API_BASE_URL);

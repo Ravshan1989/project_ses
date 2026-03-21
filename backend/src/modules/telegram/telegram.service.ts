@@ -13,6 +13,7 @@ import * as bcrypt from "bcrypt";
 import { User } from "../users/entities/user.entity";
 import { UserRole } from "../../common/enums/role.enum";
 import { UsersService } from "../users/users.service";
+import { Organization } from "../organizations/entities/organization.entity";
 
 @Injectable()
 export class TelegramService implements OnModuleInit {
@@ -33,6 +34,8 @@ export class TelegramService implements OnModuleInit {
     private configService: ConfigService,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(Organization)
+    private organizationRepository: Repository<Organization>,
     @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
   ) {
@@ -58,10 +61,15 @@ export class TelegramService implements OnModuleInit {
     this.setupHandlers();
 
     // UZ: Faqat ro'yxatga olish uchun buyruqlar
-    this.bot.telegram.setMyCommands([
-      { command: "start", description: "Botni ishga tushirish" },
-      { command: "help", description: "Yordam" },
-    ]);
+    this.bot.telegram
+      .setMyCommands([
+        { command: "start", description: "Botni ishga tushirish" },
+        { command: "organizations", description: "Tashkilotlar ro'yxati" },
+        { command: "help", description: "Yordam" },
+      ])
+      .catch((err) => {
+        this.logger.error("Failed to set Telegram commands:", err);
+      });
 
     this.bot.telegram
       .deleteWebhook()
@@ -92,13 +100,36 @@ export class TelegramService implements OnModuleInit {
 
     this.bot.start(async (ctx) => {
       this.logger.log(`Bot /start buyrug'ini oldi: ${ctx.from.username}`);
-      
+
       return ctx.reply(
         `Assalomu alaykum! Tizimdan foydalanish uchun telefon raqamingizni tasdiqlang.`,
         Markup.keyboard([
           [Markup.button.contactRequest("📞 Telefon raqamni yuborish")],
         ]).resize(),
       );
+    });
+
+    this.bot.command("organizations", async (ctx) => {
+      this.logger.log(
+        `Bot /organizations buyrug'ini oldi: ${ctx.from.username}`,
+      );
+      try {
+        const organizations = await this.organizationRepository.find();
+        if (organizations.length === 0) {
+          return ctx.reply("Tashkilotlar topilmadi.");
+        }
+
+        const orgList = organizations
+          .map((org, index) => `${index + 1}. ${org.name}`)
+          .join("\n");
+
+        return ctx.reply(`🏢 <b>Tashkilotlar ro'yxati:</b>\n\n${orgList}`, {
+          parse_mode: "HTML",
+        });
+      } catch (error) {
+        this.logger.error("Error fetching organizations for bot:", error);
+        return ctx.reply("❌ Ma'lumotlarni yuklashda xatolik yuz berdi.");
+      }
     });
 
     // Handle phone number verification
@@ -108,21 +139,29 @@ export class TelegramService implements OnModuleInit {
         const rawPhone = contact.phone_number;
         const tgId = ctx.from.id.toString();
 
-        this.logger.log(`[BOT DEBUG] Received contact: ${rawPhone} from TG ID: ${tgId}`);
+        this.logger.log(
+          `[BOT DEBUG] Received contact: ${rawPhone} from TG ID: ${tgId}`,
+        );
         await ctx.reply(`⏳ Qidirilmoqda: ${rawPhone}...`).catch(() => {});
 
         const digitsOnly = rawPhone.replace(/\D/g, "");
         const withPlus = `+${digitsOnly}`;
 
         // UZ: Raqamni barcha formatlarda (probel bilan yoki probelsiz) qidirish uchun normallashtiramiz
-        const user = await this.userRepository.createQueryBuilder("user")
-          .where("REPLACE(REPLACE(\"phoneNumber\", ' ', ''), '+', '') = :phone", { phone: digitsOnly })
+        const user = await this.userRepository
+          .createQueryBuilder("user")
+          .where(
+            "REPLACE(REPLACE(\"phoneNumber\", ' ', ''), '+', '') = :phone",
+            { phone: digitsOnly },
+          )
           .getOne();
 
         if (user) {
-          this.logger.log(`[BOT DEBUG] User found: ${user.username} for phone: ${rawPhone}`);
+          this.logger.log(
+            `[BOT DEBUG] User found: ${user.username} for phone: ${rawPhone}`,
+          );
           user.telegramChatId = tgId;
-          user.phoneNumber = withPlus; 
+          user.phoneNumber = withPlus;
           await this.userRepository.save(user);
 
           let approvalMessage = "";
@@ -141,16 +180,22 @@ export class TelegramService implements OnModuleInit {
             Markup.removeKeyboard(),
           );
         } else {
-          this.logger.warn(`[BOT DEBUG] User NOT found for phone: ${rawPhone} (digitsOnly: ${digitsOnly})`);
+          this.logger.warn(
+            `[BOT DEBUG] User NOT found for phone: ${rawPhone} (digitsOnly: ${digitsOnly})`,
+          );
           await ctx.reply(
             `❌ Xatolik! Bu telefon raqam (${rawPhone}) tizimda topilmadi.\n\n` +
-            `Iltimos, avval saytda ro'yxatdan o'tganingizni va raqamingizni to'g'ri kiritganingizni tekshiring.`,
+              `Iltimos, avval saytda ro'yxatdan o'tganingizni va raqamingizni to'g'ri kiritganingizni tekshiring.`,
             Markup.removeKeyboard(),
           );
         }
       } catch (error) {
         this.logger.error("[BOT DEBUG] Error in contact handler:", error);
-        await ctx.reply("❌ Tizimda xatolik yuz berdi. Birozdan so'ng qayta urinib ko'ring.").catch(() => {});
+        await ctx
+          .reply(
+            "❌ Tizimda xatolik yuz berdi. Birozdan so'ng qayta urinib ko'ring.",
+          )
+          .catch(() => {});
       }
     });
 
@@ -168,7 +213,6 @@ export class TelegramService implements OnModuleInit {
       return this.handleRejection(ctx, userId);
     });
   }
-
 
   // UZ: Faqat ro'yxatga olish bilan bog'liq xabarnomalar qoldirildi
 
@@ -394,7 +438,9 @@ Tizimga kirish uchun ma'lumotlar:
     try {
       // 1. Try sending to the user if they have a chat ID
       if (user.telegramChatId) {
-        console.log(`[BOT DEBUG] Sending to user chat ID: ${user.telegramChatId}`);
+        console.log(
+          `[BOT DEBUG] Sending to user chat ID: ${user.telegramChatId}`,
+        );
         await this.bot.telegram.sendMessage(user.telegramChatId, message, {
           parse_mode: "HTML",
         });
@@ -405,7 +451,9 @@ Tizimga kirish uchun ma'lumotlar:
       }
 
       // 2. If user has no chat ID, send to Admin (fallback)
-      console.log(`[BOT DEBUG] User has no chat ID! Falling back to admin server. adminChatId: ${this.adminChatId}`);
+      console.log(
+        `[BOT DEBUG] User has no chat ID! Falling back to admin server. adminChatId: ${this.adminChatId}`,
+      );
       if (this.adminChatId) {
         const adminMessage = `
 ⚠️ <b>Foydalanuvchi faollashtirildi, lekin Telegram ID topilmadi.</b>
@@ -459,7 +507,34 @@ Login/Parol Adminga yuborilmoqda:
       );
     }
   }
+  async sendReportNotification(report: any): Promise<void> {
+    if (!this.bot || !this.chatId) return;
+    const message = `📊 Yangi hisobot: ${report.id}`;
+    await this.bot.telegram.sendMessage(this.chatId, message);
+  }
+
+  async sendDailyReportWithFiles(
+    caption: string,
+    pdfPath: string,
+    excelPath: string,
+  ): Promise<void> {
+    if (!this.bot || !this.chatId) return;
+    try {
+      await this.bot.telegram.sendDocument(this.chatId, {
+        source: pdfPath,
+        filename: "hisobot.pdf",
+      });
+      await this.bot.telegram.sendDocument(this.chatId, {
+        source: excelPath,
+        filename: "hisobot.xlsx",
+      });
+      await this.bot.telegram.sendMessage(this.chatId, caption);
+    } catch (e) {
+      this.logger.error("Failed to send daily report with files:", e);
+    }
+  }
 }
+
 
 /**
  * [ORIGINAL_REDACTED_CODE_PRESERVATION]

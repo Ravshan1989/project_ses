@@ -12,6 +12,7 @@ import { AppealsTable7 } from "./entities/appeals-table-7.entity";
 import { AppealRecord } from "./entities/appeal-record.entity";
 import { Organization } from "../organizations/entities/organization.entity";
 import { AppealsReminderService } from "./appeals-reminder.service";
+import { AppealsImportService } from "./appeals-import.service";
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { AppealsReminderService } from "./appeals-reminder.service";
       Organization,
     ]),
   ],
-  providers: [AppealsService, AppealsReminderService],
+  providers: [AppealsService, AppealsReminderService, AppealsImportService],
   controllers: [AppealsController],
   exports: [AppealsService],
 })

@@ -71,7 +71,7 @@ async function bootstrap() {
   console.log("Test data inserted. Calculating indicators...");
 
   // 4. Verify Global Summary
-  const globalSummary = await analysisService.getGlobalSummary(today, today);
+  const globalSummary = await analysisService.getGlobalSummary(today, today, user);
   const olmaliqSummary = globalSummary.find(
     (s) => s.organizationId === olmaliq.id,
   );
@@ -90,7 +90,7 @@ async function bootstrap() {
     diseaseType: "flu",
     startDate: today,
     endDate: today,
-  } as any);
+  } as any, user);
 
   const olmaliqFluRate = fluRates.find((r) => r.organizationId === olmaliq.id);
   if (olmaliqFluRate) {

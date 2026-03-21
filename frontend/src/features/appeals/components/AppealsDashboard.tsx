@@ -25,7 +25,7 @@ const AppealsDashboard: React.FC<AppealsDashboardProps> = ({ data, isLoading, or
         );
     }
 
-    if (isLoading || !data) {
+    if (isLoading || !data || (typeof data === 'object' && Object.keys(data).length === 0)) {
         return <div style={{ padding: 20 }}>{t('appeals.dashboard.loading')}</div>;
     }
 
@@ -85,6 +85,8 @@ const AppealsDashboard: React.FC<AppealsDashboardProps> = ({ data, isLoading, or
         { channel: t('appeals.table2.columns.written'), value: data.table3?.written || 0 },
         { channel: t('appeals.table2.columns.electronic'), value: data.table3?.electronic || 0 },
         { channel: t('appeals.table2.columns.oral'), value: data.table3?.oral_total || 0 },
+        { channel: t('appeals.table6.columns.virtual'), value: data.table6?.virtual?.curr?.total || 0 },
+        { channel: t('appeals.table6.columns.people'), value: data.table6?.people?.curr?.total || 0 },
     ];
 
     const channelConfig = {
@@ -99,7 +101,10 @@ const AppealsDashboard: React.FC<AppealsDashboardProps> = ({ data, isLoading, or
             fill: ({ channel }: any) => {
                 if (channel === t('appeals.table2.columns.written')) return '#1890ff';
                 if (channel === t('appeals.table2.columns.electronic')) return '#52c41a';
-                return '#faad14';
+                if (channel === t('appeals.table2.columns.oral')) return '#faad14';
+                if (channel === t('appeals.table6.columns.virtual')) return '#13c2c2';
+                if (channel === t('appeals.table6.columns.people')) return '#eb2f96';
+                return '#8c8c8c';
             },
         },
     };
@@ -111,7 +116,7 @@ const AppealsDashboard: React.FC<AppealsDashboardProps> = ({ data, isLoading, or
                     <Card style={{ background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(10px)', borderRadius: 16 }}>
                         <Statistic 
                             title={t('appeals.table2.columns.jami')} 
-                            value={data.records_count} 
+                            value={data?.records_count || 0} 
                             valueStyle={{ color: '#1890ff', fontSize: 32, fontWeight: 'bold' }} 
                         />
                     </Card>

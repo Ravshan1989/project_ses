@@ -1,23 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, DatePicker, Select, Space, Spin, Card, Tabs } from 'antd';
-import { SaveOutlined, ReloadOutlined, FileExcelOutlined, FilePdfOutlined } from '@ant-design/icons';
+import { SaveOutlined, ReloadOutlined, FileExcelOutlined, FilePdfOutlined, UploadOutlined } from '@ant-design/icons';
+import { Button, DatePicker, Select, Space, Spin, Card, Tabs, Modal, Upload, message, notification } from 'antd';
 import dayjs from 'dayjs';
 import 'dayjs/locale/uz-latn';
 import GlassLayout from '../../components/layout/GlassLayout';
 import PermissionGate from '../../components/PermissionGate';
 import { useAppealsData } from './hooks/useAppealsData';
-import { API_BASE_URL } from '../../config';
 import { APPEALS_SUBJECT_ROWS } from './components/AppealsConstants';
 import MasterAppealsJournal from './components/MasterAppealsJournal';
 import AppealsMonitoring from './components/AppealsMonitoring';
 import AppealsDashboard from './components/AppealsDashboard';
+import { api, fileApi } from '../../services/api';
 
 
-interface Organization {
-    id: string;
-    name: string;
-}
 
 const thStyle: React.CSSProperties = {
     background: '#f1f5f9',
@@ -40,6 +36,9 @@ const AppealsPage: React.FC = () => {
     const [month, setMonth] = useState(dayjs().format('YYYY-MM'));
     const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('journal');
+    const [isUploadModalVisible, setIsUploadModalVisible] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const [fileList, setFileList] = useState<any[]>([]);
 
     useEffect(() => {
         if (i18n.language === 'uz') {
@@ -50,9 +49,10 @@ const AppealsPage: React.FC = () => {
     }, [i18n.language]);
 
     const userRole = localStorage.getItem('user_role');
-    const isRegion = userRole === 'REGION_HEAD' || userRole === 'LEAD_SPECIALIST';
+    const isRepublicUser = userRole === 'REPUBLIC_HEAD' || userRole === 'ADMIN';
+    const isRegionUser = userRole === 'REGION_HEAD' || userRole === 'LEAD_SPECIALIST';
 
-    const isAdmin = localStorage.getItem('user_role') === 'ADMIN' || localStorage.getItem('user_role') === 'EXECUTIVE';
+    const isAdmin = userRole === 'ADMIN' || userRole === 'EXECUTIVE' || userRole === 'REPUBLIC_HEAD';
     const userOrgId = localStorage.getItem('user_org_id');
     const effectiveOrgId = isAdmin 
         ? selectedOrgId 
@@ -76,11 +76,18 @@ const AppealsPage: React.FC = () => {
         createRecordMutation
     } = useAppealsData(month, effectiveOrgId, activeTab);
     
-    // Determine if regional or district
+    // Determine if republic, regional or district
     const currentOrg = organizations.find((o: any) => o.id === effectiveOrgId);
-    // In our system, Level 2 (Region) has a parent (Republic/Root) or we can check its properties.
-    // Based on seeding, Toshkent viloyati is top-level (parent is null)
-    const isRegionalOrg = currentOrg ? !currentOrg.parent_id && !currentOrg.parent : false;
+    
+    // Republic: No parent
+    const isRepublicOrg = currentOrg ? !currentOrg.parent_id && !currentOrg.parent : false;
+    
+    // Region: Parent is Republic (Check parent name or if parent is republic)
+    // For simplicity, if it has a parent but itself has children, it's a Region. 
+    // Or check if its parent is the Republic org.
+    const isRegionalOrg = currentOrg ? 
+        (currentOrg.parent_id || currentOrg.parent) && (currentOrg.children?.length > 0 || currentOrg.name.includes('viloyat') || currentOrg.name.includes('shahar')) : false;
+
 
     const [localData, setLocalData] = useState<any[]>([]);
 
@@ -88,17 +95,87 @@ const AppealsPage: React.FC = () => {
         setLocalData(tableData);
     }, [tableData]);
 
-    const handleExportExcel = () => {
+    const handleExportExcel = async () => {
         if (!effectiveOrgId) return;
-        window.open(`${API_BASE_URL}/appeals/export-excel?organizationId=${effectiveOrgId}&month=${month}`, '_blank');
+        try {
+            const response = await api.get(`/appeals/export-excel?organizationId=${effectiveOrgId}&month=${month}`, {
+                responseType: 'blob'
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Appeals_Report_${month}.xlsx`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error: any) {
+            message.error(t('common.export_error') || 'Eksportda xatolik');
+        }
     };
 
-    const handleExportPdf = () => {
+    const handleExportPdf = async () => {
         if (!effectiveOrgId) return;
-        window.open(`${API_BASE_URL}/appeals/export-pdf?organizationId=${effectiveOrgId}&month=${month}`, '_blank'); // Will implement shortly
+        try {
+            const response = await api.get(`/appeals/export-pdf?organizationId=${effectiveOrgId}&month=${month}`, {
+                responseType: 'blob'
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Appeals_Report_${month}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error: any) {
+            message.error(t('common.export_error') || 'Eksportda xatolik');
+        }
     };
 
     const saveDataAction = () => saveData(localData);
+
+    const handleBulkUpload = async () => {
+        if (fileList.length === 0) {
+            message.warning('Iltimos, fayllarni tanlang');
+            return;
+        }
+
+        setUploading(true);
+        const formData = new FormData();
+        fileList.forEach((file: any) => {
+            formData.append('files', file.originFileObj || file);
+        });
+
+        try {
+            await fileApi.post(`/appeals/import-bulk?month=${month}&parentId=${effectiveOrgId}`, formData);
+
+            notification.success({
+                message: "Muvaffaqiyatli",
+                description: "Tumanlar ma'lumotlari yuklandi va yig'ma hisobot yangilandi."
+            });
+            setIsUploadModalVisible(false);
+            setFileList([]);
+            refresh();
+        } catch (error: any) {
+            console.error('Bulk upload error:', error);
+            if (error.response?.status === 401) {
+                message.error("Sessiya eskirgan. Iltimos, chiqib qaytadan kiring.");
+            } else {
+                message.error(`Xatolik: ${error.message}`);
+            }
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleAggregateManual = async () => {
+        try {
+            await api.post('/appeals/aggregate', { organizationId: effectiveOrgId, month });
+            message.success("Yig'ma hisobot muvaffaqiyatli shakllantirildi");
+            refresh();
+        } catch (error: any) {
+            message.error(`Xatolik: ${error.message}`);
+        }
+    };
 
     const getUzMonth = (m: string) => {
         const uzMonths = [
@@ -117,7 +194,7 @@ const AppealsPage: React.FC = () => {
             .replace(/\s+sh\.?$/i, ' shahri');
     };
 
-    const orgName = currentOrg?.name || (isRegionalOrg ? "Toshkent viloyati boshqarmasi" : "Tuman (shahar) bo'limi");
+    const orgName = currentOrg?.name || (isRepublicOrg ? "Respublika" : isRegionalOrg ? "Viloyat boshqarmasi" : "Tuman (shahar) bo'limi");
 
     const renderTable1 = () => {
         const t1 = autoReportsQuery.data?.table1 || { head: {}, deputy_epid: {}, deputy_san: {} };
@@ -130,7 +207,7 @@ const AppealsPage: React.FC = () => {
 
         const thStyleWithColor = (color: string) => ({ ...thStyle, backgroundColor: color, fontSize: '11px', padding: '8px 4px' });
 
-        const rows = isRegionalOrg 
+        const rows = (isRegionalOrg || isRepublicOrg)
             ? [
                 { key: 'head', label: t('appeals.table1.rows.head_reg') },
                 { key: 'deputy_epid', label: t('appeals.table1.rows.deputy_epid_reg') },
@@ -326,7 +403,7 @@ const AppealsPage: React.FC = () => {
         const t3 = autoReportsQuery.data?.table3 || { regional: {} };
         const regionalIds = Object.keys(t3.regional || {});
         // Identification of Total row: By key, by name, or simply the first element retrieved (usually the parent org)
-        const totalId = regionalIds.find(id => id === 'total' || t3.regional[id].name === 'Жами' || regionalIds.indexOf(id) === 0);
+        const totalId = regionalIds.find(id => id === 'total' || t3.regional[id]?.name === 'Жами' || regionalIds.indexOf(id) === 0);
         const regularRegions = regionalIds.filter(id => id !== totalId);
 
         const headerColors = {
@@ -611,7 +688,7 @@ const AppealsPage: React.FC = () => {
     };
 
     const renderTable6 = () => {
-        const t6 = autoReportsQuery.data?.table6 || { people: { curr: {} }, virtual: { curr: {} } };
+        const t6 = autoReportsQuery.data?.table6 || { people: { curr: {} }, virtual: { curr: {} }, telegram: { curr: {} } };
 
         const headerColors = {
             people: '#f0f9ff',
@@ -800,7 +877,7 @@ const AppealsPage: React.FC = () => {
         { key: '7', label: t('appeals.tabs.t7'), children: <Spin spinning={isLoadingTable}><div className="table-container">{renderTable7()}</div></Spin> },
     ];
 
-    if (isRegion) {
+    if (isRegionUser || isRepublicUser) {
         tabItems.push({
             key: 'monitoring',
             label: <span style={{ fontWeight: 'bold', color: '#fa8c16' }}>{t('appeals.tabs.monitoring')}</span>,
@@ -827,10 +904,22 @@ const AppealsPage: React.FC = () => {
                     {isAdmin && (
                         <Select
                             placeholder={t('admin.organizations.select_org')}
-                            style={{ width: 250 }}
+                            style={{ width: 300 }}
                             value={selectedOrgId}
                             onChange={setSelectedOrgId}
-                            options={organizations.map((o: Organization) => ({ label: o.name, value: o.id }))}
+                            options={organizations.map((o: any) => {
+                                let label = o.name;
+                                if (!o.parent_id && !o.parent) {
+                                    label = `🏢 ${o.name} (Respublika)`;
+                                } else if (o.children?.length > 0 || o.name.includes('viloyat') || o.name.includes('shahar')) {
+                                    label = `📍 ${o.name}`;
+                                } else {
+                                    const parentName = o.parent?.name || organizations.find((parent: any) => parent.id === o.parent_id)?.name;
+                                    label = parentName ? `🏘️ ${parentName}, ${o.name}` : `🏘️ ${o.name}`;
+                                }
+                                
+                                return { label, value: o.id };
+                            })}
                             showSearch
                             allowClear
                         />
@@ -839,6 +928,26 @@ const AppealsPage: React.FC = () => {
                     <Button icon={<ReloadOutlined />} onClick={refresh} loading={isLoadingTable}>
                         {t('common.refresh')}
                     </Button>
+                    
+                    {(isRegionalOrg || isRepublicOrg) && (
+                        <>
+                            <Button 
+                                type="primary" 
+                                icon={<UploadOutlined />} 
+                                onClick={() => setIsUploadModalVisible(true)}
+                                style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                            >
+                                {isRepublicOrg ? "Viloyatlar bo'yicha yuklash" : "Tumanlar ma'lumotini yuklash"}
+                            </Button>
+                            <Button 
+                                icon={<ReloadOutlined />} 
+                                onClick={handleAggregateManual}
+                            >
+                                {isRepublicOrg ? "Respublika yig'masini hisoblash" : "Viloyat yig'masini hisoblash"}
+                            </Button>
+                        </>
+                    )}
+
                     <Button icon={<FileExcelOutlined />} onClick={handleExportExcel} type="primary" ghost>Excel</Button>
                     <Button icon={<FilePdfOutlined />} onClick={handleExportPdf} danger ghost>PDF</Button>
                     {activeTab !== 'journal' && activeTab !== 'monitoring' && activeTab !== 'dashboard' && (
@@ -849,6 +958,34 @@ const AppealsPage: React.FC = () => {
                         </PermissionGate>
                     )}
                 </Space>
+
+                <Modal
+                    title="Tumanlar ma'lumotlarini yuklash"
+                    open={isUploadModalVisible}
+                    onOk={handleBulkUpload}
+                    onCancel={() => setIsUploadModalVisible(false)}
+                    confirmLoading={uploading}
+                    okText="Yuklash va Hisoblash"
+                    cancelText="Bekor qilish"
+                    width={600}
+                >
+                    <p>22 ta tumandan kelgan Excel/PDF fayllarini tanlang. Tizim ularni nomi bo'yicha tumanlarga biriktiradi.</p>
+                    <Upload.Dragger
+                        multiple
+                        beforeUpload={(file) => {
+                            setFileList(prev => [...prev, file]);
+                            return false;
+                        }}
+                        onRemove={(file) => {
+                            setFileList(prev => prev.filter(f => f.uid !== file.uid));
+                        }}
+                        fileList={fileList}
+                    >
+                        <p className="ant-upload-drag-icon"><UploadOutlined /></p>
+                        <p className="ant-upload-text">Fayllarni shu yerga tashlang yoki bosing</p>
+                        <p className="ant-upload-hint">Excel (.xlsx, .xls) fayllari qo'llab-quvvatlanadi.</p>
+                    </Upload.Dragger>
+                </Modal>
                 </Space>
             </Card>
 

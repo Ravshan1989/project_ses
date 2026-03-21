@@ -5,6 +5,8 @@ import { User } from "./entities/user.entity";
 import * as bcrypt from "bcrypt";
 import { TelegramService } from "../telegram/telegram.service";
 import { Cron } from "@nestjs/schedule";
+import { getRoleLevel } from "../../common/utils/role.util";
+import { UserRole } from "../../common/enums/role.enum";
 
 @Injectable()
 export class UsersService {
@@ -27,7 +29,9 @@ export class UsersService {
   // --- Cron Job: Har 5 daqiqada ishlaydi ---
   @Cron("*/5 * * * *")
   async cleanupStuckRegistrations() {
-    this.logger.log("Hali botga ulanmagan va tasdiqlanmagan foydalanuvchilarni tozalash jarayoni boshlandi...");
+    this.logger.log(
+      "Hali botga ulanmagan va tasdiqlanmagan foydalanuvchilarni tozalash jarayoni boshlandi...",
+    );
     try {
       // 15 daqiqadan oldingi vaqtni hisoblash
       const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
@@ -42,22 +46,31 @@ export class UsersService {
       });
 
       if (stuckUsers.length > 0) {
-        this.logger.log(`${stuckUsers.length} ta eskirgan (15 daqiqadan o'tgan) arizalar topildi va o'chirilmoqda.`);
-        
+        this.logger.log(
+          `${stuckUsers.length} ta eskirgan (15 daqiqadan o'tgan) arizalar topildi va o'chirilmoqda.`,
+        );
+
         for (const user of stuckUsers) {
           // Xavfsizlik uchun yana bir bor tekshiramiz: reg_ bilan boshlanmasa o'chirmaymiz (ehtimol eski data)
           if (user.username && user.username.startsWith("reg_")) {
             await this.usersRepository.remove(user);
-            this.logger.debug(`O'chirildi (Kutish muddati o'tgan): ${user.phoneNumber} - ${user.firstName} ${user.lastName}`);
+            this.logger.debug(
+              `O'chirildi (Kutish muddati o'tgan): ${user.phoneNumber} - ${user.firstName} ${user.lastName}`,
+            );
           }
         }
-        
+
         this.logger.log("Tozalash jarayoni muvaffaqiyatli yakunlandi.");
       } else {
-        this.logger.verbose("O'chirilishi kerak bo'lgan eskirgan arizalar topilmadi.");
+        this.logger.verbose(
+          "O'chirilishi kerak bo'lgan eskirgan arizalar topilmadi.",
+        );
       }
     } catch (error) {
-      this.logger.error("Hali tasdiqlanmagan foydalanuvchilarni tozalashda xatolik yuz berdi:", error);
+      this.logger.error(
+        "Hali tasdiqlanmagan foydalanuvchilarni tozalashda xatolik yuz berdi:",
+        error,
+      );
     }
   }
 
@@ -67,6 +80,7 @@ export class UsersService {
       relations: [
         "organization",
         "organization.parent",
+        "organization.children",
         "department",
         "department.permissions",
         "department.permissions.permission",
@@ -131,6 +145,7 @@ export class UsersService {
       relations: [
         "organization",
         "organization.parent",
+        "organization.children",
         "department",
         "department.permissions",
         "department.permissions.permission",
@@ -141,11 +156,40 @@ export class UsersService {
     });
   }
 
-  async findAll(): Promise<User[]> {
-    return this.usersRepository.find({
-      relations: ["organization", "department", "dynamicRole"],
-      order: { isActive: "ASC", createdAt: "DESC" },
-    });
+  // async findAll(): Promise<User[]> { // ESKI
+  async findAll(currentUser?: User): Promise<User[]> {
+    if (!currentUser) return [];
+
+    const level = getRoleLevel(currentUser.role, currentUser);
+    if (level === 1) {
+      return this.usersRepository.find({
+        relations: ["organization", "department", "dynamicRole"],
+        order: { isActive: "ASC", createdAt: "DESC" },
+      });
+    }
+
+    const query = this.usersRepository
+      .createQueryBuilder("user")
+      .leftJoinAndSelect("user.organization", "organization")
+      .leftJoinAndSelect("user.department", "department")
+      .leftJoinAndSelect("user.dynamicRole", "dynamicRole")
+      .orderBy("user.isActive", "ASC")
+      .addOrderBy("user.createdAt", "DESC");
+
+    if (level === 2) {
+      query.where(
+        "organization.parent_id = :orgId OR organization.id = :orgId",
+        {
+          orgId: currentUser.organization.id,
+        },
+      );
+    } else if (level === 3) {
+      query.where("organization.id = :orgId", {
+        orgId: currentUser.organization.id,
+      });
+    }
+
+    return query.getMany();
   }
 
   // UZ: Eski kod - faqat organizationId ni o'zgartirardi
@@ -274,12 +318,38 @@ export class UsersService {
   }
 
   // Admin panel methods
-  async findPending(): Promise<User[]> {
-    return this.usersRepository.find({
-      where: { isActive: false },
-      relations: ["organization", "department"],
-      order: { createdAt: "DESC" },
-    });
+  // async findPending(): Promise<User[]> { // ESKI
+  async findPending(currentUser?: User): Promise<User[]> {
+    if (!currentUser) return [];
+
+    const level = getRoleLevel(currentUser.role, currentUser);
+    if (level === 1) {
+      return this.usersRepository.find({
+        where: { isActive: false },
+        relations: ["organization", "department"],
+        order: { createdAt: "DESC" },
+      });
+    }
+
+    const query = this.usersRepository
+      .createQueryBuilder("user")
+      .leftJoinAndSelect("user.organization", "organization")
+      .leftJoinAndSelect("user.department", "department")
+      .where("user.isActive = :isActive", { isActive: false })
+      .orderBy("user.createdAt", "DESC");
+
+    if (level === 2) {
+      query.andWhere(
+        "(organization.parent_id = :orgId OR organization.id = :orgId)",
+        { orgId: currentUser.organization.id },
+      );
+    } else if (level === 3) {
+      query.andWhere("organization.id = :orgId", {
+        orgId: currentUser.organization.id,
+      });
+    }
+
+    return query.getMany();
   }
 
   async findByOrganization(organizationId: string): Promise<User[]> {
@@ -324,6 +394,21 @@ export class UsersService {
  *       "createdAt",
  *       "updatedAt",
  *     ],
+ *   });
+ * }
+ *
+ * async findAll(): Promise<User[]> {
+ *   return this.usersRepository.find({
+ *     relations: ["organization", "department"],
+ *     order: { isActive: "ASC", createdAt: "DESC" },
+ *   });
+ * }
+ *
+ * async findPending(): Promise<User[]> {
+ *   return this.usersRepository.find({
+ *     where: { isActive: false },
+ *     relations: ["organization", "department"],
+ *     order: { createdAt: "DESC" },
  *   });
  * }
  */

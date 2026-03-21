@@ -12,6 +12,8 @@ import { AnalysisQueryDto } from "./dto/analysis-query.dto";
 import { ForecastingService } from "./forecasting.service"; // UZ: Bashorat qilish xizmati
 import { startOfMonth, subMonths, format, subDays } from "date-fns"; // UZ: Davrlarni hisoblash uchun
 import { SosAlert } from "../sos/entities/sos-alert.entity"; // UZ: SOS Ogohlantirishlar
+import { User } from "../users/entities/user.entity"; // UZ: User entity
+import { getRoleLevel } from "../../common/utils/role.util"; // UZ: Darajani aniqlash
 
 @Injectable()
 export class AnalysisService {
@@ -35,11 +37,31 @@ export class AnalysisService {
     private forecastingService: ForecastingService, // UZ: ForecastingService ineksiya qilindi
   ) {}
 
-  async getGlobalSummary(startDate: string, endDate: string) {
-    const organizations = await this.orgRepo.find({
-      where: { parent: Not(IsNull()) }, // Districts only
-      relations: ["parent"],
-    });
+  // async getGlobalSummary(startDate: string, endDate: string) { // ESKI
+  //   const organizations = await this.orgRepo.find({ // ESKI
+  //     where: { parent: Not(IsNull()) }, // Districts only // ESKI
+  //     relations: ["parent"], // ESKI
+  //   }); // ESKI
+  async getGlobalSummary(startDate: string, endDate: string, user: User) {
+    const level = getRoleLevel(user.role, user);
+
+    const queryBuilder = this.orgRepo
+      .createQueryBuilder("org")
+      .leftJoinAndSelect("org.parent", "parent");
+
+    if (level === 2) {
+      // Region
+      queryBuilder.where("org.parent.id = :parentId OR org.id = :parentId", {
+        parentId: user.organization.id,
+      });
+    } else if (level === 3) {
+      // District
+      queryBuilder.where("org.id = :orgId", { orgId: user.organization.id });
+    } else {
+      queryBuilder.where("org.parent IS NOT NULL");
+    }
+
+    const organizations = await queryBuilder.getMany();
 
     const diseases = await this.diseaseRepo.find({ where: { isActive: true } });
 
@@ -165,8 +187,19 @@ export class AnalysisService {
     return globalMatrix;
   }
 
-  async getIncidenceRates(query: AnalysisQueryDto) {
+  // async getIncidenceRates(query: AnalysisQueryDto) { // ESKI
+  //   const { diseaseType, startDate, endDate, organizationId } = query; // ESKI
+  //   const queryBuilder = this.orgRepo // ESKI
+  //     .createQueryBuilder("org") // ESKI
+  //     .leftJoinAndSelect("org.parent", "parent"); // ESKI
+  //   if (organizationId) { // ESKI
+  //     queryBuilder.where("org.id = :organizationId", { organizationId }); // ESKI
+  //   } else { // ESKI
+  //     queryBuilder.where("org.parent IS NOT NULL"); // ESKI
+  //   } // ESKI
+  async getIncidenceRates(query: AnalysisQueryDto, user: User) {
     const { diseaseType, startDate, endDate, organizationId } = query;
+    const level = getRoleLevel(user.role, user);
 
     const queryBuilder = this.orgRepo
       .createQueryBuilder("org")
@@ -174,6 +207,12 @@ export class AnalysisService {
 
     if (organizationId) {
       queryBuilder.where("org.id = :organizationId", { organizationId });
+    } else if (level === 2) {
+      queryBuilder.where("org.parent.id = :parentId OR org.id = :parentId", {
+        parentId: user.organization.id,
+      });
+    } else if (level === 3) {
+      queryBuilder.where("org.id = :orgId", { orgId: user.organization.id });
     } else {
       queryBuilder.where("org.parent IS NOT NULL");
     }
@@ -237,6 +276,11 @@ export class AnalysisService {
     return results.sort((a, b) => b.incidenceRate - a.incidenceRate);
   }
 
+  /*
+   * [ORIGINAL_REDACTED_CODE_PRESERVATION]
+   */
+
+
   async seedPopulation() {
     // 1. Ensure Region exists as Parent
     let region = await this.orgRepo.findOne({
@@ -292,7 +336,8 @@ export class AnalysisService {
    * UZ: Yangi funksiya - Hisobotlar asosida kutilayotgan trendni hisoblash
    * OPTIMIZED: Mock data for faster response (real data integration later)
    */
-  async getForecast(diseaseType: string) {
+  // async getForecast(diseaseType: string) { // ESKI
+  async getForecast(diseaseType: string, user: User) {
     const today = new Date();
     const history: number[] = [];
 
@@ -370,7 +415,8 @@ export class AnalysisService {
    * OPTIMIZED: Parallel processing for faster response
    * EXPANDED: Top 15 kasalliklar (kunlik + oylik)
    */
-  async getAllForecastsRanked() {
+  // async getAllForecastsRanked() { // ESKI
+  async getAllForecastsRanked(user: User) {
     const diseases = [
       // Kunlik kasalliklar
       { type: "flu", name: "Gripp (Influenza)", emoji: "🤧" },
@@ -402,7 +448,7 @@ export class AnalysisService {
 
     // UZ: Parallel ravishda barcha prognozlarni olish (tezroq!)
     const forecastPromises = diseases.map((disease) =>
-      this.getForecast(disease.type),
+      this.getForecast(disease.type, user),
     );
     const forecastResults = await Promise.all(forecastPromises);
 
@@ -453,15 +499,16 @@ export class AnalysisService {
     };
   }
 
-  async getExecutiveData() {
+  // async getExecutiveData() { // ESKI
+  async getExecutiveData(user: User) {
     const today = new Date();
     const todayStr = format(today, "yyyy-MM-dd");
     const yesterday = subDays(today, 1);
     const yesterdayStr = format(yesterday, "yyyy-MM-dd");
 
     const [todayData, yesterdayData, recentAlerts] = await Promise.all([
-      this.getGlobalSummary(todayStr, todayStr),
-      this.getGlobalSummary(yesterdayStr, yesterdayStr),
+      this.getGlobalSummary(todayStr, todayStr, user),
+      this.getGlobalSummary(yesterdayStr, yesterdayStr, user),
       this.sosRepo.find({
         order: { createdAt: "DESC" },
         take: 5,
@@ -589,13 +636,14 @@ export class AnalysisService {
     };
   }
 
-  async getDistrictExecutiveDetails(districtId: string) {
+  // async getDistrictExecutiveDetails(districtId: string) { // ESKI
+  async getDistrictExecutiveDetails(districtId: string, user: User) {
     const today = new Date();
     const todayStr = format(today, "yyyy-MM-dd");
 
     // Fetch data for specific district only by reusing getGlobalSummary logic but filtering later
     // Note: optimization would be to filter in query, but for now we reuse logic
-    const allDistricts = await this.getGlobalSummary(todayStr, todayStr);
+    const allDistricts = await this.getGlobalSummary(todayStr, todayStr, user);
     const districtData = allDistricts.find(
       (d) => d.organizationId === districtId,
     );
@@ -607,15 +655,16 @@ export class AnalysisService {
     };
   }
 
-  async getDistrictExecutiveSummary(districtId: string) {
+  // async getDistrictExecutiveSummary(districtId: string) { // ESKI
+  async getDistrictExecutiveSummary(districtId: string, user: User) {
     const today = new Date();
     const todayStr = format(today, "yyyy-MM-dd");
     const yesterday = subDays(today, 1);
     const yesterdayStr = format(yesterday, "yyyy-MM-dd");
 
     const [todayData, yesterdayData] = await Promise.all([
-      this.getGlobalSummary(todayStr, todayStr),
-      this.getGlobalSummary(yesterdayStr, yesterdayStr),
+      this.getGlobalSummary(todayStr, todayStr, user),
+      this.getGlobalSummary(yesterdayStr, yesterdayStr, user),
     ]);
 
     // Filter for specific district
@@ -890,10 +939,12 @@ export class AnalysisService {
  *         organizationName: org.name,
  *         population: org.population,
  *         totalCases,
- *         incidenceRate: parseFloat(incidenceRate.toFixed(2)),
- *       };
- *     });
- *
- *     return results.sort((a, b) => b.incidenceRate - a.incidenceRate);
- *   }
+
+
+
+}
+
+/*
+ * [ORIGINAL_REDACTED_CODE_PRESERVATION] - End of class block
  */
+
