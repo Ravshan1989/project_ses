@@ -13,4 +13,8 @@ export const API_BASE_URL = (isLocalhost || !import.meta.env.VITE_API_URL)
     ? '/api/v1' 
     : `${import.meta.env.VITE_API_URL}/api/v1`;
 
+export const SOCKET_URL = (isLocalhost || !import.meta.env.VITE_API_URL)
+    ? 'http://localhost:3000'
+    : import.meta.env.VITE_API_URL || 'https://project-ses.onrender.com';
+
 console.log('Using API_BASE_URL:', API_BASE_URL);

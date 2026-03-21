@@ -31,8 +31,10 @@ const LoginPage: React.FC = () => {
 
             if (response.ok) {
                 localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('user_id', data.user.id);
                 localStorage.setItem('user_role', data.user.role);
                 localStorage.setItem('username', data.user.username);
+
                 // UZ: Foydalanuvchi ism-familiyasi va tashkilot ma'lumotlarini saqlash
                 const firstName = data.user.firstName;
                 const lastName = data.user.lastName;

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Space, Switch, Typography } from 'antd';
-import { ClockCircleOutlined } from '@ant-design/icons';
+import { Button, Space, Switch, Typography, FloatButton } from 'antd';
+import { ClockCircleOutlined, MessageOutlined } from '@ant-design/icons';
+import ChatWindow from '../../features/chat/ChatWindow';
 import dayjs from 'dayjs';
+
 
 const { Title, Text } = Typography;
 
@@ -18,6 +20,8 @@ const GlassLayout: React.FC<GlassLayoutProps> = ({ children, title, subtitle, he
         const saved = localStorage.getItem('isDarkMode');
         return saved === 'true';
     });
+
+    const [isChatVisible, setIsChatVisible] = useState(false);
 
     useEffect(() => {
         localStorage.setItem('isDarkMode', isDarkMode.toString());
@@ -138,9 +142,24 @@ const GlassLayout: React.FC<GlassLayoutProps> = ({ children, title, subtitle, he
             <LayoutContext.Provider value={{ isDarkMode }}>
                 {children}
             </LayoutContext.Provider>
+
+            <ChatWindow 
+                visible={isChatVisible} 
+                onClose={() => setIsChatVisible(false)} 
+            />
+
+            <FloatButton
+                icon={<MessageOutlined />}
+                type="primary"
+                style={{ right: 24, bottom: 80, width: 60, height: 60 }}
+                onClick={() => setIsChatVisible(true)}
+                tooltip={<div>Chat</div>}
+            />
         </div>
     );
 };
+
+
 
 export const LayoutContext = React.createContext({ isDarkMode: false });
 
