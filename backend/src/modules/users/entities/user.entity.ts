@@ -68,6 +68,9 @@ export class User {
   @Column({ nullable: true })
   telegramChatId: string;
 
+  @Column({ nullable: true })
+  pushToken: string;
+
   @Column({ default: true })
   isActive: boolean;
 

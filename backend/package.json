@@ -47,6 +47,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.4",
     "exceljs": "^4.4.0",
+    "firebase-admin": "^13.7.0",
     "helmet": "^8.1.0",
     "node-telegram-bot-api": "^0.67.0",
     "passport": "^0.7.0",

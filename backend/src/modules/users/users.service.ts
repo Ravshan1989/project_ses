@@ -139,6 +139,11 @@ export class UsersService {
     return this.usersRepository.save(newUser);
   }
 
+  async updatePushToken(id: string, token: string) {
+    await this.userRepository.update(id, { pushToken: token });
+    return { success: true };
+  }
+
   async findOne(id: string): Promise<User> {
     return this.usersRepository.findOne({
       where: { id },

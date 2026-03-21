@@ -1,8 +1,9 @@
-import { Module } from "@nestjs/common";
-import { NotificationGateway } from "./notifications.gateway";
+import { Module, Global } from '@nestjs/common';
+import { FcmService } from './fcm.service';
 
+@Global()
 @Module({
-  providers: [NotificationGateway],
-  exports: [NotificationGateway],
+  providers: [FcmService],
+  exports: [FcmService],
 })
 export class NotificationsModule {}

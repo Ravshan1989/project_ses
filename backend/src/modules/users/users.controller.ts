@@ -80,6 +80,12 @@ export class UsersController {
     });
   }
 
+  @Patch("push-token")
+  @UseGuards(JwtAuthGuard)
+  updatePushToken(@Request() req, @Body("token") token: string) {
+    return this.usersService.updatePushToken(req.user.id, token);
+  }
+
   @Get()
   @Roles(UserRole.ADMIN) // Only Admin can view all users
   async findAll() {

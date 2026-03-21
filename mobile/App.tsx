@@ -10,6 +10,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { OfflineManager } from './src/services/OfflineManager';
 import { api } from './src/services/api';
 
+import { registerForPushNotificationsAsync } from './src/services/notifications';
+
 // Initialize offline manager
 OfflineManager.init(api);
 
@@ -19,6 +21,12 @@ export default function App() {
   useEffect(() => {
     checkAuthStatus();
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      registerForPushNotificationsAsync();
+    }
+  }, [isAuthenticated]);
 
   const checkAuthStatus = async () => {
     try {

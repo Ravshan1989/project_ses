@@ -132,6 +132,30 @@ export class TelegramService implements OnModuleInit {
       }
     });
 
+    this.bot.command("stats", async (ctx) => {
+      this.logger.log(`Bot /stats buyrug'ini oldi: ${ctx.from.username}`);
+      try {
+        const orgCount = await this.organizationRepository.count();
+        const userCount = await this.userRepository.count({ where: { isActive: true } });
+        
+        const message = `
+📊 <b>Tizim statistikasi:</b>
+  
+🏢 <b>Tashkilotlar:</b> ${orgCount}
+👥 <b>Faol foydalanuvchilar:</b> ${userCount}
+🕒 <b>Vaqt:</b> ${new Date().toLocaleString('uz-UZ')}
+
+<i>Batafsil ma'lumot uchun Dashboardga kiring.</i>
+        `.trim();
+
+        return ctx.reply(message, { parse_mode: "HTML" });
+      } catch (error) {
+        this.logger.error("Error in /stats command:", error);
+        return ctx.reply("❌ Statistikani yuklashda xatolik yuz berdi.");
+      }
+    });
+
+
     // Handle phone number verification
     this.bot.on("contact", async (ctx) => {
       try {
