@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Space, Switch, Typography, FloatButton } from 'antd';
-import { ClockCircleOutlined, MessageOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined, MessageOutlined, AndroidOutlined } from '@ant-design/icons';
+import { API_BASE_URL } from '../../config';
 import ChatWindow from '../../features/chat/ChatWindow';
+
 import dayjs from 'dayjs';
 
 
@@ -132,9 +134,21 @@ const GlassLayout: React.FC<GlassLayoutProps> = ({ children, title, subtitle, he
                             onChange={setIsDarkMode}
                             style={{ background: isDarkMode ? '#11998e' : '#ccc' }}
                         />
+                        <Button 
+                            type="default" 
+                            shape="round" 
+                            icon={<AndroidOutlined />} 
+                            size="large"
+                            href={API_BASE_URL.startsWith('http') ? `${API_BASE_URL}/updates/download` : `https://project-ses.onrender.com/api/v1/updates/download`}
+                            target="_blank"
+                            style={{ background: 'rgba(255,255,255,0.1)', color: isDarkMode ? '#fff' : '#000', border: '1px solid rgba(255,255,255,0.3)' }}
+                        >
+                            Mobil ilova
+                        </Button>
                         <Button type="primary" shape="round" icon={<ClockCircleOutlined />} size="large" style={{ background: '#11998e', border: 'none' }}>
                             {dayjs().format('DD.MM.YYYY HH:mm')}
                         </Button>
+
                     </Space>
                 </div>
             </div>

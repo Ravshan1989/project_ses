@@ -736,8 +736,6 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
                                     </Card>
                                 </Col>
                                 <Col span={12} className="animate-fade-in animate-delay-4">
-                                    <Card className="glass-card" title={<Space><span style={{ fontSize: '16px', fontWeight: 600 }}>{t('dashboard_page.region_breakdown')}</span></Space>} bordered={false}>
-                                        <Column {...regionColumnConfig} height={250} />
                                     </Card>
                                 </Col>
                             </Row>
@@ -745,7 +743,62 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
                     </Col>
 
                     <Col xs={24} lg={8} className="animate-fade-in animate-delay-3">
+                        {/* Mobile App QR Code Card */}
+                        <Card 
+                            className="glass-card animate-fade-in animate-delay-4" 
+                            style={{ 
+                                marginBottom: '24px', 
+                                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
+                                border: '1px solid rgba(59, 130, 246, 0.3)'
+                            }} 
+                            title={
+                                <Space><AndroidOutlined style={{ color: '#3b82f6' }} /> <span style={{ fontSize: '16px', fontWeight: 600 }}>{t('dashboard_page.mobile_app_title', 'Mobil ilovani yuklab oling')}</span></Space>
+                            } 
+                            bordered={false}
+                        >
+                            <div style={{ textAlign: 'center', padding: '10px' }}>
+                                <div style={{ 
+                                    background: '#fff', 
+                                    padding: '15px', 
+                                    borderRadius: '16px', 
+                                    display: 'inline-block', 
+                                    marginBottom: '16px',
+                                    boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                                }}>
+                                    <img 
+                                        src="/api/v1/updates/qr" // Assuming a QR route or use the image I just generated
+                                        alt="QR Code" 
+                                        style={{ width: '150px', height: '150px' }}
+                                        onError={(e) => {
+                                            // Fallback for demo
+                                            e.currentTarget.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://project-ses.onrender.com/api/v1/updates/download";
+                                        }}
+                                    />
+                                </div>
+                                <Text style={{ display: 'block', marginBottom: '16px', color: isDarkMode ? '#e2e8f0' : '#475569' }}>
+                                    Kamera orqali skanerlang va yangi **v1.1.0** talqinini yuklab oling.
+                                </Text>
+                                <Button 
+                                    type="primary" 
+                                    block 
+                                    icon={<AndroidOutlined />}
+                                    href="https://project-ses.onrender.com/api/v1/updates/download"
+                                    target="_blank"
+                                    style={{ 
+                                        height: '45px', 
+                                        borderRadius: '12px', 
+                                        background: 'linear-gradient(90deg, #3b82f6, #9333ea)',
+                                        border: 'none',
+                                        fontWeight: 600
+                                    }}
+                                >
+                                    APK Yuklab olish
+                                </Button>
+                            </div>
+                        </Card>
+
                         <Card className="glass-card" style={{ marginBottom: '24px' }} title={
+
                             <Space><Badge status="warning" /> <span style={{ fontSize: '16px', fontWeight: 600 }}>Smart Analytics (AI)</span></Space>
                         } bordered={false}>
                             <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '5px' }}>
