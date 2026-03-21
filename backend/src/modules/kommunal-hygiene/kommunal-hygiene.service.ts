@@ -255,4 +255,3 @@ export class KommunalHygieneService {
  * async saveOpenWaterRows(dtos: any[], month: string, organizationId: string) { ... }
  * async saveWaterUsageRows(dtos: any[], month: string, organizationId: string) { ... }
  */
-

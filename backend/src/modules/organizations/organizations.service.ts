@@ -12,8 +12,6 @@ export class OrganizationsService {
     private orgRepo: Repository<Organization>,
   ) {}
 
-
-
   // YANGI YECHIM (Faqat tuman va shaharlarni qaytaradi, ya'ni 'parent'i borlarni):
   async findAll(user?: User): Promise<Organization[]> {
     const allOrgs = await this.orgRepo.find({
@@ -65,4 +63,3 @@ export class OrganizationsService {
  *   return this.orgRepo.find({ relations: ['parent'] });
  * }
  */
-

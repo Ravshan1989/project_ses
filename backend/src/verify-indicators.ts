@@ -71,7 +71,11 @@ async function bootstrap() {
   console.log("Test data inserted. Calculating indicators...");
 
   // 4. Verify Global Summary
-  const globalSummary = await analysisService.getGlobalSummary(today, today, user);
+  const globalSummary = await analysisService.getGlobalSummary(
+    today,
+    today,
+    user,
+  );
   const olmaliqSummary = globalSummary.find(
     (s) => s.organizationId === olmaliq.id,
   );
@@ -86,11 +90,14 @@ async function bootstrap() {
   }
 
   // 5. Verify Incidence Rates
-  const fluRates = await analysisService.getIncidenceRates({
-    diseaseType: "flu",
-    startDate: today,
-    endDate: today,
-  } as any, user);
+  const fluRates = await analysisService.getIncidenceRates(
+    {
+      diseaseType: "flu",
+      startDate: today,
+      endDate: today,
+    } as any,
+    user,
+  );
 
   const olmaliqFluRate = fluRates.find((r) => r.organizationId === olmaliq.id);
   if (olmaliqFluRate) {

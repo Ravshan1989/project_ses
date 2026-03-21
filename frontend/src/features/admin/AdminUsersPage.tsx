@@ -177,13 +177,17 @@ export const AdminUsersPage: React.FC = () => {
                 const roleLabels: Record<string, string> = {
                     ADMIN: 'Tizim administratori',
                     HR: 'Kadrlar bo\'limi',
-                    STAFF: 'Xodim / Vrach',
-                    DISTRICT_HEAD: 'Tuman (Shahar) boshlig\'i',
-                    REGION_HEAD: 'Viloyat boshlig\'i',
-                    DEPARTMENT_HEAD: 'Bo\'lim mudiri',
-                    LEAD_SPECIALIST: 'Yetakchi mutaxassis',
-                    DISTRICT_SPECIALIST: 'Tuman mutaxassisi',
                     REPUBLIC_HEAD: 'Respublika rahbari',
+                    REGION_HEAD: 'Viloyat boshlig\'i',
+                    DISTRICT_HEAD: 'Tuman (Shahar) boshlig\'i',
+                    DEPARTMENT_HEAD: 'Bo\'lim mudiri',
+                    DISTRICT_SPECIALIST: 'Epidemiolog vrach',
+                    DISTRICT_OPERATOR: 'Epidemiolog yordamchisi',
+                    SANITARY_HEAD: 'Sanitariya bo\'limi mudiri',
+                    SANITARY_SPECIALIST: 'Sanitar vrach',
+                    SANITARY_OPERATOR: 'Sanitar yordamchisi',
+                    LEAD_SPECIALIST: 'Yetakchi mutaxassis',
+                    STAFF: 'Xodim',
                 };
                 return roleLabels[role] || role;
             }

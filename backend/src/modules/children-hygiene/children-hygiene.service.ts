@@ -746,4 +746,3 @@ export class ChildrenHygieneService {
  *
  * // ... and other saveTableXReport methods that were modified
  */
-

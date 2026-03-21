@@ -62,8 +62,12 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(dummyPassword, salt);
 
     try {
+      const { firstName, lastName, organizationId, departmentId } = registerDto;
       const newUser = await this.usersService.create({
-        ...registerDto,
+        firstName,
+        lastName,
+        organizationId,
+        departmentId,
         phoneNumber: normalizedPhone,
         username: tempUsername,
         passwordHash,

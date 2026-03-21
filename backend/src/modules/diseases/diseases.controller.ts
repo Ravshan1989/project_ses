@@ -6,12 +6,16 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from "@nestjs/common";
 import { DiseasesService } from "./diseases.service";
 import { CreateDiseaseDto } from "./dto/create-disease.dto";
 import { UpdateDiseaseDto } from "./dto/update-disease.dto";
 
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+
 @Controller("diseases")
+@UseGuards(JwtAuthGuard)
 export class DiseasesController {
   constructor(private readonly diseasesService: DiseasesService) {}
 

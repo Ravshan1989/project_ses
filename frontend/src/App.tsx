@@ -350,7 +350,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                 {localStorage.getItem('user_department_name') || ''}
                             </div>
                         </div>
-                        {hasRole(['DISTRICT_HEAD', 'STAFF']) && (
+                        {hasRole(['DISTRICT_HEAD', 'DISTRICT_SPECIALIST', 'DISTRICT_OPERATOR', 'SANITARY_HEAD', 'SANITARY_SPECIALIST', 'SANITARY_OPERATOR', 'STAFF']) && (
                             <Button type="primary" danger icon={<AlertOutlined />} onClick={() => setSosVisible(true)} style={{ fontWeight: 'bold' }}>
                                 {t('common.sos_btn')}
                             </Button>

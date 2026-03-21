@@ -338,9 +338,17 @@ const UserManagementPage: React.FC = () => {
                                     dropdownStyle={{ borderRadius: '12px' }}
                                 >
                                     <Select.OptGroup label="Tizim rollari">
-                                        <Option value="sys:HR">{t('user.roles.HR')}</Option>
-                                        <Option value="sys:LEAD_SPECIALIST">{t('user.roles.LEAD_SPECIALIST')}</Option>
+                                        <Option value="sys:REPUBLIC_HEAD">{t('user.roles.REPUBLIC_HEAD')}</Option>
+                                        <Option value="sys:REGION_HEAD">{t('user.roles.REGION_HEAD')}</Option>
                                         <Option value="sys:DISTRICT_HEAD">{t('user.roles.DISTRICT_HEAD')}</Option>
+                                        <Option value="sys:DEPARTMENT_HEAD">{t('user.roles.DEPARTMENT_HEAD')}</Option>
+                                        <Option value="sys:DISTRICT_SPECIALIST">{t('user.roles.DISTRICT_SPECIALIST')}</Option>
+                                        <Option value="sys:DISTRICT_OPERATOR">{t('user.roles.DISTRICT_OPERATOR')}</Option>
+                                        <Option value="sys:SANITARY_HEAD">{t('user.roles.SANITARY_HEAD')}</Option>
+                                        <Option value="sys:SANITARY_SPECIALIST">{t('user.roles.SANITARY_SPECIALIST')}</Option>
+                                        <Option value="sys:SANITARY_OPERATOR">{t('user.roles.SANITARY_OPERATOR')}</Option>
+                                        <Option value="sys:LEAD_SPECIALIST">{t('user.roles.LEAD_SPECIALIST')}</Option>
+                                        <Option value="sys:HR">{t('user.roles.HR')}</Option>
                                     </Select.OptGroup>
                                     <Select.OptGroup label="Dinamik rollar (Huquqlar)">
                                         {roles.map((r: any) => (
@@ -575,15 +583,19 @@ const UserManagementPage: React.FC = () => {
                         rules={[{ required: true, message: t('user.select_role') }]}
                     >
                         <Select size="large" style={{ width: '100%' }} placeholder={t('user.select_role')}>
+                            <Option value="REPUBLIC_HEAD">{t('user.roles.REPUBLIC_HEAD')}</Option>
                             <Option value="REGION_HEAD">{t('user.roles.REGION_HEAD')}</Option>
                             <Option value="DISTRICT_HEAD">{t('user.roles.DISTRICT_HEAD')}</Option>
+                            <Option value="DEPARTMENT_HEAD">{t('user.roles.DEPARTMENT_HEAD')}</Option>
+                            <Option value="DISTRICT_SPECIALIST">{t('user.roles.DISTRICT_SPECIALIST')}</Option>
+                            <Option value="DISTRICT_OPERATOR">{t('user.roles.DISTRICT_OPERATOR')}</Option>
+                            <Option value="SANITARY_HEAD">{t('user.roles.SANITARY_HEAD')}</Option>
+                            <Option value="SANITARY_SPECIALIST">{t('user.roles.SANITARY_SPECIALIST')}</Option>
+                            <Option value="SANITARY_OPERATOR">{t('user.roles.SANITARY_OPERATOR')}</Option>
+                            <Option value="LEAD_SPECIALIST">{t('user.roles.LEAD_SPECIALIST')}</Option>
                             <Option value="LAB_HEAD">{t('user.roles.LAB_HEAD')}</Option>
-                            <Option value="REPUBLIC_HEAD">{t('user.roles.REPUBLIC_HEAD')}</Option>
                             <Option value="STAFF">{t('user.roles.STAFF')}</Option>
                             <Option value="ADMIN">{t('user.roles.ADMIN')}</Option>
-                            <Option value="DEPARTMENT_HEAD">Bo'lim Boshlig'i</Option>
-                            <Option value="EPIDEMIOLOGIST">Epidemiolog Vrach</Option>
-                            <Option value="EPIDEMIOLOGIST_ASSISTANT">Epidemiolog Yordamchisi</Option>
                         </Select>
                     </Form.Item>
 

@@ -15,10 +15,6 @@ export class RegisterDto {
   @IsString()
   phoneNumber: string;
 
-  @IsEnum(UserRole)
-  @IsOptional()
-  role?: UserRole;
-
   @IsString()
   @IsOptional()
   organizationId?: string;

@@ -165,8 +165,6 @@ export class SubmissionsService {
   // Shuningdek, organization null bo'lgan holatda xatolik yuz berishi mumkin.
   // Quyida tuzatilgan versiya keltirilgan.
 
-
-
   async getStatusSummary(
     templateCode: string,
     period: string,
@@ -585,4 +583,3 @@ export class SubmissionsService {
  *   }));
  * }
  */
-

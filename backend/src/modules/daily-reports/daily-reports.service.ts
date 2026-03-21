@@ -124,8 +124,11 @@ export class DailyReportsService {
       );
 
       // 4. Send to Telegram
-      await this.telegramService.sendDailyReportWithFiles(summaryText, pdfPath, excelPath);
-
+      await this.telegramService.sendDailyReportWithFiles(
+        summaryText,
+        pdfPath,
+        excelPath,
+      );
 
       console.log(
         "[DailyReportsService] Automated report generated successfully.",
@@ -192,10 +195,7 @@ export class DailyReportsService {
     const saved = await this.reportRepo.save(report);
     await this.telegramService.sendReportNotification(saved);
     return saved;
-
   }
-
-
 
   async getByDate(date: string, user: User, includeTest = false) {
     const level = getRoleLevel(user.role, user);
@@ -972,8 +972,13 @@ export class DailyReportsService {
 
   async submit(type: string, id: string, user: User) {
     const repo: Repository<any> = this.getRepoByType(type) as any;
-    const report = await repo.findOne({ where: { id } });
+    const report = await repo.findOne({
+      where: { id },
+      relations: ["organization"],
+    });
     if (!report) throw new Error("Hisobot topilmadi");
+
+    this.validateIsolation(user, report.organization?.id);
 
     if (
       report.status !== ReportStatus.DRAFT &&
@@ -989,8 +994,13 @@ export class DailyReportsService {
 
   async verify(type: string, id: string, user: User) {
     const repo: Repository<any> = this.getRepoByType(type) as any;
-    const report = await repo.findOne({ where: { id } });
+    const report = await repo.findOne({
+      where: { id },
+      relations: ["organization"],
+    });
     if (!report) throw new Error("Hisobot topilmadi");
+
+    this.validateIsolation(user, report.organization?.id);
 
     if (report.status !== ReportStatus.SUBMITTED) {
       throw new Error("Hisobot tasdiqlash uchun yuborilmagan");
@@ -1004,8 +1014,13 @@ export class DailyReportsService {
 
   async approve(type: string, id: string, user: User) {
     const repo: Repository<any> = this.getRepoByType(type) as any;
-    const report = await repo.findOne({ where: { id } });
+    const report = await repo.findOne({
+      where: { id },
+      relations: ["organization"],
+    });
     if (!report) throw new Error("Hisobot topilmadi");
+
+    this.validateIsolation(user, report.organization?.id);
 
     if (report.status !== ReportStatus.VERIFIED) {
       throw new Error("Hisobot mudir tomonidan tasdiqlanmagan");
@@ -1019,8 +1034,13 @@ export class DailyReportsService {
 
   async reject(type: string, id: string, user: User, comment?: string) {
     const repo: Repository<any> = this.getRepoByType(type) as any;
-    const report = await repo.findOne({ where: { id } });
+    const report = await repo.findOne({
+      where: { id },
+      relations: ["organization"],
+    });
     if (!report) throw new Error("Hisobot topilmadi");
+
+    this.validateIsolation(user, report.organization?.id);
 
     report.status = ReportStatus.REJECTED;
     report.rejectionComment = comment;
@@ -1057,4 +1077,3 @@ export class DailyReportsService {
  *   await this.telegramService.sendReportNotification(saved);
  * }
  */
-

@@ -14,7 +14,6 @@ import { Public } from "../../common/decorators/public.decorator";
 export class OrganizationsController {
   constructor(private readonly orgService: OrganizationsService) {}
 
-  @Public()
   @Get()
   findAll(@Request() req) {
     return this.orgService.findAll(req.user);

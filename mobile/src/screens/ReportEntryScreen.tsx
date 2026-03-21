@@ -47,12 +47,27 @@ const ReportEntryScreen = () => {
         if (status === 'APPROVED' || status === 'VERIFIED') return false;
 
         const role = profile?.role;
-        const isSpecialist = ['STAFF', 'DISTRICT_SPECIALIST', 'DISTRICT_OPERATOR'].includes(role);
-        const isMudir = ['DEPARTMENT_HEAD', 'LAB_HEAD', 'DISTRICT_HEAD'].includes(role);
+        // Specialists/Staff who can create and edit drafts
+        const isSpecialist = [
+            'STAFF', 
+            'DISTRICT_SPECIALIST', 
+            'DISTRICT_OPERATOR',
+            'SANITARY_SPECIALIST', 
+            'SANITARY_OPERATOR',
+            'LEAD_SPECIALIST'
+        ].includes(role);
+        
+        // Heads who can verify/approve (and thus edit if submitted)
+        const isMudir = [
+            'DEPARTMENT_HEAD', 
+            'LAB_HEAD', 
+            'DISTRICT_HEAD',
+            'SANITARY_HEAD'
+        ].includes(role);
 
         if (isSpecialist) return status === 'DRAFT' || status === 'REJECTED';
         if (isMudir) return status === 'SUBMITTED';
-        return true; // Admin/Heads can edit (or we can tighten this)
+        return true; // Admin can edit
     };
 
     useEffect(() => {
@@ -84,6 +99,18 @@ const ReportEntryScreen = () => {
             return;
         }
 
+        // Numeric validation
+        const invalidFields = Object.keys(form).filter(key => {
+            if (key === 'reportDate' || key === 'organizationId' || key === 'status' || key === 'id' || key === 'createdAt') return false;
+            const val = form[key];
+            return val !== '' && isNaN(Number(val));
+        });
+
+        if (invalidFields.length > 0) {
+            Alert.alert('Xatolik', 'Iltimos, faqat raqamlarni kiriting');
+            return;
+        }
+
         setLoading(true);
         try {
             let data: any = {
@@ -94,7 +121,7 @@ const ReportEntryScreen = () => {
 
             // Ensure numbers are converted
             Object.keys(data).forEach(key => {
-                if (key !== 'reportDate' && key !== 'organizationId') {
+                if (!['reportDate', 'organizationId', 'status', 'id', 'createdAt'].includes(key)) {
                     data[key] = Number(data[key]) || 0;
                 }
             });

@@ -1946,5 +1946,3 @@ export class AppealsService {
  *   return { success: true };
  * }
  */
-
-

@@ -1,6 +1,22 @@
 {
+  "scripts": {
+    "prepare": "husky install",
+    "lint:backend": "cd backend && npm run lint",
+    "test:backend": "cd backend && npm test",
+    "lint-staged": "lint-staged"
+  },
   "dependencies": {
     "pngjs": "^7.0.0",
     "pptxgenjs": "^4.0.1"
+  },
+  "devDependencies": {
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0"
+  },
+  "lint-staged": {
+    "backend/src/**/*.ts": [
+      "npm run lint:backend",
+      "npm run test:backend"
+    ]
   }
 }
