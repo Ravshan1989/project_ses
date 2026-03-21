@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { LayoutDashboard, FileText, User, BarChart2, ClipboardList } from 'lucide-react-native';
+import { LayoutDashboard, FileText, User, BarChart2, ClipboardList, MessageSquare } from 'lucide-react-native';
 import { View, ActivityIndicator } from 'react-native';
 
 import DashboardScreen from '../screens/DashboardScreen';
@@ -12,6 +12,8 @@ import ReportDetailScreen from '../screens/ReportDetailScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import AppealsJournalScreen from '../screens/AppealsJournalScreen';
 import AppealEntryScreen from '../screens/AppealEntryScreen';
+import ChatScreen from '../screens/ChatScreen';
+
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { authApi } from '../services/api';
 
@@ -77,8 +79,11 @@ const TabNavigator = ({ onLogout }: { onLogout: () => void }) => {
                         return <ClipboardList size={size} color={color} />;
                     } else if (route.name === 'Profil') {
                         return <User size={size} color={color} />;
+                    } else if (route.name === 'Xabarlar') {
+                        return <MessageSquare size={size} color={color} />;
                     }
                     return null;
+
                 },
                 tabBarActiveTintColor: '#1677ff',
                 tabBarInactiveTintColor: '#94a3b8',
@@ -114,7 +119,9 @@ const TabNavigator = ({ onLogout }: { onLogout: () => void }) => {
                 <>
                     <Tab.Screen name="Hisobotlar" component={ReportsStack} options={{ title: 'Hisobotlar' }} />
                     <Tab.Screen name="Ijro" component={AppealsStack} options={{ title: 'Ijro Intizomi' }} />
+                    <Tab.Screen name="Xabarlar" component={ChatScreen} options={{ title: 'Xabarlar' }} />
                 </>
+
             )}
 
             <Tab.Screen name="Profil" options={{ title: 'Profil' }}>

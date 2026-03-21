@@ -1,4 +1,11 @@
-import { Controller, Get, Query, Param, Patch, UseGuards } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Query,
+  Param,
+  Patch,
+  UseGuards,
+} from "@nestjs/common";
 import { ChatService } from "./chat.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 
@@ -16,7 +23,10 @@ export class ChatController {
   }
 
   @Patch("read/:senderId")
-  async markAsRead(@Param("senderId") senderId: string, @Query("receiverId") receiverId: string) {
+  async markAsRead(
+    @Param("senderId") senderId: string,
+    @Query("receiverId") receiverId: string,
+  ) {
     return await this.chatService.markAsRead(receiverId, senderId);
   }
 }

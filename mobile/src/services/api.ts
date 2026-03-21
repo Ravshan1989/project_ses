@@ -83,3 +83,15 @@ export const appealsApi = {
     getAutoReports: (month: string, organizationId?: string) =>
         api.get(`/appeals/auto-reports?month=${month}${organizationId ? `&organizationId=${organizationId}` : ''}`),
 };
+
+export const chatApi = {
+    getHistory: (user1Id: string, user2Id: string) => 
+        api.get(`/chat/history?user1Id=${user1Id}&user2Id=${user2Id}`),
+    markAsRead: (messageId: string) => 
+        api.patch(`/chat/read/${messageId}`),
+};
+
+export const usersApi = {
+    getAll: () => api.get('/users'),
+};
+

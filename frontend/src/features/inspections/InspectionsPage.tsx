@@ -70,7 +70,7 @@ const InspectionsPage: React.FC = () => {
     const t2Jami = useMemo(() => {
         const fields: (keyof InspectionTable2Row)[] = ['prev_total', 'prev_notified', 'prev_agreed', 'curr_total', 'curr_notified', 'curr_notified_24h'];
         return fields.reduce((a, f) => { a[f as string] = INSPECTION_T2_ROWS.reduce((s, r) => s + getT2Val(r.key, f), 0); return a; }, {} as Record<string, number>);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [t2State, table2Data]);
 
     const handleSaveTable2 = () => {
@@ -115,7 +115,7 @@ const InspectionsPage: React.FC = () => {
         });
         return res;
     }, [t3State, table3Data]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
 
     const handleSaveTable3 = () => {
         const rows: InspectionTable3Row[] = INSPECTION_T2_ROWS.map(r => ({
@@ -159,7 +159,7 @@ const InspectionsPage: React.FC = () => {
             res[f] = INSPECTION_T2_ROWS.reduce((acc, row) => acc + (Number(getT4Val(row.key, f)) || 0), 0);
         });
         return res;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [t4State, table4Data]);
 
     const handleSaveTable4 = () => {
