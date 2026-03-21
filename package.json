@@ -1,8 +1,11 @@
 {
   "scripts": {
     "prepare": "husky install",
-    "lint:backend": "cd backend && npm run lint",
-    "test:backend": "cd backend && npm test",
+    "lint:backend": "npm run lint --prefix backend",
+    "test:backend": "npm run test --prefix backend",
+    "lint:frontend": "npm run lint --prefix frontend",
+    "lint:mobile": "npm run lint --prefix mobile",
+    "test:mobile": "npm run test --prefix mobile",
     "lint-staged": "lint-staged"
   },
   "dependencies": {
@@ -10,6 +13,11 @@
     "pptxgenjs": "^4.0.1"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.57.1",
+    "@typescript-eslint/parser": "^8.57.1",
+    "eslint": "^10.1.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
     "husky": "^9.0.0",
     "lint-staged": "^15.0.0"
   },
@@ -17,6 +25,9 @@
     "backend/src/**/*.ts": [
       "npm run lint:backend",
       "npm run test:backend"
+    ],
+    "frontend/src/**/*.{ts,tsx}": [
+      "npm run lint:frontend"
     ]
   }
 }
