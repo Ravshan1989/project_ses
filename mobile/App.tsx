@@ -7,6 +7,12 @@ import { getToken } from './src/services/auth';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { OfflineManager } from './src/services/OfflineManager';
+import { api } from './src/services/api';
+
+// Initialize offline manager
+OfflineManager.init(api);
+
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 

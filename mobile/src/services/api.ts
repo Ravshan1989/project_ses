@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { API_BASE_URL } from '../config';
 import { getToken } from './auth';
+import { OfflineManager } from './OfflineManager';
+
 
 export const api = axios.create({
     baseURL: API_BASE_URL,
@@ -10,6 +12,7 @@ export const api = axios.create({
 });
 
 // UZ: So'rov yuborishdan oldin tokenni qo'shish (Interceptor)
+// UZ: Offline rejimni boshqarish uchun interceptor (ixtiyoriy, yoki bevosita chaqiriladi)
 api.interceptors.request.use(async (config) => {
     const token = await getToken();
     if (token) {
@@ -17,6 +20,7 @@ api.interceptors.request.use(async (config) => {
     }
     return config;
 });
+
 
 // UZ: Auth API - Login va Profil uchun
 export const authApi = {
@@ -32,15 +36,16 @@ export const dailyReportsApi = {
     getCovidByDate: (date: string, isTest = false) => api.get(`/daily-reports/covid?date=${date}&isTest=${isTest}`),
     getEpidemiologyByDate: (date: string, isTest = false) => api.get(`/daily-reports/epidemiology?date=${date}&isTest=${isTest}`),
     getDiarrheaByDate: (date: string, isTest = false) => api.get(`/daily-reports/diarrhea?date=${date}&isTest=${isTest}`),
-    upsert: (data: any) => api.post('/daily-reports', data), // Hepatitis (default)
-    upsertFlu: (data: any) => api.post('/daily-reports/flu', data),
-    upsertAri: (data: any) => api.post('/daily-reports/ari', data),
-    upsertCovid: (data: any) => api.post('/daily-reports/covid', data),
-    upsertHepatitis: (data: any) => api.post('/daily-reports', data), // Alias for clarity
-    upsertEpidemiology: (data: any) => api.post('/daily-reports/epidemiology', data),
-    upsertDiarrhea: (data: any) => api.post('/daily-reports/diarrhea', data),
+    upsert: (data: any) => OfflineManager.handleRequest(api, { method: 'post', url: '/daily-reports', data }),
+    upsertFlu: (data: any) => OfflineManager.handleRequest(api, { method: 'post', url: '/daily-reports/flu', data }),
+    upsertAri: (data: any) => OfflineManager.handleRequest(api, { method: 'post', url: '/daily-reports/ari', data }),
+    upsertCovid: (data: any) => OfflineManager.handleRequest(api, { method: 'post', url: '/daily-reports/covid', data }),
+    upsertHepatitis: (data: any) => OfflineManager.handleRequest(api, { method: 'post', url: '/daily-reports', data }),
+    upsertEpidemiology: (data: any) => OfflineManager.handleRequest(api, { method: 'post', url: '/daily-reports/epidemiology', data }),
+    upsertDiarrhea: (data: any) => OfflineManager.handleRequest(api, { method: 'post', url: '/daily-reports/diarrhea', data }),
     getWeeklySummary: (startDate: string, endDate: string) =>
         api.get(`/daily-reports/weekly-summary?startDate=${startDate}&endDate=${endDate}`),
+
 };
 
 export const organizationsApi = {
@@ -55,7 +60,8 @@ export const diseasesApi = {
 export const sosApi = {
     getDiseases: () => api.get('/sos/diseases'),
     createAlert: (data: { diseaseName: string; status: string; comment?: string; latitude?: number; longitude?: number }) =>
-        api.post('/sos/alerts', data),
+        OfflineManager.handleRequest(api, { method: 'post', url: '/sos/alerts', data }),
+
 };
 
 export const versionApi = {

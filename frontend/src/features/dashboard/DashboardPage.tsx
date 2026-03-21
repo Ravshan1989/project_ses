@@ -21,8 +21,12 @@ import { Column, Area } from '@ant-design/plots'; // UZ: Area va Pie grafiklar q
 import { api } from '../../services/api'; // UZ: API bilan ishlash uchun
 import { Submission, SubmissionStatus } from '../../types';
 import GlassLayout, { LayoutContext } from '../../components/layout/GlassLayout';
+import { exportDashboardToPDF } from '../../utils/pdfExport';
+import EpidemicMap from '../../components/maps/EpidemicMap';
 
 const { Title, Text } = Typography;
+
+
 const { Option } = Select;
 import { useTranslation } from 'react-i18next';
 
@@ -632,7 +636,26 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
                 )}
 
 
+                <div className="animate-fade-in animate-delay-2" style={{ marginBottom: '32px' }}>
+                    <Card
+                        className="glass-card"
+                        title={<Space><GlobalOutlined style={{ color: '#1677ff' }} /> <span style={{ fontSize: '18px', fontWeight: 600 }}>Hududiy epidemiologik holat xaritasi</span></Space>}
+                        bordered={false}
+                    >
+                        <EpidemicMap
+                            data={[
+                                { id: '1', name: 'Nurafshon sh', lat: 41.04, lng: 69.35, value: 45, status: 'warning' },
+                                { id: '2', name: 'Angren sh', lat: 41.01, lng: 70.07, value: 12, status: 'stable' },
+                                { id: '3', name: 'Chirchiq sh', lat: 41.47, lng: 69.58, value: 88, status: 'critical' },
+                                { id: '4', name: 'Yangiyo\'l sh', lat: 41.11, lng: 69.05, value: 30, status: 'stable' },
+                                { id: '5', name: 'Olmaliq sh', lat: 40.85, lng: 69.59, value: 25, status: 'stable' },
+                            ]}
+                        />
+                    </Card>
+                </div>
+
                 <Row gutter={[24, 24]} style={{ marginBottom: '32px' }}>
+
                     <Col xs={24} sm={12} lg={6} className="animate-fade-in animate-delay-1">
                         <Card className="glass-card stat-card-gradient-1" bordered={false} bodyStyle={{ padding: '24px' }}>
                             <Statistic
@@ -710,9 +733,36 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
                                             <Option key={status} value={status}>{t(`dashboard_page.statuses.${status.toLowerCase()}`, { defaultValue: status })}</Option>
                                         ))}
                                     </Select>
+                                    <Button 
+                                        type="primary" 
+                                        icon={<FileTextOutlined />} 
+                                        onClick={() => exportDashboardToPDF({
+                                            title: t('dashboard_page.title'),
+                                            subtitle: t('dashboard_page.subtitle'),
+                                            stats: [
+                                                { label: t('dashboard_page.total_reports'), value: totalSubmissions },
+                                                { label: t('dashboard_page.approved'), value: approvedSubmissions },
+                                                { label: t('dashboard_page.pending'), value: pendingSubmissions },
+                                                { label: t('dashboard_page.rejected'), value: rejectedSubmissions },
+                                            ],
+                                            tableData: filteredData,
+                                            tableColumns: [
+                                                { header: t('dashboard_page.table.region'), dataKey: 'organization' },
+                                                { header: t('dashboard_page.table.report_type'), dataKey: 'template' },
+                                                { header: t('dashboard_page.table.period'), dataKey: 'reportingPeriod' },
+                                                { header: t('dashboard_page.table.status'), dataKey: 'status' },
+                                            ],
+                                            user: localStorage.getItem('user_full_name') || 'Noma\'lum',
+                                            organization: localStorage.getItem('user_org_name') || 'Sanepidqo\'mita',
+                                        })}
+                                        style={{ borderRadius: '20px', background: '#52c41a', borderColor: '#52c41a' }}
+                                    >
+                                        PDF Hisobot
+                                    </Button>
                                 </Space>
                             </div>
                         }>
+
                             <Table
                                 columns={columns}
                                 dataSource={filteredData}
@@ -934,417 +984,4 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
 };
 
 export default DashboardPage;
-
-/*
-ORIGINAL CODE (Append-only rule):
-import React, { useEffect, useState, useContext } from 'react';
-import { Table, Tag, Button, Space, message, Card, Row, Col, Statistic, Select, Input, Typography, Badge, Tooltip, Modal } from 'antd';
-import {
-    CheckOutlined,
-    CloseOutlined,
-    ArrowUpOutlined,
-    ArrowDownOutlined,
-    InfoCircleOutlined,
-    CheckCircleOutlined,
-    ClockCircleOutlined,
-    CloseCircleOutlined,
-    FileTextOutlined,
-    SearchOutlined,
-    EyeOutlined
-} from '@ant-design/icons';
-import { Column, Area } from '@ant-design/plots';
-import { api } from '../../services/api';
-import { Submission, SubmissionStatus } from '../../types';
-import GlassLayout, { LayoutContext } from '../../components/layout/GlassLayout';
-
-const { Title, Text } = Typography;
-const { Option } = Select;
-
-const DashboardPage: React.FC = () => {
-    const [submissions, setSubmissions] = useState<Submission[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [searchText, setSearchText] = useState('');
-    const [statusFilter, setStatusFilter] = useState<string | null>(null);
-
-    return (
-        <GlassLayout title="Statistika Paneli (Toshkent viloyati)" subtitle="Barcha hisobotlar monitoringi va prognozi">
-            <DashboardContent
-                submissions={submissions}
-                setSubmissions={setSubmissions}
-                loading={loading}
-                setLoading={setLoading}
-                searchText={searchText}
-                setSearchText={setSearchText}
-                statusFilter={statusFilter}
-                setStatusFilter={setStatusFilter}
-            />
-        </GlassLayout>
-    );
-};
-
-const DashboardContent: React.FC<any> = ({ submissions, setSubmissions, loading, setLoading, searchText, setSearchText, statusFilter, setStatusFilter }) => {
-    const { isDarkMode } = useContext(LayoutContext);
-    const [allForecasts, setAllForecasts] = useState<any[]>([]);
-    const [selectedDiseaseType, setSelectedDiseaseType] = useState<string>('');
-    const [isModalVisible, setIsModalVisible] = useState(false);
-
-    const REGION_DATA = [
-        { id: '1', name: 'Nurafshon sh', population: 54100, type: 'Shahar' },
-        { id: '2', name: 'Angren sh', population: 191300, type: 'Shahar' },
-        { id: '3', name: 'Bekobod sh', population: 102000, type: 'Shahar' },
-        { id: '4', name: 'Chirchiq sh', population: 168000, type: 'Shahar' },
-        { id: '5', name: 'Olmaliq sh', population: 138500, type: 'Shahar' },
-        { id: '6', name: 'Ohangaron sh', population: 42000, type: 'Shahar' },
-        { id: '7', name: 'Yangiyo\'l sh', population: 63000, type: 'Shahar' },
-        { id: '8', name: 'Oqqo\'rg\'on t', population: 112400, type: 'Tuman' },
-        { id: '9', name: 'Ohangaron t', population: 108300, type: 'Tuman' },
-        { id: '10', name: 'Bekobod t', population: 163400, type: 'Tuman' },
-        { id: '11', name: 'Bo\'stonliq t', population: 175600, type: 'Tuman' },
-        { id: '12', name: 'Bo\'ka t', population: 132400, type: 'Tuman' },
-        { id: '13', name: 'Quyi Chirchiq t', population: 115800, type: 'Tuman' },
-        { id: '14', name: 'Zangiota t', population: 204300, type: 'Tuman' },
-        { id: '15', name: 'Yuqori Chirchiq t', population: 142100, type: 'Tuman' },
-        { id: '16', name: 'Qibray t', population: 206800, type: 'Tuman' },
-        { id: '17', name: 'Parkent t', population: 153000, type: 'Tuman' },
-        { id: '18', name: 'Piskent t', population: 102400, type: 'Tuman' },
-        { id: '19', name: 'O\'rta Chirchiq t', population: 153500, type: 'Tuman' },
-        { id: '20', name: 'Chinoz t', population: 147800, type: 'Tuman' },
-        { id: '21', name: 'Yangiyo\'l t', population: 278300, type: 'Tuman' },
-        { id: '22', name: 'Toshkent t', population: 194500, type: 'Tuman' },
-    ];
-
-    const MOCK_DATA: any[] = [
-        {
-            id: '1',
-            template: { name: 'Forma 1 - Yuqumli kasalliklar' },
-            organization: { name: 'Chirchiq shahar SES' },
-            reportingPeriod: '2026-01-01',
-            status: SubmissionStatus.SUBMITTED,
-            data: { total_cases: 50 },
-            createdAt: '2026-02-01'
-        },
-        {
-            id: '2',
-            template: { name: 'Vaksina qoldiqlari' },
-            organization: { name: 'Bo\'stonliq tumani SES' },
-            reportingPeriod: '2026-01-01',
-            status: SubmissionStatus.APPROVED,
-            data: { total_cases: 120 },
-            createdAt: '2026-02-01'
-        },
-        {
-            id: '3',
-            template: { name: 'Ichimlik suvi tahlili' },
-            organization: { name: 'Zangiota tumani SES' },
-            reportingPeriod: '2026-01-15',
-            status: SubmissionStatus.REJECTED,
-            data: { total_samples: 45 },
-            createdAt: '2026-02-02'
-        },
-        {
-            id: '4',
-            template: { name: 'Maktab oromgohlari nazorati' },
-            organization: { name: 'Bekobod shahar SES' },
-            reportingPeriod: '2026-02-01',
-            status: SubmissionStatus.DRAFT,
-            data: { total_samples: 45 },
-            createdAt: '2026-02-02'
-        }
-    ];
-
-    const fetchSubmissions = async () => {
-        setLoading(true);
-        try {
-            setTimeout(() => {
-                setSubmissions(MOCK_DATA);
-            }, 600);
-        } catch (error) {
-            message.error('Ma\'lumotlarni yuklashda xatolik');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchAllForecasts = async () => {
-        try {
-            const res = await api.get('/analysis/forecasts/ranked');
-            setAllForecasts(res.data.forecasts || []);
-            if (res.data.forecasts && res.data.forecasts.length > 0) {
-                setSelectedDiseaseType(res.data.forecasts[0].diseaseType);
-            }
-        } catch (e) {
-            console.error("Ranked forecasts fetch error", e);
-            // Fallback to mock data
-            setAllForecasts(MOCK_FORECASTS);
-            if (MOCK_FORECASTS.length > 0) {
-                setSelectedDiseaseType(MOCK_FORECASTS[0].diseaseType);
-            }
-        }
-    };
-
-    useEffect(() => {
-        fetchSubmissions();
-        fetchAllForecasts();
-    }, []);
-
-    const handleAction = async (_id: string, action: 'APPROVE' | 'REJECT') => {
-        if (action === 'REJECT') {
-            const reason = prompt('Rad etish sababini kiriting:');
-            if (!reason) return;
-            message.success('Hisobot rad etildi');
-        } else {
-            message.success('Hisobot tasdiqlandi');
-        }
-    };
-
-    const totalSubmissions = submissions.length;
-    const pendingSubmissions = submissions.filter((s: Submission) => s.status === SubmissionStatus.SUBMITTED).length;
-    const approvedSubmissions = submissions.filter((s: Submission) => s.status === SubmissionStatus.APPROVED).length;
-    const rejectedSubmissions = submissions.filter((s: Submission) => s.status === SubmissionStatus.REJECTED).length;
-
-    const filteredData = submissions.filter((item: Submission) => {
-        const matchesSearch = item.organization.name.toLowerCase().includes(searchText.toLowerCase()) ||
-            item.template.name.toLowerCase().includes(searchText.toLowerCase());
-        const matchesStatus = statusFilter ? item.status === statusFilter : true;
-        return matchesSearch && matchesStatus;
-    });
-
-    const columns = [
-        {
-            title: 'Tuman/Shahar',
-            dataIndex: ['organization', 'name'],
-            key: 'org',
-            render: (text: string) => <Text strong>{text}</Text>
-        },
-        {
-            title: 'Hisobot turi',
-            dataIndex: ['template', 'name'],
-            key: 'template',
-            render: (text: string) => <Text type="secondary">{text}</Text>
-        },
-        {
-            title: 'Hisobot davri',
-            dataIndex: 'reportingPeriod',
-            key: 'period',
-        },
-        {
-            title: 'Holat',
-            dataIndex: 'status',
-            key: 'status',
-            render: (status: SubmissionStatus) => {
-                let color = 'default';
-                let icon = null;
-                switch (status) {
-                    case SubmissionStatus.APPROVED: color = 'success'; icon = <CheckCircleOutlined />; break;
-                    case SubmissionStatus.SUBMITTED: color = 'processing'; icon = <ClockCircleOutlined />; break;
-                    case SubmissionStatus.REJECTED: color = 'error'; icon = <CloseCircleOutlined />; break;
-                    case SubmissionStatus.DRAFT: color = 'default'; icon = <FileTextOutlined />; break;
-                }
-                return <Tag icon={icon} color={color} style={{ fontSize: '13px', padding: '4px 8px' }}>{status}</Tag>;
-            }
-        },
-        {
-            title: 'Amallar',
-            key: 'action',
-            render: (_: any, record: Submission) => (
-                <Space size="small">
-                    {record.status === SubmissionStatus.SUBMITTED && (
-                        <>
-                            <Tooltip title="Tasdiqlash">
-                                <Button type="primary" shape="circle" icon={<CheckOutlined />} size="small" onClick={() => handleAction(record.id, 'APPROVE')} />
-                            </Tooltip>
-                            <Tooltip title="Rad etish">
-                                <Button danger shape="circle" icon={<CloseOutlined />} size="small" onClick={() => handleAction(record.id, 'REJECT')} />
-                            </Tooltip>
-                        </>
-                    )}
-                    <Tooltip title="Batafsil ko'rish">
-                        <Button shape="circle" icon={<EyeOutlined />} size="small" />
-                    </Tooltip>
-                </Space>
-            ),
-        },
-    ];
-
-    const regionChartData = REGION_DATA.slice(0, 10).map(r => ({
-        name: r.name,
-        population: r.population
-    }));
-
-    const selectedForecast = allForecasts.find(f => f.diseaseType === selectedDiseaseType) || allForecasts[0];
-    const trendChartData = selectedForecast?.historicalData?.map((val: number, idx: number) => ({
-        month: `${idx + 1}-oy`,
-        value: val
-    })) || [];
-
-    const trendAreaConfig = {
-        data: trendChartData,
-        xField: 'month',
-        yField: 'value',
-        seriesField: 'name',
-        smooth: true,
-        theme: isDarkMode ? 'classicDark' : undefined,
-        areaStyle: () => {
-            return {
-                fill: isDarkMode ? 'l(270) 0:#000 0.5:#11998e 1:#38ef7d' : 'l(270) 0:#ffffff 0.5:#7ec2f3 1:#1890ff',
-            };
-        },
-        line: { color: isDarkMode ? '#38ef7d' : '#1890ff' },
-        point: {
-            size: 5,
-            shape: 'diamond',
-            style: { fill: 'white', stroke: isDarkMode ? '#38ef7d' : '#1890ff', lineWidth: 2 },
-        },
-        tooltip: { showMarkers: true },
-        interactions: [{ type: 'marker-active' }],
-    };
-
-    const regionColumnConfig = {
-        data: regionChartData,
-        xField: 'name',
-        yField: 'population',
-        theme: isDarkMode ? 'classicDark' : undefined,
-        label: {
-            text: (d: any) => d.population.toLocaleString(),
-            position: 'inside',
-            style: { fill: '#FFFFFF', opacity: 0.8 }
-        },
-        xAxis: {
-            label: {
-                autoHide: true,
-                autoRotate: false,
-                style: { fill: isDarkMode ? 'rgba(255,255,255,0.65)' : undefined }
-            },
-        },
-        meta: { name: { alias: 'Hudud' }, population: { alias: 'Aholi' } },
-        color: ({ name }: any) => {
-            if (name === 'Nurafshon sh') return '#1890ff';
-            return '#5B8FF9';
-        }
-    };
-
-    return (
-        <div>
-            <Row gutter={[24, 24]} style={{ marginBottom: '32px' }}>
-                <Col xs={24} sm={12} lg={6} className="animate-fade-in animate-delay-1">
-                    <Card className="glass-card stat-card-gradient-1" bordered={false} bodyStyle={{ padding: '24px' }}>
-                        <Statistic
-                            title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>Jami hisobotlar</span>}
-                            value={totalSubmissions}
-                            prefix={<FileTextOutlined style={{ fontSize: '24px', opacity: 0.8, marginRight: '8px' }} />}
-                            valueStyle={{ color: '#fff', fontSize: '36px', fontWeight: 700 }}
-                        />
-                    </Card>
-                </Col>
-                <Col xs={24} sm={12} lg={6} className="animate-fade-in animate-delay-2">
-                    <Card className="glass-card stat-card-gradient-2" bordered={false} bodyStyle={{ padding: '24px' }}>
-                        <Statistic
-                            title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>Tasdiqlangan</span>}
-                            value={approvedSubmissions}
-                            prefix={<CheckCircleOutlined style={{ fontSize: '24px', opacity: 0.8, marginRight: '8px' }} />}
-                            valueStyle={{ color: '#fff', fontSize: '36px', fontWeight: 700 }}
-                        />
-                    </Card>
-                </Col>
-                <Col xs={24} sm={12} lg={6} className="animate-fade-in animate-delay-3">
-                    <Card className="glass-card stat-card-gradient-3" bordered={false} bodyStyle={{ padding: '24px' }}>
-                        <Statistic
-                            title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>Kutilmoqda</span>}
-                            value={pendingSubmissions}
-                            prefix={<ClockCircleOutlined style={{ fontSize: '24px', opacity: 0.8, marginRight: '8px' }} />}
-                            valueStyle={{ color: '#fff', fontSize: '36px', fontWeight: 700 }}
-                        />
-                    </Card>
-                </Col>
-                <Col xs={24} sm={12} lg={6} className="animate-fade-in animate-delay-4">
-                    <Card className="glass-card stat-card-gradient-4" bordered={false} bodyStyle={{ padding: '24px' }}>
-                        <Statistic
-                            title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>Rad etilgan</span>}
-                            value={rejectedSubmissions}
-                            prefix={<CloseCircleOutlined style={{ fontSize: '24px', opacity: 0.8, marginRight: '8px' }} />}
-                            valueStyle={{ color: '#fff', fontSize: '36px', fontWeight: 700 }}
-                        />
-                    </Card>
-                </Col>
-            </Row>
-
-            <Row gutter={[24, 24]}>
-                <Col xs={24} lg={16} className="animate-fade-in animate-delay-2">
-                    <Card className="glass-card" bordered={false} title={
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Space><FileTextOutlined style={{ color: '#1677ff' }} /> <span style={{ fontSize: '18px', fontWeight: 600 }}>Kelib tushgan hisobotlar</span></Space>
-                            <Space>
-                                <Input
-                                    placeholder="Qidirish..."
-                                    prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
-                                    style={{ width: 200, borderRadius: '20px', background: 'rgba(255,255,255,0.5)', border: 'none' }}
-                                    onChange={(e) => setSearchText(e.target.value)}
-                                />
-                                <Select
-                                    placeholder="Holatni tanlang"
-                                    style={{ width: 120 }}
-                                    allowClear
-                                    bordered={false}
-                                    onChange={setStatusFilter}
-                                >
-                                    {Object.values(SubmissionStatus).map(status => (
-                                        <Option key={status} value={status}>{status}</Option>
-                                    ))}
-                                </Select>
-                            </Space>
-                        </div>
-                    }>
-                        <Table columns={columns} dataSource={filteredData} rowKey="id" loading={loading} pagination={{ pageSize: 6 }} />
-                    </Card>
-
-                    <div style={{ marginTop: '24px' }}>
-                        <Row gutter={[24, 24]}>
-                            <Col span={12} className="animate-fade-in animate-delay-3">
-                                <Card className="glass-card" title={<Space><span style={{ fontSize: '16px', fontWeight: 600 }}>Trend Analizi</span><Badge status="processing" text="Jonli" /></Space>} bordered={false}>
-                                    {trendChartData.length > 0 ? <Area {...trendAreaConfig} height={250} /> : <div style={{ height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Text type="secondary">Ma'lumotlar yuklanmoqda...</Text></div>}
-                                </Card>
-                            </Col>
-                            <Col span={12} className="animate-fade-in animate-delay-4">
-                                <Card className="glass-card" title={<Space><span style={{ fontSize: '16px', fontWeight: 600 }}>Hududlar bo'yicha tahlil</span></Space>} bordered={false}>
-                                    <Column {...regionColumnConfig} height={250} />
-                                </Card>
-                            </Col>
-                        </Row>
-                    </div>
-                </Col>
-
-                <Col xs={24} lg={8} className="animate-fade-in animate-delay-3">
-                    <Card className="glass-card" style={{ marginBottom: '24px' }} title={<Space><Badge status="warning" /> <span style={{ fontSize: '16px', fontWeight: 600 }}>Smart Analytics (AI)</span></Space>} bordered={false}>
-                        <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '5px' }}>
-                            {allForecasts.map((f, i) => (
-                                <div key={i} onClick={() => { setSelectedDiseaseType(f.diseaseType); setIsModalVisible(true); }} style={{ background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)', borderRadius: '12px', padding: '12px', marginBottom: '12px', borderLeft: `4px solid ${f.riskLevel === 'high' ? '#ff4d4f' : '#52c41a'}`, cursor: 'pointer' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}><Text strong>{f.diseaseName}</Text><Tag color={f.riskLevel === 'high' ? 'red' : 'green'}>{f.riskScore}%</Tag></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><Text type="secondary" style={{ fontSize: '12px' }}>Prognoz: <span style={{ color: '#1677ff', fontWeight: 'bold' }}>{f.predictedValue}</span></Text><Text type={f.trend === 'increasing' ? 'danger' : 'success'} style={{ fontSize: '12px' }}>{f.trend === 'increasing' ? 'O\'sish' : 'Kamayish'} ({f.growthRate}%)</Text></div>
-                                </div>
-                            ))}
-                        </div>
-                    </Card>
-                </Col>
-            </Row>
-
-            <Modal title={<Space><Badge status={selectedForecast?.riskLevel === 'high' ? 'error' : 'success'} /><span style={{ fontSize: '18px' }}>{selectedForecast?.diseaseName} prognozi va tahlili</span></Space>} open={isModalVisible} onCancel={() => setIsModalVisible(false)} footer={[<Button key="close" onClick={() => setIsModalVisible(false)}>Yopish</Button>]} width={800} centered>
-                <div style={{ padding: '20px 0' }}>
-                    <div style={{ marginBottom: '20px', padding: '15px', background: isDarkMode ? 'rgba(255,255,255,0.05)' : '#f9f9f9', borderRadius: '8px' }}>
-                        <Row gutter={16}>
-                            <Col span={8}><Statistic title="Hozirgi holat" value={selectedForecast?.currentValue || 0} /></Col>
-                            <Col span={8}><Statistic title="Kelgusi oylik prognoz" value={selectedForecast?.predictedValue || 0} prefix={selectedForecast?.trend === 'increasing' ? <ArrowUpOutlined style={{ color: '#cf1322' }} /> : <ArrowDownOutlined style={{ color: '#3f8600' }} />} valueStyle={{ color: selectedForecast?.trend === 'increasing' ? '#cf1322' : '#3f8600' }} /></Col>
-                            <Col span={8}><Statistic title="O'sish sur'ati" value={(selectedForecast?.growthRate || 0) + '%'} valueStyle={{ fontWeight: 'bold', color: '#1890ff' }} /></Col>
-                        </Row>
-                    </div>
-                    <Title level={5} style={{ marginBottom: '15px' }}>Oylik dinamika va prognoz grafigi</Title>
-                    <Area {...trendAreaConfig} height={300} />
-                    <div style={{ marginTop: '20px' }}><Text type="secondary"><InfoCircleOutlined style={{ marginRight: '8px' }} />{selectedForecast?.trend === 'increasing' ? 'Kelgusi davrda kasallanish xavfi yuqori ekanligi aniqlandi.' : 'Kasallanish holati barqaror darajada kutilmoqda.'}</Text></div>
-                </div>
-            </Modal>
-        </div>
-    );
-};
-
-export default DashboardPage;
-*/
 
