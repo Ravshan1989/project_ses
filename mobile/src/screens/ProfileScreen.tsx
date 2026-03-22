@@ -15,7 +15,7 @@ const ProfileScreen = ({ onLogout, user }: { onLogout: () => void; user: any }) 
             // 1. Check Backend Version first
             const response = await versionApi.getLatest();
             const latest = response.data;
-            const currentVersion = Application.nativeApplicationVersion || '1.1.0';
+            const currentVersion = Application.nativeApplicationVersion || '1.1.1';
 
             if (latest.version !== currentVersion) {
                 Alert.alert(
