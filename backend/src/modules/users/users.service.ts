@@ -140,7 +140,8 @@ export class UsersService {
   }
 
   async updatePushToken(id: string, token: string) {
-    await this.userRepository.update(id, { pushToken: token });
+    // await this.userRepository.update(id, { pushToken: token }); // OLD_TYPO
+    await this.usersRepository.update(id, { pushToken: token });
     return { success: true };
   }
 

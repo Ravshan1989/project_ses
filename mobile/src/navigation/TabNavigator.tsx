@@ -125,7 +125,7 @@ const TabNavigator = ({ onLogout }: { onLogout: () => void }) => {
             )}
 
             <Tab.Screen name="Profil" options={{ title: 'Profil' }}>
-                {(props) => <ProfileScreen {...props} onLogout={onLogout} />}
+                {(props) => <ProfileScreen {...props} onLogout={onLogout} user={user} />}
             </Tab.Screen>
         </Tab.Navigator>
     );

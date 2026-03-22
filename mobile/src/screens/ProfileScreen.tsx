@@ -1,36 +1,58 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import * as Application from 'expo-application';
 import * as Updates from 'expo-updates';
-import { RefreshCw, LogOut, User, Settings, Info } from 'lucide-react-native';
+import { RefreshCw, LogOut, User, Settings, Info, ChevronRight } from 'lucide-react-native';
 import { removeToken } from '../services/auth';
+import { versionApi } from '../services/api';
 
-const ProfileScreen = ({ onLogout }: { onLogout: () => void }) => {
+const ProfileScreen = ({ onLogout, user }: { onLogout: () => void; user: any }) => {
     const [updating, setUpdating] = useState(false);
 
     const onCheckUpdate = async () => {
         setUpdating(true);
         try {
-            const update = await Updates.checkForUpdateAsync();
-            if (update.isAvailable) {
+            // 1. Check Backend Version first
+            const response = await versionApi.getLatest();
+            const latest = response.data;
+            const currentVersion = Application.nativeApplicationVersion || '1.1.0';
+
+            if (latest.version !== currentVersion) {
                 Alert.alert(
-                    'Yangilanish mavjud',
-                    'Ilovaning yangi talqini topildi. Uni hozir yuklab olamizmi?',
+                    'Yangi talqin mavjud',
+                    `Ilovaning yangi ${latest.version} talqini chiqdi.\n\nYangilanishlar: ${latest.notes}`,
                     [
                         { text: 'Keyinroq', style: 'cancel' },
                         {
-                            text: 'Yuklash',
+                            text: 'Yuklab olish',
+                            onPress: () => {
+                                Alert.alert('Yuklash', `Iltimos, yangi APK faylni mana bu manzildan yuklab oling:\n\n${latest.downloadUrl}`);
+                            }
+                        }
+                    ]
+                );
+                return;
+            }
+
+            // 2. Fallback to Expo Updates if version matches
+            const update = await Updates.checkForUpdateAsync();
+            if (update.isAvailable) {
+                Alert.alert(
+                    'OTA Yangilanish mavjud',
+                    'Ilova uchun tezkor yangilanish topildi. Yuklaymizmi?',
+                    [
+                        { text: 'Yo\'q', style: 'cancel' },
+                        {
+                            text: 'Ha',
                             onPress: async () => {
                                 await Updates.fetchUpdateAsync();
-                                Alert.alert('Tayyor', 'Yangilanish yuklandi. Ilovani qayta yuklash kerak.', [
-                                    { text: 'Qayta yuklash', onPress: () => Updates.reloadAsync() }
-                                ]);
+                                await Updates.reloadAsync();
                             }
                         }
                     ]
                 );
             } else {
-                Alert.alert('Yangilanish', 'Siz eng oxirgi talqindagi ilovadan foydalanyapsiz.');
+                Alert.alert('Yangilanishlar', 'Siz eng oxirgi talqindagi ilovadan foydalanyapsiz.');
             }
         } catch (error) {
             console.error('Update check error:', error);
@@ -58,9 +80,25 @@ const ProfileScreen = ({ onLogout }: { onLogout: () => void }) => {
         );
     };
 
+    const showPersonalInfo = () => {
+        if (!user) {
+            Alert.alert('Xatolik', 'Ma\'lumotlar yuklanmagan');
+            return;
+        }
+        Alert.alert(
+            'Shaxsiy ma\'lumotlar',
+            `Foydalanuvchi: ${user.fullName || user.username}\nRol: ${user.role}\nTashkilot: ${user.organization?.name || 'Noma\'lum'}`,
+            [{ text: 'Yopish' }]
+        );
+    };
+
+    const showSettings = () => {
+        Alert.alert('Sozlamalar', 'Ushbu bo\'lim hozirda ishlab chiqilmoqda (Tez kunda...).', [{ text: 'Tushunarli' }]);
+    };
+
     const showAbout = () => {
-        const currentVersion = Application.nativeApplicationVersion || '1.0.1';
-        const lastUpdate = '2026-02-17';
+        const currentVersion = Application.nativeApplicationVersion || '1.1.0';
+        const lastUpdate = '2026-03-21';
         Alert.alert(
             'Ilova haqida',
             `Versiya: ${currentVersion}\nYangilangan sana: ${lastUpdate}\n\nRespublika SES Markazi uchun maxsus ishlab chiqilgan.`,
@@ -69,24 +107,34 @@ const ProfileScreen = ({ onLogout }: { onLogout: () => void }) => {
     };
 
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
+            <View style={styles.header}>
+                <View style={styles.avatarCircle}>
+                    <Text style={styles.avatarText}>{user?.fullName?.charAt(0) || 'U'}</Text>
+                </View>
+                <Text style={styles.userName}>{user?.fullName || 'Foydalanuvchi'}</Text>
+                <Text style={styles.userRole}>{user?.role || 'Xodim'}</Text>
+            </View>
+
             <View style={styles.menu}>
-                <TouchableOpacity style={styles.menuItem}>
+                <TouchableOpacity style={styles.menuItem} onPress={showPersonalInfo}>
                     <View style={styles.menuLeft}>
                         <View style={[styles.iconBox, { backgroundColor: '#e6f4ff' }]}>
                             <User color="#1677ff" size={20} />
                         </View>
                         <Text style={styles.menuText}>Shaxsiy ma'lumotlar</Text>
                     </View>
+                    <ChevronRight size={18} color="#cbd5e1" />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.menuItem}>
+                <TouchableOpacity style={styles.menuItem} onPress={showSettings}>
                     <View style={styles.menuLeft}>
                         <View style={[styles.iconBox, { backgroundColor: '#f0f5ff' }]}>
                             <Settings color="#1677ff" size={20} />
                         </View>
                         <Text style={styles.menuText}>Sozlamalar</Text>
                     </View>
+                    <ChevronRight size={18} color="#cbd5e1" />
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.menuItem} onPress={onCheckUpdate} disabled={updating}>
@@ -100,6 +148,7 @@ const ProfileScreen = ({ onLogout }: { onLogout: () => void }) => {
                         </View>
                         <Text style={styles.menuText}>Yangilanishlarni tekshirish</Text>
                     </View>
+                    <ChevronRight size={18} color="#cbd5e1" />
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.menuItem} onPress={showAbout}>
@@ -109,6 +158,7 @@ const ProfileScreen = ({ onLogout }: { onLogout: () => void }) => {
                         </View>
                         <Text style={styles.menuText}>Ilova haqida</Text>
                     </View>
+                    <ChevronRight size={18} color="#cbd5e1" />
                 </TouchableOpacity>
 
                 <TouchableOpacity style={[styles.menuItem, styles.logoutBtn]} onPress={handleLogout}>
@@ -120,7 +170,7 @@ const ProfileScreen = ({ onLogout }: { onLogout: () => void }) => {
                     </View>
                 </TouchableOpacity>
             </View>
-        </View>
+        </ScrollView>
     );
 };
 
@@ -128,10 +178,48 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#f8fafc',
-        padding: 20,
+    },
+    header: {
+        alignItems: 'center',
+        paddingVertical: 30,
+        backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#f1f5f9',
+        marginBottom: 20,
+    },
+    avatarCircle: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#1677ff',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 12,
+        shadowColor: '#1677ff',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    avatarText: {
+        color: '#fff',
+        fontSize: 32,
+        fontWeight: 'bold',
+    },
+    userName: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#1e293b',
+        marginBottom: 4,
+    },
+    userRole: {
+        fontSize: 14,
+        color: '#64748b',
+        fontWeight: '500',
     },
     menu: {
         backgroundColor: '#fff',
+        marginHorizontal: 16,
         borderRadius: 16,
         overflow: 'hidden',
         shadowColor: '#000',
@@ -139,10 +227,12 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.05,
         shadowRadius: 10,
         elevation: 2,
+        marginBottom: 30,
     },
     menuItem: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
         padding: 16,
         borderBottomWidth: 1,
         borderBottomColor: '#f1f5f9',
@@ -154,7 +244,7 @@ const styles = StyleSheet.create({
     iconBox: {
         width: 36,
         height: 36,
-        borderRadius: 8,
+        borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 12,
