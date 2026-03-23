@@ -1,101 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Modal, Input, List, Avatar, Button, Typography, Badge, Spin, Space } from 'antd';
 import { SendOutlined, MessageOutlined, UserOutlined } from '@ant-design/icons';
-import { io, Socket } from 'socket.io-client';
-import { API_BASE_URL, SOCKET_URL } from '../../config';
+import { useChat, User } from './ChatContext';
 
 const { Text, Title } = Typography;
 
-interface Message {
-  id: string;
-  senderId: string;
-  receiverId: string;
-  content: string;
-  createdAt: string;
-  isRead: boolean;
-}
+const ChatWindow: React.FC = () => {
+  const {
+    messages,
+    isChatVisible,
+    setIsChatVisible,
+    selectedUser,
+    setSelectedUser,
+    users,
+    onlineUserIds,
+    fetchHistory,
+    sendMessage,
+    loading
+  } = useChat();
 
-interface User {
-  id: string;
-  username: string;
-  fullName?: string;
-  role: string;
-}
-
-const ChatWindow: React.FC<{ visible: boolean; onClose: () => void }> = ({ visible, onClose }) => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const selectedUserRef = useRef<User | null>(null);
-  
-  useEffect(() => {
-    selectedUserRef.current = selectedUser;
-  }, [selectedUser]);
-
   const currentUserId = localStorage.getItem('user_id');
-
-  useEffect(() => {
-    if (visible && currentUserId) {
-      fetchUsers();
-      const newSocket = io(`${SOCKET_URL}/chat`, {
-        query: { userId: currentUserId },
-        transports: ['websocket'],
-      });
-
-      newSocket.on('connect', () => {
-        // Request initial list of online users
-        newSocket.emit('getOnlineUsers', (ids: string[]) => {
-          setOnlineUserIds(new Set(ids));
-        });
-      });
-
-      newSocket.on('userStatusChanged', ({ userId, status }: { userId: string, status: 'online' | 'offline' }) => {
-        setOnlineUserIds((prev) => {
-          const next = new Set(prev);
-          if (status === 'online') {
-            next.add(userId);
-          } else {
-            next.delete(userId);
-          }
-          return next;
-        });
-      });
-
-      newSocket.on('newMessage', (msg: Message) => {
-        const currentSelected = selectedUserRef.current;
-        if (currentSelected && (msg.senderId === currentSelected.id || msg.senderId === currentUserId)) {
-          setMessages((prev) => [...prev, msg]);
-        }
-      });
-
-      newSocket.on('messageSent', (msg: Message) => {
-        const currentSelected = selectedUserRef.current;
-        if (currentSelected && msg.receiverId === currentSelected.id) {
-          setMessages((prev) => {
-            const exists = prev.some(m => m.id === msg.id || (m.id.startsWith('tmp_') && m.content === msg.content));
-            if (!exists) return [...prev, msg];
-            return prev.map(m => (m.id.startsWith('tmp_') && m.content === msg.content) ? msg : m);
-          });
-        }
-      });
-
-      setSocket(newSocket);
-      return () => {
-        newSocket.disconnect();
-      };
-    }
-  }, [visible, currentUserId]);
-
-  useEffect(() => {
-    if (selectedUser) {
-      fetchHistory(selectedUser.id);
-    }
-  }, [selectedUser]);
 
   useEffect(() => {
     scrollToBottom();
@@ -105,58 +30,16 @@ const ChatWindow: React.FC<{ visible: boolean; onClose: () => void }> = ({ visib
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const fetchUsers = async () => {
-    try {
-      const token = localStorage.getItem('access_token');
-      const res = await fetch(`${API_BASE_URL}/users`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUsers(data.filter((u: User) => u.id !== currentUserId));
-      }
-    } catch (err) {
-      console.error('Fetch users error', err);
-    }
+  const handleUserClick = (user: User) => {
+    setSelectedUser(user);
+    fetchHistory(user.id);
   };
 
-  const fetchHistory = async (otherUserId: string) => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('access_token');
-      const res = await fetch(`${API_BASE_URL}/chat/history?user1Id=${currentUserId}&user2Id=${otherUserId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        setMessages(await res.json());
-      }
-    } catch (err) {
-      console.error('Fetch history error', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [inputValue, setInputValue] = React.useState('');
 
   const handleSend = () => {
-    if (!inputValue.trim() || !selectedUser || !socket || !currentUserId) return;
-
-    const tempId = `tmp_${Date.now()}`;
-    const msgData = {
-      senderId: currentUserId as string,
-      receiverId: selectedUser.id,
-      content: inputValue,
-    };
-
-    // Optimistic Update
-    const optimisticMsg: Message = {
-      ...msgData,
-      id: tempId,
-      createdAt: new Date().toISOString(),
-      isRead: false
-    };
-    
-    setMessages(prev => [...prev, optimisticMsg]);
-    socket.emit('sendMessage', msgData);
+    if (!inputValue.trim()) return;
+    sendMessage(inputValue);
     setInputValue('');
   };
 
@@ -168,11 +51,11 @@ const ChatWindow: React.FC<{ visible: boolean; onClose: () => void }> = ({ visib
           <span>Real-Vaqt Chat</span>
         </Space>
       }
-      open={visible}
-      onCancel={onClose}
+      open={isChatVisible}
+      onCancel={() => setIsChatVisible(false)}
       footer={null}
       width={800}
-      bodyStyle={{ height: '500px', display: 'flex', padding: 0 }}
+      styles={{ body: { height: '500px', display: 'flex', padding: 0 } }}
       centered
       style={{ borderRadius: '20px', overflow: 'hidden' }}
     >
@@ -185,7 +68,7 @@ const ChatWindow: React.FC<{ visible: boolean; onClose: () => void }> = ({ visib
           dataSource={users}
           renderItem={(user) => (
             <List.Item
-              onClick={() => setSelectedUser(user)}
+              onClick={() => handleUserClick(user)}
               style={{
                 cursor: 'pointer',
                 padding: '12px 16px',

@@ -20,14 +20,15 @@ export class ChatService {
   }
 
   async findConversation(user1Id: string, user2Id: string) {
-    return await this.messageRepository.find({
+    const messages = await this.messageRepository.find({
       where: [
         { senderId: user1Id, receiverId: user2Id },
         { senderId: user2Id, receiverId: user1Id },
       ],
-      order: { createdAt: "ASC" },
-      take: 50, // Last 50 messages
+      order: { createdAt: "DESC" },
+      take: 50,
     });
+    return messages.reverse();
   }
 
   async markAsRead(receiverId: string, senderId: string) {

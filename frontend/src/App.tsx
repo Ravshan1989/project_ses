@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from
 import { Layout, Menu, Button, ConfigProvider, Typography, App as AntdApp, FloatButton } from 'antd';
 import { MessageOutlined } from '@ant-design/icons';
 import ChatWindow from './features/chat/ChatWindow';
+import { ChatProvider, useChat } from './features/chat/ChatContext';
 import uzUZ from 'antd/es/locale/uz_UZ';
 import ruRU from 'antd/es/locale/ru_RU';
 
@@ -71,7 +72,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const location = useLocation();
     const [collapsed, setCollapsed] = React.useState(false);
     const [sosVisible, setSosVisible] = React.useState(false);
-    const [isChatVisible, setIsChatVisible] = React.useState(false);
+    const { setIsChatVisible } = useChat();
     const { t } = useTranslation();
 
     const userRole = localStorage.getItem('user_role');
@@ -377,10 +378,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     </div>
                 </Content>
                 <SosModal visible={sosVisible} onClose={() => setSosVisible(false)} />
-                <ChatWindow 
-                    visible={isChatVisible} 
-                    onClose={() => setIsChatVisible(false)} 
-                />
+                <ChatWindow />
                 <FloatButton
                     icon={<MessageOutlined />}
                     type="primary"
@@ -421,6 +419,7 @@ function App() {
         >
             <AntdApp>
                 <BrowserRouter>
+                    <ChatProvider>
                     <Routes>
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/register" element={<RegisterPage />} />
@@ -458,6 +457,7 @@ function App() {
                         <Route path="/roles" element={<ProtectedRoute><RoleManagementPage /></ProtectedRoute>} />
                         <Route path="/admin/users-management" element={<ProtectedRoute><AdminUsersPage /></ProtectedRoute>} />
                     </Routes>
+                    </ChatProvider>
                 </BrowserRouter>
             </AntdApp>
         </ConfigProvider>
