@@ -31,10 +31,37 @@ const ChatWindow: React.FC = () => {
   };
 
   const getUserDisplayName = (user: User) => {
+    // 1. If real name is available, use it
     if (user.firstName || user.lastName) {
       return `${user.lastName || ''} ${user.firstName || ''}`.trim();
     }
-    return user.username || 'Foydalanuvchi';
+    
+    // 2. Fallback: Format username (e.g. "dilrabo.shorustamova" -> "Dilrabo Shorustamova")
+    if (user.username) {
+      return user.username
+        .split(/[._]/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    }
+    
+    return 'Foydalanuvchi';
+  };
+
+  const getReadableRole = (user: User) => {
+    if (user.department?.name) return user.department.name;
+    
+    const roleMap: Record<string, string> = {
+      'HR': 'Kadrlar bo\'limi',
+      'LEAD_SPECIALIST': 'Bosh mutaxassis',
+      'ADMIN': 'Administrator',
+      'REPUBLIC_HEAD': 'Respublika rahbari',
+      'REGION_HEAD': 'Viloyat rahbari',
+      'DISTRICT_HEAD': 'Tuman rahbari',
+      'CHIEF_SPECIALIST': 'Yetakchi mutaxassis',
+      'STAFF': 'Xodim'
+    };
+    
+    return roleMap[user.role] || user.role || 'Xodim';
   };
 
   const handleUserClick = (user: User) => {
@@ -92,7 +119,7 @@ const ChatWindow: React.FC = () => {
                 title={getUserDisplayName(user)}
                 description={
                   <Text type="secondary" style={{ fontSize: '11px', display: 'block' }}>
-                    {user.department?.name || user.role || 'Xodim'}
+                    {getReadableRole(user)}
                   </Text>
                 }
               />
@@ -108,7 +135,7 @@ const ChatWindow: React.FC = () => {
               <Avatar size="small" icon={<UserOutlined />} />
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <Text strong>{getUserDisplayName(selectedUser)}</Text>
-                <Text type="secondary" style={{ fontSize: '11px' }}>{selectedUser.department?.name || selectedUser.role}</Text>
+                <Text type="secondary" style={{ fontSize: '11px' }}>{getReadableRole(selectedUser)}</Text>
               </div>
             </div>
             
