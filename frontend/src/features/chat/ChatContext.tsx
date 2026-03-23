@@ -14,8 +14,14 @@ export interface Message {
 export interface User {
   id: string;
   username: string;
-  fullName?: string;
+  firstName?: string;
+  lastName?: string;
+  middleName?: string;
   role: string;
+  department?: {
+    id: string;
+    name: string;
+  };
 }
 
 interface ChatContextType {

@@ -30,6 +30,13 @@ const ChatWindow: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const getUserDisplayName = (user: User) => {
+    if (user.firstName || user.lastName) {
+      return `${user.lastName || ''} ${user.firstName || ''}`.trim();
+    }
+    return user.username || 'Foydalanuvchi';
+  };
+
   const handleUserClick = (user: User) => {
     setSelectedUser(user);
     fetchHistory(user.id);
@@ -82,8 +89,12 @@ const ChatWindow: React.FC = () => {
                     <Avatar icon={<UserOutlined />} />
                   </Badge>
                 }
-                title={user.fullName || user.username}
-                description={<Text type="secondary" style={{ fontSize: '12px' }}>{user.role}</Text>}
+                title={getUserDisplayName(user)}
+                description={
+                  <Text type="secondary" style={{ fontSize: '11px', display: 'block' }}>
+                    {user.department?.name || user.role || 'Xodim'}
+                  </Text>
+                }
               />
             </List.Item>
           )}
@@ -95,7 +106,10 @@ const ChatWindow: React.FC = () => {
           <>
             <div style={{ padding: '12px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: '12px' }}>
               <Avatar size="small" icon={<UserOutlined />} />
-              <Text strong>{selectedUser.fullName || selectedUser.username}</Text>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <Text strong>{getUserDisplayName(selectedUser)}</Text>
+                <Text type="secondary" style={{ fontSize: '11px' }}>{selectedUser.department?.name || selectedUser.role}</Text>
+              </div>
             </div>
             
             <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
