@@ -42,6 +42,11 @@ const ChatScreen = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   const flatListRef = useRef<FlatList>(null);
+  const selectedUserRef = useRef<UserData | null>(null);
+
+  useEffect(() => {
+    selectedUserRef.current = selectedUser;
+  }, [selectedUser]);
 
   useEffect(() => {
     const init = async () => {
@@ -59,13 +64,13 @@ const ChatScreen = () => {
         });
 
         newSocket.on('newMessage', (msg: Message) => {
+          const currentSelected = selectedUserRef.current;
           setMessages((prev) => {
             const isRelevant = 
-              (msg.senderId === me.id && msg.receiverId === selectedUser?.id) ||
-              (msg.senderId === selectedUser?.id && msg.receiverId === me.id);
+              (msg.senderId === me.id && msg.receiverId === currentSelected?.id) ||
+              (msg.senderId === currentSelected?.id && msg.receiverId === me.id);
             
             if (isRelevant) {
-               // Prevent duplicate if already added via optimistic UI
                if (prev.some(m => m.id === msg.id)) return prev;
                return [...prev, msg];
             }
@@ -74,8 +79,10 @@ const ChatScreen = () => {
         });
 
         newSocket.on('messageSent', (msg: Message) => {
+           const currentSelected = selectedUserRef.current;
            setMessages((prev) => {
-             // Replace optimistic message or add if missing
+             if (!currentSelected || msg.receiverId !== currentSelected.id) return prev;
+             
              const exists = prev.some(m => m.id === msg.id || (m.id.startsWith('tmp_') && m.content === msg.content));
              if (!exists) return [...prev, msg];
              return prev.map(m => (m.id.startsWith('tmp_') && m.content === msg.content) ? msg : m);

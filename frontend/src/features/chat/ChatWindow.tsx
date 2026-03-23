@@ -31,6 +31,11 @@ const ChatWindow: React.FC<{ visible: boolean; onClose: () => void }> = ({ visib
   const [socket, setSocket] = useState<Socket | null>(null);
   const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const selectedUserRef = useRef<User | null>(null);
+  
+  useEffect(() => {
+    selectedUserRef.current = selectedUser;
+  }, [selectedUser]);
 
   const currentUserId = localStorage.getItem('user_id');
 
@@ -62,20 +67,18 @@ const ChatWindow: React.FC<{ visible: boolean; onClose: () => void }> = ({ visib
       });
 
       newSocket.on('newMessage', (msg: Message) => {
-        if (selectedUser && (msg.senderId === selectedUser.id || msg.senderId === currentUserId)) {
+        const currentSelected = selectedUserRef.current;
+        if (currentSelected && (msg.senderId === currentSelected.id || msg.senderId === currentUserId)) {
           setMessages((prev) => [...prev, msg]);
         }
       });
 
       newSocket.on('messageSent', (msg: Message) => {
-        if (selectedUser && msg.receiverId === selectedUser.id) {
+        const currentSelected = selectedUserRef.current;
+        if (currentSelected && msg.receiverId === currentSelected.id) {
           setMessages((prev) => {
-            // Reconcile optimistic message with server-confirmed message
-            // or just ensure we don't duplicate
             const exists = prev.some(m => m.id === msg.id || (m.id.startsWith('tmp_') && m.content === msg.content));
             if (!exists) return [...prev, msg];
-            
-            // Replace temporary one with real one
             return prev.map(m => (m.id.startsWith('tmp_') && m.content === msg.content) ? msg : m);
           });
         }
