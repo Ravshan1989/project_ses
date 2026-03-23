@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Space, Switch, Typography, FloatButton } from 'antd';
-import { ClockCircleOutlined, MessageOutlined, AndroidOutlined } from '@ant-design/icons';
+import { Button, Space, Switch, Typography } from 'antd';
+import { ClockCircleOutlined, AndroidOutlined } from '@ant-design/icons';
 import { API_BASE_URL } from '../../config';
-import ChatWindow from '../../features/chat/ChatWindow';
 
 import dayjs from 'dayjs';
 
@@ -22,8 +21,6 @@ const GlassLayout: React.FC<GlassLayoutProps> = ({ children, title, subtitle, he
         const saved = localStorage.getItem('isDarkMode');
         return saved === 'true';
     });
-
-    const [isChatVisible, setIsChatVisible] = useState(false);
 
     useEffect(() => {
         localStorage.setItem('isDarkMode', isDarkMode.toString());
@@ -156,19 +153,6 @@ const GlassLayout: React.FC<GlassLayoutProps> = ({ children, title, subtitle, he
             <LayoutContext.Provider value={{ isDarkMode }}>
                 {children}
             </LayoutContext.Provider>
-
-            <ChatWindow 
-                visible={isChatVisible} 
-                onClose={() => setIsChatVisible(false)} 
-            />
-
-            <FloatButton
-                icon={<MessageOutlined />}
-                type="primary"
-                style={{ right: 24, bottom: 80, width: 60, height: 60 }}
-                onClick={() => setIsChatVisible(true)}
-                tooltip={<div>Chat</div>}
-            />
         </div>
     );
 };

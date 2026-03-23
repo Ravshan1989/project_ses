@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Button, ConfigProvider, Typography, App as AntdApp } from 'antd';
+import { Layout, Menu, Button, ConfigProvider, Typography, App as AntdApp, FloatButton } from 'antd';
+import { MessageOutlined } from '@ant-design/icons';
+import ChatWindow from './features/chat/ChatWindow';
 import uzUZ from 'antd/es/locale/uz_UZ';
 import ruRU from 'antd/es/locale/ru_RU';
 
@@ -59,6 +61,7 @@ import MobileBottomNav from './components/layout/MobileBottomNav';
 import { useTranslation } from 'react-i18next';
 import { useInactivityTimeout } from './hooks/useInactivityTimeout';
 
+
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
 
@@ -67,6 +70,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const location = useLocation();
     const [collapsed, setCollapsed] = React.useState(false);
     const [sosVisible, setSosVisible] = React.useState(false);
+    const [isChatVisible, setIsChatVisible] = React.useState(false);
     const { t } = useTranslation();
 
     const userRole = localStorage.getItem('user_role');
@@ -350,6 +354,14 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                                 {localStorage.getItem('user_department_name') || ''}
                             </div>
                         </div>
+                        <Button 
+                            type="text" 
+                            icon={<MessageOutlined style={{ color: '#1890ff' }} />} 
+                            onClick={() => setIsChatVisible(true)}
+                            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: 'auto', padding: '4px 8px' }}
+                        >
+                            <div style={{ fontSize: '10px', marginTop: '-4px' }}>Chat</div>
+                        </Button>
                         {hasRole(['DISTRICT_HEAD', 'DISTRICT_SPECIALIST', 'DISTRICT_OPERATOR', 'SANITARY_HEAD', 'SANITARY_SPECIALIST', 'SANITARY_OPERATOR', 'STAFF']) && (
                             <Button type="primary" danger icon={<AlertOutlined />} onClick={() => setSosVisible(true)} style={{ fontWeight: 'bold' }}>
                                 {t('common.sos_btn')}
@@ -365,6 +377,17 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     </div>
                 </Content>
                 <SosModal visible={sosVisible} onClose={() => setSosVisible(false)} />
+                <ChatWindow 
+                    visible={isChatVisible} 
+                    onClose={() => setIsChatVisible(false)} 
+                />
+                <FloatButton
+                    icon={<MessageOutlined />}
+                    type="primary"
+                    style={{ right: 24, bottom: 80, width: 60, height: 60, zIndex: 1000 }}
+                    onClick={() => setIsChatVisible(true)}
+                    tooltip={<div>Chat</div>}
+                />
                 <MobileBottomNav />
                 <Footer style={{ textAlign: 'center', color: '#999', background: 'transparent', paddingBottom: '80px' }}>
                     {t('common.app_name')} ©{new Date().getFullYear()} {t('common.footer_org')}
@@ -373,7 +396,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </Layout>
     );
 };
-const ProtectedRoute = ({ children }: { children: any }) => {
+const ProtectedRoute = ({ children }: { children: any }) => {
     const token = localStorage.getItem('access_token');
     if (!token) return <Navigate to="/login" replace />;
     return <MainLayout>{children}</MainLayout>;

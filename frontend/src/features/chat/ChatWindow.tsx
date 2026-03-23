@@ -67,6 +67,12 @@ const ChatWindow: React.FC<{ visible: boolean; onClose: () => void }> = ({ visib
         }
       });
 
+      newSocket.on('messageSent', (msg: Message) => {
+        if (selectedUser && msg.receiverId === selectedUser.id) {
+          setMessages((prev) => [...prev, msg]);
+        }
+      });
+
       setSocket(newSocket);
       return () => {
         newSocket.disconnect();
