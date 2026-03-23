@@ -32,6 +32,8 @@ import Form1StatusPage from './features/submission/Form1StatusPage';
 import FluDailyReportPage from './features/disease/FluDailyReportPage';
 import AriDailyReportPage from './features/disease/AriDailyReportPage';
 import EpidemiologyDailyReportPage from './features/disease/EpidemiologyDailyReportPage';
+
+
 import WeeklyFluReportPage from './features/disease/WeeklyFluReportPage';
 import CovidDailyReportPage from './features/disease/CovidDailyReportPage';
 import DailyReportUnifiedPage from './features/disease/unified/DailyReportUnifiedPage';
@@ -45,7 +47,6 @@ import ImportPage from './features/import/ImportPage';
 import DepartmentManagementPage from './features/admin/DepartmentManagementPage';
 import SosAlertPage from './features/sos/SosAlertPage';
 import SosModal from './features/sos/SosModal';
-import SurpriseDaisy from './components/SurpriseDaisy';
 import VerificationPage from './features/verify/VerificationPage';
 import DashboardExecutivePage from './features/dashboard/DashboardExecutivePage';
 import RegisterPage from './features/auth/RegisterPage';
@@ -372,7 +373,6 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 </Header>
                 <Content style={{ margin: '24px 24px 0', overflow: 'initial' }}>
                     <div style={{ padding: 0, minHeight: 360 }}>
-                        {localStorage.getItem('username') === 'sitora.ibragimova' && <SurpriseDaisy />}
                         {children}
                     </div>
                 </Content>
