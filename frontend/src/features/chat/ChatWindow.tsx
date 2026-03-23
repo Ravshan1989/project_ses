@@ -69,7 +69,15 @@ const ChatWindow: React.FC<{ visible: boolean; onClose: () => void }> = ({ visib
 
       newSocket.on('messageSent', (msg: Message) => {
         if (selectedUser && msg.receiverId === selectedUser.id) {
-          setMessages((prev) => [...prev, msg]);
+          setMessages((prev) => {
+            // Reconcile optimistic message with server-confirmed message
+            // or just ensure we don't duplicate
+            const exists = prev.some(m => m.id === msg.id || (m.id.startsWith('tmp_') && m.content === msg.content));
+            if (!exists) return [...prev, msg];
+            
+            // Replace temporary one with real one
+            return prev.map(m => (m.id.startsWith('tmp_') && m.content === msg.content) ? msg : m);
+          });
         }
       });
 
@@ -127,14 +135,24 @@ const ChatWindow: React.FC<{ visible: boolean; onClose: () => void }> = ({ visib
   };
 
   const handleSend = () => {
-    if (!inputValue.trim() || !selectedUser || !socket) return;
+    if (!inputValue.trim() || !selectedUser || !socket || !currentUserId) return;
 
+    const tempId = `tmp_${Date.now()}`;
     const msgData = {
-      senderId: currentUserId,
+      senderId: currentUserId as string,
       receiverId: selectedUser.id,
       content: inputValue,
     };
 
+    // Optimistic Update
+    const optimisticMsg: Message = {
+      ...msgData,
+      id: tempId,
+      createdAt: new Date().toISOString(),
+      isRead: false
+    };
+    
+    setMessages(prev => [...prev, optimisticMsg]);
     socket.emit('sendMessage', msgData);
     setInputValue('');
   };

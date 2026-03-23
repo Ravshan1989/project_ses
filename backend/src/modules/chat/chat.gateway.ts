@@ -52,18 +52,32 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody()
     data: { senderId: string; receiverId: string; content: string },
   ) {
-    const message = await this.chatService.create(data);
+    // Generate an immediate message object to bypass DB latency
+    const immediateMessage = {
+      ...data,
+      id: `tmp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isRead: false
+    };
 
-    // Send to receiver if online
+    // 1. Send to receiver immediately if online
     const receiverSocketId = this.connectedUsers.get(data.receiverId);
     if (receiverSocketId) {
-      this.server.to(receiverSocketId).emit("newMessage", message);
+      this.server.to(receiverSocketId).emit("newMessage", immediateMessage);
     }
 
-    // Echo back to sender for confirmation
-    client.emit("messageSent", message);
+    // 2. Echo back to sender immediately for push confirmation
+    client.emit("messageSent", immediateMessage);
 
-    return message;
+    // 3. Persist to database in the background
+    // We don't 'await' this before sending, so messages go out instantly.
+    this.chatService.create(data).catch(err => {
+      console.error('Failed to save chat message to DB:', err);
+      // Optional: notify sender that message might not have been saved
+    });
+
+    return immediateMessage;
   }
 
   @SubscribeMessage("join")
