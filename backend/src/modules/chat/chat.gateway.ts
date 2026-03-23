@@ -29,6 +29,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (userId) {
       this.connectedUsers.set(userId, client.id);
       console.log(`User connected: ${userId} (${client.id})`);
+      // Notify all clients that a user came online
+      this.server.emit("userStatusChanged", { userId, status: "online" });
     }
   }
 
@@ -37,6 +39,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (socketId === client.id) {
         this.connectedUsers.delete(userId);
         console.log(`User disconnected: ${userId}`);
+        // Notify all clients that a user went offline
+        this.server.emit("userStatusChanged", { userId, status: "offline" });
         break;
       }
     }
@@ -69,6 +73,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     if (data.userId) {
       this.connectedUsers.set(data.userId, client.id);
+      this.server.emit("userStatusChanged", {
+        userId: data.userId,
+        status: "online",
+      });
     }
+  }
+
+  @SubscribeMessage("getOnlineUsers")
+  handleGetOnlineUsers() {
+    return Array.from(this.connectedUsers.keys());
   }
 }

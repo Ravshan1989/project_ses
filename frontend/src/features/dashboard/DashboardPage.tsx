@@ -15,7 +15,9 @@ import {
     RightOutlined,
     SafetyCertificateOutlined,
     WarningOutlined,
-    FireOutlined
+    FireOutlined,
+    GlobalOutlined,
+    AndroidOutlined
 } from '@ant-design/icons';
 import { Column, Area } from '@ant-design/plots'; // UZ: Area va Pie grafiklar qo'shildi
 import { api } from '../../services/api'; // UZ: API bilan ishlash uchun
@@ -786,6 +788,12 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
                                     </Card>
                                 </Col>
                                 <Col span={12} className="animate-fade-in animate-delay-4">
+                                    <Card 
+                                        className="glass-card" 
+                                        title={<Space><span style={{ fontSize: '16px', fontWeight: 600 }}>{t('dashboard_page.region_analysis', 'Hududlar kesimida tahlil')}</span></Space>} 
+                                        bordered={false}
+                                    >
+                                        <Column {...regionColumnConfig} height={250} />
                                     </Card>
                                 </Col>
                             </Row>

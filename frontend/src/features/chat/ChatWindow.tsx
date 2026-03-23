@@ -29,6 +29,7 @@ const ChatWindow: React.FC<{ visible: boolean; onClose: () => void }> = ({ visib
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const currentUserId = localStorage.getItem('user_id');
@@ -39,6 +40,25 @@ const ChatWindow: React.FC<{ visible: boolean; onClose: () => void }> = ({ visib
       const newSocket = io(`${SOCKET_URL}/chat`, {
         query: { userId: currentUserId },
         transports: ['websocket'],
+      });
+
+      newSocket.on('connect', () => {
+        // Request initial list of online users
+        newSocket.emit('getOnlineUsers', (ids: string[]) => {
+          setOnlineUserIds(new Set(ids));
+        });
+      });
+
+      newSocket.on('userStatusChanged', ({ userId, status }: { userId: string, status: 'online' | 'offline' }) => {
+        setOnlineUserIds((prev) => {
+          const next = new Set(prev);
+          if (status === 'online') {
+            next.add(userId);
+          } else {
+            next.delete(userId);
+          }
+          return next;
+        });
       });
 
       newSocket.on('newMessage', (msg: Message) => {
@@ -147,9 +167,13 @@ const ChatWindow: React.FC<{ visible: boolean; onClose: () => void }> = ({ visib
               }}
             >
               <List.Item.Meta
-                avatar={<Avatar icon={<UserOutlined />} />}
+                avatar={
+                  <Badge dot status={onlineUserIds.has(user.id) ? "success" : "default"} offset={[-2, 28]}>
+                    <Avatar icon={<UserOutlined />} />
+                  </Badge>
+                }
                 title={user.fullName || user.username}
-                description={<Badge status="success" text={user.role} />}
+                description={<Text type="secondary" style={{ fontSize: '12px' }}>{user.role}</Text>}
               />
             </List.Item>
           )}

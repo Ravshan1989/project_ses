@@ -87,9 +87,8 @@ export class UsersController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN) // Only Admin can view all users
-  async findAll() {
-    return this.usersService.findAll();
+  async findAll(@Request() req: any) {
+    return this.usersService.findAll(req.user);
   }
 
   @Patch(":id")
