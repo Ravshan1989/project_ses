@@ -16,7 +16,8 @@ export interface User {
   username: string;
   firstName?: string;
   lastName?: string;
-  middleName?: string;
+  first_name?: string; // Fallback for snake_case
+  last_name?: string; // Fallback for snake_case
   role: string;
   department?: {
     id: string;

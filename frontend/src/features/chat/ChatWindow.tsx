@@ -32,8 +32,11 @@ const ChatWindow: React.FC = () => {
 
   const getUserDisplayName = (user: User) => {
     // 1. If real name is available, use it
-    if (user.firstName || user.lastName) {
-      return `${user.lastName || ''} ${user.firstName || ''}`.trim();
+    const fName = user.firstName || user.first_name;
+    const lName = user.lastName || user.last_name;
+    
+    if (fName || lName) {
+      return `${lName || ''} ${fName || ''}`.trim();
     }
     
     // 2. Fallback: Format username (e.g. "dilrabo.shorustamova" -> "Dilrabo Shorustamova")
