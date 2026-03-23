@@ -60,14 +60,26 @@ const ChatScreen = () => {
 
         newSocket.on('newMessage', (msg: Message) => {
           setMessages((prev) => {
-            // Only add if it belongs to current conversation
             const isRelevant = 
               (msg.senderId === me.id && msg.receiverId === selectedUser?.id) ||
               (msg.senderId === selectedUser?.id && msg.receiverId === me.id);
             
-            if (isRelevant) return [...prev, msg];
+            if (isRelevant) {
+               // Prevent duplicate if already added via optimistic UI
+               if (prev.some(m => m.id === msg.id)) return prev;
+               return [...prev, msg];
+            }
             return prev;
           });
+        });
+
+        newSocket.on('messageSent', (msg: Message) => {
+           setMessages((prev) => {
+             // Replace optimistic message or add if missing
+             const exists = prev.some(m => m.id === msg.id || (m.id.startsWith('tmp_') && m.content === msg.content));
+             if (!exists) return [...prev, msg];
+             return prev.map(m => (m.id.startsWith('tmp_') && m.content === msg.content) ? msg : m);
+           });
         });
 
         setSocket(newSocket);
@@ -105,12 +117,22 @@ const ChatScreen = () => {
   const sendMessage = () => {
     if (!inputValue.trim() || !selectedUser || !socket || !currentUser) return;
 
+    const tempId = `tmp_${Date.now()}`;
     const msgData = {
       senderId: currentUser.id,
       receiverId: selectedUser.id,
       content: inputValue,
     };
 
+    // Optimistic Update
+    const optimisticMsg: Message = {
+      ...msgData,
+      id: tempId,
+      createdAt: new Date().toISOString(),
+      isRead: false
+    };
+
+    setMessages(prev => [...prev, optimisticMsg]);
     socket.emit('sendMessage', msgData);
     setInputValue('');
   };
