@@ -33,6 +33,9 @@ export default defineConfig({
                         purpose: 'any maskable'
                     }
                 ]
+            },
+            workbox: {
+                maximumFileSizeToCacheInBytes: 4000000 // Increase to 4MB
             }
         })
     ],
