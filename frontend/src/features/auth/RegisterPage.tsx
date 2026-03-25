@@ -88,8 +88,8 @@ const RegisterPage: React.FC = () => {
         const selectedOrg = organizations.find(o => o.id === orgId);
         if (!selectedOrg) return;
 
-        // Check if District or Region (Districts have a parent who has a parent)
-        const isDistrict = !!(selectedOrg.parent && selectedOrg.parent.parent);
+        // Check if it's a District or a Region
+        const isDistrict = !!selectedOrg.parent;
 
         if (isDistrict) {
             // Filter departments for Districts:
