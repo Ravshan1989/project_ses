@@ -22,8 +22,8 @@
         "jspdf-autotable": "^5.0.7",
         "leaflet": "^1.9.4",
         "playwright": "^1.58.1",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
         "react-i18next": "^16.5.4",
         "react-leaflet": "^5.0.0",
         "react-router-dom": "^6.14.0",
@@ -32,8 +32,8 @@
         "xlsx-js-style": "^1.2.0"
     },
     "devDependencies": {
-        "@types/react": "^18.2.15",
-        "@types/react-dom": "^18.2.7",
+        "@types/react": "^19.0.0",
+        "@types/react-dom": "^19.0.0",
         "@typescript-eslint/eslint-plugin": "^8.54.0",
         "@typescript-eslint/parser": "^8.54.0",
         "@vitejs/plugin-react": "^4.0.3",
