@@ -35,9 +35,9 @@ export class DepartmentsController {
   @Public()
   @Get()
   async findAll() {
-    // UZ: Barcha bo'limlarni ruxsatlari bilan birga qaytarish
+    // UZ: Faqat kerakli maydonlarni qaytarish (ruxsatlar bu yerda shart emas)
     return this.departmentRepo.find({
-      relations: ["permissions", "permissions.permission"],
+      select: ["id", "name", "level"],
       order: { name: "ASC" },
     });
   }

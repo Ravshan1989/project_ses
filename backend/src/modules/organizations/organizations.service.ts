@@ -12,10 +12,15 @@ export class OrganizationsService {
     private orgRepo: Repository<Organization>,
   ) {}
 
-  // YANGI YECHIM (Faqat tuman va shaharlarni qaytaradi, ya'ni 'parent'i borlarni):
+  // UZ: Faqat kerakli maydonlarni va faqat 'parent'ni yuklaymiz (children shart emas va sekinlashtiradi)
   async findAll(user?: User): Promise<Organization[]> {
     const allOrgs = await this.orgRepo.find({
-      relations: ["parent", "children"],
+      select: {
+        id: true,
+        name: true,
+        parent: { id: true },
+      },
+      relations: ["parent"],
     });
 
     if (user) {
