@@ -211,6 +211,42 @@ export class SeedingService implements OnModuleInit {
         this.logger.log(`Created district: ${district.name}`);
       }
     }
+
+    // UZ: Toshkent shahri tumanlari
+    const tashkentCity = await this.orgRepo.findOne({
+      where: { name: "Toshkent shahri" },
+    });
+
+    if (tashkentCity) {
+      const TASHKENT_CITY_DISTRICTS = [
+        "Olmazor t",
+        "Bektemir t",
+        "Mirobod t",
+        "Mirzo Ulug'bek t",
+        "Sergeli t",
+        "Shayxontohur t",
+        "Uchtepa t",
+        "Chilonzor t",
+        "Yunusobod t",
+        "Yakkasaroy t",
+        "Yashnobod t",
+        "Yangihayot t",
+      ];
+
+      for (const name of TASHKENT_CITY_DISTRICTS) {
+        let district = await this.orgRepo.findOne({ where: { name } });
+        if (!district) {
+          await this.orgRepo.save(
+            this.orgRepo.create({
+              name,
+              parent: tashkentCity,
+              population: 200000,
+            }),
+          );
+          this.logger.log(`Created Tashkent City district: ${name}`);
+        }
+      }
+    }
   }
 
   private async seedDepartmentPermissions() {
