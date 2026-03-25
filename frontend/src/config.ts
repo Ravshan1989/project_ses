@@ -4,9 +4,9 @@ const isLocalhost = typeof window !== 'undefined' &&
         window.location.hostname === '127.0.0.1' ||
         window.location.hostname.startsWith('192.168.'));
 
-const localPort = 3000; // Backend port (matches Docker)
+// const localPort = 3000; // Backend port (matches Docker)
 // UZ: Render yoki boshqa production URL ni shu yerga yozing yoki Vercel'dan VITE_API_URL o'zgaruvchisini bering
-const productionUrl = import.meta.env.VITE_API_URL || 'https://project-ses.onrender.com';
+// const productionUrl = import.meta.env.VITE_API_URL || 'https://project-ses.onrender.com';
 
 // For local development and production, use relative URL or dynamic check
 export const API_BASE_URL = (isLocalhost || !import.meta.env.VITE_API_URL) 

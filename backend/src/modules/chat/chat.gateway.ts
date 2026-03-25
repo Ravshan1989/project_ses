@@ -58,7 +58,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       id: `tmp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      isRead: false
+      isRead: false,
     };
 
     // 1. Send to receiver immediately if online
@@ -72,8 +72,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // 3. Persist to database in the background
     // We don't 'await' this before sending, so messages go out instantly.
-    this.chatService.create(data).catch(err => {
-      console.error('Failed to save chat message to DB:', err);
+    this.chatService.create(data).catch((err) => {
+      console.error("Failed to save chat message to DB:", err);
       // Optional: notify sender that message might not have been saved
     });
 

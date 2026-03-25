@@ -70,7 +70,7 @@ export class AppealsTable3 {
   @Column({ type: "int", default: 0 })
   local_routing: number;
 
-  @Column({ type: "int", default: 0 })
+  @Column({ default: 0 })
   being_considered: number;
 
   @Column({ type: "int", default: 0 })

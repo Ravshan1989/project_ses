@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FileExcelOutlined, SaveOutlined, UploadOutlined, BarChartOutlined, GlobalOutlined, ExperimentOutlined, ReloadOutlined } from '@ant-design/icons';
-import { Button, Table, Card, Typography, DatePicker, message, InputNumber, Upload, Tabs, Select, Space } from 'antd';
+import { Button, Table, Typography, DatePicker, message, InputNumber, Upload, Tabs, Select, Space } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { read, utils } from 'xlsx';
 import { diseasesApi, submissionApi, api } from '../../services/api';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
@@ -174,49 +173,6 @@ const Form1EntryPage: React.FC = () => {
             })
             .finally(() => setLoading(false));
 
-        return false;
-    };
-
-    const handleExcelUpload = (file: File) => {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                const buffer = e.target?.result;
-                const workbook = read(buffer, { type: 'array' });
-                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = utils.sheet_to_json<any[]>(worksheet, { header: 1 });
-
-                const codeColIdx = 1; // Standard for our exports
-                const newData = [...data];
-
-                for (let i = 1; i < jsonData.length; i++) {
-                    const row = jsonData[i];
-                    if (!row || !row[codeColIdx]) continue;
-                    const code = String(row[codeColIdx]).trim();
-                    const index = newData.findIndex(item => item.code === code);
-                    if (index > -1) {
-                        const r = { ...newData[index] };
-                        const b = codeColIdx + 1;
-                        // Map 24 columns back if present
-                        const fields: (keyof Form1Record)[] = [
-                            'm_t_p_a', 'm_t_p_i', 'm_t_c_a', 'm_t_c_i', 'm_t_g_a', 'm_t_g_p',
-                            'm_u_p_a', 'm_u_p_i', 'm_u_c_a', 'm_u_c_i', 'm_u_g_a', 'm_u_g_p',
-                            'y_t_p_a', 'y_t_p_i', 'y_t_c_a', 'y_t_c_i', 'y_t_g_a', 'y_t_g_p',
-                            'y_u_p_a', 'y_u_p_i', 'y_u_c_a', 'y_u_c_i', 'y_u_g_a', 'y_u_g_p'
-                        ];
-                        fields.forEach((f, idx) => {
-                            (r as any)[f] = Number(row[b + idx]) || 0;
-                        });
-                        newData[index] = r;
-                    }
-                }
-                setData(newData);
-                message.success(t('form1.actions.success_excel_upload'));
-            } catch (error) {
-                message.error(t('form1.actions.error_excel_read'));
-            }
-        };
-        reader.readAsArrayBuffer(file);
         return false;
     };
 

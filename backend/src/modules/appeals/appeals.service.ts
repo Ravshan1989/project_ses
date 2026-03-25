@@ -1799,9 +1799,7 @@ export class AppealsService {
       doc.text(
         `  Og'zaki Tafsilot: Shaxsiy: ${reg.oral_personal}, Sayyor: ${reg.oral_field}, Xodim: ${reg.oral_staff}, Tel: ${reg.oral_phone}`,
       );
-      doc.text(
-        `  Natija: Ko'rilmoqda: ${reg.being_considered}, Sayyor qabullar (2026): ${reg.field_meetings_curr}`,
-      );
+      doc.text(`  Sayyor qabullar (2026): ${reg.field_meetings_curr}`);
       doc.moveDown(0.5);
     });
     doc.moveDown();

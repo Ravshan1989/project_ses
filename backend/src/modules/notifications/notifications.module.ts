@@ -1,5 +1,5 @@
-import { Module, Global } from '@nestjs/common';
-import { FcmService } from './fcm.service';
+import { Module, Global } from "@nestjs/common";
+import { FcmService } from "./fcm.service";
 
 @Global()
 @Module({

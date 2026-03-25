@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Card, Typography, Upload, Button, Select, message, Alert, Result, Space, Divider } from 'antd';
-import { UploadOutlined, InboxOutlined, FileExcelOutlined, CloudUploadOutlined, InfoCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Card, Typography, Button, Select, message, Alert, Result, Space, Divider } from 'antd';
+import { Upload } from 'antd';
+import { CloudUploadOutlined, InfoCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
+
 import { importsApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
 

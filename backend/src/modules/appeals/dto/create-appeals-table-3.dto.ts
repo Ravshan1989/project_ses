@@ -19,8 +19,11 @@ export class CreateAppealsTable3Dto {
   @IsInt() @IsOptional() oral_phone?: number;
   @IsInt() @IsOptional() ministry_routing?: number;
   @IsInt() @IsOptional() regional_routing?: number;
-  @IsInt() @IsOptional() local_routing?: number;
-  @IsInt() @IsOptional() being_considered?: number;
+  @IsInt() @IsOptional() local_routing: number;
+
+  @IsInt()
+  @IsOptional()
+  being_considered: number;
   @IsInt() @IsOptional() ministry_from_prev?: number;
   @IsInt() @IsOptional() ministry_from_curr?: number;
   @IsInt() @IsOptional() field_meetings_prev?: number;

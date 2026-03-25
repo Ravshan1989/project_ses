@@ -30,11 +30,11 @@ export enum AppealChannel {
 }
 
 export enum AppealStatus {
+  BEING_CONSIDERED = "BEING_CONSIDERED",
   SATISFIED = "SATISFIED",
   EXPLAINED = "EXPLAINED",
   ROUTED = "ROUTED",
   REJECTED = "REJECTED",
-  BEING_CONSIDERED = "BEING_CONSIDERED",
 }
 
 export enum DisciplinaryMeasure {

@@ -204,7 +204,7 @@ const getTable2Sheet = (data: any[], t: any) => {
 
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
     worksheet['!merges'] = merges;
-    rangeStyle(worksheet, 0, 4, 0, 12);
+    rangeStyle(worksheet, 4);
     return worksheet;
 };
 
@@ -266,13 +266,14 @@ const getTable3Sheet = (data: any[], t: any) => {
 
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
     worksheet['!merges'] = merges;
-    rangeStyle(worksheet, 0, 3, 0, 10);
+    rangeStyle(worksheet, 3);
     return worksheet;
 };
 
 // Internal utility to apply styles to a range
-const rangeStyle = (ws: any, startRow: number, headerRows: number, startCol: number, endCol: number) => {
-    const range = XLSX.utils.decode_range(ws['!ref']!);
+const rangeStyle = (ws: any, headerRows: number) => {
+    if (!ws['!ref']) return;
+    const range = XLSX.utils.decode_range(ws['!ref']);
     for (let R = range.s.r; R <= range.e.r; ++R) {
         for (let C = range.s.c; C <= range.e.c; ++C) {
             const addr = XLSX.utils.encode_cell({ r: R, c: C });

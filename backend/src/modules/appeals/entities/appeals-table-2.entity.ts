@@ -58,7 +58,7 @@ export class AppealsTable2 {
   @Column({ type: "int", default: 0 })
   rejected: number;
 
-  @Column({ type: "int", default: 0 })
+  @Column({ default: 0 })
   being_considered: number;
 
   @Column({ type: "int", default: 0 })

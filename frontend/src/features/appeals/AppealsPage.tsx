@@ -494,7 +494,6 @@ const AppealsPage: React.FC = () => {
                                             <td style={tdStyle}>{reg.apparat_seen || 0}</td>
                                             <td style={tdStyle}>{reg.referral_regional || 0}</td>
                                             <td style={tdStyle}>{reg.referral_related || 0}</td>
-                                            <td style={tdStyle}>{reg.being_considered || 0}</td>
                                             <td style={tdStyle}>{reg.vm_prev || 0}</td><td style={tdStyle}>{reg.vm_curr || 0}</td>
                                             <td style={tdStyle}>{reg.field_meetings_prev || 0}</td><td style={tdStyle}>{reg.field_meetings_curr || 0}</td>
                                         </tr>
@@ -518,7 +517,6 @@ const AppealsPage: React.FC = () => {
                                             <td style={tdStyle}>{reg.apparat_seen || 0}</td>
                                             <td style={tdStyle}>{reg.referral_regional || 0}</td>
                                             <td style={tdStyle}>{reg.referral_related || 0}</td>
-                                            <td style={tdStyle}>{reg.being_considered || 0}</td>
                                             <td style={tdStyle}>{reg.vm_prev || 0}</td><td style={tdStyle}>{reg.vm_curr || 0}</td>
                                             <td style={tdStyle}>{reg.field_meetings_prev || 0}</td><td style={tdStyle}>{reg.field_meetings_curr || 0}</td>
                                         </tr>

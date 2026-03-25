@@ -229,6 +229,14 @@ export class SeedingService implements OnModuleInit {
         code: "MANAGE_DEPARTMENTS",
         description: "Create/Edit Departments and Permissions",
       },
+      {
+        code: "VIEW_WATER_HYGIENE",
+        description: "View Water and Communal Hygiene Reports",
+      },
+      {
+        code: "VIEW_CHILDREN_HYGIENE",
+        description: "View Children and Adolescent Hygiene Reports",
+      },
     ];
 
     for (const p of permissionsData) {
@@ -275,6 +283,16 @@ export class SeedingService implements OnModuleInit {
         name: "Ovqatlanish gigiyenasi bo'limi",
         description: "Ovqatlanish gigiyenasi bo'limi mutaxassislari",
         level: 1,
+      },
+      {
+        name: "Kommunal gigiyena bo'limi",
+        description: "Kommunal gigiyena bo'limi (Viloyat darajasi)",
+        level: 1,
+      },
+      {
+        name: "Kommunal gigiyena",
+        description: "Kommunal gigiyena (Tuman darajasi)",
+        level: 3,
       },
     ];
 
@@ -328,6 +346,10 @@ export class SeedingService implements OnModuleInit {
         dept: "Ovqatlanish gigiyenasi bo'limi",
         perms: ["VIEW_NUTRITION_HYGIENE", "EDIT_NUTRITION_HYGIENE"],
       },
+      {
+        dept: "Kommunal gigiyena bo'limi",
+        perms: ["VIEW_WATER_HYGIENE", "VIEW_SANITARY"],
+      },
     ];
 
     for (const assign of level1Assignments) {
@@ -350,6 +372,8 @@ export class SeedingService implements OnModuleInit {
       "VIEW_ARI",
       "VIEW_DIARRHEA",
       "VIEW_SANITARY",
+      "VIEW_WATER_HYGIENE",
+      "VIEW_CHILDREN_HYGIENE",
     ];
 
     for (const dept of level3Depts) {

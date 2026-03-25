@@ -43,7 +43,7 @@ const RegisterPage: React.FC = () => {
                 const republic = orgs.find((o: any) => !o.parent);
                 
                 // Regions (Level 2) are children of Republic
-                const filteredRegions = orgs.filter((o: any) => o.parent?.id === republic?.id);
+                const filteredRegions: any[] = orgs.filter((o: any) => o.parent?.id === republic?.id);
                 
                 // Districts (Level 3) are children of Regions
                 const filteredDistricts = orgs.filter((o: any) => 
@@ -94,7 +94,8 @@ const RegisterPage: React.FC = () => {
                 d.name === "Boshqaruv (Admin)" ||
                 d.name === "Epidemiologiya va immunoprofilaktika" ||
                 d.name === "Ijro intizomi va murojaatlar bilan ishlash bo'limi" ||
-                d.name === "Nazoratlarni muvofiqlashtirish bo'limi"
+                d.name === "Nazoratlarni muvofiqlashtirish bo'limi" ||
+                d.name === "Kommunal gigiyena"
             ).map(d => ({
                 ...d,
                 // Rename "Boshqaruv (Admin)" to "Ma'muriyat" for display
@@ -137,6 +138,12 @@ const RegisterPage: React.FC = () => {
                     { value: "DEPARTMENT_HEAD", label: "Bo'lim mudiri" },
                     { value: "LEAD_SPECIALIST", label: "Yetakchi mutaxassis (Nazorat)" },
                     { value: "STAFF", label: "Xodim" }
+                ]);
+            } else if (selectedDepartment.name === "Kommunal gigiyena") {
+                setAvailableRoles([
+                    { value: "DEPARTMENT_HEAD", label: "Bo'lim mudiri" },
+                    { value: "SANITARY_SPECIALIST", label: "Sanitar vrach (Kommunal)" },
+                    { value: "SANITARY_OPERATOR", label: "Sanitar vrach yordamchisi (Kommunal)" }
                 ]);
             } else {
                 setAvailableRoles([

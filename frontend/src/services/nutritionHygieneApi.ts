@@ -37,8 +37,14 @@ export const nutritionHygieneApi = {
     },
 
     getOrganizations: async () => {
-
         const response = await api.get('/organizations');
+        return response.data;
+    },
+
+    getMonitoring: async (month: string) => {
+        const response = await api.get(`${BASE_URL}/monitoring`, {
+            params: { month }
+        });
         return response.data;
     },
 };

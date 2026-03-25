@@ -169,7 +169,16 @@ export class UsersService {
     const level = getRoleLevel(currentUser.role, currentUser);
     if (level === 1) {
       return this.usersRepository.find({
-        select: ["id", "username", "firstName", "lastName", "middleName", "role", "isActive", "createdAt"],
+        select: [
+          "id",
+          "username",
+          "firstName",
+          "lastName",
+          "middleName",
+          "role",
+          "isActive",
+          "createdAt",
+        ],
         relations: ["organization", "department", "dynamicRole"],
         order: { isActive: "ASC", createdAt: "DESC" },
       });
@@ -177,7 +186,16 @@ export class UsersService {
 
     const query = this.usersRepository
       .createQueryBuilder("user")
-      .select(["user.id", "user.username", "user.firstName", "user.lastName", "user.middleName", "user.role", "user.isActive", "user.createdAt"])
+      .select([
+        "user.id",
+        "user.username",
+        "user.firstName",
+        "user.lastName",
+        "user.middleName",
+        "user.role",
+        "user.isActive",
+        "user.createdAt",
+      ])
       .leftJoinAndSelect("user.organization", "organization")
       .leftJoinAndSelect("user.department", "department")
       .leftJoinAndSelect("user.dynamicRole", "dynamicRole")

@@ -1,6 +1,6 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import * as admin from 'firebase-admin';
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import * as admin from "firebase-admin";
 
 @Injectable()
 export class FcmService implements OnModuleInit {
@@ -9,24 +9,33 @@ export class FcmService implements OnModuleInit {
   constructor(private configService: ConfigService) {}
 
   onModuleInit() {
-    const serviceAccount = this.configService.get<string>('FIREBASE_SERVICE_ACCOUNT');
-    
+    const serviceAccount = this.configService.get<string>(
+      "FIREBASE_SERVICE_ACCOUNT",
+    );
+
     if (serviceAccount) {
       try {
         const config = JSON.parse(serviceAccount);
         admin.initializeApp({
           credential: admin.credential.cert(config),
         });
-        this.logger.log('Firebase Admin SDK initialized');
+        this.logger.log("Firebase Admin SDK initialized");
       } catch (error) {
-        this.logger.error('Failed to initialize Firebase Admin SDK', error);
+        this.logger.error("Failed to initialize Firebase Admin SDK", error);
       }
     } else {
-      this.logger.warn('FIREBASE_SERVICE_ACCOUNT not found. Push notifications will be disabled.');
+      this.logger.warn(
+        "FIREBASE_SERVICE_ACCOUNT not found. Push notifications will be disabled.",
+      );
     }
   }
 
-  async sendPushNotification(token: string, title: string, body: string, data?: any) {
+  async sendPushNotification(
+    token: string,
+    title: string,
+    body: string,
+    data?: any,
+  ) {
     if (!admin.apps.length) return;
 
     const message = {
@@ -39,7 +48,7 @@ export class FcmService implements OnModuleInit {
       await admin.messaging().send(message);
       this.logger.log(`Push notification sent to token: ${token}`);
     } catch (error) {
-      this.logger.error('Error sending push notification', error);
+      this.logger.error("Error sending push notification", error);
     }
   }
 
@@ -56,7 +65,7 @@ export class FcmService implements OnModuleInit {
       await admin.messaging().send(message);
       this.logger.log(`Push notification sent to topic: ${topic}`);
     } catch (error) {
-      this.logger.error('Error sending topic notification', error);
+      this.logger.error("Error sending topic notification", error);
     }
   }
 }

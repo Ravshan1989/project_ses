@@ -22,7 +22,9 @@ export class CreateAppealsTable2Dto {
   @IsInt() @IsOptional() measures_taken?: number;
   @IsInt() @IsOptional() explained?: number;
   @IsInt() @IsOptional() rejected?: number;
-  @IsInt() @IsOptional() being_considered?: number;
+  @IsInt()
+  @IsOptional()
+  being_considered: number;
   @IsInt() @IsOptional() repeated?: number;
   @IsInt() @IsOptional() overdue?: number;
 }

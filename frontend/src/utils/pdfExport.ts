@@ -12,7 +12,7 @@ export const exportDashboardToPDF = (data: {
     user: string;
     organization: string;
 }) => {
-    const doc = jsPDF({
+    const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
@@ -40,7 +40,7 @@ export const exportDashboardToPDF = (data: {
     doc.text('ASOSIY KO\'RSATKICHLAR', 14, 58);
 
     let yPos = 68;
-    data.stats.forEach((stat, index) => {
+    data.stats.forEach((stat) => {
         doc.setFontSize(10);
         doc.setTextColor(80);
         doc.text(`${stat.label}:`, 14, yPos);
