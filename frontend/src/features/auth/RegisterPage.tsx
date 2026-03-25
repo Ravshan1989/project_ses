@@ -36,14 +36,20 @@ const RegisterPage: React.FC = () => {
             if (orgRes.ok && deptRes.ok) {
                 const orgs = await orgRes.json();
                 const depts = await deptRes.json();
-                setOrganizations(orgs);
-                setAllDepartments(depts);
-
-                // UZ: Viloyatlarni aniqlash (parent_id bo'lmaganlar)
-                const filteredRegions = orgs.filter((o: any) => !o.parent);
                 
-                // UZ: Tumanlarni aniqlash (viloyatga biriktirilganlar)
-                const filteredDistricts = orgs.filter((o: any) => !!o.parent);
+                setOrganizations(orgs);
+                
+                // UZ: Viloyatlarni (parent'i yo'qlarni) va Tumanlarni (parent'i borlarni) ajratamiz
+                // Parent ob'ekt yoki string ID bo'lishi mumkinligini hisobga olamiz
+                const filteredRegions = orgs.filter((o: any) => {
+                    const hasParent = typeof o.parent === 'string' ? !!o.parent : !!o.parent?.id;
+                    return !hasParent;
+                });
+                
+                const filteredDistricts = orgs.filter((o: any) => {
+                    const hasParent = typeof o.parent === 'string' ? !!o.parent : !!o.parent?.id;
+                    return hasParent;
+                });
 
                 setRegions(filteredRegions);
                 setDistricts(filteredDistricts);
@@ -58,14 +64,19 @@ const RegisterPage: React.FC = () => {
 
     const handleRegionChange = (regionId: string) => {
         form.setFieldsValue({ organizationId: undefined, departmentId: undefined, role: undefined });
+        setAvailableRoles([]);
         
-        const regionDistricts = districts.filter(d => d.parent?.id === regionId);
+        const regionDistricts = districts.filter(d => {
+            // UZ: Parent ob'ekt yoki shunchaki ID string bo'lishi mumkinligini hisobga olamiz
+            const parentId = typeof d.parent === 'string' ? d.parent : d.parent?.id;
+            return parentId === regionId;
+        });
+        
         setFilteredDistricts(regionDistricts);
 
-        // If it's a republic level org with no districts, we might want to handle it
+        // UZ: Agar tumanlar topilmasa, viloyatning o'zini tanlash imkonini qoldiramiz (masalan, to'g'ridan-to'g'ri viloyat uchun)
         const selectedRegion = regions.find(r => r.id === regionId);
         if (selectedRegion && regionDistricts.length === 0) {
-            // This is likely a direct assignment if no sub-organizations
             setFilteredDistricts([selectedRegion]);
         }
     };
