@@ -179,56 +179,56 @@ export class SeedingService implements OnModuleInit {
         "Uchtepa t", "Chilonzor t", "Yunusobod t", "Yakkasaroy t", "Yashnobod t", "Yangihayot t"
       ],
       "Andijon viloyati": [
-        "Andijon t", "Asaka t", "Baliqchi t", "Boʻston t", "Buloqboshi t", "Izboskan t",
+        "Andijon sh", "Xonobod sh", "Andijon t", "Asaka t", "Baliqchi t", "Boʻston t", "Buloqboshi t", "Izboskan t",
         "Jalaquduq t", "Kurgantepa t", "Marhamat t", "Oltinkoʻl t", "Paxtaobod t", "Shahrixon t",
         "Ulugʻnor t", "Xoʻjaobod t"
       ],
       "Buxoro viloyati": [
-        "Buxoro t", "Gʻijduvon t", "Jondor t", "Kogon t", "Qorakoʻl t", "Qorovulbozor t",
+        "Buxoro sh", "Kogon sh", "Buxoro t", "Gʻijduvon t", "Jondor t", "Kogon t", "Qorakoʻl t", "Qorovulbozor t",
         "Olot t", "Peshku t", "Romitan t", "Shofirkon t", "Vobkent t"
       ],
       "Farg'ona viloyati": [
-        "Oltiariq t", "Bagʻdod t", "Beshariq t", "Buvayda t", "Dangʻara t", "Fergana t",
+        "Farg'ona sh", "Qo'qon sh", "Marg'ilon sh", "Quvasoy sh", "Oltiariq t", "Bagʻdod t", "Beshariq t", "Buvayda t", "Dangʻara t", "Fergana t",
         "Furqat t", "Qoʻshtepa t", "Quva t", "Rishton t", "Soʻx t", "Toshloq t",
         "Uchkoʻprik t", "Yozyovon t", "Oʻzbekiston t"
       ],
       "Jizzax viloyati": [
-        "Arnasoy t", "Baxmal t", "G'allaorol t", "Jizzax t", "Doʻstlik t", "Zomin t",
+        "Jizzax sh", "Arnasoy t", "Baxmal t", "G'allaorol t", "Jizzax t", "Doʻstlik t", "Zomin t",
         "Zarbdor t", "Zafarobod t", "Mirzachoʻl t", "Paxtakor t", "Forish t", "Yangiobod t"
       ],
       "Qashqadaryo viloyati": [
-        "Chiroqchi t", "Dehqonobod t", "Gʻuzor t", "Qamashi t", "Qarshi t", "Koson t",
+        "Qarshi sh", "Shahrisabz sh", "Chiroqchi t", "Dehqonobod t", "Gʻuzor t", "Qamashi t", "Qarshi t", "Koson t",
         "Kasbi t", "Kitob t", "Mirishkor t", "Muborak t", "Nishon t", "Shahrisabz t",
         "Yakkabogʻ t", "Ko'kdala t"
       ],
       "Namangan viloyati": [
-        "Chortoq t", "Chust t", "Kosonsoy t", "Mingbuloq t", "Namangan t", "Norin t",
+        "Namangan sh", "Chortoq t", "Chust t", "Kosonsoy t", "Mingbuloq t", "Namangan t", "Norin t",
         "Pop t", "Toʻraqoʻrgʻon t", "Uchqoʻrgʻon t", "Uychi t", "Yangiqoʻrgʻon t"
       ],
       "Navoiy viloyati": [
-        "Konimex t", "Qiziltepa t", "Xatirchi t", "Navbahor t", "Karmana t", "Nurota t",
+        "Navoiy sh", "Zarafshon sh", "Konimex t", "Qiziltepa t", "Xatirchi t", "Navbahor t", "Karmana t", "Nurota t",
         "Tomdi t", "Uchquduq t"
       ],
       "Qoraqalpog'iston Respublikasi": [
-        "Amudaryo t", "Beruniy t", "Chimboy t", "Ellikqala t", "Kegeyli t", "Moʻynoq t",
+        "Nukus sh", "Taxiatosh sh", "Amudaryo t", "Beruniy t", "Chimboy t", "Ellikqala t", "Kegeyli t", "Moʻynoq t",
         "Nukus t", "Qanlikoʻl t", "Qoʻngʻirot t", "Qoraoʻzak t", "Shumanay t",
-        "Taxtakoʻpir t", "Toʻrtkoʻl t", "Xoʻjayli t", "Taxiatosh t", "Boʻzatov t"
+        "Taxtakoʻpir t", "Toʻrtkoʻl t", "Xoʻjayli t", "Boʻzatov t"
       ],
       "Samarqand viloyati": [
-        "Bulungʻur t", "Jomboy t", "Ishtixon t", "Kattaqo'rg'on t", "Oqdaryo t", "Paxtachi t",
+        "Samarqand sh", "Kattaqo'rg'on sh", "Bulungʻur t", "Jomboy t", "Ishtixon t", "Kattaqo'rg'on t", "Oqdaryo t", "Paxtachi t",
         "Pastdargʻom t", "Narpay t", "Nurabod t", "Samarkand t", "Toyloq t", "Urgut t", "Qoʻshrabot t"
       ],
       "Sirdaryo viloyati": [
-        "Boyovut t", "Guliston t", "Mirzaobod t", "Oqoltin t", "Saixunobod t", "Sardoba t",
+        "Guliston sh", "Shirin sh", "Yangiyer sh", "Boyovut t", "Guliston t", "Mirzaobod t", "Oqoltin t", "Saixunobod t", "Sardoba t",
         "Sirdaryo t", "Xovos t"
       ],
       "Surxondaryo viloyati": [
-        "Angor t", "Bandixon t", "Boysun t", "Denov t", "Jarqoʻrgʻon t", "Qiziriq t",
+        "Termiz sh", "Angor t", "Bandixon t", "Boysun t", "Denov t", "Jarqoʻrgʻon t", "Qiziriq t",
         "Qumqoʻrgʻon t", "Muzrabot t", "Oltinsoy t", "Sariosiyo t", "Sherobod t",
         "Shoʻrchi t", "Termiz t", "Uzun t"
       ],
       "Xorazm viloyati": [
-        "Bogʻot t", "Gurlan t", "Xonqa t", "Hazorasp t", "Khiva t", "Qoʻshkoʻpir t",
+        "Urganch sh", "Xiva sh", "Bogʻot t", "Gurlan t", "Xonqa t", "Hazorasp t", "Khiva t", "Qoʻshkoʻpir t",
         "Shovot t", "Urganch t", "Yangiariq t", "Yangibozor t", "Tuproqqalʼa t"
       ],
     };
