@@ -39,20 +39,15 @@ const RegisterPage: React.FC = () => {
                 setOrganizations(orgs);
                 setAllDepartments(depts);
 
-                // Identify the Republic root (Level 1 - has no parent)
-                const republic = orgs.find((o: any) => !o.parent);
+                // UZ: Viloyatlarni aniqlash (parent_id bo'lmaganlar)
+                const filteredRegions = orgs.filter((o: any) => !o.parent);
                 
-                // Regions (Level 2) are children of Republic
-                const filteredRegions: any[] = orgs.filter((o: any) => o.parent?.id === republic?.id);
-                
-                // Districts (Level 3) are children of Regions
-                const filteredDistricts = orgs.filter((o: any) => 
-                    filteredRegions.some(r => r.id === o.parent?.id)
-                );
+                // UZ: Tumanlarni aniqlash (viloyatga biriktirilganlar)
+                const filteredDistricts = orgs.filter((o: any) => !!o.parent);
 
-                setRegions([...(republic ? [republic] : []), ...filteredRegions]);
+                setRegions(filteredRegions);
                 setDistricts(filteredDistricts);
-                
+                setAllDepartments(depts);
                 setFilteredDepartments(depts);
             }
         } catch (error) {
