@@ -173,77 +173,81 @@ export class SeedingService implements OnModuleInit {
       where: { name: "Toshkent viloyati" },
     });
 
-    const DISTRICTS = [
-      { name: "Nurafshon sh", population: 54100 },
-      { name: "Angren sh", population: 191300 },
-      { name: "Bekobod sh", population: 102000 },
-      { name: "Chirchiq sh", population: 168000 },
-      { name: "Olmaliq sh", population: 138500 },
-      { name: "Ohangaron sh", population: 42000 },
-      { name: "Yangiyo'l sh", population: 63000 },
-      { name: "Oqqo'rg'on t", population: 112400 },
-      { name: "Ohangaron t", population: 108300 },
-      { name: "Bekobod t", population: 163400 },
-      { name: "Bo'stonliq t", population: 175600 },
-      { name: "Bo'ka t", population: 132400 },
-      { name: "Quyi chirchiq t", population: 115800 },
-      { name: "Zangiota t", population: 204300 },
-      { name: "Yuqori Chirchiq t", population: 142100 },
-      { name: "Qibray t", population: 206800 },
-      { name: "Parkent t", population: 153000 },
-      { name: "Piskent t", population: 102400 },
-      { name: "O'rta Chirchiq t", population: 153500 },
-      { name: "Chinoz t", population: 147800 },
-      { name: "Yangiyo'l t", population: 278300 },
-      { name: "Toshkent t", population: 194500 },
-    ];
+    const REGION_DISTRICTS: Record<string, string[]> = {
+      "Toshkent shahri": [
+        "Olmazor t", "Bektemir t", "Mirobod t", "Mirzo Ulug'bek t", "Sergeli t", "Shayxontohur t",
+        "Uchtepa t", "Chilonzor t", "Yunusobod t", "Yakkasaroy t", "Yashnobod t", "Yangihayot t"
+      ],
+      "Andijon viloyati": [
+        "Andijon t", "Asaka t", "Baliqchi t", "Boʻston t", "Buloqboshi t", "Izboskan t",
+        "Jalaquduq t", "Kurgantepa t", "Marhamat t", "Oltinkoʻl t", "Paxtaobod t", "Shahrixon t",
+        "Ulugʻnor t", "Xoʻjaobod t"
+      ],
+      "Buxoro viloyati": [
+        "Buxoro t", "Gʻijduvon t", "Jondor t", "Kogon t", "Qorakoʻl t", "Qorovulbozor t",
+        "Olot t", "Peshku t", "Romitan t", "Shofirkon t", "Vobkent t"
+      ],
+      "Farg'ona viloyati": [
+        "Oltiariq t", "Bagʻdod t", "Beshariq t", "Buvayda t", "Dangʻara t", "Fergana t",
+        "Furqat t", "Qoʻshtepa t", "Quva t", "Rishton t", "Soʻx t", "Toshloq t",
+        "Uchkoʻprik t", "Yozyovon t", "Oʻzbekiston t"
+      ],
+      "Jizzax viloyati": [
+        "Arnasoy t", "Baxmal t", "G'allaorol t", "Jizzax t", "Doʻstlik t", "Zomin t",
+        "Zarbdor t", "Zafarobod t", "Mirzachoʻl t", "Paxtakor t", "Forish t", "Yangiobod t"
+      ],
+      "Qashqadaryo viloyati": [
+        "Chiroqchi t", "Dehqonobod t", "Gʻuzor t", "Qamashi t", "Qarshi t", "Koson t",
+        "Kasbi t", "Kitob t", "Mirishkor t", "Muborak t", "Nishon t", "Shahrisabz t",
+        "Yakkabogʻ t", "Ko'kdala t"
+      ],
+      "Namangan viloyati": [
+        "Chortoq t", "Chust t", "Kosonsoy t", "Mingbuloq t", "Namangan t", "Norin t",
+        "Pop t", "Toʻraqoʻrgʻon t", "Uchqoʻrgʻon t", "Uychi t", "Yangiqoʻrgʻon t"
+      ],
+      "Navoiy viloyati": [
+        "Konimex t", "Qiziltepa t", "Xatirchi t", "Navbahor t", "Karmana t", "Nurota t",
+        "Tomdi t", "Uchquduq t"
+      ],
+      "Qoraqalpog'iston Respublikasi": [
+        "Amudaryo t", "Beruniy t", "Chimboy t", "Ellikqala t", "Kegeyli t", "Moʻynoq t",
+        "Nukus t", "Qanlikoʻl t", "Qoʻngʻirot t", "Qoraoʻzak t", "Shumanay t",
+        "Taxtakoʻpir t", "Toʻrtkoʻl t", "Xoʻjayli t", "Taxiatosh t", "Boʻzatov t"
+      ],
+      "Samarqand viloyati": [
+        "Bulungʻur t", "Jomboy t", "Ishtixon t", "Kattaqo'rg'on t", "Oqdaryo t", "Paxtachi t",
+        "Pastdargʻom t", "Narpay t", "Nurabod t", "Samarkand t", "Toyloq t", "Urgut t", "Qoʻshrabot t"
+      ],
+      "Sirdaryo viloyati": [
+        "Boyovut t", "Guliston t", "Mirzaobod t", "Oqoltin t", "Saixunobod t", "Sardoba t",
+        "Sirdaryo t", "Xovos t"
+      ],
+      "Surxondaryo viloyati": [
+        "Angor t", "Bandixon t", "Boysun t", "Denov t", "Jarqoʻrgʻon t", "Qiziriq t",
+        "Qumqoʻrgʻon t", "Muzrabot t", "Oltinsoy t", "Sariosiyo t", "Sherobod t",
+        "Shoʻrchi t", "Termiz t", "Uzun t"
+      ],
+      "Xorazm viloyati": [
+        "Bogʻot t", "Gurlan t", "Xonqa t", "Hazorasp t", "Khiva t", "Qoʻshkoʻpir t",
+        "Shovot t", "Urganch t", "Yangiariq t", "Yangibozor t", "Tuproqqalʼa t"
+      ],
+    };
 
-    for (const data of DISTRICTS) {
-      let district = await this.orgRepo.findOne({ where: { name: data.name } });
-      if (!district) {
-        district = this.orgRepo.create({
-          name: data.name,
-          population: data.population,
-          child_population: Math.round(data.population * 0.3),
-          parent: tashkentRegion,
-        });
-        await this.orgRepo.save(district);
-        this.logger.log(`Created district: ${district.name}`);
-      }
-    }
+    for (const [regionName, districts] of Object.entries(REGION_DISTRICTS)) {
+      const region = await this.orgRepo.findOne({ where: { name: regionName } });
+      if (!region) continue;
 
-    // UZ: Toshkent shahri tumanlari
-    const tashkentCity = await this.orgRepo.findOne({
-      where: { name: "Toshkent shahri" },
-    });
-
-    if (tashkentCity) {
-      const TASHKENT_CITY_DISTRICTS = [
-        "Olmazor t",
-        "Bektemir t",
-        "Mirobod t",
-        "Mirzo Ulug'bek t",
-        "Sergeli t",
-        "Shayxontohur t",
-        "Uchtepa t",
-        "Chilonzor t",
-        "Yunusobod t",
-        "Yakkasaroy t",
-        "Yashnobod t",
-        "Yangihayot t",
-      ];
-
-      for (const name of TASHKENT_CITY_DISTRICTS) {
+      for (const name of districts) {
         let district = await this.orgRepo.findOne({ where: { name } });
         if (!district) {
           await this.orgRepo.save(
             this.orgRepo.create({
               name,
-              parent: tashkentCity,
-              population: 200000,
+              parent: region,
+              population: 150000,
             }),
           );
-          this.logger.log(`Created Tashkent City district: ${name}`);
+          this.logger.log(`Created district: ${name} in ${regionName}`);
         }
       }
     }
