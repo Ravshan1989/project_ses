@@ -137,18 +137,41 @@ export class SeedingService implements OnModuleInit {
   }
 
   private async seedDistricts() {
-    let region = await this.orgRepo.findOne({
+    const REGIONS = [
+      "Toshkent viloyati",
+      "Toshkent shahri",
+      "Andijon viloyati",
+      "Buxoro viloyati",
+      "Farg'ona viloyati",
+      "Jizzax viloyati",
+      "Namangan viloyati",
+      "Navoiy viloyati",
+      "Qashqadaryo viloyati",
+      "Qoraqalpog'iston Respublikasi",
+      "Samarqand viloyati",
+      "Sirdaryo viloyati",
+      "Surxondaryo viloyati",
+      "Xorazm viloyati",
+    ];
+
+    for (const regionName of REGIONS) {
+      let region = await this.orgRepo.findOne({
+        where: { name: regionName },
+      });
+      if (!region) {
+        this.logger.log(`Creating region: ${regionName}...`);
+        await this.orgRepo.save(
+          this.orgRepo.create({
+            name: regionName,
+            population: 2000000, // Default population if unknown
+          }),
+        );
+      }
+    }
+
+    const tashkentRegion = await this.orgRepo.findOne({
       where: { name: "Toshkent viloyati" },
     });
-
-    if (!region) {
-      this.logger.log("Region not found, creating 'Toshkent viloyati'...");
-      region = this.orgRepo.create({
-        name: "Toshkent viloyati",
-        population: 3000000,
-      });
-      region = await this.orgRepo.save(region);
-    }
 
     const DISTRICTS = [
       { name: "Nurafshon sh", population: 54100 },
@@ -182,7 +205,7 @@ export class SeedingService implements OnModuleInit {
           name: data.name,
           population: data.population,
           child_population: Math.round(data.population * 0.3),
-          parent: region,
+          parent: tashkentRegion,
         });
         await this.orgRepo.save(district);
         this.logger.log(`Created district: ${district.name}`);
