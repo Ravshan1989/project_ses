@@ -86,6 +86,11 @@ export const organizationsApi = {
     getAll: () => api.get('/organizations'),
 };
 
+export const usersApi = {
+    changePassword: (data: any) => api.patch('/users/change-password', data),
+    resetPassword: (id: string) => api.post(`/users/${id}/reset-password`),
+};
+
 export const exportsApi = {
     getFlu: (startDate: string, endDate: string, isTest = false, districtId?: string) => api.get(`/exports/flu?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}&districtId=${districtId || ''}`),
     getHepatitis: (startDate: string, endDate: string, isTest = false, districtId?: string) => api.get(`/exports/hepatitis?startDate=${startDate}&endDate=${endDate}&isTest=${isTest}&districtId=${districtId || ''}`),

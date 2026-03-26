@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../../config';
 import { Table, Button, Modal, Form, Input, message, Space, Tag, Typography, Select, Row, Col, Tooltip } from 'antd';
-import { UserAddOutlined, SolutionOutlined, CheckCircleOutlined, CloseCircleOutlined, FilterOutlined } from '@ant-design/icons';
-import { rolesApi } from '../../services/api';
+import { UserAddOutlined, SolutionOutlined, CheckCircleOutlined, CloseCircleOutlined, FilterOutlined, KeyOutlined } from '@ant-design/icons';
+import { rolesApi, usersApi } from '../../services/api';
 import { useTranslation } from 'react-i18next';
 
 const { Option } = Select;
@@ -166,6 +166,33 @@ const UserManagementPage: React.FC = () => {
         });
     };
 
+    const handleResetPassword = async (id: string, username: string) => {
+        Modal.confirm({
+            title: 'Parolni Yangilash',
+            content: `${username} nomli profil uchun yangi tasodifiy vaqtinchalik parol yaratilsinmi?`,
+            okText: 'Ha, yaratish',
+            cancelText: 'Bekor qilish',
+            onOk: async () => {
+                try {
+                    const response = await usersApi.resetPassword(id);
+                    Modal.success({
+                        title: 'Muvaffaqiyatli!',
+                        content: (
+                            <div>
+                                <p>Foydalanuvchi: <strong>{username}</strong></p>
+                                <p>Yangi vaqtinchalik parol: <strong style={{color: 'red', fontSize: '20px'}}>{response.data.temporaryPassword}</strong></p>
+                                <p style={{color: '#8c8c8c'}}>Iltimos, ushbu parolni nusxalab oling va foydalanuvchiga yuboring. U keyingi kirishida parolini o'zi xavfsizroqiga almashtirishi kerak bo'ladi.</p>
+                            </div>
+                        ),
+                    });
+                } catch (error) {
+                    console.error('Error resetting password:', error);
+                    message.error('Parolni yangilashda xatolik yuz berdi!');
+                }
+            }
+        });
+    };
+
     const showEditModal = (user: any) => {
         setEditingUser(user);
         form.setFieldsValue({
@@ -215,6 +242,9 @@ const UserManagementPage: React.FC = () => {
                 <Space size="middle">
                     <Button type="link" onClick={() => showEditModal(record)}>
                         {t('user.edit_button')}
+                    </Button>
+                    <Button type="link" style={{ color: '#faad14' }} icon={<KeyOutlined />} onClick={() => handleResetPassword(record.id, record.username)}>
+                        Parolni yangilash
                     </Button>
                     <Button type="link" danger onClick={() => handleDeleteUser(record.id)}>
                         {t('user.delete_button')}

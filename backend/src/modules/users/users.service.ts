@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef, Logger } from "@nestjs/common";
+import { Injectable, Inject, forwardRef, Logger, BadRequestException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, LessThan } from "typeorm";
 import { User } from "./entities/user.entity";
@@ -7,6 +7,7 @@ import { TelegramService } from "../telegram/telegram.service";
 import { Cron } from "@nestjs/schedule";
 import { getRoleLevel } from "../../common/utils/role.util";
 import { UserRole } from "../../common/enums/role.enum";
+import { ChangePasswordDto } from "./dto/change-password.dto";
 
 @Injectable()
 export class UsersService {
@@ -321,13 +322,32 @@ export class UsersService {
     const user = await this.findOne(id);
     if (!user) return null;
 
-    const password = this.generatePassword();
+    // UZ: Faqat qisqa 6-tali vaqtinchalik parol berish
+    const password = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digits simple password
     const salt = await bcrypt.genSalt();
     const passwordHash = await bcrypt.hash(password, salt);
 
     await this.usersRepository.update(id, { passwordHash });
 
     return { password };
+  }
+
+  async changePassword(userId: string, data: ChangePasswordDto): Promise<boolean> {
+    const user = await this.findOne(userId);
+    if (!user) {
+      throw new BadRequestException("Foydalanuvchi topilmadi");
+    }
+
+    const isMatch = await bcrypt.compare(data.oldPassword, user.passwordHash);
+    if (!isMatch) {
+      throw new BadRequestException("Joriy parol xato!");
+    }
+
+    const salt = await bcrypt.genSalt();
+    const passwordHash = await bcrypt.hash(data.newPassword, salt);
+
+    await this.usersRepository.update(userId, { passwordHash });
+    return true;
   }
 
   private generatePassword(): string {

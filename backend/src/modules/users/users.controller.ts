@@ -9,9 +9,11 @@ import {
   Param,
   Delete,
   Res, // Added Res import
+  BadRequestException,
 } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { RegisterDto } from "../auth/dto/register.dto";
+import { ChangePasswordDto } from "./dto/change-password.dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../auth/decorators/roles.decorator";
@@ -24,6 +26,33 @@ import * as ExcelJS from "exceljs";
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Patch("change-password")
+  @UseGuards(JwtAuthGuard)
+  async changePassword(
+    @Request() req: any,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    if (!req.user || !req.user.id) {
+      throw new BadRequestException("Not authenticated");
+    }
+    await this.usersService.changePassword(req.user.id, changePasswordDto);
+    return { success: true, message: "Parol muvaffaqiyatli o'zgartirildi" };
+  }
+
+  @Post(":id/reset-password")
+  @Roles(UserRole.ADMIN, UserRole.HR) // UZ: Admin yoki HR qila oladi
+  async resetPassword(@Param("id") id: string) {
+    const result = await this.usersService.resetPassword(id);
+    if (!result) {
+      throw new BadRequestException("Foydalanuvchi topilmadi");
+    }
+    return {
+      success: true,
+      message: "Vaxtinchalik parol yaratildi! Foydalanuvchiga nusxalab bering.",
+      temporaryPassword: result.password,
+    };
+  }
 
   @Get("export")
   @Roles(UserRole.ADMIN)

@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Space, Switch, Typography } from 'antd';
-import { ClockCircleOutlined, AndroidOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined, AndroidOutlined, SettingOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons';
+import { Dropdown, MenuProps } from 'antd';
 import { API_BASE_URL } from '../../config';
+import { useNavigate } from 'react-router-dom';
+import ChangePasswordModal from '../../features/auth/ChangePasswordModal';
 
 import dayjs from 'dayjs';
 
@@ -16,15 +19,41 @@ interface GlassLayoutProps {
 }
 
 const GlassLayout: React.FC<GlassLayoutProps> = ({ children, title, subtitle, headerButtons }) => {
-    // Initialize dark mode from localStorage if available, else false
     const [isDarkMode, setIsDarkMode] = useState(() => {
         const saved = localStorage.getItem('isDarkMode');
         return saved === 'true';
     });
+    const [isPwdModalOpen, setIsPwdModalOpen] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         localStorage.setItem('isDarkMode', isDarkMode.toString());
     }, [isDarkMode]);
+
+    const handleMenuClick: MenuProps['onClick'] = (e) => {
+        if (e.key === 'changePassword') {
+            setIsPwdModalOpen(true);
+        } else if (e.key === 'logout') {
+            localStorage.clear();
+            navigate('/login');
+        }
+    };
+    
+    const userMenuItems: MenuProps['items'] = [
+        {
+            key: 'changePassword',
+            icon: <SettingOutlined />,
+            label: 'Parolni o\'zgartirish',
+        },
+        {
+            type: 'divider',
+        },
+        {
+            key: 'logout',
+            icon: <LogoutOutlined style={{ color: 'red' }}/>,
+            label: <span style={{ color: 'red' }}>Chiqish</span>,
+        },
+    ];
 
     const globalStyles = `
         @keyframes fadeInUp {
@@ -145,6 +174,9 @@ const GlassLayout: React.FC<GlassLayoutProps> = ({ children, title, subtitle, he
                         <Button type="primary" shape="round" icon={<ClockCircleOutlined />} size="large" style={{ background: '#11998e', border: 'none' }}>
                             {dayjs().format('DD.MM.YYYY HH:mm')}
                         </Button>
+                        <Dropdown menu={{ items: userMenuItems, onClick: handleMenuClick }} trigger={['click']} placement="bottomRight">
+                            <Button shape="circle" size="large" icon={<UserOutlined />} style={{ background: 'rgba(255,255,255,0.1)', color: isDarkMode ? '#fff' : '#000', border: '1px solid rgba(255,255,255,0.3)', marginLeft: '8px' }} />
+                        </Dropdown>
 
                     </Space>
                 </div>
@@ -153,6 +185,7 @@ const GlassLayout: React.FC<GlassLayoutProps> = ({ children, title, subtitle, he
             <LayoutContext.Provider value={{ isDarkMode }}>
                 {children}
             </LayoutContext.Provider>
+            <ChangePasswordModal open={isPwdModalOpen} onClose={() => setIsPwdModalOpen(false)} />
         </div>
     );
 };
