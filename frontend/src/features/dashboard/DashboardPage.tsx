@@ -20,7 +20,7 @@ import {
     AndroidOutlined
 } from '@ant-design/icons';
 import { Column, Area } from '@ant-design/plots'; // UZ: Area va Pie grafiklar qo'shildi
-import { api } from '../../services/api'; // UZ: API bilan ishlash uchun
+import { api, submissionApi } from '../../services/api'; // UZ: API bilan ishlash uchun
 import { Submission, SubmissionStatus } from '../../types';
 import GlassLayout, { LayoutContext } from '../../components/layout/GlassLayout';
 import { exportDashboardToPDF } from '../../utils/pdfExport';
@@ -189,11 +189,13 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
     const fetchSubmissions = async () => {
         setLoading(true);
         try {
-            // const res = await submissionApi.getAll();
-            // setSubmissions(res.data);
+            const res = await submissionApi.getAll();
+            setSubmissions(res.data);
+            /* UZ (Eski kod saqlandi - append only qoidasiga ko'ra):
             setTimeout(() => { // Simulate network delay
                 setSubmissions(MOCK_DATA);
             }, 600);
+            */
         } catch (error) {
             message.error(t('common.error_load_data'));
         } finally {

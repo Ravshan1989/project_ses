@@ -1,0 +1,45 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+
+    # Backend
+    - name: Install Backend Dependencies
+      run: npm install
+      working-directory: ./backend
+
+    - name: Build Backend
+      run: npm run build
+      working-directory: ./backend
+
+    # Frontend
+    - name: Install Frontend Dependencies
+      run: npm install
+      working-directory: ./frontend
+
+    - name: Build Frontend
+      run: npm run build
+      working-directory: ./frontend
+      
+    # Docker Build Test (optional check to ensure Dockerfile is valid)
+    - name: Test Docker Build (Backend)
+      run: docker build -t smart-ses-backend ./backend
+      
+    - name: Test Docker Build (Frontend)
+      run: docker build -t smart-ses-frontend ./frontend

@@ -21,6 +21,7 @@ import * as XLSX from "xlsx";
 import { Template } from "../forms/entities/template.entity";
 import * as fs from "fs";
 import * as path from "path";
+import { TelegramService } from "../telegram/telegram.service";
 
 @Injectable()
 export class SubmissionsService {
@@ -34,6 +35,7 @@ export class SubmissionsService {
     private organizationsService: OrganizationsService,
     @InjectRepository(Template)
     private templateRepository: Repository<Template>,
+    private telegramService: TelegramService,
   ) {}
 
   async saveFieldInspection(data: Partial<FieldInspection>) {
@@ -122,7 +124,7 @@ export class SubmissionsService {
 
     const submission = await this.submissionRepository.findOne({
       where,
-      relations: ["organization", "template"],
+      relations: ["organization", "template", "submittedBy"],
     });
     if (!submission) throw new NotFoundException(`Submission ${id} not found`);
     return submission;
@@ -149,11 +151,23 @@ export class SubmissionsService {
 
     if (action === "APPROVE") {
       submission.status = SubmissionStatus.APPROVED;
+      if (submission.submittedBy?.telegramChatId) {
+        await this.telegramService.sendMessageToUser(
+          submission.submittedBy,
+          `✅ <b>Arizangiz tasdiqlandi!</b>\n\n📄 Hujjat: ${submission.template?.name}\n🏢 Tashkilot: ${submission.organization?.name}\n🗓 Davr: ${submission.reportingPeriod}\n\n<i>Holat: Tasdiqlandi</i>`
+        );
+      }
     } else if (action === "REJECT") {
       if (!comment)
         throw new BadRequestException("Comment is required for rejection");
       submission.status = SubmissionStatus.REJECTED;
       submission.rejectionReason = comment;
+      if (submission.submittedBy?.telegramChatId) {
+        await this.telegramService.sendMessageToUser(
+          submission.submittedBy,
+          `❌ <b>Arizangiz rad etildi!</b>\n\n📄 Hujjat: ${submission.template?.name}\n🏢 Tashkilot: ${submission.organization?.name}\n🗓 Davr: ${submission.reportingPeriod}\n💬 Sabab: ${comment}`
+        );
+      }
     }
 
     return this.submissionRepository.save(submission);

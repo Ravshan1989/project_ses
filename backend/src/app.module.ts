@@ -23,7 +23,7 @@ import { AppealsModule } from "./modules/appeals/appeals.module";
 import { NutritionHygieneModule } from "./modules/nutrition-hygiene/nutrition-hygiene.module";
 import { InspectionsModule } from "./modules/inspections/inspections.module";
 import { ChatModule } from "./modules/chat/chat.module";
-
+import { BackupModule } from "./modules/backup/backup.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { DepartmentsModule } from "./modules/departments/departments.module";
 import { PermissionsModule } from "./modules/permissions/permissions.module";
@@ -77,6 +77,7 @@ import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core"; // UZ: Global interce
     NutritionHygieneModule, // UZ: Ovqatlanish gigiyenasi oylik hisobotlari
     InspectionsModule, // UZ: Nazoratlarni muvofiqlashtirish
     ChatModule, // UZ: 2-kishilik chat moduli
+    BackupModule, // UZ: Avto Zaxira moduli
 
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, "..", "public"),

@@ -8,6 +8,7 @@ import { DailyReportsModule } from "../daily-reports/daily-reports.module";
 import { DiseasesModule } from "../diseases/diseases.module";
 import { OrganizationsModule } from "../organizations/organizations.module";
 import { Template } from "../forms/entities/template.entity";
+import { TelegramModule } from "../telegram/telegram.module";
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { Template } from "../forms/entities/template.entity";
     DailyReportsModule,
     DiseasesModule,
     OrganizationsModule,
+    TelegramModule,
   ],
   controllers: [SubmissionsController],
   providers: [SubmissionsService],
