@@ -28,6 +28,8 @@ interface ReportData {
     lab_samples: number;
     lab_positive: number;
     disinfection_done: number;
+    isParent?: boolean;
+    children?: ReportData[];
     id?: string;
     status?: string;
     verificationToken?: string;
@@ -54,6 +56,7 @@ const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, userRole, on
     const isSubmitted = (record: ReportData) => !!record.is_submitted || record.status !== 'DRAFT';
 
     const canEdit = (record: ReportData) => {
+        if (record.isParent) return false;
         if (record.status === 'APPROVED' || record.status === 'VERIFIED') return false;
         if (isSpecialist) return record.status === 'DRAFT' || record.status === 'REJECTED' || !record.status;
         if (isMudir) return record.status === 'SUBMITTED';
@@ -76,9 +79,9 @@ const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, userRole, on
     const columns: any = [
         {
             title: '№', dataIndex: 'key', width: 40, align: 'center', fixed: 'left',
-            render: (text: string, r: ReportData) => (
-                <div style={{ backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff1f0', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {text}
+            render: (text: string, r: ReportData, index: number) => (
+                <div style={{ backgroundColor: r.isParent ? '#e6f7ff' : (isSubmitted(r) ? '#f6ffed' : '#fff1f0'), height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {r.isParent ? '*' : index + 1}
                 </div>
             )
         },
@@ -89,12 +92,14 @@ const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, userRole, on
             fixed: 'left',
             render: (text: string, r: ReportData) => (
                 <span style={{ color: isSubmitted(r) ? '#389e0d' : '#cf1322', fontWeight: 'bold' }}>
-                    {t(`orgs.${text.toLowerCase()}`, { defaultValue: text })}
+                    {text ? t(`orgs.${text.toLowerCase()}`, { defaultValue: text }) : ''}
+                    {r.isParent && <Badge count={r.children?.length || 0} style={{ backgroundColor: '#1890ff', marginLeft: 8 }} />}
                 </span>
             ),
             onCell: (record: ReportData) => ({
                 style: {
-                    backgroundColor: isSubmitted(record) ? '#f6ffed' : '#fff1f0',
+                    backgroundColor: record.isParent ? '#e6f7ff' : (isSubmitted(record) ? '#f6ffed' : '#fff1f0'),
+                    fontWeight: record.isParent ? 800 : 400
                 }
             })
         },
@@ -183,7 +188,8 @@ const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, userRole, on
         }
     ];
 
-    const calculateTotal = (field: keyof ReportData) => data.reduce((sum, item) => sum + (Number(item[field]) || 0), 0);
+    const calculateTotal = (field: keyof ReportData) => 
+        (data || []).reduce((sum, item) => sum + (Number(item[field]) || 0), 0);
 
     // Mobile check
     const isMobile = window.innerWidth <= 768;
@@ -423,6 +429,9 @@ const HepatitisTab: React.FC<HepatitisTabProps> = ({ data, loading, userRole, on
             pagination={false}
             scroll={{ x: 1800, y: 550 }}
             className="premium-table"
+            expandable={{
+                defaultExpandAllRows: true, // As per user preference for visibility
+            }}
             summary={() => (
                 <Table.Summary fixed>
                     <Table.Summary.Row style={{ backgroundColor: '#fafafa', fontWeight: 'bold' }}>

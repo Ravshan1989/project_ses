@@ -39,6 +39,8 @@ interface FluReportData {
     sari_adult: number;
     death_total: number;
     death_pregnant: number;
+    isParent?: boolean;
+    children?: FluReportData[];
     id?: string;
     status?: string;
     verificationToken?: string;
@@ -65,6 +67,7 @@ const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, userRole, onChange
     const isSubmitted = (row: FluReportData) => !!row.is_submitted || row.status !== 'DRAFT';
 
     const canEdit = (record: FluReportData) => {
+        if (record.isParent) return false;
         if (record.status === 'APPROVED' || record.status === 'VERIFIED') return false;
         if (isSpecialist) return record.status === 'DRAFT' || record.status === 'REJECTED' || !record.status;
         if (isMudir) return record.status === 'SUBMITTED';
@@ -87,19 +90,27 @@ const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, userRole, onChange
     const columns: any = [
         {
             title: '№', dataIndex: 'key', width: 40, align: 'center', fixed: 'left',
-            onCell: (r: FluReportData) => ({ style: { backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff' } })
+            render: (_: any, r: FluReportData, index: number) => (
+                <div style={{ backgroundColor: r.isParent ? '#e6f7ff' : (isSubmitted(r) ? '#f6ffed' : '#fff'), height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {r.isParent ? '*' : index + 1}
+                </div>
+            )
         },
         {
             title: t('daily_reports.table.district') || 'Hududlar',
             dataIndex: 'district_name',
             width: 150,
             fixed: 'left',
-            render: (text: string) => t(`orgs.${text.toLowerCase()}`, { defaultValue: text }),
+            render: (text: string, r: FluReportData) => (
+                <span style={{ fontWeight: r.isParent ? 800 : 500 }}>
+                    {text ? t(`orgs.${text.toLowerCase()}`, { defaultValue: text }) : ''}
+                    {r.isParent && <Badge count={r.children?.length || 0} style={{ backgroundColor: '#1890ff', marginLeft: 8 }} />}
+                </span>
+            ),
             onCell: (r: FluReportData) => ({
                 style: {
-                    backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff1f0',
+                    backgroundColor: r.isParent ? '#e6f7ff' : (isSubmitted(r) ? '#f6ffed' : '#fff1f0'),
                     color: isSubmitted(r) ? '#389e0d' : '#cf1322',
-                    fontWeight: 500
                 }
             })
         },
@@ -197,7 +208,8 @@ const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, userRole, onChange
         }
     ];
 
-    const calculateTotal = (field: keyof FluReportData) => data.reduce((sum, item) => sum + (Number(item[field]) || 0), 0);
+    const calculateTotal = (field: keyof FluReportData) => 
+        (data || []).reduce((sum, item) => sum + (Number(item[field]) || 0), 0);
 
     return (
         <Table
@@ -209,6 +221,9 @@ const FluAriTab: React.FC<FluAriTabProps> = ({ data, loading, userRole, onChange
             pagination={false}
             scroll={{ x: 1800, y: 550 }}
             className="premium-table"
+            expandable={{
+                defaultExpandAllRows: true,
+            }}
             summary={() => (
                 <Table.Summary fixed>
                     <Table.Summary.Row style={{ backgroundColor: '#fafafa', fontWeight: 'bold' }}>

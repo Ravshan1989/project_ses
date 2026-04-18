@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import PermissionGate from '../../components/PermissionGate';
 import GlassLayout from '../../components/layout/GlassLayout';
 import HepatitisTab from './unified/HepatitisTab';
+import { transformToHierarchy } from '../../utils/reportDataTransformer';
 
 interface ReportData {
     key: string;
@@ -68,59 +69,21 @@ const DailyHepatitisPage: React.FC = () => {
             let currentOrgs = organizations;
             if (currentOrgs.length === 0) {
                 const orgRes = await organizationsApi.getAll();
-                const allOrgs = orgRes.data || [];
-                currentOrgs = allOrgs.filter((org: any) => !!org.parent);
+                currentOrgs = orgRes.data || [];
                 setOrganizations(currentOrgs);
             }
 
             const res = await dailyReportsApi.getByDate(formattedDate, false);
             const apiData = res.data || [];
 
-            let tableData = currentOrgs.map((org, idx) => {
-                const existing = apiData.find((r: any) => r.organization?.id === org.id);
-                return {
-                    key: String(idx + 1),
-                    district_name: org.name,
-                    organizationId: org.id,
-                    is_submitted: !!existing,
-                    total_cases: existing?.total_cases || 0,
-                    age_under_1: existing?.age_under_1 || 0,
-                    age_1_3: existing?.age_1_3 || 0,
-                    age_4_6: existing?.age_4_6 || 0,
-                    age_7_14: existing?.age_7_14 || 0,
-                    age_15_19: existing?.age_15_19 || 0,
-                    age_20_plus: existing?.age_20_plus || 0,
-                    occ_unorganized: existing?.occ_unorganized || 0,
-                    occ_unorganized_1_6: existing?.occ_unorganized_1_6 || 0,
-                    occ_organized_1_6: existing?.occ_organized_1_6 || 0,
-                    occ_unorganized_school_age: existing?.occ_unorganized_school_age || 0,
-                    occ_students: existing?.occ_students || 0,
-                    occ_college_students: existing?.occ_college_students || 0,
-                    occ_workers: existing?.occ_workers || 0,
-                    factor_water: existing?.factor_water || 0,
-                    factor_food: existing?.factor_food || 0,
-                    factor_contact: existing?.factor_contact || 0,
-                    lab_samples: existing?.lab_samples || 0,
-                    lab_positive: existing?.lab_positive || 0,
-                    disinfection_done: existing?.disinfection_done || 0,
-                    id: existing?.id,
-                    status: existing?.status || 'DRAFT',
-                    verificationToken: existing?.verificationToken,
-                };
-            });
+            const defaultFields = {
+                total_cases: 0, age_under_1: 0, age_1_3: 0, age_4_6: 0, age_7_14: 0, age_15_19: 0, age_20_plus: 0,
+                occ_unorganized: 0, occ_unorganized_1_6: 0, occ_organized_1_6: 0, occ_unorganized_school_age: 0,
+                occ_students: 0, occ_college_students: 0, occ_workers: 0, factor_water: 0, factor_food: 0,
+                factor_contact: 0, lab_samples: 0, lab_positive: 0, disinfection_done: 0, status: 'DRAFT'
+            };
 
-            const userOrgParentId = localStorage.getItem('user_org_parent_id'); // We might need this, or check if connectedOrgId exists and role is Mudir
-            const isMudir = userRole === 'DEPARTMENT_HEAD';
-            const isRegionalMudir = isMudir && (!userOrgParentId || userOrgParentId === 'null');
-
-            if (!(isAdmin || isRegionalMudir)) {
-                if (connectedOrgId) {
-                    tableData = tableData.filter(d => d.organizationId === connectedOrgId);
-                } else {
-                    tableData = [];
-                }
-            }
-
+            const tableData = transformToHierarchy(apiData, currentOrgs, defaultFields, isAdmin, connectedOrgId);
             setData(tableData);
         } catch (error) {
             console.error("Failed to fetch reports", error);
@@ -155,12 +118,26 @@ const DailyHepatitisPage: React.FC = () => {
         setLoading(true);
         try {
             const formattedDate = date.format('YYYY-MM-DD');
-            for (const row of data) {
+            
+            const flatten = (items: any[]) => {
+                let result: any[] = [];
+                items.forEach(item => {
+                    if (item.children) {
+                        result = [...result, ...flatten(item.children)];
+                    } else if (!item.isParent) {
+                        result.push(item);
+                    }
+                });
+                return result;
+            };
+
+            const districtData = flatten(data);
+
+            for (const row of districtData) {
                 await dailyReportsApi.upsert({
                     ...row,
                     reportDate: formattedDate,
                     organizationId: row.organizationId,
-
                 });
             }
             notification.success({

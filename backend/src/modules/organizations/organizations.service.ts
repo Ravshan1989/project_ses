@@ -18,9 +18,13 @@ export class OrganizationsService {
       select: {
         id: true,
         name: true,
-        parent: { id: true },
+        parent: { id: true, name: true },
       },
       relations: ["parent"],
+      order: {
+        parent: { name: "ASC" },
+        name: "ASC",
+      },
     });
 
     if (user) {

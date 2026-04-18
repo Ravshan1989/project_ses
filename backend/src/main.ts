@@ -4,38 +4,20 @@ import { ValidationPipe } from "@nestjs/common";
 import { json, urlencoded } from "express";
 import helmet from "helmet";
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    logger: ["log", "error", "warn", "debug", "verbose"],
-  });
-
+async function configureApp(app: any) {
   app.use(
     helmet({
       crossOriginResourcePolicy: false,
     }),
-  ); // UZ: CORS xatolarini oldini olish uchun helmet sozlamasi
+  );
 
   // Global Body Limits
   app.use(json({ limit: "100mb" }));
   app.use(urlencoded({ limit: "100mb", extended: true }));
 
-  // Request Logger Middleware
-  app.use((req, res, next) => {
-    const start = Date.now();
-    res.on("finish", () => {
-      const duration = Date.now() - start;
-      if (res.statusCode >= 400) {
-        console.log(
-          `[REQ DEBUG] ${req.method} ${req.url} -> ${res.statusCode} (${duration}ms)`,
-        );
-      }
-    });
-    next();
-  });
-
-  // Enable CORS for Frontend (Standard NestJS way)
+  // Enable CORS
   app.enableCors({
-    origin: true, // Hamma origin'larga ruxsat berish yoki ro'yxatni kiritish
+    origin: true,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
     credentials: true,
     allowedHeaders: "Content-Type, Accept, Authorization, X-Requested-With",
@@ -51,9 +33,36 @@ async function bootstrap() {
 
   // Global Prefix
   app.setGlobalPrefix("api/v1");
+}
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule, {
+    logger: ["log", "error", "warn", "debug", "verbose"],
+  });
+
+  await configureApp(app);
 
   const port = process.env.PORT || 3007;
   await app.listen(port, "0.0.0.0");
   console.log(`RegionStat Backend running on port ${port} (0.0.0.0)`);
+  return app;
 }
-bootstrap();
+
+// UZ: Vercel serverless funksiya sifatida ishlashi uchun export qilamiz
+let cachedApp: any;
+export default async function (req: any, res: any) {
+  if (!cachedApp) {
+    const app = await NestFactory.create(AppModule, {
+      logger: ["error", "warn"],
+    });
+    await configureApp(app);
+    await app.init();
+    cachedApp = app.getHttpAdapter().getInstance();
+  }
+  return cachedApp(req, res);
+}
+
+// Local dev uchun bootstrapni faqat Vercel bo'lmaganda chaqiramiz
+if (!process.env.VERCEL) {
+  bootstrap();
+}

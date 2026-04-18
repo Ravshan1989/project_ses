@@ -28,6 +28,8 @@ interface CovidReportData {
     teachers: number;
     others: number;
     hospitalized_count: number;
+    isParent?: boolean;
+    children?: CovidReportData[];
     id?: string;
     status?: string;
     verificationToken?: string;
@@ -54,6 +56,7 @@ const CovidTab: React.FC<CovidTabProps> = ({ data, loading, userRole, onChange, 
     const isSubmitted = (row: CovidReportData) => !!row.is_submitted || row.status !== 'DRAFT';
 
     const canEdit = (record: CovidReportData) => {
+        if (record.isParent) return false;
         if (record.status === 'APPROVED' || record.status === 'VERIFIED') return false;
         if (isSpecialist) return record.status === 'DRAFT' || record.status === 'REJECTED' || !record.status;
         if (isMudir) return record.status === 'SUBMITTED';
@@ -76,19 +79,27 @@ const CovidTab: React.FC<CovidTabProps> = ({ data, loading, userRole, onChange, 
     const columns: any = [
         {
             title: '№', dataIndex: 'key', width: 40, align: 'center', fixed: 'left',
-            onCell: (r: CovidReportData) => ({ style: { backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff' } })
+            render: (_: any, r: CovidReportData, index: number) => (
+                <div style={{ backgroundColor: r.isParent ? '#e6f7ff' : (isSubmitted(r) ? '#f6ffed' : '#fff'), height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {r.isParent ? '*' : index + 1}
+                </div>
+            )
         },
         {
             title: t('daily_reports.table.district') || 'Hududlar',
             dataIndex: 'district_name',
             width: 140,
             fixed: 'left',
-            render: (text: string) => t(`orgs.${text.toLowerCase()}`, { defaultValue: text }),
+            render: (text: string, r: CovidReportData) => (
+                <span style={{ fontWeight: r.isParent ? 800 : 500 }}>
+                    {text ? t(`orgs.${text.toLowerCase()}`, { defaultValue: text }) : ''}
+                    {r.isParent && <Badge count={r.children?.length || 0} style={{ backgroundColor: '#1890ff', marginLeft: 8 }} />}
+                </span>
+            ),
             onCell: (r: CovidReportData) => ({
                 style: {
-                    backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff1f0',
+                    backgroundColor: r.isParent ? '#e6f7ff' : (isSubmitted(r) ? '#f6ffed' : '#fff1f0'),
                     color: isSubmitted(r) ? '#389e0d' : '#cf1322',
-                    fontWeight: 500
                 }
             })
         },
@@ -167,7 +178,8 @@ const CovidTab: React.FC<CovidTabProps> = ({ data, loading, userRole, onChange, 
         }
     ];
 
-    const calculateTotal = (field: keyof CovidReportData) => data.reduce((sum, item) => sum + (Number(item[field]) || 0), 0);
+    const calculateTotal = (field: keyof CovidReportData) => 
+        (data || []).reduce((sum, item) => sum + (Number(item[field]) || 0), 0);
 
     return (
         <Table
@@ -179,6 +191,9 @@ const CovidTab: React.FC<CovidTabProps> = ({ data, loading, userRole, onChange, 
             pagination={false}
             scroll={{ x: 2000, y: 550 }}
             className="premium-table"
+            expandable={{
+                defaultExpandAllRows: true,
+            }}
             summary={() => (
                 <Table.Summary fixed>
                     <Table.Summary.Row style={{ backgroundColor: '#fafafa', fontWeight: 'bold' }}>

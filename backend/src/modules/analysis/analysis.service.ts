@@ -14,6 +14,7 @@ import { startOfMonth, subMonths, format, subDays } from "date-fns"; // UZ: Davr
 import { SosAlert } from "../sos/entities/sos-alert.entity"; // UZ: SOS Ogohlantirishlar
 import { User } from "../users/entities/user.entity"; // UZ: User entity
 import { getRoleLevel } from "../../common/utils/role.util"; // UZ: Darajani aniqlash
+import { ReportStatus } from "../../common/enums/report-status.enum";
 
 @Injectable()
 export class AnalysisService {
@@ -765,6 +766,152 @@ export class AnalysisService {
       epidemicStatus,
       topDiseases,
       latestReports,
+    };
+  }
+
+  /**
+   * UZ: Dashboarddagi Xarita uchun ma'lumotlarni tayyorlash
+   */
+  async getDashboardMapData(user: User) {
+    const today = new Date();
+    const todayStr = format(today, "yyyy-MM-dd");
+    
+    // UZ: Bugungi barcha ma'lumotlarni userning vakolatiga ko'ra olamiz
+    const globalData = await this.getGlobalSummary(todayStr, todayStr, user);
+    
+    const { MAP_COORDINATES, DEFAULT_MAP_COORD } = require('../../common/constants/map-coordinates.constant');
+
+    const mapData = globalData.map(district => {
+      let totalCases = 0;
+      if (district.diseases) {
+        district.diseases.forEach((d: any) => totalCases += d.cases);
+      }
+      
+      let status = 'stable';
+      if (totalCases > 50) status = 'critical';
+      else if (totalCases > 20) status = 'warning';
+
+      const orgNameLower = district.organizationName.toLowerCase();
+      const coords = MAP_COORDINATES[orgNameLower] || {
+        // Pseudo-random offset based on name length to avoid overlapping on fallback
+        lat: DEFAULT_MAP_COORD.lat + (orgNameLower.length * 0.01),
+        lng: DEFAULT_MAP_COORD.lng + (orgNameLower.length * 0.01)
+      };
+
+      return {
+        id: district.organizationId,
+        name: district.organizationName,
+        lat: coords.lat,
+        lng: coords.lng,
+        value: totalCases,
+        status
+      };
+    });
+
+    // UZ: Agar tumanlar 0 yoki 1 ta bo'lsa (masalan Respublika darajasida faqat Toshkent chiqsa) va u hammasi emas.
+    // Qolgan joylarga ham bo'sh bo'lsada pointlar qo'yib chiqamiz
+    if (mapData.length === 0) {
+       return { mapData: [] };
+    }
+
+    return { mapData };
+  }
+
+  /**
+   * UZ: Test/Demo uchun soxta hisobotlarni bazaga to'ldirish
+   */
+  async seedMockReports() {
+    const today = new Date();
+    const organizations = await this.orgRepo.find({
+      where: { parent: Not(IsNull()) },
+    });
+
+    const results = {
+      hepatitis: 0,
+      flu: 0,
+      ari: 0,
+      covid: 0,
+    };
+
+    // UZ: Oxirgi 90 kun uchun hisobot yaratamiz
+    for (let i = 0; i < 90; i++) {
+        const date = subDays(today, i);
+        const dateStr = format(date, "yyyy-MM-dd");
+        const isWinter = [11, 0, 1].includes(date.getMonth()); // Dec, Jan, Feb
+
+        for (const org of organizations) {
+            // 1. Hepatitis
+            if (Math.random() > 0.8) {
+                const existing = await this.hepatitisRepo.findOne({ where: { reportDate: dateStr, organization: { id: org.id } } });
+                if (!existing) {
+                    const cases = Math.floor(Math.random() * 8);
+                    await this.hepatitisRepo.save(this.hepatitisRepo.create({
+                        reportDate: dateStr,
+                        organization: org,
+                        total_cases: cases,
+                        status: ReportStatus.APPROVED,
+                        isTest: true
+                    }));
+                    results.hepatitis++;
+                }
+            }
+
+            // 2. Flu / ARI (Winter seasonality)
+            const fluProb = isWinter ? 0.4 : 0.85; 
+            if (Math.random() > fluProb) {
+                const existing = await this.fluRepo.findOne({ where: { reportDate: dateStr, organization: { id: org.id } } });
+                if (!existing) {
+                    const cases = Math.floor(Math.random() * (isWinter ? 40 : 10));
+                    await this.fluRepo.save(this.fluRepo.create({
+                        reportDate: dateStr,
+                        organization: org,
+                        flu_total: cases,
+                        ari_total: Math.floor(cases * 1.3),
+                        status: ReportStatus.APPROVED,
+                        isTest: true
+                    }));
+                    results.flu++;
+                }
+            }
+
+            // 3. ARI
+            if (Math.random() > 0.7) {
+                const existing = await this.ariRepo.findOne({ where: { reportDate: dateStr, organization: { id: org.id } } });
+                if (!existing) {
+                    const cases = Math.floor(Math.random() * 25);
+                    await this.ariRepo.save(this.ariRepo.create({
+                        reportDate: dateStr,
+                        organization: org,
+                        ari: cases,
+                        status: ReportStatus.APPROVED,
+                        isTest: true
+                    }));
+                    results.ari++;
+                }
+            }
+
+            // 4. Covid
+            if (Math.random() > 0.9) {
+                const existing = await this.covidRepo.findOne({ where: { reportDate: dateStr, organization: { id: org.id } } });
+                if (!existing) {
+                    const cases = Math.floor(Math.random() * 4);
+                    await this.covidRepo.save(this.covidRepo.create({
+                        reportDate: dateStr,
+                        organization: org,
+                        total_cases: cases,
+                        status: ReportStatus.APPROVED,
+                        isTest: true
+                    }));
+                    results.covid++;
+                }
+            }
+        }
+    }
+
+    return { 
+        success: true, 
+        message: "Mock reports seeded successfully",
+        counts: results
     };
   }
 }

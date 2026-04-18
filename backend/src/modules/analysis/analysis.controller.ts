@@ -1,4 +1,5 @@
-import { Controller, Get, Query, Param, UseGuards, Req } from "@nestjs/common";
+import { Controller, Get, Query, Param, UseGuards, Req, SetMetadata } from "@nestjs/common";
+const Public = () => SetMetadata("isPublic", true);
 import { AnalysisService } from "./analysis.service";
 import { AnalysisQueryDto } from "./dto/analysis-query.dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
@@ -95,6 +96,19 @@ export class AnalysisController {
       validatedId,
       req.user,
     );
+  }
+
+  @Get("dashboard/map")
+  async getDashboardMap(@Req() req: any) {
+    // UZ: Dashboard xaritasi uchun dinamik nuqtalar
+    return this.analysisService.getDashboardMapData(req.user);
+  }
+
+  @Public()
+  @Get("seed-reports")
+  async seedReports() {
+    // UZ: Test hisobotlarni yaratish (Demo uchun)
+    return this.analysisService.seedMockReports();
   }
 }
 

@@ -1,0 +1,968 @@
+[
+  {
+    "id": "287a8d6d-292a-412f-bf66-387ec905cbe3",
+    "name": "Toshkent viloyati"
+  },
+  {
+    "id": "beb91aef-de23-4fd6-a845-5fb063559d24",
+    "name": "Toshkent shahri"
+  },
+  {
+    "id": "fb8df143-d7d5-49c8-9015-6f4a9d82484e",
+    "name": "Andijon viloyati"
+  },
+  {
+    "id": "a3f4f6a3-3425-428e-a8c5-659447a660a8",
+    "name": "Buxoro viloyati"
+  },
+  {
+    "id": "5bed9834-321c-4285-b1fe-def93ccbc3bf",
+    "name": "Farg'ona viloyati"
+  },
+  {
+    "id": "f23cc8d1-e363-4ad5-b376-68cb0dc89a4a",
+    "name": "Jizzax viloyati"
+  },
+  {
+    "id": "0928adb0-b31a-40e3-86a7-0bb9171e251b",
+    "name": "Namangan viloyati"
+  },
+  {
+    "id": "638adcf2-0874-46a0-8bb1-a00ea8cf75cc",
+    "name": "Navoiy viloyati"
+  },
+  {
+    "id": "6b9a9153-1ef7-45e8-8b10-a0451c7d1a4c",
+    "name": "Qashqadaryo viloyati"
+  },
+  {
+    "id": "f6d12bdf-67b1-43b5-abbe-06726b7f57db",
+    "name": "Qoraqalpog'iston Respublikasi"
+  },
+  {
+    "id": "9bc5edc9-026e-4fd5-9c21-97997bfddceb",
+    "name": "Samarqand viloyati"
+  },
+  {
+    "id": "14aa770e-b882-43de-9a91-ccd99aa4ff59",
+    "name": "Sirdaryo viloyati"
+  },
+  {
+    "id": "cc207f0e-4a09-48c5-ac69-6f2a77855472",
+    "name": "Surxondaryo viloyati"
+  },
+  {
+    "id": "6a2f3a70-7379-4943-8c22-12472657dcb6",
+    "name": "Xorazm viloyati"
+  },
+  {
+    "id": "f8eb7141-7d19-4d9a-b0ee-d9a98ef2a839",
+    "name": "Olmazor t",
+    "parent": "Toshkent shahri"
+  },
+  {
+    "id": "ba911b91-ae95-4750-a5ae-020976cf50ed",
+    "name": "Bektemir t",
+    "parent": "Toshkent shahri"
+  },
+  {
+    "id": "c827fced-7d3b-4ca1-97c4-8c781f310178",
+    "name": "Mirobod t",
+    "parent": "Toshkent shahri"
+  },
+  {
+    "id": "ea40ac28-2dd1-4e7d-a5dc-03e2f669a209",
+    "name": "Mirzo Ulug'bek t",
+    "parent": "Toshkent shahri"
+  },
+  {
+    "id": "49695084-621e-4fd8-975b-dcff448ff5a2",
+    "name": "Sergeli t",
+    "parent": "Toshkent shahri"
+  },
+  {
+    "id": "b910052e-a095-4392-9cf2-b6da668a4cdd",
+    "name": "Shayxontohur t",
+    "parent": "Toshkent shahri"
+  },
+  {
+    "id": "d55336df-f585-4128-89d7-1c6946598333",
+    "name": "Uchtepa t",
+    "parent": "Toshkent shahri"
+  },
+  {
+    "id": "ae9a73ba-b24c-4016-95a9-b3f6ea35e25f",
+    "name": "Chilonzor t",
+    "parent": "Toshkent shahri"
+  },
+  {
+    "id": "10919b31-06ed-4609-84ea-b0490680a694",
+    "name": "Yunusobod t",
+    "parent": "Toshkent shahri"
+  },
+  {
+    "id": "dcfd4bf1-fb56-4505-92d0-02cedd2a701d",
+    "name": "Yakkasaroy t",
+    "parent": "Toshkent shahri"
+  },
+  {
+    "id": "7644ba22-3ffb-4bbb-94ed-39d9cdda342a",
+    "name": "Yashnobod t",
+    "parent": "Toshkent shahri"
+  },
+  {
+    "id": "4ed86975-f9b9-4306-8c9b-beb0271d2fc5",
+    "name": "Yangihayot t",
+    "parent": "Toshkent shahri"
+  },
+  {
+    "id": "5ca5b036-7abd-4f30-8097-5b47d6864137",
+    "name": "Andijon sh",
+    "parent": "Andijon viloyati"
+  },
+  {
+    "id": "f63af399-e031-4dff-9e56-3b8e01db29a2",
+    "name": "Xonobod sh",
+    "parent": "Andijon viloyati"
+  },
+  {
+    "id": "a9467bf5-ef6e-4665-b4b7-f554353d045f",
+    "name": "Andijon t",
+    "parent": "Andijon viloyati"
+  },
+  {
+    "id": "cdc26e54-9f4c-461d-b2e5-7ff404a93277",
+    "name": "Asaka t",
+    "parent": "Andijon viloyati"
+  },
+  {
+    "id": "342acd53-ffc3-4095-9ea5-d3bf7dea0af7",
+    "name": "Baliqchi t",
+    "parent": "Andijon viloyati"
+  },
+  {
+    "id": "1be00c99-5862-4ec7-8fb6-fbf01e378191",
+    "name": "Boʻston t",
+    "parent": "Andijon viloyati"
+  },
+  {
+    "id": "bdf64d17-085a-4535-a96e-faff5a9bcdac",
+    "name": "Buloqboshi t",
+    "parent": "Andijon viloyati"
+  },
+  {
+    "id": "f388a625-0310-45a4-9900-2ad0a4cfc5b6",
+    "name": "Izboskan t",
+    "parent": "Andijon viloyati"
+  },
+  {
+    "id": "64f27571-9dd4-4d4f-ae7b-9b4b8a7bd4bb",
+    "name": "Jalaquduq t",
+    "parent": "Andijon viloyati"
+  },
+  {
+    "id": "f26bd055-be01-4750-9a68-cd85b3167507",
+    "name": "Kurgantepa t",
+    "parent": "Andijon viloyati"
+  },
+  {
+    "id": "42de2e21-fca9-4e13-99d4-6d1622f2171c",
+    "name": "Marhamat t",
+    "parent": "Andijon viloyati"
+  },
+  {
+    "id": "9c05be70-c9b7-4000-8932-65b8f8ad9914",
+    "name": "Oltinkoʻl t",
+    "parent": "Andijon viloyati"
+  },
+  {
+    "id": "92a32a6d-6287-4431-82a3-2b855c2c835d",
+    "name": "Paxtaobod t",
+    "parent": "Andijon viloyati"
+  },
+  {
+    "id": "253a13e4-3222-40f9-acbe-c247e43d8bb1",
+    "name": "Shahrixon t",
+    "parent": "Andijon viloyati"
+  },
+  {
+    "id": "c99e4a41-fd85-4d58-94f7-f9afcec5c55d",
+    "name": "Ulugʻnor t",
+    "parent": "Andijon viloyati"
+  },
+  {
+    "id": "b964bdf0-0af9-40d0-b461-264adda8e3d1",
+    "name": "Xoʻjaobod t",
+    "parent": "Andijon viloyati"
+  },
+  {
+    "id": "85925fe4-91e9-4917-9b81-92f26459233e",
+    "name": "Buxoro sh",
+    "parent": "Buxoro viloyati"
+  },
+  {
+    "id": "d22af818-3713-47f1-ba8e-44c1f8cb25e3",
+    "name": "Kogon sh",
+    "parent": "Buxoro viloyati"
+  },
+  {
+    "id": "caa71824-fda5-4576-bfbf-83ae4c2342b7",
+    "name": "Buxoro t",
+    "parent": "Buxoro viloyati"
+  },
+  {
+    "id": "7fb789b4-5f1b-46bf-92cc-6b4ed41779b3",
+    "name": "Gʻijduvon t",
+    "parent": "Buxoro viloyati"
+  },
+  {
+    "id": "fc2c5eaf-cb0e-43d1-89c7-cb3f09ef8345",
+    "name": "Jondor t",
+    "parent": "Buxoro viloyati"
+  },
+  {
+    "id": "3beb8f9d-c496-4817-9dad-9325441bf2a3",
+    "name": "Kogon t",
+    "parent": "Buxoro viloyati"
+  },
+  {
+    "id": "b8c908d9-3738-4a1e-8bc1-d1bfe9b9dedf",
+    "name": "Qorakoʻl t",
+    "parent": "Buxoro viloyati"
+  },
+  {
+    "id": "9b22042a-f230-42f7-b382-e1b9f52ce4e0",
+    "name": "Qorovulbozor t",
+    "parent": "Buxoro viloyati"
+  },
+  {
+    "id": "a3850b7a-1294-4396-a0ef-077c0a170f94",
+    "name": "Olot t",
+    "parent": "Buxoro viloyati"
+  },
+  {
+    "id": "28032188-2375-4fd3-824b-bd4ab2f2f8fe",
+    "name": "Peshku t",
+    "parent": "Buxoro viloyati"
+  },
+  {
+    "id": "00930bf2-b075-4cf2-a3e2-cf16a849fe82",
+    "name": "Romitan t",
+    "parent": "Buxoro viloyati"
+  },
+  {
+    "id": "83882351-c698-4f55-8f3c-d53afacd8638",
+    "name": "Shofirkon t",
+    "parent": "Buxoro viloyati"
+  },
+  {
+    "id": "37b58a74-70d6-4b7a-a7b6-10f6d1a23ecd",
+    "name": "Vobkent t",
+    "parent": "Buxoro viloyati"
+  },
+  {
+    "id": "8a85e164-20d0-48d7-bace-d599d88e9bf2",
+    "name": "Farg'ona sh",
+    "parent": "Farg'ona viloyati"
+  },
+  {
+    "id": "d08f54d2-e421-488a-bac7-0d7ee35933c4",
+    "name": "Qo'qon sh",
+    "parent": "Farg'ona viloyati"
+  },
+  {
+    "id": "d7bf5103-d063-4cc4-abd9-0f0a06578202",
+    "name": "Marg'ilon sh",
+    "parent": "Farg'ona viloyati"
+  },
+  {
+    "id": "3d7c4aca-0b32-4513-938e-5d3cd790984c",
+    "name": "Quvasoy sh",
+    "parent": "Farg'ona viloyati"
+  },
+  {
+    "id": "631bdcad-437d-4499-b42f-238f40f0fcc6",
+    "name": "Oltiariq t",
+    "parent": "Farg'ona viloyati"
+  },
+  {
+    "id": "9c54cbce-7fde-4648-84b2-119b20f54510",
+    "name": "Bagʻdod t",
+    "parent": "Farg'ona viloyati"
+  },
+  {
+    "id": "fd2b07d5-4e13-4a20-926d-28ea9a18bfa2",
+    "name": "Beshariq t",
+    "parent": "Farg'ona viloyati"
+  },
+  {
+    "id": "eeed4433-7bef-4425-bb03-4a314dd7af54",
+    "name": "Buvayda t",
+    "parent": "Farg'ona viloyati"
+  },
+  {
+    "id": "ab13c7c2-f890-4565-9e64-6641e9a9dee1",
+    "name": "Dangʻara t",
+    "parent": "Farg'ona viloyati"
+  },
+  {
+    "id": "6207ffbc-1fa4-4396-971e-5ce21fa85d3b",
+    "name": "Fergana t",
+    "parent": "Farg'ona viloyati"
+  },
+  {
+    "id": "9247d684-22b5-4404-97e2-a50069ffa7b4",
+    "name": "Furqat t",
+    "parent": "Farg'ona viloyati"
+  },
+  {
+    "id": "7b950abc-e335-4c7c-a4d2-b0061a7802b3",
+    "name": "Qoʻshtepa t",
+    "parent": "Farg'ona viloyati"
+  },
+  {
+    "id": "c96a2be7-37e7-4eed-9259-77f648fd9cc4",
+    "name": "Quva t",
+    "parent": "Farg'ona viloyati"
+  },
+  {
+    "id": "62c44776-44a9-48fd-87ca-065362674deb",
+    "name": "Rishton t",
+    "parent": "Farg'ona viloyati"
+  },
+  {
+    "id": "f7d187a8-bc0e-4077-ad7f-0de0eac61467",
+    "name": "Soʻx t",
+    "parent": "Farg'ona viloyati"
+  },
+  {
+    "id": "e5790c8d-b334-4b51-80fb-b93a1ae5db6f",
+    "name": "Toshloq t",
+    "parent": "Farg'ona viloyati"
+  },
+  {
+    "id": "50fc1a22-cd8d-4b98-8e3a-ed9579a2ad58",
+    "name": "Uchkoʻprik t",
+    "parent": "Farg'ona viloyati"
+  },
+  {
+    "id": "bbac10b5-55a8-4d4d-b592-75de38bcbf74",
+    "name": "Yozyovon t",
+    "parent": "Farg'ona viloyati"
+  },
+  {
+    "id": "07705f40-d128-4d9e-94ec-2c2b88260f1d",
+    "name": "Oʻzbekiston t",
+    "parent": "Farg'ona viloyati"
+  },
+  {
+    "id": "156d8fab-4fde-471d-9fbf-227245a618a9",
+    "name": "Jizzax sh",
+    "parent": "Jizzax viloyati"
+  },
+  {
+    "id": "bbf64b71-4f71-477d-92e0-dca3af9cdbcf",
+    "name": "Arnasoy t",
+    "parent": "Jizzax viloyati"
+  },
+  {
+    "id": "3a97267f-0c57-4d56-8923-45c066da6309",
+    "name": "Baxmal t",
+    "parent": "Jizzax viloyati"
+  },
+  {
+    "id": "35391592-efa7-443c-8747-a17a5f852cfc",
+    "name": "G'allaorol t",
+    "parent": "Jizzax viloyati"
+  },
+  {
+    "id": "9cd553d9-23d5-4d27-b1bd-b7c3c14fb67b",
+    "name": "Jizzax t",
+    "parent": "Jizzax viloyati"
+  },
+  {
+    "id": "e3ebc6a8-413c-4d3e-9577-625974bacd6f",
+    "name": "Doʻstlik t",
+    "parent": "Jizzax viloyati"
+  },
+  {
+    "id": "ac21fe75-a489-428d-8acb-88e92ebce681",
+    "name": "Zomin t",
+    "parent": "Jizzax viloyati"
+  },
+  {
+    "id": "f14fe2ad-eaf8-4ebd-862e-b25c4cfdcdfc",
+    "name": "Zarbdor t",
+    "parent": "Jizzax viloyati"
+  },
+  {
+    "id": "5d981e03-17a5-4cbe-af00-a6ffea2e5e51",
+    "name": "Zafarobod t",
+    "parent": "Jizzax viloyati"
+  },
+  {
+    "id": "53689c1f-5b44-476e-b519-a4da04cb6d13",
+    "name": "Mirzachoʻl t",
+    "parent": "Jizzax viloyati"
+  },
+  {
+    "id": "f935e0ea-15a2-4db8-a681-5e3977dfa7b5",
+    "name": "Paxtakor t",
+    "parent": "Jizzax viloyati"
+  },
+  {
+    "id": "f5e6fc08-1575-4f8f-a47f-55491fba50f6",
+    "name": "Forish t",
+    "parent": "Jizzax viloyati"
+  },
+  {
+    "id": "2c3b4b50-9880-4cb3-83eb-f419a4e99806",
+    "name": "Yangiobod t",
+    "parent": "Jizzax viloyati"
+  },
+  {
+    "id": "9804e2f0-c8e1-4874-9ff5-112086e61618",
+    "name": "Qarshi sh",
+    "parent": "Qashqadaryo viloyati"
+  },
+  {
+    "id": "62919ba9-66b1-45e1-9611-ff7ced91c6a4",
+    "name": "Shahrisabz sh",
+    "parent": "Qashqadaryo viloyati"
+  },
+  {
+    "id": "d141bcd2-943c-4820-9539-33475850d42e",
+    "name": "Chiroqchi t",
+    "parent": "Qashqadaryo viloyati"
+  },
+  {
+    "id": "e4cd97c4-4ce7-4325-834a-89f090a94417",
+    "name": "Dehqonobod t",
+    "parent": "Qashqadaryo viloyati"
+  },
+  {
+    "id": "ea84a738-c65a-4f59-92eb-54c79b177663",
+    "name": "Gʻuzor t",
+    "parent": "Qashqadaryo viloyati"
+  },
+  {
+    "id": "903abd94-0909-43e1-8758-7b9deccbb20d",
+    "name": "Qamashi t",
+    "parent": "Qashqadaryo viloyati"
+  },
+  {
+    "id": "9b2055d1-f70d-4dbb-9f6d-350924758c74",
+    "name": "Qarshi t",
+    "parent": "Qashqadaryo viloyati"
+  },
+  {
+    "id": "de0085a9-c12f-420b-9eb7-bfee72fee295",
+    "name": "Koson t",
+    "parent": "Qashqadaryo viloyati"
+  },
+  {
+    "id": "49278f87-757f-49f1-a9f8-50f45366474d",
+    "name": "Kasbi t",
+    "parent": "Qashqadaryo viloyati"
+  },
+  {
+    "id": "d54d3468-cefc-4dd8-8a4f-eff78b047ec5",
+    "name": "Kitob t",
+    "parent": "Qashqadaryo viloyati"
+  },
+  {
+    "id": "0fe306b3-2fe6-4951-9048-b8bf28591040",
+    "name": "Mirishkor t",
+    "parent": "Qashqadaryo viloyati"
+  },
+  {
+    "id": "3f43ef14-4542-4047-a24f-1b8b7a64a9f7",
+    "name": "Muborak t",
+    "parent": "Qashqadaryo viloyati"
+  },
+  {
+    "id": "f1efc289-9809-4eb2-93fc-02d52c3d8468",
+    "name": "Nishon t",
+    "parent": "Qashqadaryo viloyati"
+  },
+  {
+    "id": "a4cb5d67-c606-46ab-8f6c-7e8b10686583",
+    "name": "Shahrisabz t",
+    "parent": "Qashqadaryo viloyati"
+  },
+  {
+    "id": "06bfa8df-f8b1-42df-be2f-74924082fa69",
+    "name": "Yakkabogʻ t",
+    "parent": "Qashqadaryo viloyati"
+  },
+  {
+    "id": "8249a08c-b9d7-4858-99f8-6aceee6ef18c",
+    "name": "Ko'kdala t",
+    "parent": "Qashqadaryo viloyati"
+  },
+  {
+    "id": "70531084-bbff-4a02-ac00-6859eae43fe7",
+    "name": "Namangan sh",
+    "parent": "Namangan viloyati"
+  },
+  {
+    "id": "60028d81-a882-41da-9c6a-a33219ec0b31",
+    "name": "Chortoq t",
+    "parent": "Namangan viloyati"
+  },
+  {
+    "id": "1c459388-eb37-45f5-902e-eff1bcce2726",
+    "name": "Chust t",
+    "parent": "Namangan viloyati"
+  },
+  {
+    "id": "d32a0a22-29be-4953-8f7f-af33e5f531a9",
+    "name": "Kosonsoy t",
+    "parent": "Namangan viloyati"
+  },
+  {
+    "id": "60040c33-f8db-4b29-9316-b8a1a3f00232",
+    "name": "Mingbuloq t",
+    "parent": "Namangan viloyati"
+  },
+  {
+    "id": "7bb0f9da-b34b-42e9-8a6d-4f49c2c8f380",
+    "name": "Namangan t",
+    "parent": "Namangan viloyati"
+  },
+  {
+    "id": "6b4d472a-cfd1-4cbf-8f74-049300411d68",
+    "name": "Norin t",
+    "parent": "Namangan viloyati"
+  },
+  {
+    "id": "d139329b-fc84-4672-ae2b-e90bff929969",
+    "name": "Pop t",
+    "parent": "Namangan viloyati"
+  },
+  {
+    "id": "71b00a87-1c0c-4e8a-9ece-eaf601b2051e",
+    "name": "Toʻraqoʻrgʻon t",
+    "parent": "Namangan viloyati"
+  },
+  {
+    "id": "516ebe35-550d-4a3d-8ae5-1fd3256b8ea6",
+    "name": "Uchqoʻrgʻon t",
+    "parent": "Namangan viloyati"
+  },
+  {
+    "id": "40013d8b-527b-493a-811d-1e1949298928",
+    "name": "Uychi t",
+    "parent": "Namangan viloyati"
+  },
+  {
+    "id": "26532536-d96b-488c-a4bc-e348e115a65b",
+    "name": "Yangiqoʻrgʻon t",
+    "parent": "Namangan viloyati"
+  },
+  {
+    "id": "f5b97162-cb9f-4af4-8d63-adb55ff18774",
+    "name": "Navoiy sh",
+    "parent": "Navoiy viloyati"
+  },
+  {
+    "id": "64c6b010-fc44-4964-9ea2-fae561b737a7",
+    "name": "Zarafshon sh",
+    "parent": "Navoiy viloyati"
+  },
+  {
+    "id": "6e25f422-8139-4116-a586-480293149d9a",
+    "name": "Konimex t",
+    "parent": "Navoiy viloyati"
+  },
+  {
+    "id": "4198983d-9a77-4008-bc47-0f9b0efd075b",
+    "name": "Qiziltepa t",
+    "parent": "Navoiy viloyati"
+  },
+  {
+    "id": "4c5483fd-db39-4f47-96ed-f0ddfcf1698a",
+    "name": "Xatirchi t",
+    "parent": "Navoiy viloyati"
+  },
+  {
+    "id": "da495b8f-03a2-43e9-bb27-1701c639ec9e",
+    "name": "Navbahor t",
+    "parent": "Navoiy viloyati"
+  },
+  {
+    "id": "75504ba4-df45-4135-925b-4548950a6f96",
+    "name": "Karmana t",
+    "parent": "Navoiy viloyati"
+  },
+  {
+    "id": "2574e722-abd1-46f0-a300-99729dedd2cc",
+    "name": "Nurota t",
+    "parent": "Navoiy viloyati"
+  },
+  {
+    "id": "fbba6061-fa9c-4cb8-aefb-651ede5c82c9",
+    "name": "Tomdi t",
+    "parent": "Navoiy viloyati"
+  },
+  {
+    "id": "3edfffc1-7bfc-49cb-aa9d-022f566c1837",
+    "name": "Uchquduq t",
+    "parent": "Navoiy viloyati"
+  },
+  {
+    "id": "ba819ab0-904c-4246-a38b-20f71eee1d64",
+    "name": "Nukus sh",
+    "parent": "Qoraqalpog'iston Respublikasi"
+  },
+  {
+    "id": "ed2556e5-2a7b-4ad4-abc5-f1da14163a46",
+    "name": "Taxiatosh sh",
+    "parent": "Qoraqalpog'iston Respublikasi"
+  },
+  {
+    "id": "e4c58286-0a40-452f-8b26-8cc79f881b7a",
+    "name": "Amudaryo t",
+    "parent": "Qoraqalpog'iston Respublikasi"
+  },
+  {
+    "id": "9ca3508b-b157-45ff-b28c-489da5d3fc6f",
+    "name": "Beruniy t",
+    "parent": "Qoraqalpog'iston Respublikasi"
+  },
+  {
+    "id": "60bee91e-7c32-4b25-8df5-ece551faa3ed",
+    "name": "Chimboy t",
+    "parent": "Qoraqalpog'iston Respublikasi"
+  },
+  {
+    "id": "cd85a39e-2f42-43be-8c7e-085a07486538",
+    "name": "Ellikqala t",
+    "parent": "Qoraqalpog'iston Respublikasi"
+  },
+  {
+    "id": "bde83ac4-ee97-4b9a-b453-6246e9c64ebf",
+    "name": "Kegeyli t",
+    "parent": "Qoraqalpog'iston Respublikasi"
+  },
+  {
+    "id": "d5eb7cd0-f5e5-450b-a015-acad0c8a4d1f",
+    "name": "Moʻynoq t",
+    "parent": "Qoraqalpog'iston Respublikasi"
+  },
+  {
+    "id": "ab676690-4817-4efe-91b1-a9bcb4ad8759",
+    "name": "Nukus t",
+    "parent": "Qoraqalpog'iston Respublikasi"
+  },
+  {
+    "id": "657d0c39-5eb4-4511-a898-697ce1418393",
+    "name": "Qanlikoʻl t",
+    "parent": "Qoraqalpog'iston Respublikasi"
+  },
+  {
+    "id": "dce10264-e5f9-4d2c-a465-b4fcec62edd6",
+    "name": "Qoʻngʻirot t",
+    "parent": "Qoraqalpog'iston Respublikasi"
+  },
+  {
+    "id": "d9de557b-dbd1-4fcb-9ef5-fca4c1cc4b72",
+    "name": "Qoraoʻzak t",
+    "parent": "Qoraqalpog'iston Respublikasi"
+  },
+  {
+    "id": "6ce2ce16-304d-4865-8e4e-faedcc88ea30",
+    "name": "Shumanay t",
+    "parent": "Qoraqalpog'iston Respublikasi"
+  },
+  {
+    "id": "afab7cf2-c09b-49e7-a4f6-abb9516288c9",
+    "name": "Taxtakoʻpir t",
+    "parent": "Qoraqalpog'iston Respublikasi"
+  },
+  {
+    "id": "e4b056aa-73d3-4aee-89d4-f666b6e2c873",
+    "name": "Toʻrtkoʻl t",
+    "parent": "Qoraqalpog'iston Respublikasi"
+  },
+  {
+    "id": "78675bc3-5612-40a0-a51a-21fb747e0e59",
+    "name": "Xoʻjayli t",
+    "parent": "Qoraqalpog'iston Respublikasi"
+  },
+  {
+    "id": "b452d147-b1d8-42b9-b80f-cc7a05347b1c",
+    "name": "Boʻzatov t",
+    "parent": "Qoraqalpog'iston Respublikasi"
+  },
+  {
+    "id": "d3a39307-74e9-43dd-8882-3321404f11b9",
+    "name": "Samarqand sh",
+    "parent": "Samarqand viloyati"
+  },
+  {
+    "id": "c8ff9eaf-dc64-4c4b-88f5-253084dc53a4",
+    "name": "Kattaqo'rg'on sh",
+    "parent": "Samarqand viloyati"
+  },
+  {
+    "id": "391d7578-315b-447a-adf6-d0546682b458",
+    "name": "Bulungʻur t",
+    "parent": "Samarqand viloyati"
+  },
+  {
+    "id": "42d99c04-a749-4e35-a187-d09ac28c70aa",
+    "name": "Jomboy t",
+    "parent": "Samarqand viloyati"
+  },
+  {
+    "id": "402ac2e4-b424-44c6-924a-f998b539f132",
+    "name": "Ishtixon t",
+    "parent": "Samarqand viloyati"
+  },
+  {
+    "id": "262af7c2-7cc2-4cb5-bc39-1da71a45acd4",
+    "name": "Kattaqo'rg'on t",
+    "parent": "Samarqand viloyati"
+  },
+  {
+    "id": "916c1bb6-7491-432e-80f4-483355d4105c",
+    "name": "Oqdaryo t",
+    "parent": "Samarqand viloyati"
+  },
+  {
+    "id": "f05b0657-7880-4bfd-9391-8fcf49ff8ed1",
+    "name": "Paxtachi t",
+    "parent": "Samarqand viloyati"
+  },
+  {
+    "id": "f9d7e7bb-f81f-4834-9cc2-76f12f9520d6",
+    "name": "Pastdargʻom t",
+    "parent": "Samarqand viloyati"
+  },
+  {
+    "id": "e1cc6ece-46ff-442c-9e26-f44082f7a871",
+    "name": "Narpay t",
+    "parent": "Samarqand viloyati"
+  },
+  {
+    "id": "75462814-4edf-4487-81dc-3cbdacd99645",
+    "name": "Nurabod t",
+    "parent": "Samarqand viloyati"
+  },
+  {
+    "id": "2bcf2431-1706-43c6-b271-09b7a50ddc12",
+    "name": "Samarkand t",
+    "parent": "Samarqand viloyati"
+  },
+  {
+    "id": "474eb9f8-a7b5-456d-b93e-df6da420e045",
+    "name": "Toyloq t",
+    "parent": "Samarqand viloyati"
+  },
+  {
+    "id": "c3ba0584-0bc3-40f6-8223-2ba2edd1406d",
+    "name": "Urgut t",
+    "parent": "Samarqand viloyati"
+  },
+  {
+    "id": "0050763d-a6d5-4f3c-bd46-1acbe5d6cfaf",
+    "name": "Qoʻshrabot t",
+    "parent": "Samarqand viloyati"
+  },
+  {
+    "id": "88606ee1-8406-4665-9922-943b53ffd72c",
+    "name": "Guliston sh",
+    "parent": "Sirdaryo viloyati"
+  },
+  {
+    "id": "8af0f6d1-58b7-497f-a6fb-2fe65f15fae4",
+    "name": "Shirin sh",
+    "parent": "Sirdaryo viloyati"
+  },
+  {
+    "id": "00485d50-27de-49ad-9cf1-05a9f2b242e1",
+    "name": "Yangiyer sh",
+    "parent": "Sirdaryo viloyati"
+  },
+  {
+    "id": "fe2b7da0-46cb-420a-96c0-5a141830fcc2",
+    "name": "Boyovut t",
+    "parent": "Sirdaryo viloyati"
+  },
+  {
+    "id": "44568b07-7fd9-41cc-ae30-7bdad5c09125",
+    "name": "Guliston t",
+    "parent": "Sirdaryo viloyati"
+  },
+  {
+    "id": "35cd8f7b-494a-41f9-a242-0695aacd0d46",
+    "name": "Mirzaobod t",
+    "parent": "Sirdaryo viloyati"
+  },
+  {
+    "id": "fb093292-3744-4469-bf04-21690dbdc605",
+    "name": "Oqoltin t",
+    "parent": "Sirdaryo viloyati"
+  },
+  {
+    "id": "c53e5496-2348-4e3d-9891-99235de05e7d",
+    "name": "Saixunobod t",
+    "parent": "Sirdaryo viloyati"
+  },
+  {
+    "id": "a6b1a0f6-413c-4978-ab58-9acc606da98a",
+    "name": "Sardoba t",
+    "parent": "Sirdaryo viloyati"
+  },
+  {
+    "id": "3c49217f-a22f-482b-96d1-7192c4d98113",
+    "name": "Sirdaryo t",
+    "parent": "Sirdaryo viloyati"
+  },
+  {
+    "id": "2b45058c-0016-4f7d-b8ae-78f5966cdb7b",
+    "name": "Xovos t",
+    "parent": "Sirdaryo viloyati"
+  },
+  {
+    "id": "a7e6b04f-cfbd-40d2-80de-2bd090d14d63",
+    "name": "Termiz sh",
+    "parent": "Surxondaryo viloyati"
+  },
+  {
+    "id": "e86401d4-930f-4ddd-8ff4-3f9cbc7582b8",
+    "name": "Angor t",
+    "parent": "Surxondaryo viloyati"
+  },
+  {
+    "id": "e0c172ad-bad3-4d4e-880c-1e11d89c8183",
+    "name": "Bandixon t",
+    "parent": "Surxondaryo viloyati"
+  },
+  {
+    "id": "986d9110-4335-4172-beb7-eb9354b03369",
+    "name": "Boysun t",
+    "parent": "Surxondaryo viloyati"
+  },
+  {
+    "id": "283f62f7-0b14-4df6-b6ab-8644c5f18a07",
+    "name": "Denov t",
+    "parent": "Surxondaryo viloyati"
+  },
+  {
+    "id": "87f6bbc2-90ad-4ce9-bf87-03497420bece",
+    "name": "Jarqoʻrgʻon t",
+    "parent": "Surxondaryo viloyati"
+  },
+  {
+    "id": "6ada17e9-416e-45ec-b4c6-21ee26e9f9f8",
+    "name": "Qiziriq t",
+    "parent": "Surxondaryo viloyati"
+  },
+  {
+    "id": "06518d69-5f7c-405d-bf46-b3c4557978ca",
+    "name": "Qumqoʻrgʻon t",
+    "parent": "Surxondaryo viloyati"
+  },
+  {
+    "id": "90fd843f-77e6-4de0-8c46-a82335cf54ea",
+    "name": "Muzrabot t",
+    "parent": "Surxondaryo viloyati"
+  },
+  {
+    "id": "38474186-86ec-4d62-8518-2be0718b8c25",
+    "name": "Oltinsoy t",
+    "parent": "Surxondaryo viloyati"
+  },
+  {
+    "id": "94382b13-0bd4-476e-b0e1-f8b25b3816e0",
+    "name": "Sariosiyo t",
+    "parent": "Surxondaryo viloyati"
+  },
+  {
+    "id": "4ccb91c7-1694-4937-98d2-cc2a6462e801",
+    "name": "Sherobod t",
+    "parent": "Surxondaryo viloyati"
+  },
+  {
+    "id": "af0e2bcf-82f9-444c-9093-1842ac2e1456",
+    "name": "Shoʻrchi t",
+    "parent": "Surxondaryo viloyati"
+  },
+  {
+    "id": "7fb94ea4-c1a0-41b1-b29c-9e632e976504",
+    "name": "Termiz t",
+    "parent": "Surxondaryo viloyati"
+  },
+  {
+    "id": "e2c4e6dd-e780-44af-97eb-6361e88d7d1d",
+    "name": "Uzun t",
+    "parent": "Surxondaryo viloyati"
+  },
+  {
+    "id": "6113f954-0a23-41f6-8299-8604177a6e82",
+    "name": "Urganch sh",
+    "parent": "Xorazm viloyati"
+  },
+  {
+    "id": "8a80731e-8290-480d-b368-3ec01562cdbb",
+    "name": "Xiva sh",
+    "parent": "Xorazm viloyati"
+  },
+  {
+    "id": "39722af4-624a-4306-9b38-af0ce7cfb815",
+    "name": "Bogʻot t",
+    "parent": "Xorazm viloyati"
+  },
+  {
+    "id": "952de533-be7a-4035-b8a9-f1aa6c85f171",
+    "name": "Gurlan t",
+    "parent": "Xorazm viloyati"
+  },
+  {
+    "id": "8fc460e3-5aaa-4346-917f-acdf5399e824",
+    "name": "Xonqa t",
+    "parent": "Xorazm viloyati"
+  },
+  {
+    "id": "f5088c6a-fb8c-40ea-af1d-1d7ec5a5cf77",
+    "name": "Hazorasp t",
+    "parent": "Xorazm viloyati"
+  },
+  {
+    "id": "29c00796-aa32-42c5-9fef-e94485a8f629",
+    "name": "Khiva t",
+    "parent": "Xorazm viloyati"
+  },
+  {
+    "id": "11fcd752-dcf4-407b-9836-9b59c1787745",
+    "name": "Qoʻshkoʻpir t",
+    "parent": "Xorazm viloyati"
+  },
+  {
+    "id": "f2d0584f-e43d-4502-9a7d-7b3440670427",
+    "name": "Shovot t",
+    "parent": "Xorazm viloyati"
+  },
+  {
+    "id": "57351712-2fb0-462e-8c5f-58ef7bdaac58",
+    "name": "Urganch t",
+    "parent": "Xorazm viloyati"
+  },
+  {
+    "id": "59ecaf5e-9f1a-4a5e-8d4d-d20c7e669bee",
+    "name": "Yangiariq t",
+    "parent": "Xorazm viloyati"
+  },
+  {
+    "id": "152e520b-f6a0-4b5d-86a2-2370477176e6",
+    "name": "Yangibozor t",
+    "parent": "Xorazm viloyati"
+  },
+  {
+    "id": "66b30498-b401-4a20-96c3-304373a7657e",
+    "name": "Tuproqqalʼa t",
+    "parent": "Xorazm viloyati"
+  }
+]

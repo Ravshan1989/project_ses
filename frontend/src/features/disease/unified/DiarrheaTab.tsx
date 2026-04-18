@@ -35,6 +35,9 @@ interface DiarrheaReportData {
     tap_water_samples: number;
     tap_water_isolated: number;
     is_submitted?: boolean;
+    district_name: string; // Add this for consistency with transformer
+    isParent?: boolean;
+    children?: DiarrheaReportData[];
 }
 
 interface DiarrheaTabProps {
@@ -61,6 +64,7 @@ const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, userRole, onCh
     const isSubmitted = (row: DiarrheaReportData) => !!row.is_submitted || row.status !== 'DRAFT';
 
     const canEdit = (record: DiarrheaReportData) => {
+        if (record.isParent) return false;
         if (record.status === 'APPROVED' || record.status === 'VERIFIED') return false;
         if (isSpecialist) return record.status === 'DRAFT' || record.status === 'REJECTED' || !record.status;
         if (isMudir) return record.status === 'SUBMITTED';
@@ -86,8 +90,8 @@ const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, userRole, onCh
             width: 50,
             fixed: 'left',
             render: (_: any, r: DiarrheaReportData, index: number) => (
-                <div style={{ backgroundColor: isSubmitted(r) ? '#f6ffed' : '#fff1f0', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {index + 1}
+                <div style={{ backgroundColor: r.isParent ? '#e6f7ff' : (isSubmitted(r) ? '#f6ffed' : '#fff1f0'), height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {r.isParent ? '*' : index + 1}
                 </div>
             ),
         },
@@ -97,8 +101,9 @@ const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, userRole, onCh
             width: 150,
             fixed: 'left',
             render: (text: string, r: DiarrheaReportData) => (
-                <span style={{ color: isSubmitted(r) ? '#52c41a' : '#ff4d4f', fontWeight: 'bold' }}>
-                    {t(`orgs.${text.toLowerCase()}`, { defaultValue: text })}
+                <span style={{ color: r.isParent ? '#096dd9' : (isSubmitted(r) ? '#52c41a' : '#ff4d4f'), fontWeight: 'bold' }}>
+                    {text ? t(`orgs.${text.toLowerCase()}`, { defaultValue: text }) : ''}
+                    {r.isParent && <Badge count={r.children?.length || 0} style={{ backgroundColor: '#1890ff', marginLeft: 8 }} />}
                 </span>
             ),
         },
@@ -409,7 +414,10 @@ const DiarrheaTab: React.FC<DiarrheaTabProps> = ({ data, loading, userRole, onCh
             scroll={{ x: 2200, y: 'calc(100vh - 400px)' }}
             size="small"
             bordered
-            rowClassName={(record) => record.district.includes('jami') ? 'row-total' : ''}
+            expandable={{
+                defaultExpandAllRows: true,
+            }}
+            rowClassName={(record) => record.district?.includes('jami') ? 'row-total' : ''}
         />
     );
 };

@@ -28,6 +28,8 @@ export interface EpiReportData {
     suspended_dpm: number;
     suspended_other: number;
     is_submitted?: boolean;
+    isParent?: boolean;
+    children?: EpiReportData[];
     id?: string;
     status?: string;
     verificationToken?: string;
@@ -52,6 +54,7 @@ const EpiTab: React.FC<EpiTabProps> = ({ data, loading, userRole, onChange, onVe
     const isSpecialist = ['STAFF', 'DISTRICT_SPECIALIST', 'DISTRICT_OPERATOR'].includes(userRole);
 
     const canEdit = (record: EpiReportData) => {
+        if (record.isParent) return false;
         if (record.status === 'APPROVED' || record.status === 'VERIFIED') return false;
         if (isSpecialist) return record.status === 'DRAFT' || record.status === 'REJECTED' || !record.status;
         if (isMudir) return record.status === 'SUBMITTED';
@@ -76,9 +79,9 @@ const EpiTab: React.FC<EpiTabProps> = ({ data, loading, userRole, onChange, onVe
             title: '№',
             dataIndex: 'key',
             width: 40, align: 'center', fixed: 'left',
-            render: (text: string, r: EpiReportData) => (
-                <div style={{ backgroundColor: r.is_submitted ? '#f6ffed' : '#fff1f0', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {text}
+            render: (_: any, r: EpiReportData, index: number) => (
+                <div style={{ backgroundColor: r.isParent ? '#e6f7ff' : (r.is_submitted ? '#f6ffed' : '#fff1f0'), height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {r.isParent ? '*' : index + 1}
                 </div>
             )
         },
@@ -88,10 +91,16 @@ const EpiTab: React.FC<EpiTabProps> = ({ data, loading, userRole, onChange, onVe
             width: 140,
             fixed: 'left',
             render: (text: string, r: EpiReportData) => (
-                <span style={{ color: r.is_submitted ? '#52c41a' : '#ff4d4f', fontWeight: 'bold' }}>
-                    {t(`orgs.${text.toLowerCase()}`, { defaultValue: text })}
+                <span style={{ color: r.isParent ? '#096dd9' : (r.is_submitted ? '#52c41a' : '#ff4d4f'), fontWeight: 'bold' }}>
+                    {text ? t(`orgs.${text.toLowerCase()}`, { defaultValue: text }) : ''}
+                    {r.isParent && <Badge count={r.children?.length || 0} style={{ backgroundColor: '#1890ff', marginLeft: 8 }} />}
                 </span>
-            )
+            ),
+            onCell: (r: EpiReportData) => ({
+                style: {
+                    backgroundColor: r.isParent ? '#e6f7ff' : (r.is_submitted ? '#f6ffed' : '#fff1f0'),
+                }
+            })
         },
         {
             title: t('daily_reports.table.inspected_objects'),
@@ -403,6 +412,9 @@ const EpiTab: React.FC<EpiTabProps> = ({ data, loading, userRole, onChange, onVe
             pagination={false}
             scroll={{ x: 1400 }}
             className="premium-table"
+            expandable={{
+                defaultExpandAllRows: true,
+            }}
         />
     );
 };

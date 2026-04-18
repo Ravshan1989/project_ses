@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { dailyReportsApi, organizationsApi } from '../../../services/api';
 import { exportUnifiedDailyReport } from '../../../services/excelExportService';
+import { transformToHierarchy } from '../../../utils/reportDataTransformer';
 
 import HepatitisTab from './HepatitisTab';
 import FluAriTab from './FluAriTab';
@@ -61,8 +62,7 @@ const DailyReportUnifiedPage: React.FC = () => {
             let currentOrgs = organizations;
             if (currentOrgs.length === 0) {
                 const orgRes = await organizationsApi.getAll();
-                // Viloyatni (parent darajasi) hisobotdan olib tashlaymiz
-                currentOrgs = (orgRes.data || []).filter((org: any) => !!org.parent);
+                currentOrgs = orgRes.data || [];
                 setOrganizations(currentOrgs);
             }
 
@@ -77,21 +77,7 @@ const DailyReportUnifiedPage: React.FC = () => {
 
             // Helper to map orgs to data
             const mapper = (apiData: any[], orgs: any[], defaultFields: any) => {
-                let tableData = orgs.map((org, idx) => {
-                    const existing = apiData.find((r: any) => r.organization?.id === org.id);
-                    return {
-                        key: String(idx + 1),
-                        district_name: org.name,
-                        organizationId: org.id,
-                        is_submitted: !!existing,
-                        ...defaultFields,
-                        ...(existing || {})
-                    };
-                });
-                if (!isAdmin && userOrgId) {
-                    tableData = tableData.filter(d => d.organizationId === userOrgId);
-                }
-                return tableData;
+                return transformToHierarchy(apiData, orgs, defaultFields, isAdmin, userOrgId);
             };
 
             setHepatitisData(mapper(hepRes.data || [], currentOrgs, { total_cases: 0, age_under_1: 0, age_1_3: 0, age_4_6: 0, age_7_14: 0, age_15_19: 0, age_20_plus: 0, status: 'DRAFT' }));
@@ -119,14 +105,26 @@ const DailyReportUnifiedPage: React.FC = () => {
             const formattedDate = date.format('YYYY-MM-DD');
             const isTest = false;
 
+            const flatten = (items: any[]) => {
+                let result: any[] = [];
+                items.forEach(item => {
+                    if (item.children) {
+                        result = [...result, ...flatten(item.children)];
+                    } else if (!item.isParent) {
+                        result.push(item);
+                    }
+                });
+                return result;
+            };
+
             const payload = {
                 reportDate: formattedDate,
                 isTest,
-                hepatitis: hepatitisData,
-                flu: fluAriData,
-                covid: covidData,
-                epi: epiData,
-                diarrhea: diarrheaData,
+                hepatitis: flatten(hepatitisData),
+                flu: flatten(fluAriData),
+                covid: flatten(covidData),
+                epi: flatten(epiData),
+                diarrhea: flatten(diarrheaData),
             };
 
             await dailyReportsApi.bulkUpsertBatch(payload);

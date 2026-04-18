@@ -27,6 +27,7 @@ import { exportDashboardToPDF } from '../../utils/pdfExport';
 import EpidemicMap from '../../components/maps/EpidemicMap';
 
 const { Title, Text } = Typography;
+import { REGION_DATA } from './constants';
 
 
 const { Option } = Select;
@@ -77,114 +78,7 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
     const [selectedDiseaseType, setSelectedDiseaseType] = useState<string>(''); // UZ: Tanlangan kasallik turi
     const [isModalVisible, setIsModalVisible] = useState(false); // UZ: Modal holati
     const [executiveSummary, setExecutiveSummary] = useState<DistrictExecutiveSummary | null>(null); // UZ: Rahbar uchun qisqacha ma'lumot
-
-    // Real Tashkent Region Districts Data
-    const REGION_DATA = [
-        { id: '1', name: t('regions.nurafshon_city'), population: 54100, type: t('regions.type_city') },
-        { id: '2', name: t('regions.angren_city'), population: 191300, type: t('regions.type_city') },
-        { id: '3', name: t('regions.bekobod_city'), population: 102000, type: t('regions.type_city') },
-        { id: '4', name: t('regions.chirchiq_city'), population: 168000, type: t('regions.type_city') },
-        { id: '5', name: t('regions.olmaliq_city'), population: 138500, type: t('regions.type_city') },
-        { id: '6', name: t('regions.ohangaron_city'), population: 42000, type: t('regions.type_city') },
-        { id: '7', name: t('regions.yangiyol_city'), population: 63000, type: t('regions.type_city') },
-        { id: '8', name: t('regions.oqqorgon_dist'), population: 112400, type: t('regions.type_district') },
-        { id: '9', name: t('regions.ohangaron_dist'), population: 108300, type: t('regions.type_district') },
-        { id: '10', name: t('regions.bekobod_dist'), population: 163400, type: t('regions.type_district') },
-        { id: '11', name: t('regions.bostonliq_dist'), population: 175600, type: t('regions.type_district') },
-        { id: '12', name: t('regions.boka_dist'), population: 132400, type: t('regions.type_district') },
-        { id: '13', name: t('regions.quyi_chirchiq_dist'), population: 115800, type: t('regions.type_district') },
-        { id: '14', name: t('regions.zangiota_dist'), population: 204300, type: t('regions.type_district') },
-        { id: '15', name: t('regions.yuqori_chirchiq_dist'), population: 142100, type: t('regions.type_district') },
-        { id: '16', name: t('regions.qibray_dist'), population: 206800, type: t('regions.type_district') },
-        { id: '17', name: t('regions.parkent_dist'), population: 153000, type: t('regions.type_district') },
-        { id: '18', name: t('regions.piskent_dist'), population: 102400, type: t('regions.type_district') },
-        { id: '19', name: t('regions.orta_chirchiq_dist'), population: 153500, type: t('regions.type_district') },
-        { id: '20', name: t('regions.chinoz_dist'), population: 147800, type: t('regions.type_district') },
-        { id: '21', name: t('regions.yangiyol_dist'), population: 278300, type: t('regions.type_district') },
-        { id: '22', name: t('regions.toshkent_dist'), population: 194500, type: t('regions.type_district') },
-    ];
-
-    // MOCK SUBMISSIONS mapped to real districts
-    const MOCK_DATA: any[] = [
-        {
-            id: '1',
-            template: { name: t('report_templates.form1') },
-            organization: { name: `${t('regions.chirchiq_city')} ${t('regions.ses_suffix')}` },
-            reportingPeriod: '2026-01-01',
-            status: SubmissionStatus.SUBMITTED,
-            data: { total_cases: 50 },
-            createdAt: '2026-02-01'
-        },
-        {
-            id: '2',
-            template: { name: t('report_templates.vaccination') },
-            organization: { name: `${t('regions.bostonliq_dist')} ${t('regions.ses_suffix')}` },
-            reportingPeriod: '2026-01-01',
-            status: SubmissionStatus.APPROVED,
-            data: { total_cases: 120 },
-            createdAt: '2026-02-01'
-        },
-        {
-            id: '3',
-            template: { name: t('report_templates.water') },
-            organization: { name: `${t('regions.zangiota_dist')} ${t('regions.ses_suffix')}` },
-            reportingPeriod: '2026-01-15',
-            status: SubmissionStatus.REJECTED,
-            data: { total_samples: 45 },
-            createdAt: '2026-02-02'
-        },
-        {
-            id: '4',
-            template: { name: t('report_templates.school') },
-            organization: { name: `${t('regions.bekobod_city')} ${t('regions.ses_suffix')}` },
-            reportingPeriod: '2026-02-01',
-            status: SubmissionStatus.DRAFT,
-            data: { total_samples: 45 },
-            createdAt: '2026-02-02'
-        }
-    ];
-
-    const MOCK_FORECASTS: any[] = [
-        {
-            diseaseType: 'flu',
-            diseaseName: 'Gripp (Influenza)',
-            emoji: '🤧',
-            riskScore: 85,
-            riskLevel: 'high',
-            predictedValue: 185,
-            currentValue: 178,
-            trend: 'increasing',
-            confidence: '85%',
-            historicalData: [120, 135, 142, 158, 165, 178],
-            growthRate: 7.8
-        },
-        {
-            diseaseType: 'ari',
-            diseaseName: "O'tkir Respirator Infeksiya (YUQTI)",
-            emoji: '😷',
-            riskScore: 65,
-            riskLevel: 'medium',
-            predictedValue: 115,
-            currentValue: 110,
-            trend: 'increasing',
-            confidence: '80%',
-            historicalData: [85, 92, 88, 95, 102, 110],
-            growthRate: 7.8
-        },
-        {
-            diseaseType: 'hepatitis',
-            diseaseName: 'Gepatit (Hepatitis) A',
-            emoji: '🟡',
-            riskScore: 45,
-            riskLevel: 'low',
-            predictedValue: 75,
-            currentValue: 68,
-            trend: 'increasing',
-            confidence: '90%',
-            historicalData: [45, 52, 48, 61, 55, 68],
-            growthRate: 23.6
-        }
-    ];
+    const [mapData, setMapData] = useState<any[]>([]); // UZ: Dinamik xarita ma'lumotlari
 
     const fetchSubmissions = async () => {
         setLoading(true);
@@ -214,11 +108,8 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
             }
         } catch (e) {
             console.error("Ranked forecasts fetch error", e);
-            // Fallback to mock data
-            setAllForecasts(MOCK_FORECASTS);
-            if (MOCK_FORECASTS.length > 0) {
-                setSelectedDiseaseType(MOCK_FORECASTS[0].diseaseType);
-            }
+            // Fallback to empty
+            setAllForecasts([]);
         }
     };
 
@@ -236,10 +127,22 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
         }
     }
 
+    const fetchMapData = async () => {
+        try {
+            const res = await api.get('/analysis/dashboard/map');
+            if (res.data && res.data.mapData) {
+                setMapData(res.data.mapData);
+            }
+        } catch (e) {
+            console.error("Error fetching map data", e);
+        }
+    };
+
     useEffect(() => {
         fetchSubmissions();
         fetchAllForecasts(); // UZ: Barcha prognozlarni yuklash
         fetchDistrictSummary(); // UZ: Tuman svodkasini yuklash
+        fetchMapData(); // UZ: Xaritani avto-yangilash
     }, [i18n.language]);
 
     const handleAction = async (_id: string, action: 'APPROVE' | 'REJECT') => {
@@ -359,13 +262,13 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
         },
     ];
 
-    const regionChartData = REGION_DATA.slice(0, 10).map(r => ({
-        name: r.name,
-        population: r.population
+    const regionChartData = mapData.slice(0, 10).map(item => ({
+        name: item.name,
+        value: item.value
     }));
 
     // UZ: Trend Analizi uchun Line chart ma'lumotlari (Tanlangan yoki eng xavfli kasallik bo'yicha)
-    const selectedForecast = allForecasts.find(f => f.diseaseType === selectedDiseaseType) || allForecasts[0];
+    const selectedForecast = (allForecasts || []).find(f => f.diseaseType === selectedDiseaseType) || (allForecasts || [])[0];
     const trendChartData = selectedForecast?.historicalData?.map((val: number, idx: number) => ({
         month: `${idx + 1}${t('dashboard_page.month_suffix')}`,
         value: val
@@ -413,10 +316,10 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
     const regionColumnConfig = {
         data: regionChartData,
         xField: 'name',
-        yField: 'population',
+        yField: 'value',
         theme: isDarkMode ? 'classicDark' : undefined,
         label: {
-            text: (d: any) => d.population.toLocaleString(),
+            text: (d: any) => d.value.toLocaleString(),
             position: 'inside',
             style: { fill: '#FFFFFF', opacity: 0.8 }
         },
@@ -429,7 +332,7 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
                 }
             },
         },
-        meta: { name: { alias: t('dashboard_page.analysis.region_alias') }, population: { alias: t('dashboard_page.analysis.population_alias') } },
+        meta: { name: { alias: t('dashboard_page.analysis.region_alias') }, value: { alias: t('dashboard_page.analysis.cases_alias', 'Kasallanishlar soni') } },
         color: ({ name }: any) => {
             if (name === 'Nurafshon sh') return '#1890ff';
             return '#5B8FF9';
@@ -646,15 +549,7 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
                         title={<Space><GlobalOutlined style={{ color: '#1677ff' }} /> <span style={{ fontSize: '18px', fontWeight: 600 }}>Hududiy epidemiologik holat xaritasi</span></Space>}
                         bordered={false}
                     >
-                        <EpidemicMap
-                            data={[
-                                { id: '1', name: 'Nurafshon sh', lat: 41.04, lng: 69.35, value: 45, status: 'warning' },
-                                { id: '2', name: 'Angren sh', lat: 41.01, lng: 70.07, value: 12, status: 'stable' },
-                                { id: '3', name: 'Chirchiq sh', lat: 41.47, lng: 69.58, value: 88, status: 'critical' },
-                                { id: '4', name: 'Yangiyo\'l sh', lat: 41.11, lng: 69.05, value: 30, status: 'stable' },
-                                { id: '5', name: 'Olmaliq sh', lat: 40.85, lng: 69.59, value: 25, status: 'stable' },
-                            ]}
-                        />
+                        <EpidemicMap data={mapData} />
                     </Card>
                 </div>
 
@@ -900,7 +795,7 @@ const DashboardContent: React.FC<any> = ({ t, i18n, submissions, setSubmissions,
 
                         <Card className="glass-card" title={<Space><span style={{ fontSize: '16px', fontWeight: 600 }}>{t('dashboard_page.region_title')}</span></Space>} bordered={false}>
                             <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
-                                {REGION_DATA.sort((a, b) => b.population - a.population).slice(0, 10).map((item, index) => (
+                                {(REGION_DATA || []).sort((a: any, b: any) => (b.population || 0) - (a.population || 0)).slice(0, 10).map((item, index) => (
                                     <div key={item.id} style={{
                                         display: 'flex',
                                         justifyContent: 'space-between',
