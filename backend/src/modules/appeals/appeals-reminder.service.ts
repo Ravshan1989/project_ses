@@ -4,7 +4,7 @@ import { Repository, LessThanOrEqual, IsNull } from "typeorm";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { AppealRecord, AppealStatus } from "./entities/appeal-record.entity";
 import { TelegramService } from "../telegram/telegram.service";
-import * as dayjs from "dayjs";
+import dayjs from "dayjs";
 
 @Injectable()
 export class AppealsReminderService {

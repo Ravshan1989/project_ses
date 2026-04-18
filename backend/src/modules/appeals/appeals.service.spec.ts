@@ -17,7 +17,7 @@ import { AppealsTable5 } from "./entities/appeals-table-5.entity";
 import { AppealsTable6 } from "./entities/appeals-table-6.entity";
 import { AppealsTable7 } from "./entities/appeals-table-7.entity";
 import { Organization } from "../organizations/entities/organization.entity";
-import * as dayjs from "dayjs";
+import dayjs from "dayjs";
 
 describe("AppealsService (Guardrail Tests)", () => {
   let service: AppealsService;
